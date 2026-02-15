@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-// import { categoryService } from "@/services/categoryService"
+import { categoryService } from "@/services/categoryService"
 import { Loader2 } from "lucide-react"
 
 const categorySchema = z.object({
@@ -35,7 +35,8 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
     try {
       setLoading(true)
       console.log(data)
-      // TODO: Implement creation logic
+      // TODO: Replace with actual user ID when auth is implemented
+      await categoryService.create(data)
       form.reset()
       onSuccess?.()
     } catch (error) {

@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { accountService } from "@/services/accountService"
+// import { accountService } from "@/services/accountService"
 // import { useToast } from "@/hooks/use-toast"
 
 export function AccountsList() {
@@ -38,8 +38,8 @@ export function AccountsList() {
     try {
       setLoading(true)
       setError(null)
-      const data = await accountService.getAccounts()
-      setAccounts(data)
+      // TODO: Implement local storage or API call
+      setAccounts([])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar las cuentas')
       console.error('Error loading accounts:', err)
@@ -50,8 +50,10 @@ export function AccountsList() {
 
   const handleAddAccount = async (newAccount: Account) => {
     try {
-      const created = await accountService.createAccount(newAccount)
-      setAccounts(prev => [created, ...prev])
+      // TODO: Implement creation logic
+      console.log('New account:', newAccount)
+      // const created = await accountService.createAccount(newAccount)
+      // setAccounts(prev => [created, ...prev])
       setIsDialogOpen(false)
       // toast({ title: "Cuenta creada", description: "La cuenta se ha creado exitosamente." })
     } catch (err) {
@@ -63,8 +65,10 @@ export function AccountsList() {
   const handleEditAccount = async (updatedAccount: Account) => {
     try {
       if (!updatedAccount.id) return
-      const updated = await accountService.updateAccount(updatedAccount.id, updatedAccount)
-      setAccounts(prev => prev.map(acc => acc.id === updated.id ? updated : acc))
+      // TODO: Implement update logic
+      console.log('Update account:', updatedAccount)
+      // const updated = await accountService.updateAccount(updatedAccount.id, updatedAccount)
+      // setAccounts(prev => prev.map(acc => acc.id === updated.id ? updated : acc))
       setIsDialogOpen(false)
       // toast({ title: "Cuenta actualizada", description: "La cuenta se ha actualizado exitosamente." })
     } catch (err) {
@@ -75,8 +79,10 @@ export function AccountsList() {
 
   const handleDeleteAccount = async (id: string) => {
     try {
-      await accountService.deleteAccount(id)
-      setAccounts(prev => prev.filter(acc => acc.id !== id))
+      // TODO: Implement delete logic
+      console.log('Delete account:', id)
+      // await accountService.deleteAccount(id)
+      // setAccounts(prev => prev.filter(acc => acc.id !== id))
       // toast({ title: "Cuenta eliminada", description: "La cuenta se ha eliminado exitosamente." })
     } catch (err) {
       console.error('Error deleting account:', err)

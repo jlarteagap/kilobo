@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, CreditCard, PieChart, Wallet } from "lucide-react"
+import { Home, CreditCard, PieChart, Wallet, Tags } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -10,6 +10,7 @@ const navigation = [
   { name: "Cuentas", href: "/accounts", icon: Wallet },
   { name: "Transacciones", href: "/transactions", icon: CreditCard },
   { name: "Presupuestos", href: "/budgets", icon: PieChart },
+  { name: "Categorías", href: "/categories", icon: Tags },
 ]
 
 export function Sidebar() {

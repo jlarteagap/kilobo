@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { MoreHorizontal, Plus, Pencil, Trash2, Wallet, Landmark, Banknote, Bitcoin, CircleEllipsis, Loader2 } from "lucide-react"
+import { MoreHorizontal, Plus, Pencil, Trash2, Wallet, Landmark, Banknote, Bitcoin, CircleEllipsis, Loader2, CreditCard } from "lucide-react"
 import { Account, ACCOUNT_TYPES } from "@/types/account"
 import { AccountForm } from "./AccountForm"
 import { Card, CardContent } from "@/components/ui/card"
@@ -95,12 +95,20 @@ export function AccountsList() {
         case "WALLET": return Wallet;
         case "CASH": return Banknote;
         case "CRYPTO": return Bitcoin;
+        case "DEBT": return CreditCard;
         default: return CircleEllipsis;
     }
   }
 
   const getTypeLabel = (type: string) => {
     return ACCOUNT_TYPES.find(t => t.value === type)?.label || type
+  }
+  
+  const getIconColor = (type: string) => {
+    switch (type) {
+      case "DEBT": return "bg-orange-100 text-orange-600";
+      default: return "bg-emerald-100 text-emerald-600";
+    }
   }
   
   if (loading) {
@@ -135,7 +143,7 @@ export function AccountsList() {
               <Card key={account.id} className="relative overflow-hidden transition-all hover:shadow-md">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 rounded-full bg-emerald-100 text-emerald-600">
+                    <div className={`p-3 rounded-full ${getIconColor(account.type)}`}>
                       <Icon className="h-6 w-6" />
                     </div>
                     <DropdownMenu>

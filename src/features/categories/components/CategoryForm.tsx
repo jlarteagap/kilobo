@@ -11,23 +11,27 @@ const categorySchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   type: z.enum(['INCOME', 'EXPENSE']),
   icon: z.string().optional(),
+  parent_id: z.string().optional(),
 })
 
 type CategoryFormValues = z.infer<typeof categorySchema>
 
 interface CategoryFormProps {
   onSuccess?: () => void
+  parentId?: string | null
+  parentType?: 'INCOME' | 'EXPENSE'
 }
 
-export function CategoryForm({ onSuccess }: CategoryFormProps) {
+export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormProps) {
   const [loading, setLoading] = useState(false)
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
-      type: 'EXPENSE',
+      type: parentType || 'EXPENSE',
       name: '',
-      icon: ''
+      icon: '',
+      parent_id: parentId || undefined
     }
   })
 
@@ -53,22 +57,30 @@ export function CategoryForm({ onSuccess }: CategoryFormProps) {
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       
       {/* Tipo de Categoría */}
-      <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
-        {(['EXPENSE', 'INCOME'] as const).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => form.setValue('type', t)}
-            className={`flex-1 py-1 text-sm font-medium rounded-md transition-colors ${
-              type === t 
-                ? 'bg-white text-gray-900 shadow-sm' 
-                : 'text-gray-500 hover:text-gray-900'
-            }`}
-          >
-            {t === 'EXPENSE' ? 'Gasto' : 'Ingreso'}
-          </button>
-        ))}
-      </div>
+      {!parentId && (
+        <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
+          {(['EXPENSE', 'INCOME'] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => form.setValue('type', t)}
+              className={`flex-1 py-1 text-sm font-medium rounded-md transition-colors ${
+                type === t 
+                  ? 'bg-white text-gray-900 shadow-sm' 
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              {t === 'EXPENSE' ? 'Gasto' : 'Ingreso'}
+            </button>
+          ))}
+        </div>
+      )}
+      
+      {parentId && (
+        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+          Creando subcategoría de tipo: <span className="font-medium">{parentType === 'INCOME' ? 'Ingreso' : 'Gasto'}</span>
+        </div>
+      )}
 
       {/* Nombre */}
       <div>

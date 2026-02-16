@@ -13,7 +13,7 @@ import { accountsService } from "@/services/accountsService"
 import { Loader2 } from "lucide-react"
 
 const transactionSchema = z.object({
-  type: z.enum(['INCOME', 'EXPENSE', 'TRANSFER', 'SAVING']),
+  type: z.enum(['INCOME', 'EXPENSE', 'TRANSFER', 'SAVING', 'DEBT']),
   amount: z.coerce.number().min(0.01, "El monto debe ser mayor a 0"),
   account_id: z.string().min(1, "Selecciona una cuenta"),
   to_account_id: z.string().optional(),
@@ -83,13 +83,12 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
           const newBalance = selectedAccount.balance + data.amount
           await accountsService.update(data.account_id, { balance: newBalance })
         }
-      } else if (data.type === 'EXPENSE') {
-        // EXPENSE: Restar del balance de la cuenta
+      } else if (data.type === 'EXPENSE' || data.type === 'DEBT') {
+        // EXPENSE/DEBT: Restar del balance de la cuenta
         if (selectedAccount) {
           const newBalance = selectedAccount.balance - data.amount
           await accountsService.update(data.account_id, { balance: newBalance })
         }
-      } else if (data.type === 'TRANSFER' || data.type === 'SAVING') {
         // TRANSFER/SAVING: Restar de la cuenta origen y sumar a la cuenta destino
         if (selectedAccount && data.to_account_id) {
           const toAccount = accounts.find(acc => acc.id === data.to_account_id)
@@ -124,7 +123,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       
       {/* Tipo de Transacción */}
       <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
-        {(['EXPENSE', 'INCOME', 'TRANSFER', 'SAVING'] as const).map((t) => (
+        {(['EXPENSE', 'INCOME', 'TRANSFER', 'SAVING', 'DEBT'] as const).map((t) => (
           <button
             key={t}
             type="button"
@@ -135,7 +134,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
                 : 'text-gray-500 hover:text-gray-900'
             }`}
           >
-            {t === 'EXPENSE' ? 'Gasto' : t === 'INCOME' ? 'Ingreso' : t === 'TRANSFER' ? 'Transfer' : 'Ahorro'}
+            {t === 'EXPENSE' ? 'Gasto' : t === 'INCOME' ? 'Ingreso' : t === 'TRANSFER' ? 'Transfer' : t === 'SAVING' ? 'Ahorro' : 'Deuda'}
           </button>
         ))}
       </div>
@@ -216,7 +215,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
           >
             <option value="">Sin categoría</option>
             {categories
-              .filter(c => c.type === type)
+              .filter(c => c.type === (type === 'DEBT' ? 'EXPENSE' : type))
               .map(cat => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
@@ -235,7 +234,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       {/* Recurrente (Solo Ahorros y Gastos) */}
-      {(type === 'EXPENSE' || type === 'SAVING') && (
+      {(type === 'EXPENSE' || type === 'SAVING' || type === 'DEBT') && (
         <div className="flex items-center gap-2">
           <input
             type="checkbox"

@@ -7,9 +7,9 @@ import { z } from "zod"
 import { TransactionType, PaymentMethod } from "@/types/transaction"
 import { Category } from "@/types/category"
 import { Account } from "@/types/account"
-// import { transactionService } from "@/services/transactionService"
-// import { categoryService } from "@/services/categoryService"
-// import { accountService } from "@/services/accountService"
+
+import { categoryService } from "@/services/categoryService"
+import { accountsService } from "@/services/accountsService"
 import { Loader2 } from "lucide-react"
 
 const transactionSchema = z.object({
@@ -55,8 +55,12 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
 
   async function loadData() {
     // TODO: Implement local storage or API call
-    setCategories([])
-    setAccounts([])
+    const categories = await categoryService.getAll()
+    const accounts = await accountsService.getAccounts()
+    console.log(categories)
+    console.log(accounts)
+    setCategories(categories)
+    setAccounts(accounts)
   }
 
   const onSubmit = async (data: TransactionFormValues) => {

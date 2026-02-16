@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { accountSchema, Account, ACCOUNT_TYPES } from "@/types/account"
+import { accountSchema, Account, ACCOUNT_TYPES, CURRENCIES_TYPES } from "@/types/account"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -77,6 +77,31 @@ export function AccountForm({ initialData, onSubmit, onCancel }: AccountFormProp
                   {ACCOUNT_TYPES.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="currency"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Moneda</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona la moneda" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {CURRENCIES_TYPES.map((currency) => (
+                    <SelectItem key={currency.value} value={currency.value}>
+                      {currency.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

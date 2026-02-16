@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export type AccountType = "BANK" | "WALLET" | "CASH" | "CRYPTO" | "OTHER"
+export type CurrencyType = "BS" | "USD" | "BTC" | "ETH" | "USDT" | "XRP" | "BNB" | "USDC" | "OTHER"
 
 export const accountSchema = z.object({
   id: z.string().optional(),
@@ -17,6 +18,18 @@ export const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
   { value: "WALLET", label: "Billetera Digital" },
   { value: "CASH", label: "Efectivo" },
   { value: "CRYPTO", label: "Criptomoneda" },
+  { value: "OTHER", label: "Otro" },
+]
+
+export const CURRENCIES_TYPES: { value: CurrencyType; label: string }[] = [
+  { value: "USD", label: "Dólares" },
+  { value: "BS", label: "Bolivianos" },
+  { value: "BTC", label: "Bitcoin" },
+  { value: "ETH", label: "Ethereum" },
+  { value: "USDT", label: "Tether" },
+  { value: "XRP", label: "XRP" },
+  { value: "BNB", label: "BNB" },
+  { value: "USDC", label: "USDC" },
   { value: "OTHER", label: "Otro" },
 ]
 

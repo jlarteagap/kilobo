@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import {
   DropdownMenu,
@@ -18,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-// import { accountService } from "@/services/accountService"
+import { accountsService } from "@/services/accountsService"
 // import { useToast } from "@/hooks/use-toast"
 
 export function AccountsList() {
@@ -38,8 +39,8 @@ export function AccountsList() {
     try {
       setLoading(true)
       setError(null)
-      // TODO: Implement local storage or API call
-      setAccounts([])
+      const accounts = await accountsService.getAccounts()
+      setAccounts(accounts)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar las cuentas')
       console.error('Error loading accounts:', err)
@@ -50,43 +51,31 @@ export function AccountsList() {
 
   const handleAddAccount = async (newAccount: Account) => {
     try {
-      // TODO: Implement creation logic
-      console.log('New account:', newAccount)
-      // const created = await accountService.createAccount(newAccount)
-      // setAccounts(prev => [created, ...prev])
+      const created = await accountsService.create(newAccount)
+      setAccounts(prev => [created, ...prev])
       setIsDialogOpen(false)
-      // toast({ title: "Cuenta creada", description: "La cuenta se ha creado exitosamente." })
     } catch (err) {
       console.error('Error adding account:', err)
-      // toast({ title: "Error", description: "No se pudo crear la cuenta.", variant: "destructive" })
     }
   }
 
   const handleEditAccount = async (updatedAccount: Account) => {
     try {
       if (!updatedAccount.id) return
-      // TODO: Implement update logic
-      console.log('Update account:', updatedAccount)
-      // const updated = await accountService.updateAccount(updatedAccount.id, updatedAccount)
-      // setAccounts(prev => prev.map(acc => acc.id === updated.id ? updated : acc))
+      await accountsService.update(updatedAccount.id, updatedAccount)
+      setAccounts(prev => prev.map(acc => acc.id === updatedAccount.id ? updatedAccount : acc))
       setIsDialogOpen(false)
-      // toast({ title: "Cuenta actualizada", description: "La cuenta se ha actualizado exitosamente." })
     } catch (err) {
       console.error('Error updating account:', err)
-      // toast({ title: "Error", description: "No se pudo actualizar la cuenta.", variant: "destructive" })
     }
   }
 
   const handleDeleteAccount = async (id: string) => {
     try {
-      // TODO: Implement delete logic
-      console.log('Delete account:', id)
-      // await accountService.deleteAccount(id)
-      // setAccounts(prev => prev.filter(acc => acc.id !== id))
-      // toast({ title: "Cuenta eliminada", description: "La cuenta se ha eliminado exitosamente." })
+      await accountsService.delete(id)
+      setAccounts(prev => prev.filter(acc => acc.id !== id))
     } catch (err) {
       console.error('Error deleting account:', err)
-      // toast({ title: "Error", description: "No se pudo eliminar la cuenta.", variant: "destructive" })
     }
   }
 
@@ -185,6 +174,9 @@ export function AccountsList() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{editingAccount ? "Editar Cuenta" : "Nueva Cuenta"}</DialogTitle>
+             <DialogDescription>
+              {editingAccount ? "Modifica los detalles de la cuenta existente." : "Ingresa los detalles para la nueva cuenta."}
+            </DialogDescription>
           </DialogHeader>
           <AccountForm 
             initialData={editingAccount} 

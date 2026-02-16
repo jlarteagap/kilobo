@@ -19,3 +19,10 @@ export const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
   { value: "CRYPTO", label: "Criptomoneda" },
   { value: "OTHER", label: "Otro" },
 ]
+
+export interface CreateAccountData {
+  name: string
+  type: AccountType
+  balance: number
+  currency: string
+}

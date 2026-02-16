@@ -2,28 +2,53 @@
 
 import { useEffect, useState } from "react"
 import { Transaction } from "@/types/transaction"
+import { Account } from "@/types/account"
+import { Category } from "@/types/category"
 import { ArrowDownLeft, ArrowUpRight, Repeat, ArrowRightLeft, PiggyBank } from "lucide-react"
+import { transactionService } from "@/services/transactionsService"
+import { accountsService } from "@/services/accountsService"
+import { categoryService } from "@/services/categoryService"
 
 export function TransactionList() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadTransactions()
+    loadData()
   }, [])
 
-  async function loadTransactions() {
+  async function loadData() {
     try {
       setLoading(true)
-      // TODO: Implement local storage or API call
-      setTransactions([])
+      const [transactionsData, accountsData, categoriesData] = await Promise.all([
+        transactionService.getAll(),
+        accountsService.getAccounts(),
+        categoryService.getAll()
+      ])
+      setTransactions(transactionsData)
+      setAccounts(accountsData)
+      setCategories(categoriesData)
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
   }
+
+  const getAccountName = (accountId: string | null): string => {
+    if (!accountId) return ''
+    const account = accounts.find(acc => acc.id === accountId)
+    return account?.name || accountId
+  }
+
+const getCategoryName = (categoryId: string | null): string => {
+  if (!categoryId) return ''
+  const category = categories.find(cat => cat.id === categoryId)
+  return category?.name || categoryId
+}
 
   if (loading) return <div className="text-center py-4">Cargando transacciones...</div>
   if (error) return <div className="text-red-500 py-4">{error}</div>
@@ -49,6 +74,13 @@ export function TransactionList() {
     }
   }
 
+  // Normalizar códigos de moneda legacy (BS -> BOB)
+  const normalizeCurrency = (currency: string) => {
+    return currency === 'BS' ? 'BOB' : currency
+  }
+
+  console.log(transactions)
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
@@ -73,7 +105,7 @@ export function TransactionList() {
                     {getIcon(tx.type)}
                   </span>
                   <span className="font-medium text-gray-700">
-                    {tx.category?.name || (tx.type === 'TRANSFER' ? 'Transferencia' : 'Sin categoría')}
+                    {getCategoryName(tx.category_id) || (tx.type === 'TRANSFER' ? 'Transferencia' : 'Sin categoría')}
                   </span>
                 </div>
               </td>
@@ -82,14 +114,14 @@ export function TransactionList() {
                 {tx.is_recurring && <Repeat className="inline w-3 h-3 ml-1 text-gray-400" />}
               </td>
               <td className="px-4 py-3 text-gray-600">
-                {tx.account?.name}
-                {tx.to_account && (
-                  <span className="text-gray-400 mx-1">→ {tx.to_account.name}</span>
+                {getAccountName(tx.account_id)}
+                {tx.to_account_id && (
+                  <span className="text-gray-400 mx-1">→ {getAccountName(tx.to_account_id)}</span>
                 )}
               </td>
               <td className={`px-4 py-3 text-right font-medium ${getAmountColor(tx.type)}`}>
                 {tx.type === 'EXPENSE' || tx.type === 'SAVING' ? '-' : '+'}
-                {new Intl.NumberFormat('es-BO', { style: 'currency', currency: tx.currency }).format(tx.amount)}
+                {new Intl.NumberFormat('es-BO', { style: 'currency', currency: normalizeCurrency(tx.currency) }).format(tx.amount)}
               </td>
             </tr>
           ))}

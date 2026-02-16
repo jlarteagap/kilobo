@@ -44,4 +44,5 @@ export interface CreateTransactionData {
   description?: string | null
   payment_method?: PaymentMethod | null
   is_recurring?: boolean
+  currency?: string
 }

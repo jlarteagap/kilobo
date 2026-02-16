@@ -1,14 +1,14 @@
 import { z } from "zod"
 
 export type AccountType = "BANK" | "WALLET" | "CASH" | "CRYPTO" | "OTHER"
-export type CurrencyType = "BS" | "USD" | "BTC" | "ETH" | "USDT" | "XRP" | "BNB" | "USDC" | "OTHER"
+export type CurrencyType = "BOB" | "USD" | "BTC" | "ETH" | "USDT" | "XRP" | "BNB" | "USDC" | "OTHER"
 
 export const accountSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   type: z.enum(["BANK", "WALLET", "CASH", "CRYPTO", "OTHER"]),
   balance: z.coerce.number().min(0, "El saldo no puede ser negativo"),
-  currency: z.string().default("USD"),
+  currency: z.string().default("BOB"),
 })
 
 export type Account = z.infer<typeof accountSchema>
@@ -23,7 +23,7 @@ export const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
 
 export const CURRENCIES_TYPES: { value: CurrencyType; label: string }[] = [
   { value: "USD", label: "Dólares" },
-  { value: "BS", label: "Bolivianos" },
+  { value: "BOB", label: "Bolivianos" },
   { value: "BTC", label: "Bitcoin" },
   { value: "ETH", label: "Ethereum" },
   { value: "USDT", label: "Tether" },

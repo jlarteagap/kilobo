@@ -19,11 +19,13 @@ const storage = getStorage(app);
 
 const categoriesCollection = collection(db, "category");
 const accountsCollection = collection(db, "accounts");
+const transactionsCollection = collection(db, "transactions");
 
 export {
   app,
   db,
   storage,
   categoriesCollection,
-  accountsCollection
+  accountsCollection,
+  transactionsCollection
 };

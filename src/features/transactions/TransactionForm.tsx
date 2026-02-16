@@ -4,10 +4,10 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { TransactionType, PaymentMethod } from "@/types/transaction"
 import { Category } from "@/types/category"
 import { Account } from "@/types/account"
 
+import { transactionService } from "@/services/transactionsService"
 import { categoryService } from "@/services/categoryService"
 import { accountsService } from "@/services/accountsService"
 import { Loader2 } from "lucide-react"
@@ -22,6 +22,7 @@ const transactionSchema = z.object({
   description: z.string().optional(),
   payment_method: z.enum(['CASH', 'QR', 'CARD', 'TRANSFER', 'OTHER']).optional(),
   is_recurring: z.boolean().default(false),
+  currency: z.string().optional(),
 }).refine((data) => {
   if (data.type === 'TRANSFER' || data.type === 'SAVING') {
     return !!data.to_account_id && data.to_account_id !== data.account_id
@@ -54,11 +55,8 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   }, [])
 
   async function loadData() {
-    // TODO: Implement local storage or API call
     const categories = await categoryService.getAll()
     const accounts = await accountsService.getAccounts()
-    console.log(categories)
-    console.log(accounts)
     setCategories(categories)
     setAccounts(accounts)
   }
@@ -66,8 +64,50 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const onSubmit = async (data: TransactionFormValues) => {
     try {
       setLoading(true)
-      // TODO: Implement creation logic
-      console.log('Transaction data:', data)
+      
+      // Obtener la moneda de la cuenta seleccionada
+      const selectedAccount = accounts.find(acc => acc.id === data.account_id)
+      const currency = selectedAccount?.currency || 'USD'
+      
+      const transactionData = {
+        ...data,
+        currency
+      }
+      
+      console.log(transactionData)
+      
+      // Verificar el tipo de transacción y actualizar el balance de la(s) cuenta(s)
+      if (data.type === 'INCOME') {
+        // INCOME: Sumar al balance de la cuenta
+        if (selectedAccount) {
+          const newBalance = selectedAccount.balance + data.amount
+          await accountsService.update(data.account_id, { balance: newBalance })
+        }
+      } else if (data.type === 'EXPENSE') {
+        // EXPENSE: Restar del balance de la cuenta
+        if (selectedAccount) {
+          const newBalance = selectedAccount.balance - data.amount
+          await accountsService.update(data.account_id, { balance: newBalance })
+        }
+      } else if (data.type === 'TRANSFER' || data.type === 'SAVING') {
+        // TRANSFER/SAVING: Restar de la cuenta origen y sumar a la cuenta destino
+        if (selectedAccount && data.to_account_id) {
+          const toAccount = accounts.find(acc => acc.id === data.to_account_id)
+          
+          // Restar de la cuenta origen
+          const newSourceBalance = selectedAccount.balance - data.amount
+          await accountsService.update(data.account_id, { balance: newSourceBalance })
+          
+          // Sumar a la cuenta destino
+          if (toAccount) {
+            const newDestBalance = toAccount.balance + data.amount
+            await accountsService.update(data.to_account_id, { balance: newDestBalance })
+          }
+        }
+      }
+      
+      // Crear la transacción
+      await transactionService.create(transactionData)
       form.reset()
       onSuccess()
     } catch (error) {

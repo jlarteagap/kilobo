@@ -9,34 +9,16 @@ import { transactionService } from "@/services/transactionsService"
 import { accountsService } from "@/services/accountsService"
 import { categoryService } from "@/services/categoryService"
 
-export function TransactionList() {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadData()
-  }, [])
+export interface TransactionListProps {
+  transactions: Transaction[]
+  accounts: Account[]
+  categories: Category[]
+  loading?: boolean
+  refreshData?: () => void
+}
 
-  async function loadData() {
-    try {
-      setLoading(true)
-      const [transactionsData, accountsData, categoriesData] = await Promise.all([
-        transactionService.getAll(),
-        accountsService.getAccounts(),
-        categoryService.getAll()
-      ])
-      setTransactions(transactionsData)
-      setAccounts(accountsData)
-      setCategories(categoriesData)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+export function TransactionList({ transactions, accounts, categories, loading = false }: TransactionListProps) {
 
   const getAccountName = (accountId: string | null): string => {
     if (!accountId) return ''
@@ -78,7 +60,6 @@ const getCategoryName = (categoryId: string | null): React.ReactNode => {
 }
 
   if (loading) return <div className="text-center py-4">Cargando transacciones...</div>
-  if (error) return <div className="text-red-500 py-4">{error}</div>
   if (transactions.length === 0) return <div className="text-center py-4 text-gray-500">No hay transacciones registradas.</div>
 
   const getIcon = (type: string) => {

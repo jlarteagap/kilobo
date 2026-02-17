@@ -1,3 +1,4 @@
+
 "use client"
 
 import {
@@ -9,48 +10,23 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, TrendingUp, Home, Bitcoin } from "lucide-react"
+import { LucideIcon } from "lucide-react"
 
-const assetsDetail = [
-  {
-    id: 1,
-    name: "Cuenta de Ahorros",
-    category: "Efectivo",
-    weight: "15%",
-    value: 25000,
-    icon: DollarSign,
-    color: "text-emerald-500 bg-emerald-100",
-  },
-  {
-    id: 2,
-    name: "S&P 500 ETF",
-    category: "Inversiones",
-    weight: "40%",
-    value: 62000,
-    icon: TrendingUp,
-    color: "text-blue-500 bg-blue-100",
-  },
-  {
-    id: 3,
-    name: "Bitcoin",
-    category: "Cripto",
-    weight: "15%",
-    value: 23000,
-    icon: Bitcoin,
-    color: "text-orange-500 bg-orange-100",
-  },
-  {
-    id: 4,
-    name: "Apartamento Centro",
-    category: "Propiedades",
-    weight: "30%",
-    value: 45000,
-    icon: Home,
-    color: "text-indigo-500 bg-indigo-100",
-  },
-]
+export interface AssetDetail {
+  id: string
+  name: string
+  category: string
+  weight: string
+  formattedValue: string
+  icon: LucideIcon
+  color: string
+}
 
-export function AssetsTable() {
+interface AssetsTableProps {
+  assets: AssetDetail[]
+}
+
+export function AssetsTable({ assets }: AssetsTableProps) {
   return (
     <Card className="col-span-3">
       <CardHeader>
@@ -67,7 +43,7 @@ export function AssetsTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {assetsDetail.map((asset) => (
+            {assets.map((asset) => (
               <TableRow key={asset.id}>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-3">
@@ -84,7 +60,7 @@ export function AssetsTable() {
                   </span>
                 </TableCell>
                 <TableCell className="text-right font-bold">
-                  ${asset.value.toLocaleString()}
+                  {asset.formattedValue}
                 </TableCell>
               </TableRow>
             ))}

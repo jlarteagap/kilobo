@@ -10,23 +10,28 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { LucideIcon } from "lucide-react"
-
-export interface AssetDetail {
-  id: string
-  name: string
-  category: string
-  weight: string
-  formattedValue: string
-  icon: LucideIcon
-  color: string
-}
+import { AssetDetail } from "@/types/account"
+import { Badge } from "@/components/ui/badge"
 
 interface AssetsTableProps {
   assets: AssetDetail[]
 }
 
 export function AssetsTable({ assets }: AssetsTableProps) {
+  if (assets.length === 0) {
+    return (
+      <Card className="col-span-3">
+        <CardHeader>
+          <CardTitle className="text-gray-800">Detalle de Activos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[200px] flex items-center justify-center text-gray-400">
+            No hay activos registrados.
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
   return (
     <Card className="col-span-3">
       <CardHeader>
@@ -55,9 +60,7 @@ export function AssetsTable({ assets }: AssetsTableProps) {
                 </TableCell>
                 <TableCell>{asset.category}</TableCell>
                 <TableCell>
-                  <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
-                    {asset.weight}
-                  </span>
+                  <Badge variant="outline">{asset.weight}</Badge>
                 </TableCell>
                 <TableCell className="text-right font-bold">
                   {asset.formattedValue}

@@ -4,25 +4,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Fragment } from "react"
 import { Separator } from "@/components/ui/separator"
 
-export interface AssetSummary {
-  name: string
-  value: number
-  color: string
-  percent: number
-}
+import { CurrencyGroup } from "@/types/account"
 
-export interface CurrencyGroup {
-  currency: string
-  totalWealth: number
-  assets: AssetSummary[]
-  formattedTotal: string
-}
+import { getCurrencyLabel } from "../accounts/utils/account-display.utils"
+
+import { AssetBar } from "./components/AssetBar"
+import { AssetLegend } from "./components/AssetLegend"
 
 interface AssetsSectionProps {
   groups: CurrencyGroup[]
 }
 
 export function AssetsSection({ groups }: AssetsSectionProps) {
+  if (groups.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-gray-800">Patrimonio Neto</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[200px] flex items-center justify-center text-gray-400">
+            No hay cuentas registradas.
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
   return (
     <Card>
       <CardHeader>
@@ -32,11 +39,11 @@ export function AssetsSection({ groups }: AssetsSectionProps) {
         {groups.map((group, index) => (
           <Fragment key={group.currency}>
             {index > 0 && <Separator className="my-6" />}
-            
+
             <div>
               <div className="mb-4 flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                  {group.currency === 'BOB' ? 'Bolivianos' : group.currency === 'USD' ? 'Dólares' : group.currency}
+                  {getCurrencyLabel(group.currency)}
                 </span>
                 <span className="text-2xl font-bold text-gray-900">
                   {group.formattedTotal}
@@ -44,28 +51,8 @@ export function AssetsSection({ groups }: AssetsSectionProps) {
               </div>
 
               <div className="space-y-4">
-                <div className="flex h-4 w-full overflow-hidden rounded-full bg-gray-100">
-                  {group.assets.map((asset) => (
-                    <div
-                      key={asset.name}
-                      className={asset.color}
-                      style={{ width: `${asset.percent}%` }}
-                      title={`${asset.name}: ${asset.percent}%`}
-                    />
-                  ))}
-                </div>
-                
-                <div className="flex flex-wrap gap-4">
-                  {group.assets.map((asset) => (
-                    <div key={asset.name} className="flex items-center gap-2">
-                      <div className={`h-3 w-3 rounded-full ${asset.color}`} />
-                      <span className="text-sm text-gray-600">{asset.name}</span>
-                      <span className="text-sm font-semibold text-gray-900">
-                          {asset.percent}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <AssetBar assets={group.assets} />
+                <AssetLegend assets={group.assets} />
               </div>
             </div>
           </Fragment>

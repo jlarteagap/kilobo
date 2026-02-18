@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { LucideIcon } from "lucide-react"
 
 export type AccountType = "BANK" | "WALLET" | "CASH" | "CRYPTO" | "DEBT" | "OTHER"
 export type CurrencyType = "BOB" | "USD" | "BTC" | "ETH" | "USDT" | "XRP" | "BNB" | "USDC" | "OTHER"
@@ -38,3 +38,27 @@ export const CURRENCY_TYPES: { value: CurrencyType; label: string }[] = [
   { value: "USDC",  label: "USDC" },
   { value: "OTHER", label: "Otro" },
 ]
+
+export interface AssetSummary {
+  name: string
+  value: number
+  color: string
+  percent: number
+}
+
+export interface CurrencyGroup {
+  currency: CurrencyType   // tipado estricto, antes era string
+  totalWealth: number
+  assets: AssetSummary[]
+  formattedTotal: string
+}
+
+export interface AssetDetail {
+  id: string
+  name: string
+  category: string
+  weight: string
+  formattedValue: string
+  icon: LucideIcon
+  color: string
+}

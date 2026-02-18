@@ -19,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { accountsService } from "@/services/accountsService"
+import { accountsService } from "@/services/accounts.service"
 // import { useToast } from "@/hooks/use-toast"
 
 export function AccountsList() {

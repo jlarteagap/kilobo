@@ -5,9 +5,8 @@ import { Transaction } from "@/types/transaction"
 import { Account } from "@/types/account"
 import { Category } from "@/types/category"
 import { ArrowDownLeft, ArrowUpRight, Repeat, ArrowRightLeft, PiggyBank, CreditCard } from "lucide-react"
-import { transactionService } from "@/services/transactionsService"
-import { accountsService } from "@/services/accountsService"
-import { categoryService } from "@/services/categoryService"
+import { accountsService } from "@/services/accounts.service"
+import { categoryService } from "@/services/category.service"
 
 
 export interface TransactionListProps {

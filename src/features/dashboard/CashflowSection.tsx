@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ResponsiveContainer, Sankey, Tooltip, Layer, Rectangle } from "recharts"
-import { transactionService } from "@/services/transactionsService"
-import { categoryService } from "@/services/categoryService"
-import { accountsService } from "@/services/accountsService"
+import { useTransactions } from "@/features/transactions/hooks/useTransactions"
+import { useCategories } from "@/features/categories/hooks/useCategories"
+import { useAccounts } from "@/features/accounts/hooks/useAccounts"
 import { Transaction } from "@/types/transaction"
 import { Category } from "@/types/category"
 import { Account } from "@/types/account"
@@ -83,27 +83,18 @@ const MyCustomNode = (props: any) => {
 
 export function CashflowSection() {
   const [data, setData] = useState<SankeyData>({ nodes: [], links: [] })
-  const [loading, setLoading] = useState(true)
+  
+  const { data: transactions = [], isLoading: loadingTransactions } = useTransactions()
+  const { data: categories = [], isLoading: loadingCategories } = useCategories()
+  const { data: accounts = [], isLoading: loadingAccounts } = useAccounts()
+  
+  const loading = loadingTransactions || loadingCategories || loadingAccounts
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [transactions, categories, accounts] = await Promise.all([
-          transactionService.getAll(),
-          categoryService.getAll(),
-          accountsService.getAccounts()
-        ])
-
-        processData(transactions, categories, accounts)
-      } catch (error) {
-        console.error("Failed to fetch cashflow data:", error)
-      } finally {
-        setLoading(false)
-      }
+    if (!loading) {
+      processData(transactions, categories, accounts)
     }
-
-    fetchData()
-  }, [])
+  }, [transactions, categories, accounts, loading])
 
   const processData = (transactions: Transaction[], categories: Category[], accounts: Account[]) => {
     // 1. Filter for Current Month

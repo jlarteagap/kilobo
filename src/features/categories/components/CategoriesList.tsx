@@ -1,40 +1,22 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Category } from "@/types/category"
+import { useState } from "react"
 import { CategoryForm } from "./CategoryForm"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Plus, Trash2 } from "lucide-react"
-import { categoryService } from "@/services/categoryService"
+import { useCategories, useDeleteCategory } from "@/features/categories/hooks/useCategories"
 
 export function CategoriesList() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: categories = [], isLoading } = useCategories()
+  const deleteCategory = useDeleteCategory()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedParent, setSelectedParent] = useState<{ id: string; type: 'INCOME' | 'EXPENSE' } | null>(null)
-
-  const loadCategories = async () => {
-    try {
-      setLoading(true)
-      const categories = await categoryService.getAll()
-      setCategories(categories)
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadCategories()
-  }, [])
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Estás seguro de eliminar esta categoría?')) return
     
     try {
-      await categoryService.delete(id)
-      await loadCategories()
+      await deleteCategory.mutateAsync(id)
     } catch (error) {
       console.error(error)
     }
@@ -56,8 +38,6 @@ export function CategoriesList() {
   const parentCategories = categories.filter(cat => !cat.parent_id)
   const getSubcategories = (parentId: string) => 
     categories.filter(cat => cat.parent_id === parentId)
-
-  console.log(categories)
 
   return (
     <div className="space-y-6">
@@ -82,14 +62,13 @@ export function CategoriesList() {
               onSuccess={() => {
                 setIsDialogOpen(false)
                 setSelectedParent(null)
-                loadCategories()
               }} 
             />
           </DialogContent>
         </Dialog>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-8 text-gray-500">Cargando categorías...</div>
       ) : (
         <div className="space-y-4">

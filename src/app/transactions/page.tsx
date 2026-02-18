@@ -1,17 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { TransactionForm } from "@/features/transactions/TransactionForm"
 import { TransactionList } from "@/features/transactions/TransactionList"
 import { Plus } from "lucide-react"
 import * as Dialog from "@radix-ui/react-dialog"
 import AppLayout from "@/components/layout/AppLayout"
-import { transactionService } from "@/services/transactionsService"
-import { accountsService } from "@/services/accountsService"
-import { categoryService } from "@/services/categoryService"
-import { Transaction } from "@/types/transaction"
-import { Account } from "@/types/account"
-import { Category } from "@/types/category"
+import { useTransactions } from "@/features/transactions/hooks/useTransactions"
+import { useAccounts } from "@/features/accounts/hooks/useAccounts"
+import { useCategories } from "@/features/categories/hooks/useCategories"
 import { Period, useTransactionMetrics } from "@/features/transactions/hooks/useTransactionMetrics"
 import { SummaryCards } from "@/features/transactions/components/analytics/SummaryCards"
 import { IncomeExpenseChart } from "@/features/transactions/components/analytics/IncomeExpenseChart"
@@ -19,48 +16,22 @@ import { CategoryOverview } from "@/features/transactions/components/analytics/C
 
 export default function TransactionsPage() {
   const [open, setOpen] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
   
-  // Data State
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Data State - using React Query Hooks
+  const { data: transactions = [], isLoading: loadingTransactions, error: transactionsError } = useTransactions()
+  const { data: accounts = [], isLoading: loadingAccounts } = useAccounts()
+  const { data: categories = [], isLoading: loadingCategories } = useCategories()
+  
+  const loading = loadingTransactions || loadingAccounts || loadingCategories
+  const error = transactionsError as any
 
   // Analytics State
   const [period, setPeriod] = useState<Period>('1M')
 
   const metrics = useTransactionMetrics(transactions, categories, period)
 
-  useEffect(() => {
-    loadData()
-  }, [refreshKey])
-
-  async function loadData() {
-    try {
-      setLoading(true)
-      const [transactionsData, accountsData, categoriesData] = await Promise.all([
-        transactionService.getAll(),
-        accountsService.getAccounts(),
-        categoryService.getAll()
-      ])
-      // Sort transactions by date desc by default for list
-      const sortedTransactions = transactionsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      
-      setTransactions(sortedTransactions)
-      setAccounts(accountsData)
-      setCategories(categoriesData)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleSuccess = () => {
     setOpen(false)
-    setRefreshKey(prev => prev + 1)
   }
 
   return (
@@ -124,7 +95,7 @@ export default function TransactionsPage() {
                 </div>
              </div>
         ) : error ? (
-            <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-8">Error al cargar datos: {error}</div>
+            <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-8">Error al cargar datos: {error?.message || 'Unknown error'}</div>
         ) : (
             <>
                 <SummaryCards 

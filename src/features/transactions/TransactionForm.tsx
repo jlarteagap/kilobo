@@ -1,16 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Category } from "@/types/category"
-import { Account } from "@/types/account"
-
-import { transactionService } from "@/services/transactionsService"
-import { categoryService } from "@/services/categoryService"
-import { accountsService } from "@/services/accountsService"
 import { Loader2 } from "lucide-react"
+
+import { useCategories } from "@/features/categories/hooks/useCategories"
+import { useAccounts, useUpdateAccount } from "@/features/accounts/hooks/useAccounts"
+import { useCreateTransaction } from "@/features/transactions/hooks/useTransactions"
 
 const transactionSchema = z.object({
   type: z.enum(['INCOME', 'EXPENSE', 'TRANSFER', 'SAVING', 'DEBT']),
@@ -36,12 +33,13 @@ const transactionSchema = z.object({
 type TransactionFormValues = z.infer<typeof transactionSchema>
 
 export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [loading, setLoading] = useState(false)
+  const { data: categories = [] } = useCategories()
+  const { data: accounts = [] } = useAccounts()
+  const createTransaction = useCreateTransaction()
+  const updateAccount = useUpdateAccount()
 
   const form = useForm<TransactionFormValues>({
-    resolver: zodResolver(transactionSchema) as any, // Cast to any to avoid complex ZodEffects typing issues with RHF
+    resolver: zodResolver(transactionSchema) as any,
     defaultValues: {
       type: 'EXPENSE',
       date: new Date().toISOString().split('T')[0],
@@ -50,20 +48,11 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
     }
   })
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  async function loadData() {
-    const categories = await categoryService.getAll()
-    const accounts = await accountsService.getAccounts()
-    setCategories(categories)
-    setAccounts(accounts)
-  }
+  // Loading state derived from mutations
+  const isLoading = createTransaction.isPending || updateAccount.isPending
 
   const onSubmit = async (data: TransactionFormValues) => {
     try {
-      setLoading(true)
       
       // Obtener la moneda de la cuenta seleccionada
       const selectedAccount = accounts.find(acc => acc.id === data.account_id)
@@ -81,13 +70,13 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
         // INCOME: Sumar al balance de la cuenta
         if (selectedAccount) {
           const newBalance = selectedAccount.balance + data.amount
-          await accountsService.update(data.account_id, { balance: newBalance })
+          await updateAccount.mutateAsync({ id: data.account_id, data: { balance: newBalance } })
         }
       } else if (data.type === 'EXPENSE' || data.type === 'DEBT') {
         // EXPENSE/DEBT: Restar del balance de la cuenta
         if (selectedAccount) {
           const newBalance = selectedAccount.balance - data.amount
-          await accountsService.update(data.account_id, { balance: newBalance })
+          await updateAccount.mutateAsync({ id: data.account_id, data: { balance: newBalance } })
         }
         // TRANSFER/SAVING: Restar de la cuenta origen y sumar a la cuenta destino
         if (selectedAccount && data.to_account_id) {
@@ -95,24 +84,22 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
           
           // Restar de la cuenta origen
           const newSourceBalance = selectedAccount.balance - data.amount
-          await accountsService.update(data.account_id, { balance: newSourceBalance })
+          await updateAccount.mutateAsync({ id: data.account_id, data: { balance: newSourceBalance } })
           
           // Sumar a la cuenta destino
           if (toAccount) {
             const newDestBalance = toAccount.balance + data.amount
-            await accountsService.update(data.to_account_id, { balance: newDestBalance })
+            await updateAccount.mutateAsync({ id: data.to_account_id, data: { balance: newDestBalance } })
           }
         }
       }
       
       // Crear la transacción
-      await transactionService.create(transactionData)
+      await createTransaction.mutateAsync(transactionData)
       form.reset()
       onSuccess()
     } catch (error) {
       console.error(error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -250,10 +237,10 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={isLoading}
         className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-50"
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Guardar Transacción'}
+        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Guardar Transacción'}
       </button>
     </form>
   )

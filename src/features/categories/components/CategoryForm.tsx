@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { categoryService } from "@/services/categoryService"
+import { useCreateCategory } from "@/features/categories/hooks/useCategories"
 import { Loader2 } from "lucide-react"
 
 const categorySchema = z.object({
@@ -23,7 +22,7 @@ interface CategoryFormProps {
 }
 
 export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormProps) {
-  const [loading, setLoading] = useState(false)
+  const createCategory = useCreateCategory()
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
@@ -37,21 +36,18 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
 
   const onSubmit = async (data: CategoryFormValues) => {
     try {
-      setLoading(true)
       console.log(data)
-      // TODO: Replace with actual user ID when auth is implemented
-      await categoryService.create(data)
+      await createCategory.mutateAsync(data)
       form.reset()
       onSuccess?.()
     } catch (error) {
       console.error(error)
       // Here we could add a toast notification for error
-    } finally {
-      setLoading(false)
     }
   }
 
   const type = form.watch('type')
+  const isLoading = createCategory.isPending
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -109,10 +105,10 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={isLoading}
         className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-50"
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Crear Categoría'}
+        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Crear Categoría'}
       </button>
     </form>
   )

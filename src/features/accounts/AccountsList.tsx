@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { MoreHorizontal, Plus, Pencil, Trash2, Wallet, Landmark, Banknote, Bitcoin, CircleEllipsis, Loader2, CreditCard } from "lucide-react"
-import { Account, ACCOUNT_TYPES } from "@/types/account"
+import { useState } from "react"
+import { Account, CreateAccountData} from "@/types/account"
 import { AccountForm } from "./AccountForm"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -19,65 +18,51 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { accountsService } from "@/services/accounts.service"
+
+import { toast } from 'sonner'
+
+import { 
+  getAccountIcon,
+  getAccountIconColor,
+  getTypeLabel,
+  formatCurrency
+} from "@/features/accounts/utils/account-display.utils"
+import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react"
+import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from "@/features/accounts/hooks/useAccounts"
 // import { useToast } from "@/hooks/use-toast"
 
 export function AccountsList() {
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: accounts = [], isLoading, isError } = useAccounts()
+
+
+  const { mutate: createAccount, isPending: isCreating } = useCreateAccount()
+  const { mutate: updateAccount, isPending: isUpdating } = useUpdateAccount()
+  const { mutate: deleteAccount, isPending: isDeleting } = useDeleteAccount()
+
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined)
-  // const { toast } = useToast() 
 
-  // Fetch accounts on component mount
-  useEffect(() => {
-    loadAccounts()
-  }, [])
+  const handleAddAccount = (data: CreateAccountData) => {
+  createAccount(data, {
+    onSuccess: () => {setIsDialogOpen(false), toast.success("Cuenta agregada exitosamente")},
+    onError: () => {toast.error("Error al agregar la cuenta")},
+  })
+}
 
-  const loadAccounts = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const accounts = await accountsService.getAccounts()
-      setAccounts(accounts)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar las cuentas')
-      console.error('Error loading accounts:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+const handleEditAccount = (data: CreateAccountData) => {
+  if (!editingAccount?.id) return
+  updateAccount({ id: editingAccount.id, data }, {
+    onSuccess: () => {setIsDialogOpen(false), toast.success("Cuenta actualizada exitosamente")},
+    onError: () => {toast.error("Error al actualizar la cuenta")},
+  })
+}
 
-  const handleAddAccount = async (newAccount: Account) => {
-    try {
-      const created = await accountsService.create(newAccount)
-      setAccounts(prev => [created, ...prev])
-      setIsDialogOpen(false)
-    } catch (err) {
-      console.error('Error adding account:', err)
-    }
-  }
-
-  const handleEditAccount = async (updatedAccount: Account) => {
-    try {
-      if (!updatedAccount.id) return
-      await accountsService.update(updatedAccount.id, updatedAccount)
-      setAccounts(prev => prev.map(acc => acc.id === updatedAccount.id ? updatedAccount : acc))
-      setIsDialogOpen(false)
-    } catch (err) {
-      console.error('Error updating account:', err)
-    }
-  }
-
-  const handleDeleteAccount = async (id: string) => {
-    try {
-      await accountsService.delete(id)
-      setAccounts(prev => prev.filter(acc => acc.id !== id))
-    } catch (err) {
-      console.error('Error deleting account:', err)
-    }
-  }
+const handleDeleteAccount = (id: string) => {
+  deleteAccount(id, {
+    onSuccess: () => {toast.success("Cuenta eliminada exitosamente")},
+    onError: () => {toast.error("Error al eliminar la cuenta")},
+  })
+}
 
   const openAddModal = () => {
     setEditingAccount(undefined)
@@ -89,34 +74,13 @@ export function AccountsList() {
     setIsDialogOpen(true)
   }
 
-  const getIcon = (type: string) => {
-    switch (type) {
-        case "BANK": return Landmark;
-        case "WALLET": return Wallet;
-        case "CASH": return Banknote;
-        case "CRYPTO": return Bitcoin;
-        case "DEBT": return CreditCard;
-        default: return CircleEllipsis;
-    }
-  }
-
-  const getTypeLabel = (type: string) => {
-    return ACCOUNT_TYPES.find(t => t.value === type)?.label || type
-  }
   
-  const getIconColor = (type: string) => {
-    switch (type) {
-      case "DEBT": return "bg-orange-100 text-orange-600";
-      default: return "bg-emerald-100 text-emerald-600";
-    }
-  }
-  
-  if (loading) {
+  if (isLoading) {
       return <div className="flex justify-center p-10"><Loader2 className="h-8 w-8 animate-spin text-emerald-600"/></div>
   }
 
-  if (error) {
-      return <div className="text-red-500 text-center p-10">{error}</div>
+  if (isError) {
+      return <div className="text-red-500 text-center p-10">{isError}</div>
   }
 
   return (
@@ -138,12 +102,12 @@ export function AccountsList() {
           </div>
         ) : (
           accounts.map((account) => {
-            const Icon = getIcon(account.type)
+            const Icon = getAccountIcon(account.type)
             return (
               <Card key={account.id} className="relative overflow-hidden transition-all hover:shadow-md">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <div className={`p-3 rounded-full ${getIconColor(account.type)}`}>
+                    <div className={`p-3 rounded-full ${getAccountIconColor(account.type)}`}>
                       <Icon className="h-6 w-6" />
                     </div>
                     <DropdownMenu>
@@ -157,8 +121,16 @@ export function AccountsList() {
                         <DropdownMenuItem onClick={() => openEditModal(account)}>
                           <Pencil className="mr-2 h-4 w-4" /> Editar
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => account.id && handleDeleteAccount(account.id)} className="text-red-600">
-                          <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteAccount(account.id)}
+                          className="text-red-600"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting 
+                            ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                            : <Trash2 className="mr-2 h-4 w-4" />
+                          }
+                          Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -168,7 +140,7 @@ export function AccountsList() {
                     <h3 className="font-semibold text-lg text-gray-900 mb-1">{account.name}</h3>
                     <p className="text-sm text-gray-500 mb-4">{getTypeLabel(account.type)}</p>
                     <div className="text-2xl font-bold text-gray-900">
-                      ${account.balance.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {account.currency}
+                      {formatCurrency(account.balance, account.currency)}
                     </div>
                   </div>
                 </CardContent>
@@ -187,9 +159,10 @@ export function AccountsList() {
             </DialogDescription>
           </DialogHeader>
           <AccountForm 
-            initialData={editingAccount} 
+            initialData={editingAccount}
             onSubmit={editingAccount ? handleEditAccount : handleAddAccount}
             onCancel={() => setIsDialogOpen(false)}
+            isPending={isCreating || isUpdating}
           />
         </DialogContent>
       </Dialog>

@@ -1,7 +1,6 @@
-import { Account, AccountType } from "@/types/account"
-import { Wallet, Building2, Banknote, Bitcoin, CreditCard, PiggyBank, LucideIcon } from "lucide-react"
+import { Account, AccountType, CURRENCY_TYPES, CurrencyType, ACCOUNT_TYPES } from "@/types/account"
+import { Wallet, Building2, Banknote, Bitcoin, CreditCard, PiggyBank, LucideIcon, Landmark, CircleEllipsis } from "lucide-react"
 import { convertToBOB } from "@/lib/config/exchange-rates"
-import { CURRENCY_TYPES, CurrencyType } from "@/types/account"
 
 export const getAccountTypeDetails = (
   type: AccountType
@@ -36,4 +35,25 @@ export const getValueInBOB = (account: Account): number => {
 
 export const getCurrencyLabel = (currency: CurrencyType | string): string => {
   return CURRENCY_TYPES.find((c) => c.value === currency)?.label ?? currency
+}
+
+export const getAccountIcon = (type: AccountType): LucideIcon => {
+  switch (type) {
+    case "BANK":   return Landmark
+    case "WALLET": return Wallet
+    case "CASH":   return Banknote
+    case "CRYPTO": return Bitcoin
+    case "DEBT":   return CreditCard
+    default:       return CircleEllipsis
+  }
+}
+export const getAccountIconColor = (type: AccountType): string => {
+  switch (type) {
+    case "DEBT": return "bg-orange-100 text-orange-600"
+    default:     return "bg-emerald-100 text-emerald-600"
+  }
+}
+
+export const getTypeLabel = (type: string) => {
+  return ACCOUNT_TYPES.find(t => t.value === type)?.label || type
 }

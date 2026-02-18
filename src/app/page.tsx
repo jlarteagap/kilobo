@@ -6,15 +6,20 @@ import { AssetsSection } from "@/features/dashboard/AssetsSection"
 import { AssetsTable } from "@/features/dashboard/AssetsTable"
 import { useAccounts } from "@/features/accounts/hooks/useAccounts"
 import { useAccountsDashboard } from "@/features/accounts/hooks/useAccountsDashboard"
+import { DashboardSkeleton } from "@/features/dashboard/components/skeletons/DashboardSkeleton"
 
 
 
 export default function DashboardPage() {
-  const {data: accounts = [], isLoading} = useAccounts()
+  const {data: accounts = [], isLoading, isError} = useAccounts()
   const { assetsDetail, currencyGroups } = useAccountsDashboard(accounts)
 
   if (isLoading) {
-    return <AppLayout><div>Cargando...</div></AppLayout>
+    return <AppLayout><DashboardSkeleton /></AppLayout>
+  }
+
+  if (isError) {
+    return <AppLayout><div>Error al cargar los datos</div></AppLayout>
   }
 
   return (

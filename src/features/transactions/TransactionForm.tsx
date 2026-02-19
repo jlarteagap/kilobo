@@ -2,44 +2,43 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { Loader2 } from "lucide-react"
 
 import { useCategories } from "@/features/categories/hooks/useCategories"
-import { useAccounts, useUpdateAccount } from "@/features/accounts/hooks/useAccounts"
+import { useAccounts } from "@/features/accounts/hooks/useAccounts"
 import { useCreateTransaction } from "@/features/transactions/hooks/useTransactions"
+import { createTransactionSchema, CreateTransactionInput, TRANSACTION_TYPES } from "@/lib/validations/transaction.schema"
 
-const transactionSchema = z.object({
-  type: z.enum(['INCOME', 'EXPENSE', 'TRANSFER', 'SAVING', 'DEBT']),
-  amount: z.coerce.number().min(0.01, "El monto debe ser mayor a 0"),
-  account_id: z.string().min(1, "Selecciona una cuenta"),
-  to_account_id: z.string().optional(),
-  category_id: z.string().optional(),
-  date: z.string(),
-  description: z.string().optional(),
-  payment_method: z.enum(['CASH', 'QR', 'CARD', 'TRANSFER', 'OTHER']).optional(),
-  is_recurring: z.boolean().default(false),
-  currency: z.string().optional(),
-}).refine((data) => {
-  if (data.type === 'TRANSFER' || data.type === 'SAVING') {
-    return !!data.to_account_id && data.to_account_id !== data.account_id
-  }
-  return true
-}, {
-  message: "Selecciona una cuenta destino diferente a la origen",
-  path: ["to_account_id"],
-})
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { TRANSACTION_TYPE_LABELS } from "./utils/transaction-display.utils"
 
-type TransactionFormValues = z.infer<typeof transactionSchema>
+
 
 export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const { data: categories = [] } = useCategories()
   const { data: accounts = [] } = useAccounts()
   const createTransaction = useCreateTransaction()
-  const updateAccount = useUpdateAccount()
-
-  const form = useForm<TransactionFormValues>({
-    resolver: zodResolver(transactionSchema) as any,
+  
+  const form = useForm<CreateTransactionInput>({
+    resolver: zodResolver(createTransactionSchema) as any,
     defaultValues: {
       type: 'EXPENSE',
       date: new Date().toISOString().split('T')[0],
@@ -47,201 +46,206 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       amount: 0
     }
   })
-
+  const type = form.watch("type")
   // Loading state derived from mutations
-  const isLoading = createTransaction.isPending || updateAccount.isPending
+  const isLoading = createTransaction.isPending
 
-  const onSubmit = async (data: TransactionFormValues) => {
-    try {
-      
-      // Obtener la moneda de la cuenta seleccionada
-      const selectedAccount = accounts.find(acc => acc.id === data.account_id)
-      const currency = selectedAccount?.currency || 'USD'
-      
-      const transactionData = {
-        ...data,
-        currency
-      }
-      
-      console.log(transactionData)
-      
-      // Verificar el tipo de transacción y actualizar el balance de la(s) cuenta(s)
-      if (data.type === 'INCOME') {
-        // INCOME: Sumar al balance de la cuenta
-        if (selectedAccount) {
-          const newBalance = selectedAccount.balance + data.amount
-          await updateAccount.mutateAsync({ id: data.account_id, data: { balance: newBalance } })
-        }
-      } else if (data.type === 'EXPENSE' || data.type === 'DEBT') {
-        // EXPENSE/DEBT: Restar del balance de la cuenta
-        if (selectedAccount) {
-          const newBalance = selectedAccount.balance - data.amount
-          await updateAccount.mutateAsync({ id: data.account_id, data: { balance: newBalance } })
-        }
-        // TRANSFER/SAVING: Restar de la cuenta origen y sumar a la cuenta destino
-        if (selectedAccount && data.to_account_id) {
-          const toAccount = accounts.find(acc => acc.id === data.to_account_id)
-          
-          // Restar de la cuenta origen
-          const newSourceBalance = selectedAccount.balance - data.amount
-          await updateAccount.mutateAsync({ id: data.account_id, data: { balance: newSourceBalance } })
-          
-          // Sumar a la cuenta destino
-          if (toAccount) {
-            const newDestBalance = toAccount.balance + data.amount
-            await updateAccount.mutateAsync({ id: data.to_account_id, data: { balance: newDestBalance } })
-          }
-        }
-      }
-      
-      // Crear la transacción
-      await createTransaction.mutateAsync(transactionData)
+const onSubmit = async (data: CreateTransactionInput) => {
+  await createTransaction.mutateAsync(data, {
+    onSuccess: () => {
       form.reset()
       onSuccess()
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const type = form.watch('type')
+    },
+  })
+}
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-      
+<Form {...form}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
       {/* Tipo de Transacción */}
       <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
-        {(['EXPENSE', 'INCOME', 'TRANSFER', 'SAVING', 'DEBT'] as const).map((t) => (
+        {TRANSACTION_TYPES.map((t) => (
           <button
             key={t}
             type="button"
-            onClick={() => form.setValue('type', t)}
-            className={`flex-1 py-1 text-sm font-medium rounded-md transition-colors ${
-              type === t 
-                ? 'bg-white text-gray-900 shadow-sm' 
-                : 'text-gray-500 hover:text-gray-900'
-            }`}
+            onClick={() => form.setValue("type", t)}
+            className={`
+              flex-1 py-1 text-sm font-medium rounded-md transition-colors
+              ${type === t
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-900"
+              }
+            `}
           >
-            {t === 'EXPENSE' ? 'Gasto' : t === 'INCOME' ? 'Ingreso' : t === 'TRANSFER' ? 'Transfer' : t === 'SAVING' ? 'Ahorro' : 'Deuda'}
+            {TRANSACTION_TYPE_LABELS[t]}
           </button>
         ))}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         {/* Monto */}
-        <div className="col-span-2 md:col-span-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Monto</label>
-          <input
-            {...form.register('amount')}
-            type="number"
-            step="0.01"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {form.formState.errors.amount && (
-            <p className="text-xs text-red-500 mt-1">{form.formState.errors.amount.message}</p>
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem className="col-span-2 md:col-span-1">
+              <FormLabel>Monto</FormLabel>
+              <FormControl>
+                <Input type="number" step="0.01" placeholder="0.00" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
+        />
 
         {/* Fecha */}
-        <div className="col-span-2 md:col-span-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
-          <input
-            {...form.register('date')}
-            type="date"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem className="col-span-2 md:col-span-1">
+              <FormLabel>Fecha</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         {/* Cuenta Origen */}
-        <div className={type === 'TRANSFER' ? 'col-span-1' : 'col-span-2'}>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {type === 'INCOME' ? 'Cuenta Destino' : 'Cuenta Origen'}
-          </label>
-          <select
-            {...form.register('account_id')}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Seleccionar cuenta</option>
-            {accounts.map(acc => (
-              <option key={acc.id} value={acc.id!}>{acc.name} ({acc.currency})</option>
-            ))}
-          </select>
-          {form.formState.errors.account_id && (
-            <p className="text-xs text-red-500 mt-1">{form.formState.errors.account_id.message}</p>
+        <FormField
+          control={form.control}
+          name="account_id"
+          render={({ field }) => (
+            <FormItem className={type === "TRANSFER" || type === "SAVING" ? "col-span-1" : "col-span-2"}>
+              <FormLabel>{type === "INCOME" ? "Cuenta Destino" : "Cuenta Origen"}</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar cuenta" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {accounts.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.name} ({acc.currency})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
+        />
 
-        {/* Cuenta Destino (Solo Transferencias y Ahorros) */}
-        {(type === 'TRANSFER' || type === 'SAVING') && (
-          <div className="col-span-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Cuenta Destino</label>
-            <select
-              {...form.register('to_account_id')}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Seleccionar cuenta</option>
-              {accounts.map(acc => (
-                <option key={acc.id} value={acc.id!}>{acc.name} ({acc.currency})</option>
-              ))}
-            </select>
-             {form.formState.errors.to_account_id && (
-              <p className="text-xs text-red-500 mt-1">{form.formState.errors.to_account_id.message}</p>
+        {/* Cuenta Destino */}
+        {(type === "TRANSFER" || type === "SAVING") && (
+          <FormField
+            control={form.control}
+            name="to_account_id"
+            render={({ field }) => (
+              <FormItem className="col-span-1">
+                <FormLabel>Cuenta Destino</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar cuenta" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {accounts.map((acc) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.name} ({acc.currency})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
+          />
         )}
       </div>
 
-      {/* Categoría (Oculto en transferencias y ahorros) */}
-      {(type !== 'TRANSFER' && type !== 'SAVING') && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-          <select
-            {...form.register('category_id')}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Sin categoría</option>
-            {categories
-              .filter(c => c.type === (type === 'DEBT' ? 'EXPENSE' : type))
-              .map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
+      {/* Categoría */}
+      {type !== "TRANSFER" && type !== "SAVING" && (
+        <FormField
+          control={form.control}
+          name="category_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Categoría</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sin categoría" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {categories
+                    .filter((c) => c.type === (type === "DEBT" ? "EXPENSE" : type))
+                    .map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       )}
 
       {/* Descripción */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Nota / Descripción</label>
-        <textarea
-          {...form.register('description')}
-          rows={2}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+      <FormField
+        control={form.control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Nota / Descripción</FormLabel>
+            <FormControl>
+              <Textarea rows={2} {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      {/* Recurrente (Solo Ahorros y Gastos) */}
-      {(type === 'EXPENSE' || type === 'SAVING' || type === 'DEBT') && (
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="is_recurring"
-            {...form.register('is_recurring')}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <label htmlFor="is_recurring" className="text-sm text-gray-700">
-            Esta transacción es recurrente
-          </label>
-        </div>
+      {/* Recurrente */}
+      {(type === "EXPENSE" || type === "SAVING" || type === "DEBT") && (
+        <FormField
+          control={form.control}
+          name="is_recurring"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-2 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel className="font-normal">
+                Esta transacción es recurrente
+              </FormLabel>
+            </FormItem>
+          )}
+        />
       )}
 
-      <button
+      <Button
         type="submit"
         disabled={isLoading}
-        className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-50"
+        className="w-full bg-gray-900 hover:bg-gray-800 text-white gap-2"
       >
-        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Guardar Transacción'}
-      </button>
+        {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+        {isLoading ? "Guardando..." : "Guardar Transacción"}
+      </Button>
     </form>
+  </Form>
   )
 }

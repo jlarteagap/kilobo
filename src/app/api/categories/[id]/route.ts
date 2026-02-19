@@ -2,13 +2,15 @@ import { NextRequest } from 'next/server'
 import { categoryService } from '@/services/category.service'
 import { updateCategorySchema } from '@/lib/validations/category.schema'
 
+type Params = { params: Promise<{ id: string }> }
+
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Params
 ) {
   try {
+    const { id } = await params  // 👈 await aquí
     const body = await req.json()
-    const { id } = params
 
     const parsed = updateCategorySchema.safeParse(body)
     if (!parsed.success) {
@@ -30,10 +32,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Params
 ) {
   try {
-    const { id } = params
+    const { id } = await params  // 👈 await aquí
     await categoryService.deleteCategory(id)
     return Response.json({ success: true })
   } catch (error: any) {

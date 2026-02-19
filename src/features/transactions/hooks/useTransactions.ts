@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAccounts, useUpdateAccount, accountKeys } from '@/features/accounts/hooks/useAccounts'
 import { Transaction, CreateTransactionData } from '@/types/transaction'
+import { CreateTransactionInput } from '@/lib/validations/transaction.schema'
 
 async function authFetch(url: string, options?: RequestInit) {
   return fetch(url, {
@@ -33,57 +35,74 @@ export function useTransactions() {
 // POST
 export function useCreateTransaction() {
   const queryClient = useQueryClient()
+  const { data: accounts = [] } = useAccounts()
+  const updateAccount = useUpdateAccount()
 
   return useMutation({
-    mutationFn: async (data: CreateTransactionData): Promise<Transaction> => {
-      const res = await authFetch('/api/transactions', {
-        method: 'POST',
-        body: JSON.stringify(data),
+    mutationFn: async (data: CreateTransactionInput) => {
+      // 1. Obtener moneda de la cuenta origen
+      const sourceAccount = accounts.find((a) => a.id === data.account_id)
+      const currency = sourceAccount?.currency ?? "BOB"
+
+      const transactionData = { ...data, currency }
+
+      // 2. Actualizar balances según tipo
+      if (data.type === "INCOME") {
+        // Sumar a la cuenta destino
+        if (sourceAccount) {
+          await updateAccount.mutateAsync({
+            id: data.account_id,
+            data: { balance: sourceAccount.balance + data.amount },
+          })
+        }
+      } else if (data.type === "EXPENSE" || data.type === "DEBT") {
+        // Restar de la cuenta origen
+        if (sourceAccount) {
+          await updateAccount.mutateAsync({
+            id: data.account_id,
+            data: { balance: sourceAccount.balance - data.amount },
+          })
+        }
+      } else if (data.type === "TRANSFER" || data.type === "SAVING") {
+        // Restar de origen y sumar a destino
+        const destAccount = accounts.find((a) => a.id === data.to_account_id)
+
+        if (sourceAccount) {
+          await updateAccount.mutateAsync({
+            id: data.account_id,
+            data: { balance: sourceAccount.balance - data.amount },
+          })
+        }
+
+        if (destAccount && data.to_account_id) {
+          await updateAccount.mutateAsync({
+            id: data.to_account_id,
+            data: { balance: destAccount.balance + data.amount },
+          })
+        }
+      }
+
+      // 3. Crear la transacción
+      const res = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(transactionData),
       })
+
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.error || 'Error al crear la transacción')
+        throw new Error(err.error ?? "Error al crear la transacción")
       }
+
       return res.json()
     },
-    onMutate: async (newData) => {
-      await queryClient.cancelQueries({ queryKey: transactionKeys.lists() })
-      const previous = queryClient.getQueryData<Transaction[]>(transactionKeys.lists())
 
-      const optimisticTransaction: Transaction = {
-        id: `temp-${Date.now()}`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        status: 'COMPLETED', // Default status
-        recurrence_interval: null,
-        user_id: 'current-user', // Should be replaced by real logic if needed
-        to_account_id: newData.to_account_id ?? null,
-        category_id: newData.category_id ?? null,
-        description: newData.description ?? null,
-        payment_method: newData.payment_method ?? null,
-        is_recurring: newData.is_recurring ?? false,
-        currency: newData.currency ?? 'BOB', // Default or from input
-        ...newData,
-      }
-
-      queryClient.setQueryData<Transaction[]>(transactionKeys.lists(), (old = []) => [
-        optimisticTransaction,
-        ...old,
-      ])
-
-      return { previous }
-    },
-    onError: (err, _, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(transactionKeys.lists(), context.previous)
-      }
-    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
     },
   })
 }
-
 // PUT
 export function useUpdateTransaction() {
   const queryClient = useQueryClient()

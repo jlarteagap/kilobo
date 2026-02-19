@@ -3,11 +3,11 @@ import { NextRequest } from 'next/server'
 import { accountsService } from '@/services/accounts.service'
 import { updateAccountSchema } from '@/lib/validations/account.schema'
 
-type Params = { params: { id: string } }
+type Params = { params: Promise<{ id: string }> }
 
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
-
+    const { id } = await params  // 👈 await aquí
     const body = await req.json()
 
     const parsed = updateAccountSchema.safeParse(body)
@@ -15,7 +15,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       return Response.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
-    const account = await accountsService.updateAccount(params.id, parsed.data)
+    const account = await accountsService.updateAccount(id, parsed.data)
     return Response.json(account)
   } catch (error: any) {
     if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
@@ -30,7 +30,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
-    await accountsService.deleteAccount(params.id)
+    const { id } = await params  // 👈 await aquí
+    await accountsService.deleteAccount(id)
     return new Response(null, { status: 204 })
   } catch (error: any) {
     if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {

@@ -2,13 +2,15 @@ import { NextRequest } from 'next/server'
 import { transactionService } from '@/services/transactions.service'
 import { updateTransactionSchema } from '@/lib/validations/transaction.schema'
 
+type Params = { params: Promise<{ id: string }> }
+
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Params
 ) {
   try {
+    const { id } = await params  // 👈 await aquí
     const body = await req.json()
-    const { id } = params
 
     const parsed = updateTransactionSchema.safeParse(body)
     if (!parsed.success) {
@@ -30,10 +32,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Params
 ) {
   try {
-    const { id } = params
+    const { id } = await params  // 👈 await aquí
     await transactionService.deleteTransaction(id)
     return Response.json({ success: true })
   } catch (error: any) {

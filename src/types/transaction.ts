@@ -46,3 +46,15 @@ export interface CreateTransactionData {
   is_recurring?: boolean
   currency?: string
 }
+
+export interface CategoryData {
+  name: string
+  value: number
+}
+
+export interface DataPoint {
+  date: string
+  income: number
+  expense: number
+  label: string
+}

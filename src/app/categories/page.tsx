@@ -1,3 +1,5 @@
+'use client'
+
 import { CategoriesList } from "@/features/categories/components/CategoriesList"
 import AppLayout from "@/components/layout/AppLayout"
 

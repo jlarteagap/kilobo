@@ -1,5 +1,5 @@
 import { adminDb } from '@/lib/firebase.admin'
-import { Category, CreateCategoryData } from '@/types/category'
+import { Category, CreateCategoryDTO } from '@/types/category'
 import { FieldValue } from 'firebase-admin/firestore'
 
 const categoriesCollection = adminDb.collection('category')
@@ -22,7 +22,7 @@ export const categoriesRepository = {
     return { id: doc.id, ...(doc.data() as Omit<Category, 'id'>) }
   },
 
-  async create(data: CreateCategoryData): Promise<Category> {
+  async create(data: CreateCategoryDTO): Promise<Category> {
     const payload = {
       ...data,
       // Ensure optional fields are handled if undefined
@@ -36,7 +36,7 @@ export const categoriesRepository = {
     return { id: docRef.id, ...(created.data() as Omit<Category, 'id'>) }
   },
 
-  async update(categoryId: string, data: Partial<CreateCategoryData>): Promise<Category> {
+  async update(categoryId: string, data: Partial<CreateCategoryDTO>): Promise<Category> {
     const docRef = categoriesCollection.doc(categoryId)
 
     await docRef.update({

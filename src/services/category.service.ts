@@ -1,5 +1,5 @@
 import { categoriesRepository } from '@/repositories/categories.repository'
-import { CreateCategoryData } from '@/types/category'
+import { CreateCategoryDTO } from '@/types/category'
 import { Category } from '@/types/category'
 
 export const categoryService = {
@@ -7,13 +7,13 @@ export const categoryService = {
     return categoriesRepository.findAll()
   },
 
-  async createCategory(data: CreateCategoryData): Promise<Category> {
+  async createCategory(data: CreateCategoryDTO): Promise<Category> {
     return categoriesRepository.create(data)
   },
 
   async updateCategory(
     categoryId: string,
-    data: Partial<CreateCategoryData>
+    data: Partial<CreateCategoryDTO>
   ): Promise<Category> {
     const category = await categoriesRepository.findById(categoryId)
     if (!category) {

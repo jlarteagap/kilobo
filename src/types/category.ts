@@ -1,28 +1,34 @@
+// types/category.ts
+
 export interface Category {
   id: string
   name: string
   type: 'INCOME' | 'EXPENSE'
-  icon?: string
-  color?: string
-  tags?: string[]
-  parent_id?: string
-  createdAt: string
-  updatedAt: string
+  icon?:      string | null
+  color?:     string | null
+  tags?:      string[]
+  parent_id?: string | null
+  _migrated?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
-// ─── DTOs ────────────────────────────────────────────────────────────────────
 export interface CreateCategoryDTO {
   name: string
   type: 'INCOME' | 'EXPENSE'
-  icon?: string
-  color?: string
-  tags?: string[]
-  parent_id?: string
+  icon?:      string | null
+  color?:     string | null
+  tags?:      string[]
+  parent_id?: string | null
 }
 
-export interface UpdateCategoryDTO extends Partial<CreateCategoryDTO> {}
+export interface UpdateCategoryDTO {
+  name?:  string
+  icon?:  string | null
+  color?: string | null
+  tags?:  string[]
+}
 
-// ─── Respuestas de API ───────────────────────────────────────────────────────
 export interface CategoryApiResponse {
   data: Category[]
 }

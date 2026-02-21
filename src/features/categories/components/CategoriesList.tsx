@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Trash2, Search } from "lucide-react"
+import { Plus, Trash2, Pencil, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 
-import { CategoryForm } from "./CategoryForm"
+import { CategoryForm } from "./form/CategoryForm"
 import { useCategories, useDeleteCategory } from "../hooks/useCategories"
 import type { Category } from "@/types/category"
 
@@ -35,7 +35,11 @@ function KanbanSkeleton() {
         <div key={col} className="flex-1 flex flex-col gap-2.5">
           <Skeleton className="h-11 w-full rounded-2xl" />
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+            <div
+              key={i}
+              className="bg-white rounded-2xl overflow-hidden"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+            >
               <Skeleton className="h-1 w-full" />
               <div className="p-4 flex items-center gap-3">
                 <Skeleton className="w-9 h-9 rounded-xl flex-shrink-0" />
@@ -55,21 +59,19 @@ function KanbanSkeleton() {
 // ─── Category Card ────────────────────────────────────────────────────────────
 function CategoryCard({
   category,
-  subcategories,
-  onAddSubcategory,
+  onEdit,
   onDelete,
 }: {
   category: Category
-  subcategories: Category[]
-  onAddSubcategory: (id: string, type: 'INCOME' | 'EXPENSE') => void
+  onEdit:   (category: Category) => void
   onDelete: (id: string) => void
 }) {
   const [expanded, setExpanded] = useState(false)
-  const isIncome = category.type === 'INCOME'
+  const isIncome    = category.type === 'INCOME'
   const accentColor = category.color ?? (isIncome ? '#B3F0D9' : '#FFB3B3')
-  const hasSubcategories = subcategories.length > 0
-  const visibleSubs = expanded ? subcategories : subcategories.slice(0, 3)
-  const hiddenCount = subcategories.length - 3
+  const tags        = category.tags ?? []
+  const visibleTags = expanded ? tags : tags.slice(0, 4)
+  const hiddenCount = tags.length - 4
 
   return (
     <div
@@ -83,36 +85,39 @@ function CategoryCard({
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Icono */}
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
               style={{ backgroundColor: `${accentColor}50` }}
             >
               {category.icon ?? '📁'}
             </div>
+
+            {/* Nombre */}
             <div className="min-w-0">
               <p className="font-medium text-gray-900 text-sm leading-tight truncate">
                 {category.name}
               </p>
-              {hasSubcategories && (
+              {tags.length > 0 && (
                 <p className="text-[11px] text-gray-400 mt-0.5">
-                  {subcategories.length} subcategoría{subcategories.length !== 1 ? 's' : ''}
+                  {tags.length} etiqueta{tags.length !== 1 ? 's' : ''}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Acciones en hover */}
+          {/* Acciones — visibles en hover */}
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0">
             <button
-              onClick={() => onAddSubcategory(category.id, category.type)}
-              title="Añadir subcategoría"
+              onClick={() => onEdit(category)}
+              title="Editar categoría"
               className="p-1.5 rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-all duration-150"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Pencil className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => onDelete(category.id)}
-              title="Eliminar"
+              title="Eliminar categoría"
               className="p-1.5 rounded-lg text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-all duration-150"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -121,29 +126,14 @@ function CategoryCard({
         </div>
 
         {/* Tags */}
-        {category.tags && category.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2.5">
-            {category.tags.map((tag) => (
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-3">
+            {visibleTags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full"
+                className="inline-flex items-center text-[11px] text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100"
               >
                 {tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Subcategorías como chips */}
-        {hasSubcategories && (
-          <div className="flex flex-wrap gap-1 mt-3">
-            {visibleSubs.map((sub) => (
-              <span
-                key={sub.id}
-                className="inline-flex items-center gap-1 text-[11px] text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100"
-              >
-                <span>{sub.icon}</span>
-                {sub.name}
               </span>
             ))}
             {!expanded && hiddenCount > 0 && (
@@ -173,23 +163,19 @@ function CategoryCard({
 function KanbanColumn({
   title,
   type,
-  parentCategories,
-  allCategories,
-  onAddSubcategory,
+  categories,
+  onEdit,
   onDelete,
   onNewCategory,
 }: {
-  title: string
-  type: 'INCOME' | 'EXPENSE'
-  parentCategories: Category[]
-  allCategories: Category[]
-  onAddSubcategory: (id: string, type: 'INCOME' | 'EXPENSE') => void
-  onDelete: (id: string) => void
+  title:        string
+  type:         'INCOME' | 'EXPENSE'
+  categories:   Category[]
+  onEdit:       (category: Category) => void
+  onDelete:     (id: string) => void
   onNewCategory: () => void
 }) {
   const isIncome = type === 'INCOME'
-  const getSubcategories = (parentId: string) =>
-    allCategories.filter((c) => c.parent_id === parentId)
 
   return (
     <div className="flex-1 min-w-0 flex flex-col gap-2.5">
@@ -199,29 +185,33 @@ function KanbanColumn({
         isIncome ? 'bg-emerald-50' : 'bg-rose-50'
       )}>
         <div className="flex items-center gap-2">
-          <div className={cn('w-2 h-2 rounded-full', isIncome ? 'bg-emerald-400' : 'bg-rose-400')} />
+          <div className={cn(
+            'w-2 h-2 rounded-full',
+            isIncome ? 'bg-emerald-400' : 'bg-rose-400'
+          )} />
           <span className="text-sm font-semibold text-gray-700">{title}</span>
         </div>
         <span className={cn(
           'text-xs font-medium px-2 py-0.5 rounded-full',
-          isIncome ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+          isIncome
+            ? 'bg-emerald-100 text-emerald-700'
+            : 'bg-rose-100 text-rose-700'
         )}>
-          {parentCategories.length}
+          {categories.length}
         </span>
       </div>
 
       {/* Cards */}
-      {parentCategories.map((category) => (
+      {categories.map((category) => (
         <CategoryCard
           key={category.id}
           category={category}
-          subcategories={getSubcategories(category.id)}
-          onAddSubcategory={onAddSubcategory}
+          onEdit={onEdit}
           onDelete={onDelete}
         />
       ))}
 
-      {/* Botón añadir al fondo */}
+      {/* Botón añadir */}
       <button
         onClick={onNewCategory}
         className={cn(
@@ -240,52 +230,57 @@ function KanbanColumn({
   )
 }
 
+// ─── Tipos de estado del dialog ───────────────────────────────────────────────
+type DialogState =
+  | { mode: 'closed' }
+  | { mode: 'create'; preselectedType?: 'INCOME' | 'EXPENSE' }
+  | { mode: 'edit';   category: Category; lockedTags: string[] }
+
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function CategoriesList() {
   const { data: categories = [], isLoading } = useCategories()
   const deleteCategory = useDeleteCategory()
 
-  const [search, setSearch]             = useState('')
-  const [dialogOpen, setDialogOpen]     = useState(false)
-  const [selectedParent, setSelectedParent] = useState<{ id: string; type: 'INCOME' | 'EXPENSE' } | null>(null)
+  const [search, setSearch]           = useState('')
+  const [dialog, setDialog]           = useState<DialogState>({ mode: 'closed' })
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
-  // Al abrir desde el botón de columna, pre-selecciona el tipo
-  const [preselectedType, setPreselectedType] = useState<'INCOME' | 'EXPENSE' | undefined>()
 
-  // ─── Filtrado por búsqueda ─────────────────────────────────────────────────
+  // ─── Datos filtrados ────────────────────────────────────────────────────────
   const filtered = search.trim()
     ? categories.filter((c) =>
         c.name.toLowerCase().includes(search.toLowerCase())
       )
     : categories
 
-  const parentCategories = filtered.filter((c) => !c.parent_id)
-  const incomeCategories = parentCategories.filter((c) => c.type === 'INCOME')
-  const expenseCategories = parentCategories.filter((c) => c.type === 'EXPENSE')
+  const incomeCategories  = filtered.filter((c) => c.type === 'INCOME'  && !c.parent_id)
+  const expenseCategories = filtered.filter((c) => c.type === 'EXPENSE' && !c.parent_id)
 
-  // Stats (sobre datos sin filtrar)
-  const totalIncome  = categories.filter((c) => c.type === 'INCOME' && !c.parent_id).length
+  // Stats sobre datos sin filtrar
+  const totalIncome  = categories.filter((c) => c.type === 'INCOME'  && !c.parent_id).length
   const totalExpense = categories.filter((c) => c.type === 'EXPENSE' && !c.parent_id).length
 
+  // ─── Calcular tags bloqueados ───────────────────────────────────────────────
+  // Se calculan en el cliente con los datos en caché — sin llamadas extra
+  // Un tag está "en uso" si aparece en alguna transacción (lo sabe el service),
+  // pero aquí mostramos todos los tags como potencialmente bloqueados en edición.
+  // El server validará y devolverá 409 si se intenta eliminar uno en uso.
+  const getLockedTags = (category: Category): string[] => {
+    // Por ahora retorna vacío — el server protege con 409
+    // Si quieres pre-calcular en cliente, necesitarías traer las transacciones
+    return []
+  }
+
   // ─── Handlers ──────────────────────────────────────────────────────────────
-  const openNewCategory = (type?: 'INCOME' | 'EXPENSE') => {
-    setSelectedParent(null)
-    setPreselectedType(type)
-    setDialogOpen(true)
+  const handleEdit = (category: Category) => {
+    setDialog({
+      mode:       'edit',
+      category,
+      lockedTags: getLockedTags(category),
+    })
   }
 
-  const handleAddSubcategory = (id: string, type: 'INCOME' | 'EXPENSE') => {
-    setSelectedParent({ id, type })
-    setPreselectedType(undefined)
-    setDialogOpen(true)
-  }
-
-  const handleDialogClose = (open: boolean) => {
-    setDialogOpen(open)
-    if (!open) {
-      setSelectedParent(null)
-      setPreselectedType(undefined)
-    }
+  const handleNewCategory = (type?: 'INCOME' | 'EXPENSE') => {
+    setDialog({ mode: 'create', preselectedType: type })
   }
 
   const handleDeleteConfirm = async () => {
@@ -294,22 +289,26 @@ export function CategoriesList() {
     setPendingDeleteId(null)
   }
 
+  const isDialogOpen = dialog.mode !== 'closed'
+
   return (
     <div className="space-y-5">
 
       {/* ── Header ── */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Categorías</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+            Categorías
+          </h1>
           <p className="text-[13px] text-gray-400 mt-0.5">
-            {totalIncome + totalExpense} categorías · {categories.filter(c => c.parent_id).length} subcategorías
+            {totalIncome + totalExpense} categorías
           </p>
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}>
           <DialogTrigger asChild>
             <button
-              onClick={() => openNewCategory()}
+              onClick={() => handleNewCategory()}
               className={cn(
                 'flex items-center gap-2 px-4 py-2.5',
                 'bg-gray-900 text-white text-sm font-medium',
@@ -321,21 +320,30 @@ export function CategoriesList() {
               Nueva Categoría
             </button>
           </DialogTrigger>
+
           <DialogContent className="rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-lg font-semibold">
-                {selectedParent ? 'Nueva Subcategoría' : 'Nueva Categoría'}
+                {dialog.mode === 'edit' ? 'Editar Categoría' : 'Nueva Categoría'}
               </DialogTitle>
             </DialogHeader>
-            <CategoryForm
-              parentId={selectedParent?.id}
-              parentType={selectedParent?.type ?? preselectedType}
-              onSuccess={() => {
-                setDialogOpen(false)
-                setSelectedParent(null)
-                setPreselectedType(undefined)
-              }}
-            />
+
+            {/* Renderiza el form correcto según el modo */}
+            {dialog.mode === 'create' && (
+              <CategoryForm
+                mode="create"
+                preselectedType={dialog.preselectedType}
+                onSuccess={() => setDialog({ mode: 'closed' })}
+              />
+            )}
+            {dialog.mode === 'edit' && (
+              <CategoryForm
+                mode="edit"
+                category={dialog.category}
+                lockedTags={dialog.lockedTags}
+                onSuccess={() => setDialog({ mode: 'closed' })}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </div>
@@ -380,7 +388,7 @@ export function CategoriesList() {
         <div className="text-center py-16 text-gray-400 text-sm">
           No hay categorías aún.{' '}
           <button
-            onClick={() => openNewCategory()}
+            onClick={() => handleNewCategory()}
             className="text-gray-700 underline underline-offset-2 hover:text-gray-900 transition-colors"
           >
             Crea la primera
@@ -391,25 +399,23 @@ export function CategoriesList() {
           <KanbanColumn
             title="Ingresos"
             type="INCOME"
-            parentCategories={incomeCategories}
-            allCategories={filtered}
-            onAddSubcategory={handleAddSubcategory}
+            categories={incomeCategories}
+            onEdit={handleEdit}
             onDelete={setPendingDeleteId}
-            onNewCategory={() => openNewCategory('INCOME')}
+            onNewCategory={() => handleNewCategory('INCOME')}
           />
           <KanbanColumn
             title="Gastos"
             type="EXPENSE"
-            parentCategories={expenseCategories}
-            allCategories={filtered}
-            onAddSubcategory={handleAddSubcategory}
+            categories={expenseCategories}
+            onEdit={handleEdit}
             onDelete={setPendingDeleteId}
-            onNewCategory={() => openNewCategory('EXPENSE')}
+            onNewCategory={() => handleNewCategory('EXPENSE')}
           />
         </div>
       )}
 
-      {/* ── AlertDialog de confirmación ── */}
+      {/* ── AlertDialog de confirmación de borrado ── */}
       <AlertDialog
         open={!!pendingDeleteId}
         onOpenChange={(open) => !open && setPendingDeleteId(null)}
@@ -418,7 +424,8 @@ export function CategoriesList() {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar esta categoría?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará la categoría y todas sus subcategorías.
+              Esta acción no se puede deshacer. Si la categoría tiene
+              transacciones asociadas no podrá eliminarse.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,46 +1,75 @@
+// repositories/categories.repository.ts
 import { adminDb } from '@/lib/firebase.admin'
-import { Category, CreateCategoryDTO } from '@/types/category'
-import { FieldValue } from 'firebase-admin/firestore'
+import { Category, CreateCategoryDTO, UpdateCategoryDTO } from '@/types/category'
 
-const categoriesCollection = adminDb.collection('category')
+const categoriesCol  = adminDb.collection('category')
+const transactionsCol = adminDb.collection('transactions')
 
 export const categoriesRepository = {
-  async findAll(): Promise<Category[]> {
-    const snapshot = await categoriesCollection
-      .get()
 
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as Omit<Category, 'id'>),
-    }))
+  // ─── Read ──────────────────────────────────────────────────────────────────
+  async findAll(): Promise<Category[]> {
+    const snapshot = await categoriesCol.get()
+    return snapshot.docs
+      .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<Category, 'id'>) }))
+      .filter((c) => !c._migrated) // oculta subcategorías migradas
   },
 
   async findById(categoryId: string): Promise<Category | null> {
-    const doc = await categoriesCollection.doc(categoryId).get()
+    const doc = await categoriesCol.doc(categoryId).get()
     if (!doc.exists) return null
-
     return { id: doc.id, ...(doc.data() as Omit<Category, 'id'>) }
   },
 
+  // ─── Validación de uso ─────────────────────────────────────────────────────
+  /**
+   * Verifica si una categoría está siendo usada en alguna transacción.
+   * Se usa antes de eliminar para evitar romper referencias.
+   */
+  async isUsedInTransactions(categoryId: string): Promise<boolean> {
+    const snapshot = await transactionsCol
+      .where('category_id', '==', categoryId)
+      .limit(1)
+      .get()
+    return !snapshot.empty
+  },
+
+  /**
+   * Verifica si un tag específico está siendo usado en transacciones
+   * de una categoría. Se usa antes de eliminar un tag.
+   */
+  async isTagUsedInTransactions(categoryId: string, tag: string): Promise<boolean> {
+    const snapshot = await transactionsCol
+      .where('category_id', '==', categoryId)
+      .where('tag', '==', tag)
+      .limit(1)
+      .get()
+    return !snapshot.empty
+  },
+
+  // ─── Write ─────────────────────────────────────────────────────────────────
   async create(data: CreateCategoryDTO): Promise<Category> {
     const payload = {
       ...data,
-      // Ensure optional fields are handled if undefined
       parent_id: data.parent_id ?? null,
-      icon: data.icon ?? null,
+      icon:      data.icon ?? null,
+      color:     data.color ?? null,
+      tags:      data.tags ?? [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
 
-    const docRef = await categoriesCollection.add(payload)
+    const docRef  = await categoriesCol.add(payload)
     const created = await docRef.get()
-
     return { id: docRef.id, ...(created.data() as Omit<Category, 'id'>) }
   },
 
-  async update(categoryId: string, data: Partial<CreateCategoryDTO>): Promise<Category> {
-    const docRef = categoriesCollection.doc(categoryId)
+  async update(categoryId: string, data: UpdateCategoryDTO): Promise<Category> {
+    const docRef = categoriesCol.doc(categoryId)
 
     await docRef.update({
       ...data,
+      updatedAt: new Date().toISOString(),
     })
 
     const updated = await docRef.get()
@@ -48,6 +77,6 @@ export const categoriesRepository = {
   },
 
   async delete(categoryId: string): Promise<void> {
-    await categoriesCollection.doc(categoryId).delete()
+    await categoriesCol.doc(categoryId).delete()
   },
 }

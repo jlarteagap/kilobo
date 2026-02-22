@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { Transaction } from '@/types/transaction'
 import { format, subDays, startOfDay, isAfter, isSameDay, getWeek, startOfWeek, endOfWeek } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { parseLocalDate } from '@/lib/utils'
 
 
 import { Category } from '@/types/category'
@@ -83,7 +84,7 @@ export function useTransactionMetrics(transactions: Transaction[], categories: C
       }
     }
     filteredTransactions.forEach((t) => {
-      const dateStr = format(new Date(t.date), 'yyyy-MM-dd')
+      const dateStr = format(parseLocalDate(t.date), 'yyyy-MM-dd')  // ← fix
       const entry   = daysMap.get(dateStr)
       if (entry) {
         if (t.type === 'INCOME')  entry.income  += t.amount
@@ -105,7 +106,7 @@ export function useTransactionMetrics(transactions: Transaction[], categories: C
     }
 
     filteredTransactions.forEach(t => {
-        const dateStr = format(new Date(t.date), 'yyyy-MM-dd')
+        const dateStr = format(parseLocalDate(t.date), 'yyyy-MM-dd')
         const entry = daysMap.get(dateStr)
         if (entry) {
             if (t.type === 'INCOME') entry.income += t.amount
@@ -150,15 +151,12 @@ export function useTransactionMetrics(transactions: Transaction[], categories: C
 // Exportar la función de filtrado — se reutiliza en la lista
 export function filterTransactionsByPeriod(transactions: Transaction[], period: Period): Transaction[] {
   if (period === 'ALL') return transactions
-
   const now = new Date()
   let startDate: Date
-
   switch (period) {
     case '1W': startDate = subDays(now, 7);  break
     case '1M': startDate = subDays(now, 30); break
     case '3M': startDate = subDays(now, 90); break
   }
-
-  return transactions.filter((t) => isAfter(new Date(t.date), startDate!))
+  return transactions.filter((t) => isAfter(parseLocalDate(t.date), startDate!))
 }

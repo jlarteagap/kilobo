@@ -236,7 +236,7 @@ export function TransactionList({
 
   // ─── Agrupar por fecha ──────────────────────────────────────────────────────
   const grouped = transactions.reduce<Record<string, Transaction[]>>((acc, tx) => {
-    const date = tx.date.split('T')[0]
+    const date = tx.date.slice(0, 10)  // ← tomar solo "yyyy-MM-dd" sin parsear
     if (!acc[date]) acc[date] = []
     acc[date].push(tx)
     return acc

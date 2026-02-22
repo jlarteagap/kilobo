@@ -3,6 +3,9 @@ import { TransactionType } from "@/types/transaction"
 import { Account } from "@/types/account"
 import { Category } from "@/types/category"
 import { TRANSACTION_TYPES } from "@/lib/validations/transaction.schema"
+import { parseLocalDate } from '@/lib/utils'
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
 
 // Normaliza códigos de moneda legacy
 export const normalizeCurrency = (currency: string): string => {
@@ -70,12 +73,8 @@ export const getCategoryDisplay = (
 }
 
 // Formatea fecha en español Bolivia
-export const formatTransactionDate = (date: string): string => {
-  return new Intl.DateTimeFormat("es-BO", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(date))
+export function formatTransactionDate(dateStr: string): string {
+  return format(parseLocalDate(dateStr), "d 'de' MMMM", { locale: es })
 }
 
 export const TRANSACTION_TYPE_LABELS: Record<typeof TRANSACTION_TYPES[number], string> = {

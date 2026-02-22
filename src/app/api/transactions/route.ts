@@ -1,34 +1,39 @@
-import { NextRequest } from 'next/server'
+// app/api/transactions/route.ts
+import { NextRequest, NextResponse } from 'next/server'
 import { transactionService } from '@/services/transactions.service'
 import { createTransactionSchema } from '@/lib/validations/transaction.schema'
 
 export async function GET(req: NextRequest) {
   try {
     const transactions = await transactionService.getTransactions()
-    return Response.json(transactions)
+    return NextResponse.json({ data: transactions ?? [] })  // ← estandarizado
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return Response.json({ error: error.message }, { status: 401 })
-    }
-    return Response.json({ error: 'Error interno del servidor' }, { status: 500 })
+    return handleError(error)
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-
+    const body   = await req.json()
     const parsed = createTransactionSchema.safeParse(body)
+
     if (!parsed.success) {
-      return Response.json({ error: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
     const transaction = await transactionService.createTransaction(parsed.data)
-    return Response.json(transaction, { status: 201 })
+    return NextResponse.json({ data: transaction }, { status: 201 })  // ← estandarizado
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return Response.json({ error: error.message }, { status: 401 })
-    }
-    return Response.json({ error: 'Error interno del servidor' }, { status: 500 })
+    return handleError(error)
   }
+}
+
+function handleError(error: any): NextResponse {
+  const message = error?.message ?? 'Error interno del servidor'
+  const statusMap: Record<string, number> = {
+    'No autorizado':             401,
+    'Token inválido o expirado': 401,
+  }
+  const status = statusMap[message] ?? 500
+  return NextResponse.json({ error: message }, { status })
 }

@@ -1,15 +1,23 @@
+// features/transactions/TransactionsPage.tsx
 "use client"
 
-import { useState } from "react"
-import { TransactionForm } from "@/features/transactions/TransactionForm"
-import { TransactionList } from "@/features/transactions/TransactionList"
+import { useState, Fragment } from "react"
 import { Plus } from "lucide-react"
 
 import AppLayout from "@/components/layout/AppLayout"
 import { useTransactions } from "@/features/transactions/hooks/useTransactions"
 import { useAccounts } from "@/features/accounts/hooks/useAccounts"
 import { useCategories } from "@/features/categories/hooks/useCategories"
-import { Period, useTransactionMetrics } from "@/features/transactions/hooks/useTransactionMetrics"
+import {
+  Period,
+  useTransactionMetrics,
+  filterTransactionsByPeriod,  // ← importar la función exportada
+} from "@/features/transactions/hooks/useTransactionMetrics"
+
+import { TransactionForm } from "@/features/transactions/TransactionForm"
+import { TransactionList } from "@/features/transactions/TransactionList"
+import { PeriodSelector } from "./components/PeriodSelector"
+import { TransactionsSkeleton } from "./components/skeletons/TransactionsSkeleton"
 import { SummaryCards } from "@/features/transactions/components/analytics/SummaryCards"
 import { IncomeExpenseChart } from "@/features/transactions/components/analytics/IncomeExpenseChart"
 import { CategoryOverview } from "@/features/transactions/components/analytics/CategoryOverview"
@@ -19,75 +27,71 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { PeriodSelector } from "./components/PeriodSelector"
-import { TransactionsSkeleton } from "./components/skeletons/TransactionsSkeleton"
-
+import { Transaction } from "@/types/transaction"
+import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import { cn } from "@/lib/utils"
 
 export default function TransactionsPage() {
-  const [open, setOpen] = useState(false)
-  
-  // Data State - using React Query Hooks
-  const { data: transactions = [], isLoading: loadingTransactions, error: transactionsError } = useTransactions()
-  const { data: accounts = [], isLoading: loadingAccounts } = useAccounts()
-  const { data: categories = [], isLoading: loadingCategories } = useCategories()
-  
-  const isLoading = loadingTransactions || loadingAccounts || loadingCategories
-  const isError = transactionsError as any
-
-  // Analytics State
+  const [open, setOpen]     = useState(false)
   const [period, setPeriod] = useState<Period>('1M')
+
+  const { data: transactions = [], isLoading: loadingTransactions, error: transactionsError } = useTransactions()
+  const { data: accounts    = [], isLoading: loadingAccounts    } = useAccounts()
+  const { data: categories  = [], isLoading: loadingCategories  } = useCategories()
+
+  const isLoading = loadingTransactions || loadingAccounts || loadingCategories
+  const isError   = transactionsError as any
 
   const metrics = useTransactionMetrics(transactions, categories, period)
 
-  const handleSuccess = () => {
-    setOpen(false)
-  }
+  // Filtrar la lista con la misma lógica que las métricas
+  const filteredTransactions = filterTransactionsByPeriod(transactions, period)
 
   return (
     <AppLayout>
       <div className="container mx-auto py-8 px-4 max-w-7xl">
-        {/* Header */}
+
+        {/* ── Header ── */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Transacciones</h1>
-            <p className="text-gray-500">Gestiona tus ingresos y gastos</p>
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+              Transacciones
+            </h1>
+            <p className="text-[13px] text-gray-400 mt-0.5">
+              Gestiona tus ingresos y gastos
+            </p>
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
-             {/* Period Selector */}
-            <div className="flex bg-gray-100 rounded-lg p-1 mr-2">
-                <PeriodSelector value={period} onChange={setPeriod} />
-            </div>
+            <PeriodSelector value={period} onChange={setPeriod} />
 
             <Dialog open={open} onOpenChange={setOpen}>
               <Button
                 onClick={() => setOpen(true)}
-                className="flex-1 md:flex-none gap-2 bg-black hover:bg-gray-800 text-white whitespace-nowrap"
+                className="flex-1 md:flex-none gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl whitespace-nowrap"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4" />
                 Nueva Transacción
               </Button>
-              <DialogContent className="sm:max-w-lg">
+              <DialogContent className="sm:max-w-lg rounded-2xl">
                 <DialogHeader>
-                  <DialogTitle>Registrar Transacción</DialogTitle>
-                  <DialogDescription>
-                    Ingresa los detalles del movimiento financiero.
-                  </DialogDescription>
+                  <DialogTitle className="text-lg font-semibold">
+                    Registrar Transacción
+                  </DialogTitle>
                 </DialogHeader>
-                <TransactionForm onSuccess={handleSuccess} />
+                <TransactionForm onSuccess={() => setOpen(false)} />
               </DialogContent>
             </Dialog>
           </div>
         </div>
 
-        {/* Analytics Section */}
+        {/* ── Analytics ── */}
         {isLoading ? (
           <TransactionsSkeleton />
         ) : isError ? (
-          <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-8">
+          <div className="bg-red-50 text-red-500 text-sm p-4 rounded-xl mb-8">
             Error al cargar los datos. Intenta nuevamente.
           </div>
         ) : (
@@ -99,7 +103,6 @@ export default function TransactionsPage() {
               incomeTrend={metrics.incomeTrend}
               expenseTrend={metrics.expenseTrend}
             />
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
               <div className="lg:col-span-2">
                 <IncomeExpenseChart data={metrics.chartData} />
@@ -111,12 +114,27 @@ export default function TransactionsPage() {
           </>
         )}
 
+        {/* ── Lista ── */}
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+        >
+          {/* Header de la tabla con período activo */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-700">
+                Movimientos
+              </h2>
+              <p className="text-[11px] text-gray-400 mt-0.5">
+                {filteredTransactions.length} transacciones
+              </p>
+            </div>
+            {/* PeriodSelector secundario — solo para la lista */}
+            <PeriodSelector value={period} onChange={setPeriod} />
+          </div>
 
-        {/* Transaction List */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1">
-          <TransactionList 
-            transactions={transactions} 
-            accounts={accounts} 
+          <TransactionList
+            transactions={filteredTransactions}  // ← lista filtrada
+            accounts={accounts}
             categories={categories}
             loading={isLoading}
           />

@@ -1,32 +1,27 @@
-import { NextRequest } from 'next/server'
+// app/api/transactions/[id]/route.ts
+import { NextRequest, NextResponse } from 'next/server'
 import { transactionService } from '@/services/transactions.service'
 import { updateTransactionSchema } from '@/lib/validations/transaction.schema'
 
 type Params = { params: Promise<{ id: string }> }
 
-export async function PUT(
+export async function PATCH(
   req: NextRequest,
   { params }: Params
 ) {
   try {
-    const { id } = await params  // 👈 await aquí
-    const body = await req.json()
+    const { id }  = await params
+    const body    = await req.json()
 
     const parsed = updateTransactionSchema.safeParse(body)
     if (!parsed.success) {
-      return Response.json({ error: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
     const transaction = await transactionService.updateTransaction(id, parsed.data)
-    return Response.json(transaction)
+    return NextResponse.json({ data: transaction })  // ← estandarizado
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return Response.json({ error: error.message }, { status: 401 })
-    }
-    if (error.message === 'Transacción no encontrada.') {
-      return Response.json({ error: error.message }, { status: 404 })
-    }
-    return Response.json({ error: 'Error interno del servidor' }, { status: 500 })
+    return handleError(error)
   }
 }
 
@@ -35,16 +30,21 @@ export async function DELETE(
   { params }: Params
 ) {
   try {
-    const { id } = await params  // 👈 await aquí
+    const { id } = await params
     await transactionService.deleteTransaction(id)
-    return Response.json({ success: true })
+    return NextResponse.json({ success: true })
   } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return Response.json({ error: error.message }, { status: 401 })
-    }
-    if (error.message === 'Transacción no encontrada.') {
-      return Response.json({ error: error.message }, { status: 404 })
-    }
-    return Response.json({ error: 'Error interno del servidor' }, { status: 500 })
+    return handleError(error)
   }
+}
+
+function handleError(error: any): NextResponse {
+  const message = error?.message ?? 'Error interno del servidor'
+  const statusMap: Record<string, number> = {
+    'No autorizado':                  401,
+    'Token inválido o expirado':      401,
+    'Transacción no encontrada.':     404,
+  }
+  const status = statusMap[message] ?? 500
+  return NextResponse.json({ error: message }, { status })
 }

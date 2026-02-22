@@ -1,116 +1,354 @@
+// features/transactions/TransactionList.tsx
 "use client"
 
-import { Transaction } from "@/types/transaction"
-import { Account } from "@/types/account"
-import { Category } from "@/types/category"
-import { Repeat } from "lucide-react"
+import { Fragment, useState } from "react"
+import { Repeat, Trash2, Pencil } from "lucide-react"
+import { cn } from "@/lib/utils"
+
 import {
-  getTransactionIcon,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+
+import {
+  useDeleteTransaction,
+  useUpdateTransaction,
+  EditableTransactionFields,
+} from "@/features/transactions/hooks/useTransactions"
+import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import {
   getTransactionAmountColor,
   getTransactionSign,
   getAccountName,
-  getAccountColor,
   getCategoryDisplay,
   formatTransactionDate,
   normalizeCurrency,
+  TRANSACTION_TYPE_LABELS,
 } from "@/features/transactions/utils/transaction-display.utils"
-import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 
-interface TransactionListProps {
-  transactions: Transaction[]
-  accounts: Account[]
-  categories: Category[]
-  loading?: boolean
+import type { Transaction } from "@/types/transaction"
+import type { Account } from "@/types/account"
+import type { Category } from "@/types/category"
+
+import { TransactionEditForm } from "./TransactionEditForm"
+import { TransactionTotals } from "./TransactionTotal"
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+function TransactionRowSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <tr key={i}>
+          <td className="px-4 py-3">
+            <div className="flex items-center gap-2.5">
+              <Skeleton className="h-8 w-8 rounded-xl flex-shrink-0" />
+              <div className="space-y-1.5">
+                <Skeleton className="h-3.5 w-28 rounded-full" />
+                <Skeleton className="h-3 w-16 rounded-full" />
+              </div>
+            </div>
+          </td>
+          <td className="px-4 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
+          <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+          <td className="px-4 py-3"><Skeleton className="h-4 w-20 rounded-full" /></td>
+          <td className="px-4 py-3 text-right"><Skeleton className="h-4 w-16 rounded-full ml-auto" /></td>
+          <td className="px-4 py-3" />
+        </tr>
+      ))}
+    </>
+  )
 }
 
+// ─── Separador de fecha ───────────────────────────────────────────────────────
+function DateSeparator({ date }: { date: string }) {
+  return (
+    <tr>
+      <td colSpan={6} className="px-4 pt-5 pb-1">
+        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+          {formatTransactionDate(date)}
+        </span>
+      </td>
+    </tr>
+  )
+}
+
+// ─── Fila de transacción ──────────────────────────────────────────────────────
+function TransactionRow({
+  tx,
+  accounts,
+  categories,
+  onEdit,
+  onDelete,
+}: {
+  tx:         Transaction
+  accounts:   Account[]
+  categories: Category[]
+  onEdit:     (tx: Transaction) => void
+  onDelete:   (tx: Transaction) => void
+}) {
+  const category     = getCategoryDisplay(tx.category_id, categories)
+  const categoryData = categories.find((c) => c.id === tx.category_id)
+  const accentColor  = categoryData?.color ?? '#E0E0E0'
+  const amountColor  = getTransactionAmountColor(tx.type)
+  const sign         = getTransactionSign(tx.type)
+
+  return (
+    <tr className="group hover:bg-gray-50/60 transition-colors duration-100">
+
+      {/* ── Categoría + descripción ── */}
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
+            style={{ backgroundColor: `${accentColor}40` }}
+          >
+            {categoryData?.icon ?? '📁'}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-gray-800 truncate">
+              {category.name ?? (tx.type === 'TRANSFER' ? 'Transferencia' : 'Sin categoría')}
+            </p>
+            {tx.description && (
+              <p className="text-[11px] text-gray-400 truncate max-w-[160px]">
+                {tx.description}
+              </p>
+            )}
+          </div>
+        </div>
+      </td>
+
+      {/* ── Tag ── */}
+      <td className="px-4 py-3">
+        {tx.tag ? (
+          <span className="inline-flex items-center text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+            {tx.tag}
+          </span>
+        ) : (
+          <span className="text-gray-200">—</span>
+        )}
+      </td>
+
+      {/* ── Tipo ── */}
+      <td className="px-4 py-3">
+        <Badge
+          variant="secondary"
+          className={cn(
+            'text-[10px] font-medium rounded-full',
+            tx.type === 'INCOME'   && 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
+            tx.type === 'EXPENSE'  && 'bg-rose-100    text-rose-700    hover:bg-rose-100',
+            tx.type === 'TRANSFER' && 'bg-blue-100    text-blue-700    hover:bg-blue-100',
+            tx.type === 'SAVING'   && 'bg-violet-100  text-violet-700  hover:bg-violet-100',
+            tx.type === 'DEBT'     && 'bg-orange-100  text-orange-700  hover:bg-orange-100',
+          )}
+        >
+          {TRANSACTION_TYPE_LABELS[tx.type]}
+        </Badge>
+      </td>
+
+      {/* ── Cuenta ── */}
+      <td className="px-4 py-3">
+        <span className="text-[13px] text-gray-600">
+          {getAccountName(tx.account_id, accounts)}
+        </span>
+        {tx.to_account_id && (
+          <span className="text-[13px] text-gray-400">
+            {' → '}{getAccountName(tx.to_account_id, accounts)}
+          </span>
+        )}
+      </td>
+
+      {/* ── Monto ── */}
+      <td className={cn('px-4 py-3 text-right font-semibold text-sm', amountColor)}>
+        <div className="flex items-center justify-end gap-1">
+          {tx.is_recurring && (
+            <Repeat className="w-3 h-3 text-gray-400 flex-shrink-0" />
+          )}
+          {sign}{formatCurrency(tx.amount, normalizeCurrency(tx.currency))}
+        </div>
+      </td>
+
+      {/* ── Acciones ── */}
+      <td className="px-4 py-3">
+        <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+          <button
+            onClick={() => onEdit(tx)}
+            title="Editar"
+            className="p-1.5 rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-all duration-150"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => onDelete(tx)}
+            title="Eliminar"
+            className="p-1.5 rounded-lg text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-all duration-150"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </td>
+    </tr>
+  )
+}
+
+// ─── Componente principal ─────────────────────────────────────────────────────
 export function TransactionList({
   transactions,
   accounts,
   categories,
   loading = false,
-}: TransactionListProps) {
-  if (loading) {
-    return <div className="text-center py-4 text-gray-500">Cargando transacciones...</div>
+}: {
+  transactions: Transaction[]
+  accounts:     Account[]
+  categories:   Category[]
+  loading?:     boolean
+}) {
+  const deleteTransaction = useDeleteTransaction()
+  const updateTransaction = useUpdateTransaction()
+
+  const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null)
+  const [editingTx, setEditingTx]         = useState<Transaction | null>(null)
+
+  // ─── Handlers ──────────────────────────────────────────────────────────────
+  const handleDeleteConfirm = async () => {
+    if (!pendingDelete) return
+    await deleteTransaction.mutateAsync(pendingDelete)
+    setPendingDelete(null)
   }
 
-  if (transactions.length === 0) {
-    return <div className="text-center py-4 text-gray-500">No hay transacciones registradas.</div>
+  const handleEditSave = async (data: EditableTransactionFields) => {
+    if (!editingTx) return
+    await updateTransaction.mutateAsync({ id: editingTx.id, data })
+    setEditingTx(null)
   }
+
+  // ─── Agrupar por fecha ──────────────────────────────────────────────────────
+  const grouped = transactions.reduce<Record<string, Transaction[]>>((acc, tx) => {
+    const date = tx.date.split('T')[0]
+    if (!acc[date]) acc[date] = []
+    acc[date].push(tx)
+    return acc
+  }, {})
+
+  const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a))
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm text-left">
-        <thead className="bg-gray-50 text-gray-500">
-          <tr>
-            <th className="px-4 py-3 font-medium">Fecha</th>
-            <th className="px-4 py-3 font-medium">Categoría</th>
-            <th className="px-4 py-3 font-medium">Descripción</th>
-            <th className="px-4 py-3 font-medium">Cuenta</th>
-            <th className="px-4 py-3 font-medium text-right">Monto</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {transactions.map((tx) => {
-            const Icon = getTransactionIcon(tx.type)
-            const category = getCategoryDisplay(tx.category_id, categories)
+    <>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left">
 
-            return (
-              <tr key={tx.id} className="hover:bg-gray-50/50">
-                {/* Fecha */}
-                <td className="px-4 py-3 text-gray-500">
-                  {formatTransactionDate(tx.date)}
-                </td>
-
-                {/* Categoría */}
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    {Icon && (
-                      <span className="p-1.5 rounded-full bg-gray-100">
-                        <Icon className={`w-5 h-5 ${getTransactionAmountColor(tx.type)}`} />
-                      </span>
-                    )}
-                    <span className="font-medium text-gray-700">
-                      {category.name
-                        ? category.parent
-                          ? <>{category.parent}<span className="text-gray-400 mx-1">→ {category.name}</span></>
-                          : category.name
-                        : tx.type === "TRANSFER" ? "Transferencia" : "Sin categoría"
-                      }
-                    </span>
-                  </div>
-                </td>
-
-                {/* Descripción */}
-                <td className="px-4 py-3 text-gray-600">
-                  {tx.description}
-                  {tx.is_recurring && (
-                    <Repeat className="inline w-3 h-3 ml-1 text-gray-400" />
+          {/* ── Header ── */}
+          <thead>
+            <tr className="border-b border-gray-100">
+              {['Categoría', 'Etiqueta', 'Tipo', 'Cuenta', 'Monto', ''].map((h) => (
+                <th
+                  key={h}
+                  className={cn(
+                    'px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider',
+                    h === 'Monto' && 'text-right'
                   )}
-                </td>
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-                {/* Cuenta */}
-                <td className={`px-4 py-3 ${getAccountColor(tx.account_id, accounts)}`}>
-                  {getAccountName(tx.account_id, accounts)}
-                  {tx.to_account_id && (
-                    <span className="text-gray-400 mx-1">
-                      →{" "}
-                      <span className={getAccountColor(tx.to_account_id, accounts)}>
-                        {getAccountName(tx.to_account_id, accounts)}
-                      </span>
-                    </span>
-                  )}
-                </td>
-
-                {/* Monto */}
-                <td className={`px-4 py-3 text-right font-medium ${getTransactionAmountColor(tx.type)}`}>
-                  {getTransactionSign(tx.type)}
-                  {formatCurrency(tx.amount, normalizeCurrency(tx.currency))}
+          {/* ── Body ── */}
+          <tbody className="divide-y divide-gray-50">
+            {loading ? (
+              <TransactionRowSkeleton />
+            ) : transactions.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-16 text-center">
+                  <p className="text-gray-400 text-sm">No hay transacciones registradas.</p>
+                  <p className="text-gray-300 text-[13px] mt-1">
+                    Crea tu primera transacción con el botón de arriba.
+                  </p>
                 </td>
               </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
+            ) : (
+              sortedDates.map((date) => (
+                <Fragment key={`frag-${date}`}>
+                  <DateSeparator key={`sep-${date}`} date={date} />
+                  {grouped[date].map((tx) => (
+                    <TransactionRow
+                      key={tx.id}
+                      tx={tx}
+                      accounts={accounts}
+                      categories={categories}
+                      onEdit={setEditingTx}
+                      onDelete={setPendingDelete}
+                    />
+                  ))}
+                </Fragment>
+              ))
+            )}
+          </tbody>
+          {/* ── Totales — solo si hay transacciones y no está cargando ── */}
+          {!loading && transactions.length > 0 && (
+            <TransactionTotals transactions={transactions} />
+          )}
+        </table>
+      </div>
+
+      {/* ── Sheet de edición ── */}
+      <Sheet open={!!editingTx} onOpenChange={(open) => !open && setEditingTx(null)}>
+        <SheetContent className="sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle className="text-lg font-semibold">
+              Editar Transacción
+            </SheetTitle>
+          </SheetHeader>
+          {editingTx && (
+            <div className="mt-6">
+              <TransactionEditForm
+                transaction={editingTx}
+                categories={categories}
+                onSuccess={() => setEditingTx(null)}
+                onSave={handleEditSave}
+              />
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* ── AlertDialog confirmación de borrado ── */}
+      <AlertDialog
+        open={!!pendingDelete}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+      >
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar esta transacción?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. El balance de la cuenta
+              se ajustará automáticamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

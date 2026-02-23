@@ -31,17 +31,15 @@ export const accountsService = {
   },
 
 async deleteAccount(accountId: string): Promise<void> {
-    const account = await accountsRepository.findById(accountId)
-    if (!account) {
-      throw new Error('Cuenta no encontrada.')
-    }
+  const account = await accountsRepository.findById(accountId)
+  if (!account) throw new Error('Cuenta no encontrada.')
 
-    // Regla de negocio: no borrar cuentas con balance > 0
-    if (account.balance > 0) {
-      throw new Error('No puedes eliminar una cuenta con balance positivo.')
-    }
+  const inUse = await accountsRepository.isUsedInTransactions(accountId)
+  if (inUse) {
+    throw new Error('No se puede eliminar una cuenta que tiene transacciones asociadas.')
+  }
 
-    return accountsRepository.delete(accountId)
-  },
+  return accountsRepository.delete(accountId)
+},
 }
 

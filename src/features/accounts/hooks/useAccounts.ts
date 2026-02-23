@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Account, CreateAccountData, UpdateAccountData } from '@/types/account'
+import { toast } from 'sonner'
 
 // Cliente HTTP que añade el token automáticamente
 async function authFetch(url: string, options?: RequestInit) {
@@ -70,12 +71,13 @@ export function useCreateAccount() {
       return { previous } // contexto para rollback
     },
 
-    onError: (err, _, context) => {
-      // Rollback si falla
-      if (context?.previous) {
-        queryClient.setQueryData(accountKeys.lists(), context.previous)
-      }
-    },
+// En useDeleteAccount, reemplazar el onError
+onError: (error: Error, _id, context) => {
+  if (context?.previous) {
+    queryClient.setQueryData(accountKeys.lists(), context.previous)
+  }
+  toast.error(error.message)  // ← muestra "No se puede eliminar..." directamente
+},
 
     onSettled: () => {
       // Siempre revalida al final para tener datos reales

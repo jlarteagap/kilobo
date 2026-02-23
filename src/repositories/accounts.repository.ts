@@ -52,4 +52,21 @@ export const accountsRepository = {
   async delete(accountId: string): Promise<void> {
     await accountsCollection.doc(accountId).delete()
   },
+
+  async isUsedInTransactions(accountId: string): Promise<boolean> {
+  const snapshot = await adminDb.collection('transactions')
+    .where('account_id', '==', accountId)
+    .limit(1)
+    .get()
+
+  if (!snapshot.empty) return true
+
+  // Verificar también como cuenta destino
+  const snapshotDest = await adminDb.collection('transactions')
+    .where('to_account_id', '==', accountId)
+    .limit(1)
+    .get()
+
+  return !snapshotDest.empty
+},
 }

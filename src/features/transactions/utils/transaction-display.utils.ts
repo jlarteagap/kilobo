@@ -84,3 +84,11 @@ export const TRANSACTION_TYPE_LABELS: Record<typeof TRANSACTION_TYPES[number], s
   SAVING:   "Ahorro",
   DEBT:     "Deuda",
 }
+
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  CASH:     'Efectivo',
+  QR:       'QR',
+  CARD:     'Tarjeta',
+  TRANSFER: 'Transferencia',
+  OTHER:    'Otro',
+}

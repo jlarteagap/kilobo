@@ -6,6 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { PAYMENT_METHODS } from "@/lib/validations/transaction.schema"
+import { PAYMENT_METHOD_LABELS } from "@/features/transactions/utils/transaction-display.utils"
+
 
 import {
   Form,
@@ -35,11 +38,12 @@ import type { Category } from "@/types/category"
 
 // ─── Schema — solo campos editables ──────────────────────────────────────────
 const editTransactionSchema = z.object({
-  category_id:  z.string().optional(),
-  tag:          z.string().optional(),
-  description:  z.string().optional(),
-  date:         z.string().min(1, 'Selecciona una fecha'),
-  is_recurring: z.boolean().optional(),
+  category_id:    z.string().optional(),
+  tag:            z.string().optional(),
+  description:    z.string().optional(),
+  date:           z.string().min(1, 'Selecciona una fecha'),
+  payment_method: z.string().optional(),
+  is_recurring:   z.boolean().optional(),
 })
 
 type EditFormValues = z.infer<typeof editTransactionSchema>
@@ -48,7 +52,6 @@ function getTagsForCategory(categoryId: string | undefined, categories: Category
   if (!categoryId) return []
   return categories.find((c) => c.id === categoryId)?.tags ?? []
 }
-
 // ─── Componente ───────────────────────────────────────────────────────────────
 export function TransactionEditForm({
   transaction,
@@ -66,11 +69,12 @@ export function TransactionEditForm({
   const form = useForm<EditFormValues>({
     resolver: zodResolver(editTransactionSchema),
     defaultValues: {
-      category_id:  transaction.category_id ?? undefined,
-      tag:          transaction.tag         ?? undefined,
-      description:  transaction.description ?? '',
-      date:         transaction.date,
-      is_recurring: transaction.is_recurring,
+      category_id:    transaction.category_id ?? undefined,
+      tag:            transaction.tag         ?? undefined,
+      description:    transaction.description ?? '',
+      date:           transaction.date,
+      payment_method: transaction.payment_method ?? undefined,
+      is_recurring:   transaction.is_recurring,
     },
   })
 
@@ -249,7 +253,50 @@ export function TransactionEditForm({
             </FormItem>
           )}
         />
-
+<FormField
+  control={form.control}
+  name="payment_method"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel className="text-[13px] font-medium text-gray-600">
+        Método de pago
+        <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+      </FormLabel>
+      <FormControl>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={() => form.setValue('payment_method', undefined)}
+            className={cn(
+              'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
+              !field.value
+                ? 'bg-gray-900 text-white'
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            )}
+          >
+            Ninguno
+          </button>
+          {PAYMENT_METHODS.map((method) => (
+            <button
+              key={method}
+              type="button"
+              onClick={() => form.setValue('payment_method', method)}
+              className={cn(
+                'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
+                field.value === method
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              )}
+            >
+              {PAYMENT_METHOD_LABELS[method]}
+            </button>
+          ))}
+        </div>
+      </FormControl>
+      <FormMessage className="text-[12px]" />
+    </FormItem>
+  )}
+/>
         {/* ── Recurrente ── */}
         {(transaction.type === 'EXPENSE' || transaction.type === 'SAVING' || transaction.type === 'DEBT') && (
           <FormField<EditFormValues>

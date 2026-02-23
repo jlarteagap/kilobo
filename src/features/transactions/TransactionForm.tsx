@@ -5,10 +5,14 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { PAYMENT_METHODS } from "@/lib/validations/transaction.schema"
+import { PAYMENT_METHOD_LABELS } from '@/features/transactions/utils/transaction-display.utils'
 
 import { useCategories } from "@/features/categories/hooks/useCategories"
 import { useAccounts } from "@/features/accounts/hooks/useAccounts"
 import { useCreateTransaction } from "@/features/transactions/hooks/useTransactions"
+
+import {formatCurrency } from '@/features/accounts/utils/account-display.utils'
 import {
   createTransactionSchema,
   CreateTransactionInput,
@@ -37,13 +41,51 @@ import {
 
 import { TRANSACTION_TYPE_LABELS } from "./utils/transaction-display.utils"
 import type { Category } from "@/types/category"
-
+import type { Account } from "@/types/account"
 // ─── Helper ───────────────────────────────────────────────────────────────────
 function getTagsForCategory(categoryId: string | undefined, categories: Category[]): string[] {
   if (!categoryId) return []
   return categories.find((c) => c.id === categoryId)?.tags ?? []
 }
 
+function AccountBalanceHint({
+  accountId,
+  amount,
+  type,
+  accounts,
+}: {
+  accountId: string | undefined
+  amount:    number
+  type:      string
+  accounts:  Account[]
+}) {
+  if (!accountId) return null
+
+  const account     = accounts.find((a) => a.id === accountId)
+  if (!account) return null
+
+  const showBalance = type === 'EXPENSE' || type === 'DEBT'
+  const isOverdraft = showBalance && amount > account.balance
+
+  return (
+    <div className={cn(
+      'flex items-center justify-between px-3 py-2 rounded-xl text-[12px] transition-all duration-200',
+      isOverdraft
+        ? 'bg-rose-50 text-rose-500'
+        : 'bg-gray-50 text-gray-400'
+    )}>
+      <span>Balance disponible</span>
+      <span className={cn('font-semibold', isOverdraft && 'text-rose-600')}>
+        {formatCurrency(account.balance, account.currency)}
+        {isOverdraft && (
+          <span className="ml-1.5 font-normal">
+            · insuficiente
+          </span>
+        )}
+      </span>
+    </div>
+  )
+}
 // ─── Componente ───────────────────────────────────────────────────────────────
 export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const { data: categories = [] } = useCategories()
@@ -297,6 +339,13 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
           />
         )}
 
+        <AccountBalanceHint
+          accountId={form.watch('account_id')}
+          amount={form.watch('amount') ?? 0}
+          type={type}
+          accounts={accounts}
+        />
+
         {/* ── Nota ── */}
         <FormField
           control={form.control}
@@ -319,7 +368,50 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
             </FormItem>
           )}
         />
-
+<FormField
+  control={form.control}
+  name="payment_method"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel className="text-[13px] font-medium text-gray-600">
+        Método de pago
+        <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+      </FormLabel>
+      <FormControl>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={() => form.setValue('payment_method', undefined)}
+            className={cn(
+              'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
+              !field.value
+                ? 'bg-gray-900 text-white'
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            )}
+          >
+            Ninguno
+          </button>
+          {PAYMENT_METHODS.map((method) => (
+            <button
+              key={method}
+              type="button"
+              onClick={() => form.setValue('payment_method', method)}
+              className={cn(
+                'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
+                field.value === method
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              )}
+            >
+              {PAYMENT_METHOD_LABELS[method]}
+            </button>
+          ))}
+        </div>
+      </FormControl>
+      <FormMessage className="text-[12px]" />
+    </FormItem>
+  )}
+/>
         {/* ── Recurrente ── */}
         {(type === 'EXPENSE' || type === 'SAVING' || type === 'DEBT') && (
           <FormField

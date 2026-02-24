@@ -1,24 +1,26 @@
+// features/cashflow/components/SankeyCustomNode.tsx
 import { Layer, Rectangle } from "recharts"
 
-const NODE_COLORS: Record<string, string> = {
-  "Ahorro/Excedente": "#10B981",
-  "Fondos Previos": "#6B7280",
+// Colores consistentes con el proyecto
+const TYPE_COLORS: Record<string, string> = {
+  income:  '#34d399',  // emerald-400
+  expense: '#fb7185',  // rose-400
+  account: '#60a5fa',  // blue-400
+  balance: '#9ca3af',  // gray-400
 }
 
-const TYPE_COLORS: Record<string, string> = {
-  income: "#10B981",
-  expense: "#EF4444",
-  account: "#3B82F6",
-  balance: "#6B7280",
+const NODE_COLORS: Record<string, string> = {
+  'Ahorro/Excedente': '#34d399',
+  'Fondos Previos':   '#9ca3af',
 }
 
 interface SankeyNodeProps {
-  x?: number
-  y?: number
-  width?: number
-  height?: number
-  index?: number
-  payload?: any
+  x?:              number
+  y?:              number
+  width?:          number
+  height?:         number
+  index?:          number
+  payload?:        any
   containerWidth?: number
 }
 
@@ -31,32 +33,36 @@ export function SankeyCustomNode({
   payload = {},
   containerWidth = 0,
 }: SankeyNodeProps) {
-  const isOut = x + width + 6 > containerWidth
+  const isRight = x + width + 6 > containerWidth
 
   const fill =
-    NODE_COLORS[payload.name] ??
-    payload.color ??
-    TYPE_COLORS[payload.type] ??
-    "#3B82F6"
+    NODE_COLORS[payload.name]  ??
+    payload.color              ??
+    TYPE_COLORS[payload.type]  ??
+    '#60a5fa'
 
   return (
     <Layer key={`node-${index}`}>
+      {/* Barra del nodo */}
       <Rectangle
         x={x}
         y={y}
         width={width}
         height={height}
         fill={fill}
-        fillOpacity="1"
+        fillOpacity={1}
+        radius={4}
       />
+      {/* Label */}
       <text
-        x={isOut ? x - 6 : x + width + 6}
+        x={isRight ? x - 8 : x + width + 8}
         y={y + height / 2}
-        textAnchor={isOut ? "end" : "start"}
-        alignmentBaseline="middle"
-        fill="#374151"
-        fontSize="12"
-        fontWeight="500"
+        textAnchor={isRight ? 'end' : 'start'}
+        dominantBaseline="middle"
+        fill="#6b7280"
+        fontSize={11}
+        fontWeight={500}
+        fontFamily="inherit"
       >
         {payload.name}
       </text>

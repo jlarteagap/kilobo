@@ -1,18 +1,17 @@
+// features/accounts/components/AssetBar.tsx
 import { AssetSummary } from "@/types/account"
 
-interface AssetBarProps {
-  assets: AssetSummary[]
-}
-
-export function AssetBar({ assets }: AssetBarProps) {
+export function AssetBar({ assets }: { assets: AssetSummary[] }) {
   return (
-    <div className="flex h-4 w-full overflow-hidden rounded-full bg-gray-100">
+    <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
       {assets.map((asset) => (
         <div
           key={asset.name}
-          className={asset.color}
-          style={{ width: `${asset.percent}%` }}
-          title={`${asset.name}: ${asset.percent}%`}
+          className="transition-all duration-500"
+          style={{
+            width:           `${asset.percent}%`,
+            backgroundColor: asset.color,
+          }}
         />
       ))}
     </div>

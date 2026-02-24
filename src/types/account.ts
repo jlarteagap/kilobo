@@ -44,6 +44,7 @@ export interface AssetSummary {
   value: number
   color: string
   percent: number
+  currency: CurrencyType
 }
 
 export interface CurrencyGroup {

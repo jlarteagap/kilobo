@@ -1,8 +1,46 @@
+// repositories/transaction.repository.ts
 import { adminDb } from '@/lib/firebase.admin'
 import { Transaction, CreateTransactionData } from '@/types/transaction'
-import { FieldValue } from 'firebase-admin/firestore'
+import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 
 const transactionsCollection = adminDb.collection('transactions')
+
+// ─── Helper: convierte cualquier formato de fecha a string ISO ────────────────
+function toISOString(value: unknown): string {
+  if (!value) return new Date().toISOString()
+
+  // Firestore Timestamp — objeto con seconds y nanoseconds
+  if (value instanceof Timestamp) {
+    return value.toDate().toISOString()
+  }
+
+  // Timestamp plano — cuando llega serializado desde Firestore Admin
+  if (typeof value === 'object' && value !== null && '_seconds' in value) {
+    return new Date((value as any)._seconds * 1000).toISOString()
+  }
+
+  // Ya es string ISO — documentos viejos
+  if (typeof value === 'string') return value
+
+  // Date nativo
+  if (value instanceof Date) return value.toISOString()
+
+  return new Date().toISOString()
+}
+
+// ─── Mapper: doc de Firestore → Transaction tipada ────────────────────────────
+function mapTransaction(id: string, data: FirebaseFirestore.DocumentData): Transaction {
+  return {
+    ...data,
+    id,
+    created_at: toISOString(data.created_at),
+    updated_at: toISOString(data.updated_at),
+    // Normalizar date — siempre "yyyy-MM-dd"
+    date: typeof data.date === 'string'
+      ? data.date.split('T')[0]   // por si acaso viene con hora
+      : toISOString(data.date).split('T')[0],
+  } as Transaction
+}
 
 export const transactionsRepository = {
   async findAll(): Promise<Transaction[]> {
@@ -10,62 +48,33 @@ export const transactionsRepository = {
       .orderBy('date', 'desc')
       .get()
 
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as Omit<Transaction, 'id'>),
-    }))
+    return snapshot.docs.map((doc) => mapTransaction(doc.id, doc.data()))
   },
 
   async findById(transactionId: string): Promise<Transaction | null> {
     const doc = await transactionsCollection.doc(transactionId).get()
     if (!doc.exists) return null
-
-    return { id: doc.id, ...(doc.data() as Omit<Transaction, 'id'>) }
+    return mapTransaction(doc.id, doc.data()!)
   },
 
   async create(data: CreateTransactionData): Promise<Transaction> {
     const payload = {
       ...data,
-      created_at: FieldValue.serverTimestamp(), // Use server timestamp for creation
+      status:     data.status     ?? 'COMPLETED',
+      user_id:    data.user_id    ?? '',
+      created_at: FieldValue.serverTimestamp(),
       updated_at: FieldValue.serverTimestamp(),
     }
 
-    // Convert date string to whatever format is preferred if needed, 
-    // but assuming string storage for 'date' as per interface.
-    // However, interface says 'created_at' is string, but repository usually stores Timestamp and converts or stores string.
-    // Accounts repo used FieldValue.serverTimestamp().
-    // The interface in `transaction.ts` says `created_at` is `string`.
-    // If I use FieldValue.serverTimestamp(), it will be a Timestamp in Firestore.
-    // When reading back, I might need to convert it to string or date.
-    // Accounts repository does `...(doc.data() as Omit<Account, 'id'>)` which might imply loose typing or auto-conversion if not strictly checked.
-    // Let's stick to what's in accounts repository for consistency, 
-    // but be aware that `FieldValue.serverTimestamp()` is not a string.
-    // I will assume the type definition in `types/transaction.ts` might need adjustment or the repo should convert.
-    // For now, I'll follow the pattern and if types mismatch I'll fix.
-    // In `accounts.repository.ts`:
-    // createdAt: FieldValue.serverTimestamp(),
-    // defined in `Account` as `Date` (in `types/account`).
-    // Wait, let me check `types/account.ts`? I saw `Account` interface earlier.
-    // Ah, I didn't see `types/account.ts` content, only `types/transaction.ts`.
-    // `Transaction` uses `created_at: string`.
-    // If I store FieldValue.serverTimestamp(), it saves as Timestamp.
-    // If the frontend expects string, I should convert it when fetching.
-    
-    const docRef = await transactionsCollection.add(payload)
+    const docRef  = await transactionsCollection.add(payload)
     const created = await docRef.get()
-    
-    // Helper to converting timestamps if needed, or just casting for now if the app handles it elsewhere.
-    // I'll stick to the existing pattern but `created_at` in interface is string.
-    // The `accounts.repository.ts` casts `doc.data()` to `Account`. 
-    // If `Account` has `Date`, firebase SDK returns Timestamp, so it might be an issue if not converted.
-    // But `accounts.service.ts` returns `Account[]`.
-    
-    // For now, I will blindly follow the pattern.
-
-    return { id: docRef.id, ...(created.data() as Omit<Transaction, 'id'>) }
+    return mapTransaction(docRef.id, created.data()!)
   },
 
-  async update(transactionId: string, data: Partial<CreateTransactionData>): Promise<Transaction> {
+  async update(
+    transactionId: string,
+    data: Partial<CreateTransactionData>
+  ): Promise<Transaction> {
     const docRef = transactionsCollection.doc(transactionId)
 
     await docRef.update({
@@ -74,7 +83,7 @@ export const transactionsRepository = {
     })
 
     const updated = await docRef.get()
-    return { id: docRef.id, ...(updated.data() as Omit<Transaction, 'id'>) }
+    return mapTransaction(docRef.id, updated.data()!)
   },
 
   async delete(transactionId: string): Promise<void> {

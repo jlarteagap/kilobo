@@ -60,6 +60,9 @@ export function useTransactions() {
       const res  = await authFetch('/api/transactions')
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener las transacciones')
+
+      // ← La API devuelve { data: [] }, no el array directo
+      // Antes: return res.json()  ← devolvía el objeto wrapper completo
       return Array.isArray(json.data) ? json.data : []
     },
     staleTime: 1000 * 60 * 5,

@@ -46,6 +46,7 @@ export default function TransactionsPage() {
 
   const metrics = useTransactionMetrics(transactions, categories, period)
 
+  // Justo después de const metrics = useTransactionMetrics(...)
   // Filtrar la lista con la misma lógica que las métricas
   const filteredTransactions = filterTransactionsByPeriod(transactions, period)
 
@@ -88,31 +89,38 @@ export default function TransactionsPage() {
         </div>
 
         {/* ── Analytics ── */}
-        {isLoading ? (
-          <TransactionsSkeleton />
-        ) : isError ? (
-          <div className="bg-red-50 text-red-500 text-sm p-4 rounded-xl mb-8">
-            Error al cargar los datos. Intenta nuevamente.
-          </div>
-        ) : (
-          <>
-            <SummaryCards
-              totalIncome={metrics.totalIncome}
-              totalExpense={metrics.totalExpense}
-              netIncome={metrics.netIncome}
-              incomeTrend={metrics.incomeTrend}
-              expenseTrend={metrics.expenseTrend}
-            />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <div className="lg:col-span-2">
-                <IncomeExpenseChart data={metrics.chartData} />
-              </div>
-              <div>
-                <CategoryOverview data={metrics.categoryData} />
-              </div>
-            </div>
-          </>
-        )}
+        {/* ── Analytics ── */}
+{isLoading ? (
+  <TransactionsSkeleton />
+) : isError ? (
+  <div className="bg-red-50 text-red-500 text-sm p-4 rounded-xl mb-8">
+    Error al cargar los datos. Intenta nuevamente.
+  </div>
+) : (
+  <>
+    <SummaryCards
+      totalIncome={metrics.totalIncome}
+      totalExpense={metrics.totalExpense}
+      netIncome={metrics.netIncome}
+      incomeTrend={metrics.incomeTrend}
+      expenseTrend={metrics.expenseTrend}
+    />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="lg:col-span-2">
+        <IncomeExpenseChart
+          key={`chart-${period}-${metrics.chartData.length}`}  
+          data={metrics.chartData}
+        />
+      </div>
+      <div>
+        <CategoryOverview
+          key={`cat-${period}-${metrics.categoryData.length}`} 
+          data={metrics.categoryData}
+        />
+      </div>
+    </div>
+  </>
+)}
 
         {/* ── Lista ── */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"

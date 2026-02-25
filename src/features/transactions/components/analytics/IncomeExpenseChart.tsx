@@ -12,25 +12,26 @@ import type { DataPoint } from "@/types/transaction"
 type ChartType = 'area' | 'bar' | 'line'
 
 const CHART_TYPES: { value: ChartType; label: string }[] = [
-  { value: 'area', label: 'Área'   },
-  { value: 'bar',  label: 'Barra'  },
-  { value: 'line', label: 'Línea'  },
+  { value: 'area', label: 'Área'  },
+  { value: 'bar',  label: 'Barra' },
+  { value: 'line', label: 'Línea' },
 ]
 
-// ─── Colores consistentes con el proyecto ─────────────────────────────────────
-const INCOME_COLOR  = '#34d399'  // emerald-400
-const EXPENSE_COLOR = '#fb7185'  // rose-400
+const INCOME_COLOR  = '#34d399'
+const EXPENSE_COLOR = '#fb7185'
 
-// ─── Tooltip personalizado ────────────────────────────────────────────────────
+// ─── Tooltip ──────────────────────────────────────────────────────────────────
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
 
   return (
     <div
-      className="bg-white px-3 py-2.5 rounded-xl text-sm min-w-[140px]"
+      className="bg-white px-3 py-2.5 rounded-xl text-sm min-w-[160px]"
       style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)', border: '1px solid #f3f4f6' }}
     >
-      <p className="text-[11px] font-semibold text-gray-400 mb-1.5">{label}</p>
+      <p className="text-[11px] font-semibold text-gray-400 mb-1.5 capitalize">
+        {label}
+      </p>
       {payload.map((entry: any) => (
         <div key={entry.dataKey} className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
@@ -46,31 +47,35 @@ function CustomTooltip({ active, payload, label }: any) {
   )
 }
 
-// ─── Ejes comunes ─────────────────────────────────────────────────────────────
-function CommonAxes() {
-  return (
-    <>
-      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-      <XAxis
-        dataKey="label"
-        axisLine={false}
-        tickLine={false}
-        tick={{ fill: '#9ca3af', fontSize: 11 }}
-        dy={8}
-      />
-      <YAxis
-        axisLine={false}
-        tickLine={false}
-        tick={{ fill: '#9ca3af', fontSize: 11 }}
-        tickFormatter={(v) => `Bs${v}`}
-        width={48}
-      />
-      <Tooltip content={<CustomTooltip />} />
-    </>
-  )
+// ─── Ejes — constantes reutilizables, NO componente wrapper ───────────────────
+const axisProps = {
+  xAxis: (
+    <XAxis
+      dataKey="label"
+      axisLine={false}
+      tickLine={false}
+      tick={{ fill: '#9ca3af', fontSize: 11 }}
+      dy={8}
+    />
+  ),
+  yAxis: (
+    <YAxis
+      axisLine={false}
+      tickLine={false}
+      tick={{ fill: '#9ca3af', fontSize: 11 }}
+      tickFormatter={(v) => `Bs${v}`}
+      width={48}
+    />
+  ),
+  grid: (
+    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+  ),
+  tooltip: (
+    <Tooltip content={<CustomTooltip />} />
+  ),
 }
 
-// ─── Leyenda manual ───────────────────────────────────────────────────────────
+// ─── Leyenda ──────────────────────────────────────────────────────────────────
 function ChartLegend() {
   return (
     <div className="flex items-center gap-4 mt-3">
@@ -107,7 +112,6 @@ interface IncomeExpenseChartProps {
 
 export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
   const [chartType, setChartType] = useState<ChartType>('area')
-
   const hasData = data.some((d) => d.income > 0 || d.expense > 0)
 
   return (
@@ -121,8 +125,6 @@ export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
           <h3 className="text-sm font-semibold text-gray-700">Ingresos vs Gastos</h3>
           <p className="text-[11px] text-gray-400 mt-0.5">Evolución del período</p>
         </div>
-
-        {/* Selector de tipo de gráfica */}
         <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
           {CHART_TYPES.map((type) => (
             <button
@@ -151,31 +153,21 @@ export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
             <ResponsiveContainer width="100%" height="100%">
               {chartType === 'bar' ? (
                 <BarChart data={data} barCategoryGap="30%">
-                  <CommonAxes />
+                  {axisProps.grid}
+                  {axisProps.xAxis}
+                  {axisProps.yAxis}
+                  {axisProps.tooltip}
                   <Bar dataKey="income"  name="Ingresos" fill={INCOME_COLOR}  radius={[4, 4, 0, 0]} />
                   <Bar dataKey="expense" name="Gastos"   fill={EXPENSE_COLOR} radius={[4, 4, 0, 0]} />
                 </BarChart>
               ) : chartType === 'line' ? (
                 <LineChart data={data}>
-                  <CommonAxes />
-                  <Line
-                    type="monotone"
-                    dataKey="income"
-                    name="Ingresos"
-                    stroke={INCOME_COLOR}
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 4, strokeWidth: 0 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="expense"
-                    name="Gastos"
-                    stroke={EXPENSE_COLOR}
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 4, strokeWidth: 0 }}
-                  />
+                  {axisProps.grid}
+                  {axisProps.xAxis}
+                  {axisProps.yAxis}
+                  {axisProps.tooltip}
+                  <Line type="monotone" dataKey="income"  name="Ingresos" stroke={INCOME_COLOR}  strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
+                  <Line type="monotone" dataKey="expense" name="Gastos"   stroke={EXPENSE_COLOR} strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
                 </LineChart>
               ) : (
                 <AreaChart data={data}>
@@ -189,32 +181,16 @@ export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
                       <stop offset="100%" stopColor={EXPENSE_COLOR} stopOpacity={0}    />
                     </linearGradient>
                   </defs>
-                  <CommonAxes />
-                  <Area
-                    type="monotone"
-                    dataKey="income"
-                    name="Ingresos"
-                    stroke={INCOME_COLOR}
-                    strokeWidth={2}
-                    fill="url(#gradIncome)"
-                    dot={false}
-                    activeDot={{ r: 4, strokeWidth: 0 }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="expense"
-                    name="Gastos"
-                    stroke={EXPENSE_COLOR}
-                    strokeWidth={2}
-                    fill="url(#gradExpense)"
-                    dot={false}
-                    activeDot={{ r: 4, strokeWidth: 0 }}
-                  />
+                  {axisProps.grid}
+                  {axisProps.xAxis}
+                  {axisProps.yAxis}
+                  {axisProps.tooltip}
+                  <Area type="monotone" dataKey="income"  name="Ingresos" stroke={INCOME_COLOR}  strokeWidth={2} fill="url(#gradIncome)"  dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
+                  <Area type="monotone" dataKey="expense" name="Gastos"   stroke={EXPENSE_COLOR} strokeWidth={2} fill="url(#gradExpense)" dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
                 </AreaChart>
               )}
             </ResponsiveContainer>
           </div>
-
           <ChartLegend />
         </>
       )}

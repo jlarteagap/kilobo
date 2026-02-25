@@ -52,6 +52,8 @@ export interface CreateTransactionData {
   payment_method?: PaymentMethod | null
   is_recurring?: boolean
   currency?: string
+  status?: TransactionStatus
+  user_id?: string
 }
 
 export interface UpdateTransactionData extends Partial<CreateTransactionData> {}

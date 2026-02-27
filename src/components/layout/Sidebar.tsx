@@ -9,6 +9,7 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Cuentas", href: "/accounts", icon: Wallet },
   { name: "Transacciones", href: "/transactions", icon: CreditCard },
+  { name: "Deudas y prestamos", href: "/debts", icon: Tags },
   { name: "Presupuestos", href: "/budgets", icon: PieChart },
   { name: "Categorías", href: "/categories", icon: Tags },
 ]

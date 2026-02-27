@@ -1,0 +1,99 @@
+// repositories/debt.repository.ts
+import { adminDb } from '@/lib/firebase.admin'
+import { Timestamp } from 'firebase-admin/firestore'
+import type { Debt, CreateDebtData, DebtPayment, CreateDebtPaymentData } from '@/types/debt'
+
+const debtsCollection    = adminDb.collection('debts')
+const paymentsCollection = adminDb.collection('debt_payments')
+
+// ─── Mapper ───────────────────────────────────────────────────────────────────
+function toISOString(value: unknown): string {
+  if (value instanceof Timestamp) return value.toDate().toISOString()
+  if (typeof value === 'object' && value !== null && '_seconds' in value) {
+    return new Date((value as any)._seconds * 1000).toISOString()
+  }
+  if (typeof value === 'string') return value
+  return new Date().toISOString()
+}
+
+function mapDebt(id: string, data: FirebaseFirestore.DocumentData): Debt {
+  return {
+    ...data,
+    id,
+    paid_amount: data.paid_amount ?? 0,
+    created_at:  toISOString(data.created_at),
+    updated_at:  toISOString(data.updated_at),
+  } as Debt
+}
+
+function mapPayment(id: string, data: FirebaseFirestore.DocumentData): DebtPayment {
+  return {
+    ...data,
+    id,
+    created_at: toISOString(data.created_at),
+  } as DebtPayment
+}
+
+export const debtRepository = {
+  // ── Debts ──────────────────────────────────────────────────────────────────
+  async findAll(): Promise<Debt[]> {
+    const snapshot = await debtsCollection
+      .orderBy('created_at', 'desc')
+      .get()
+    return snapshot.docs.map((doc) => mapDebt(doc.id, doc.data()))
+  },
+
+  async findById(id: string): Promise<Debt | null> {
+    const doc = await debtsCollection.doc(id).get()
+    if (!doc.exists) return null
+    return mapDebt(doc.id, doc.data()!)
+  },
+
+  async create(data: CreateDebtData): Promise<Debt> {
+    const payload = {
+      ...data,
+      paid_amount: 0,
+      status:      'ACTIVE',
+      user_id:     '',
+      created_at:  Timestamp.now(),
+      updated_at:  Timestamp.now(),
+    }
+    const docRef  = await debtsCollection.add(payload)
+    const created = await docRef.get()
+    return mapDebt(docRef.id, created.data()!)
+  },
+
+  async update(id: string, data: Partial<Debt>): Promise<Debt> {
+    const docRef = debtsCollection.doc(id)
+    await docRef.update({ ...data, updated_at: Timestamp.now() })
+    const updated = await docRef.get()
+    return mapDebt(docRef.id, updated.data()!)
+  },
+
+  async delete(id: string): Promise<void> {
+    await debtsCollection.doc(id).delete()
+  },
+
+  // ── Payments ───────────────────────────────────────────────────────────────
+  async findPaymentsByDebt(debtId: string): Promise<DebtPayment[]> {
+    const snapshot = await paymentsCollection
+      .where('debt_id', '==', debtId)
+      .orderBy('date', 'desc')
+      .get()
+    return snapshot.docs.map((doc) => mapPayment(doc.id, doc.data()))
+  },
+
+  async createPayment(
+    debtId: string,
+    data:   CreateDebtPaymentData
+  ): Promise<DebtPayment> {
+    const payload = {
+      ...data,
+      debt_id:    debtId,
+      created_at: Timestamp.now(),
+    }
+    const docRef  = await paymentsCollection.add(payload)
+    const created = await docRef.get()
+    return mapPayment(docRef.id, created.data()!)
+  },
+}

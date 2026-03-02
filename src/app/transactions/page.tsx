@@ -1,26 +1,25 @@
 // features/transactions/TransactionsPage.tsx
 "use client"
 
-import { useState, Fragment } from "react"
+import { useState } from "react"
 import { Plus } from "lucide-react"
 
-import AppLayout from "@/components/layout/AppLayout"
+import AppLayout          from "@/components/layout/AppLayout"
 import { useTransactions } from "@/features/transactions/hooks/useTransactions"
-import { useAccounts } from "@/features/accounts/hooks/useAccounts"
-import { useCategories } from "@/features/categories/hooks/useCategories"
-import {
-  Period,
-  useTransactionMetrics,
-  filterTransactionsByPeriod,  // ← importar la función exportada
-} from "@/features/transactions/hooks/useTransactionMetrics"
+import { useAccounts }     from "@/features/accounts/hooks/useAccounts"
+import { useCategories }   from "@/features/categories/hooks/useCategories"
 
-import { TransactionForm } from "@/features/transactions/TransactionForm"
-import { TransactionList } from "@/features/transactions/TransactionList"
-import { PeriodSelector } from "./components/PeriodSelector"
+import { useTransactionFilters } from "@/features/transactions/hooks/useTransactionFilters"
+import { useTransactionMetrics } from "@/features/transactions/hooks/useTransactionMetrics"
+
+import { PeriodSelector }      from "./components/PeriodSelector"
+import { TransactionFilters }  from "@/features/transactions/components/TransactionFilters"
+import { SummaryCards }        from "@/features/transactions/components/analytics/SummaryCards"
+import { IncomeExpenseChart }  from "@/features/transactions/components/analytics/IncomeExpenseChart"
+import { CategoryOverview }    from "@/features/transactions/components/analytics/CategoryOverview"
+import { TransactionList }     from "@/features/transactions/TransactionList"
+import { TransactionForm }     from "@/features/transactions/TransactionForm"
 import { TransactionsSkeleton } from "./components/skeletons/TransactionsSkeleton"
-import { SummaryCards } from "@/features/transactions/components/analytics/SummaryCards"
-import { IncomeExpenseChart } from "@/features/transactions/components/analytics/IncomeExpenseChart"
-import { CategoryOverview } from "@/features/transactions/components/analytics/CategoryOverview"
 
 import {
   Dialog,
@@ -29,26 +28,45 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Transaction } from "@/types/transaction"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import { getPeriodLabel } from "@/utils/date.utils"
 import { cn } from "@/lib/utils"
 
 export default function TransactionsPage() {
-  const [open, setOpen]     = useState(false)
-  const [period, setPeriod] = useState<Period>('1M')
+  const [open, setOpen] = useState(false)
 
-  const { data: transactions = [], isLoading: loadingTransactions, error: transactionsError } = useTransactions()
-  const { data: accounts    = [], isLoading: loadingAccounts    } = useAccounts()
-  const { data: categories  = [], isLoading: loadingCategories  } = useCategories()
+  const { data: transactions = [], isLoading: loadingTx,  error: txError  } = useTransactions()
+  const { data: accounts     = [], isLoading: loadingAcc                  } = useAccounts()
+  const { data: categories   = [], isLoading: loadingCat                  } = useCategories()
 
-  const isLoading = loadingTransactions || loadingAccounts || loadingCategories
-  const isError   = transactionsError as any
 
-  const metrics = useTransactionMetrics(transactions, categories, period)
+  const isLoading = loadingTx || loadingAcc || loadingCat
+  const isError   = !!txError
 
-  // Justo después de const metrics = useTransactionMetrics(...)
-  // Filtrar la lista con la misma lógica que las métricas
-  const filteredTransactions = filterTransactionsByPeriod(transactions, period)
+  // ── Filtros — hook centralizado ─────────────────────────────────────────────
+  const {
+    filters,
+    filtered,
+    activeFilterCount,
+    availableTags,
+    availableCategoryIds,
+    stats,
+    setPeriod,
+    setAccountId,
+    setCategoryId,
+    setTag,
+    setType,
+    resetFilters,
+    resetSecondaryFilters,
+  } = useTransactionFilters(transactions)
+
+  // ── Métricas — sobre transacciones filtradas por período ───────────────────
+  // Para analytics usamos todas las transacciones del período sin filtros secundarios
+  // para no distorsionar los gráficos al filtrar por cuenta/categoría
+  const metricsTransactions = filtered
+
+  // ── Métricas para CategoryOverview e IncomeExpenseChart ───────────────────
+  const metrics = useTransactionMetrics(metricsTransactions, categories, filters.period)
 
   return (
     <AppLayout>
@@ -61,20 +79,33 @@ export default function TransactionsPage() {
               Transacciones
             </h1>
             <p className="text-[13px] text-gray-400 mt-0.5">
-              Gestiona tus ingresos y gastos
+              {getPeriodLabel(filters.period)}
+              {activeFilterCount > 0 && (
+                <span className="ml-2 text-gray-300">
+                  · {activeFilterCount} filtro{activeFilterCount !== 1 ? 's' : ''} activo{activeFilterCount !== 1 ? 's' : ''}
+                </span>
+              )}
             </p>
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <PeriodSelector value={period} onChange={setPeriod} />
+            {/* Period Selector */}
+            <PeriodSelector
+              value={filters.period}
+              onChange={(period) => {
+                setPeriod(period)
+                resetSecondaryFilters()  // ← limpiar filtros al cambiar período
+              }}
+            />
 
+            {/* Nueva transacción */}
             <Dialog open={open} onOpenChange={setOpen}>
               <Button
                 onClick={() => setOpen(true)}
-                className="flex-1 md:flex-none gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl whitespace-nowrap"
+                className="flex-shrink-0 gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <Plus className="w-4 h-4" />
-                Nueva Transacción
+                Nueva
               </Button>
               <DialogContent className="sm:max-w-lg rounded-2xl">
                 <DialogHeader>
@@ -89,59 +120,104 @@ export default function TransactionsPage() {
         </div>
 
         {/* ── Analytics ── */}
-        {/* ── Analytics ── */}
-{isLoading ? (
-  <TransactionsSkeleton />
-) : isError ? (
-  <div className="bg-red-50 text-red-500 text-sm p-4 rounded-xl mb-8">
-    Error al cargar los datos. Intenta nuevamente.
-  </div>
-) : (
-  <>
-    <SummaryCards
-      totalIncome={metrics.totalIncome}
-      totalExpense={metrics.totalExpense}
-      netIncome={metrics.netIncome}
-      incomeTrend={metrics.incomeTrend}
-      expenseTrend={metrics.expenseTrend}
-    />
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <div className="lg:col-span-2">
-        <IncomeExpenseChart
-          key={`chart-${period}-${metrics.chartData.length}`}  
-          data={metrics.chartData}
-        />
-      </div>
-      <div>
-        <CategoryOverview
-          key={`cat-${period}-${metrics.categoryData.length}`} 
-          data={metrics.categoryData}
-        />
-      </div>
-    </div>
-  </>
-)}
+        {isLoading ? (
+          <TransactionsSkeleton />
+        ) : isError ? (
+          <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl mb-8">
+            Error al cargar los datos. Intenta nuevamente.
+          </div>
+        ) : (
+          <>
+            {/* Summary Cards — con sparkline */}
+            <SummaryCards
+              transactions={metricsTransactions}
+              period={filters.period}
+            />
 
-        {/* ── Lista ── */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="lg:col-span-2">
+                <IncomeExpenseChart
+                  key={`chart-${filters.period.type}`}
+                  data={metrics.chartData}
+                />
+              </div>
+              <div>
+                <CategoryOverview
+                  key={`cat-${filters.period.type}`}
+                  data={metrics.categoryData}
+                />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── Lista de transacciones ── */}
+        <div
+          className="bg-white rounded-2xl overflow-hidden"
           style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
         >
-          {/* Header de la tabla con período activo */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-            <div>
-              <h2 className="text-sm font-semibold text-gray-700">
-                Movimientos
-              </h2>
-              <p className="text-[11px] text-gray-400 mt-0.5">
-                {filteredTransactions.length} transacciones
-              </p>
+          {/* Header de la tabla */}
+          <div className="px-4 py-3 border-b border-gray-100 space-y-3">
+
+            {/* Fila 1: título + stats rápidas */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-gray-700">
+                  Movimientos
+                </h2>
+                <p className="text-[11px] text-gray-400 mt-0.5">
+                  {filtered.length} transaccion{filtered.length !== 1 ? 'es' : ''}
+                </p>
+              </div>
+
+              {/* Stats rápidas del filtrado */}
+              {filtered.length > 0 && (
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-[11px] text-gray-400">Ingresos</p>
+                    <p className="text-[13px] font-semibold text-emerald-600">
+                      {formatCurrency(stats.income, 'BOB')}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] text-gray-400">Gastos</p>
+                    <p className="text-[13px] font-semibold text-rose-500">
+                      {formatCurrency(stats.expense, 'BOB')}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] text-gray-400">Neto</p>
+                    <p className={cn(
+                      'text-[13px] font-semibold',
+                      stats.net >= 0 ? 'text-gray-900' : 'text-rose-500'
+                    )}>
+                      {formatCurrency(stats.net, 'BOB')}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-            {/* PeriodSelector secundario — solo para la lista */}
-            <PeriodSelector value={period} onChange={setPeriod} />
+
+            {/* Fila 2: filtros */}
+            <TransactionFilters
+              filters={filters}
+              accounts={accounts}
+              categories={categories}
+              availableTags={availableTags}
+              availableCategoryIds={availableCategoryIds}
+              activeFilterCount={activeFilterCount}
+              onAccountChange={setAccountId}
+              onCategoryChange={setCategoryId}
+              onTagChange={setTag}
+              onTypeChange={setType}
+              onReset={resetFilters}
+            />
           </div>
 
+          {/* Lista */}
           <TransactionList
-            transactions={filteredTransactions}  // ← lista filtrada
+            transactions={filtered}
             accounts={accounts}
             categories={categories}
             loading={isLoading}

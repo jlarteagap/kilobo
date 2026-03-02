@@ -1,138 +1,230 @@
 // features/transactions/components/analytics/SummaryCards.tsx
-import { TrendingDown, TrendingUp, Wallet, ArrowUp, ArrowDown, LucideIcon } from "lucide-react"
+"use client"
+
+import { useMemo } from "react"
+import { TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { SparklineChart } from "./SparklineChart"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import { filterByPeriod, getPreviousPeriod, getDaysInPeriod, parseLocalDate } from "@/utils/date.utils"
+import { format } from "date-fns"
+import type { Period } from "@/types/period"
+import type { Transaction } from "@/types/transaction"
 
-// ─── TrendBadge ───────────────────────────────────────────────────────────────
-function TrendBadge({ trend }: { trend: number }) {
-  if (trend === 0) return (
-    <span className="text-[12px] font-medium text-gray-400">0%</span>
-  )
+// ─── Sparkline data point ─────────────────────────────────────────────────────
+interface SparkPoint {
+  value: number
+}
 
-  const isPositive = trend > 0
+// ─── Calcular sparkline desde transacciones ───────────────────────────────────
+function buildSparkline(
+  transactions: Transaction[],
+  period:       Period,
+  type:         'income' | 'expense' | 'net'
+): SparkPoint[] {
+  const days    = getDaysInPeriod(period)
+  const filtered = filterByPeriod(transactions, period)
+
+  // Acumular por día
+  const byDay = new Map<string, { income: number; expense: number }>()
+  days.forEach((d) => byDay.set(d, { income: 0, expense: 0 }))
+
+  filtered.forEach((t) => {
+    const dateStr = format(parseLocalDate(t.date), 'yyyy-MM-dd')
+    const entry   = byDay.get(dateStr)
+    if (!entry) return
+    if (t.type === 'INCOME')  entry.income  += t.amount
+    if (t.type === 'EXPENSE') entry.expense += t.amount
+  })
+
+  // Acumulado progresivo para sparkline más legible
+  let cumulative = 0
+  return days.map((d) => {
+    const entry = byDay.get(d)!
+    if (type === 'income')  cumulative += entry.income
+    if (type === 'expense') cumulative += entry.expense
+    if (type === 'net')     cumulative += entry.income - entry.expense
+    return { value: cumulative }
+  })
+}
+
+// ─── Calcular tendencia ───────────────────────────────────────────────────────
+function calcTrend(current: number, previous: number): number {
+  if (previous === 0) return current > 0 ? 100 : 0
+  return ((current - previous) / previous) * 100
+}
+
+// ─── Badge de tendencia ───────────────────────────────────────────────────────
+function TrendBadge({ trend, inverse = false }: { trend: number; inverse?: boolean }) {
+  const isPositive = inverse ? trend < 0 : trend > 0
+  const isNeutral  = trend === 0
+
+  if (isNeutral) {
+    return (
+      <div className="flex items-center gap-1 text-[11px] font-medium text-gray-400">
+        <Minus className="w-3 h-3" />
+        <span>Sin cambio</span>
+      </div>
+    )
+  }
+
   return (
-    <span className={cn(
-      'inline-flex items-center gap-0.5 text-[12px] font-medium',
+    <div className={cn(
+      'flex items-center gap-1 text-[11px] font-medium',
       isPositive ? 'text-emerald-600' : 'text-rose-500'
     )}>
       {isPositive
-        ? <ArrowUp   className="w-3 h-3" />
-        : <ArrowDown className="w-3 h-3" />
+        ? <TrendingUp   className="w-3 h-3" />
+        : <TrendingDown className="w-3 h-3" />
       }
-      {Math.abs(trend).toFixed(1)}%
-    </span>
+      <span>
+        {trend > 0 ? '+' : ''}{trend.toFixed(1)}% vs anterior
+      </span>
+    </div>
   )
 }
 
-// ─── SummaryCard ──────────────────────────────────────────────────────────────
-interface SummaryCardProps {
-  label:       string
-  value:       string
-  valueColor?: string
-  icon:        LucideIcon
-  iconBg:      string
-  iconColor:   string
-  footer:      React.ReactNode
-}
-
+// ─── Card individual ──────────────────────────────────────────────────────────
 function SummaryCard({
-  label,
-  value,
-  valueColor = 'text-gray-900',
-  icon: Icon,
-  iconBg,
-  iconColor,
-  footer,
-}: SummaryCardProps) {
+  title,
+  amount,
+  currency,
+  trend,
+  sparkData,
+  sparkColor,
+  amountColor,
+  inversetrend = false,
+}: {
+  title:        string
+  amount:       number
+  currency:     string
+  trend:        number
+  sparkData:    SparkPoint[]
+  sparkColor:   string
+  amountColor?: string
+  inversetrend?: boolean
+}) {
   return (
     <div
-      className="bg-white rounded-2xl p-5 flex flex-col gap-4"
+      className="bg-white rounded-2xl p-5 flex flex-col gap-3 overflow-hidden relative"
       style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
     >
-      {/* Header */}
+      {/* ── Header ── */}
       <div className="flex items-start justify-between">
-        <p className="text-[13px] font-medium text-gray-500">{label}</p>
-        <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center', iconBg)}>
-          <Icon className={cn('w-4 h-4', iconColor)} />
+        <p className="text-[13px] font-medium text-gray-500">{title}</p>
+      </div>
+
+      {/* ── Monto principal ── */}
+      <div>
+        <p className={cn(
+          'text-2xl font-semibold tracking-tight',
+          amountColor ?? 'text-gray-900'
+        )}>
+          {formatCurrency(Math.abs(amount), currency)}
+        </p>
+        <div className="mt-1">
+          <TrendBadge trend={trend} inverse={inversetrend} />
         </div>
       </div>
 
-      {/* Valor */}
-      <p className={cn('text-2xl font-semibold tracking-tight', valueColor)}>
-        {value}
-      </p>
-
-      {/* Footer */}
-      <div className="flex items-center gap-1.5 pt-1 border-t border-gray-50">
-        {footer}
+      {/* ── Sparkline ── */}
+      <div className="h-[52px] -mx-5 -mb-5 mt-auto">
+        <SparklineChart data={sparkData} color={sparkColor} />
       </div>
     </div>
   )
 }
 
-// ─── SummaryCards ─────────────────────────────────────────────────────────────
+// ─── Componente principal ─────────────────────────────────────────────────────
 interface SummaryCardsProps {
-  totalIncome:   number
-  totalExpense:  number
-  netIncome:     number
-  incomeTrend:   number
-  expenseTrend:  number
+  transactions: Transaction[]
+  period:       Period
+  currency?:    string
 }
 
 export function SummaryCards({
-  totalIncome,
-  totalExpense,
-  netIncome,
-  incomeTrend,
-  expenseTrend,
+  transactions,
+  period,
+  currency = 'BOB',
 }: SummaryCardsProps) {
-  const cards: SummaryCardProps[] = [
-    {
-      label:      'Ingresos',
-      value:      formatCurrency(totalIncome, 'BOB'),
-      icon:       TrendingUp,
-      iconBg:     'bg-emerald-50',
-      iconColor:  'text-emerald-600',
-      footer: (
-        <>
-          <TrendBadge trend={incomeTrend} />
-          <span className="text-[11px] text-gray-400">vs período anterior</span>
-        </>
-      ),
-    },
-    {
-      label:      'Gastos',
-      value:      formatCurrency(totalExpense, 'BOB'),
-      icon:       TrendingDown,
-      iconBg:     'bg-rose-50',
-      iconColor:  'text-rose-500',
-      footer: (
-        <>
-          <TrendBadge trend={expenseTrend} />
-          <span className="text-[11px] text-gray-400">vs período anterior</span>
-        </>
-      ),
-    },
-    {
-      label:      'Balance neto',
-      value:      formatCurrency(netIncome, 'BOB'),
-      valueColor: netIncome >= 0 ? 'text-gray-900' : 'text-rose-500',
-      icon:       Wallet,
-      iconBg:     'bg-blue-50',
-      iconColor:  'text-blue-500',
-      footer: (
-        <span className="text-[11px] text-gray-400">
-          Balance del período seleccionado
-        </span>
-      ),
-    },
-  ]
+  const prevPeriod = useMemo(() => getPreviousPeriod(period), [period])
+
+  // ── Transacciones del período actual ────────────────────────────────────────
+  const current = useMemo(() => {
+    const filtered = filterByPeriod(transactions, period)
+    const income   = filtered
+      .filter((t) => t.type === 'INCOME')
+      .reduce((sum, t) => sum + t.amount, 0)
+    const expense  = filtered
+      .filter((t) => t.type === 'EXPENSE')
+      .reduce((sum, t) => sum + t.amount, 0)
+    return { income, expense, net: income - expense }
+  }, [transactions, period])
+
+  // ── Transacciones del período anterior ─────────────────────────────────────
+  const previous = useMemo(() => {
+    const filtered = filterByPeriod(transactions, prevPeriod)
+    const income   = filtered
+      .filter((t) => t.type === 'INCOME')
+      .reduce((sum, t) => sum + t.amount, 0)
+    const expense  = filtered
+      .filter((t) => t.type === 'EXPENSE')
+      .reduce((sum, t) => sum + t.amount, 0)
+    return { income, expense, net: income - expense }
+  }, [transactions, prevPeriod])
+
+  // ── Sparklines ──────────────────────────────────────────────────────────────
+  const incomeSpark  = useMemo(
+    () => buildSparkline(transactions, period, 'income'),
+    [transactions, period]
+  )
+  const expenseSpark = useMemo(
+    () => buildSparkline(transactions, period, 'expense'),
+    [transactions, period]
+  )
+  const netSpark     = useMemo(
+    () => buildSparkline(transactions, period, 'net'),
+    [transactions, period]
+  )
+
+  // ── Tendencias ──────────────────────────────────────────────────────────────
+  const incomeTrend  = calcTrend(current.income,  previous.income)
+  const expenseTrend = calcTrend(current.expense, previous.expense)
+  const netTrend     = calcTrend(current.net,     previous.net)
+
+  const netColor =
+    current.net > 0 ? 'text-emerald-600' :
+    current.net < 0 ? 'text-rose-500'    :
+    'text-gray-900'
 
   return (
-    <div className="grid gap-4 md:grid-cols-3 mb-8">
-      {cards.map((card) => (
-        <SummaryCard key={card.label} {...card} />
-      ))}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <SummaryCard
+        title="Ingresos"
+        amount={current.income}
+        currency={currency}
+        trend={incomeTrend}
+        sparkData={incomeSpark}
+        sparkColor="#34d399"
+      />
+      <SummaryCard
+        title="Gastos"
+        amount={current.expense}
+        currency={currency}
+        trend={expenseTrend}
+        sparkData={expenseSpark}
+        sparkColor="#fb7185"
+        inversetrend  // para gastos: bajar es bueno
+      />
+      <SummaryCard
+        title="Balance neto"
+        amount={current.net}
+        currency={currency}
+        trend={netTrend}
+        sparkData={netSpark}
+        sparkColor={current.net >= 0 ? '#34d399' : '#fb7185'}
+        amountColor={netColor}
+      />
     </div>
   )
 }

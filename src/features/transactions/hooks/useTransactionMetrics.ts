@@ -1,179 +1,121 @@
 // features/transactions/hooks/useTransactionMetrics.ts
 import { useMemo } from 'react'
-import { startOfDay, subDays, isAfter, isBefore, isEqual, format, addDays } from 'date-fns'
+import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { parseLocalDate } from '@/lib/utils'  // ← importar el helper
-import type { Transaction } from '@/types/transaction'
-import type { Category } from '@/types/category'
 
+import {
+  filterByPeriod,
+  getPreviousPeriod,
+  getDaysInPeriod,
+  parseLocalDate,
+} from '@/utils/date.utils'
 
-export type Period = '1W' | '1M' | '3M' | 'ALL'
+import type { Period }                              from '@/types/period'
+import type { Transaction, CategoryData, ChartDataPoint } from '@/types/transaction'
+import type { Category }                            from '@/types/category'
 
-interface DailyData {
-  date:    string
-  income:  number
-  expense: number
-  label:   string
+export interface TransactionMetrics {
+  chartData:    ChartDataPoint[]
+  categoryData: CategoryData[]
+  totalIncome:  number
+  totalExpense: number
+  netBalance:   number
+  prevIncome:   number
+  prevExpense:  number
 }
 
-// ─── Función exportada — usada también en TransactionsPage ───────────────────
-export function filterTransactionsByPeriod(
-  transactions: Transaction[],
-  period: Period
-): Transaction[] {
-  if (period === 'ALL') return transactions
-
-  const now       = new Date()
-  const todayStart = startOfDay(now)  // ← normalizar a medianoche local
-
-  let startDate: Date
-  switch (period) {
-    case '1W': startDate = subDays(todayStart, 7);  break
-    case '1M': startDate = subDays(todayStart, 30); break
-    case '3M': startDate = subDays(todayStart, 90); break
-  }
-
-  return transactions.filter((t) => {
-    const txDate = parseLocalDate(t.date)  // ← ya es medianoche local
-    // isAfter OR isEqual — incluir el día exacto del startDate
-    return isAfter(txDate, startDate!) || isEqual(txDate, startDate!)
-  })
-}
-
-// ─── Hook principal ───────────────────────────────────────────────────────────
 export function useTransactionMetrics(
   transactions: Transaction[],
   categories:   Category[],
   period:       Period
-) {
-  const metrics = useMemo(() => {
-    const now = new Date()
-
-    const filteredTransactions = filterTransactionsByPeriod(transactions, period)
+): TransactionMetrics {
+  return useMemo(() => {
+    // ── 1. Período actual ─────────────────────────────────────────────────────
+    const current = filterByPeriod(transactions, period)
       .filter((t) => t.status === 'COMPLETED')
 
-      
-    // ── Totales ──────────────────────────────────────────────────────────────
-    const totalIncome = filteredTransactions
+    // ── 2. Período anterior ───────────────────────────────────────────────────
+    const prevPeriod = getPreviousPeriod(period)
+    const previous   = filterByPeriod(transactions, prevPeriod)
+      .filter((t) => t.status === 'COMPLETED')
+
+    // ── 3. Totales actuales ───────────────────────────────────────────────────
+    const totalIncome = current
       .filter((t) => t.type === 'INCOME')
       .reduce((sum, t) => sum + t.amount, 0)
 
-    const totalExpense = filteredTransactions
+    const totalExpense = current
       .filter((t) => t.type === 'EXPENSE')
       .reduce((sum, t) => sum + t.amount, 0)
 
-    const netIncome = totalIncome - totalExpense
-
-    // ── Tendencia vs período anterior ────────────────────────────────────────
-    let previousTransactions: Transaction[] = []
-
-if (period !== 'ALL') {
-  const todayStart = startOfDay(now)
-  const startDate  = period === '1W'
-    ? subDays(todayStart, 7)
-    : period === '1M'
-      ? subDays(todayStart, 30)
-      : subDays(todayStart, 90)
-
-  const daysInPeriod = (todayStart.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-  const previousStartDate = subDays(startDate, daysInPeriod)
-
-  previousTransactions = transactions.filter((t) => {
-    const date = parseLocalDate(t.date)
-    return (
-      (isAfter(date, previousStartDate) || isEqual(date, previousStartDate)) &&
-      isBefore(date, startDate) &&
-      t.status === 'COMPLETED'
-    )
-  })
-}
-
-    const prevTotalIncome  = previousTransactions
+    // ── 4. Totales anteriores ─────────────────────────────────────────────────
+    const prevIncome = previous
       .filter((t) => t.type === 'INCOME')
       .reduce((sum, t) => sum + t.amount, 0)
 
-    const prevTotalExpense = previousTransactions
+    const prevExpense = previous
       .filter((t) => t.type === 'EXPENSE')
       .reduce((sum, t) => sum + t.amount, 0)
 
-    const incomeTrend  = prevTotalIncome  === 0 ? 0
-      : ((totalIncome  - prevTotalIncome)  / prevTotalIncome)  * 100
+    // ── 5. Chart data — dayMap ────────────────────────────────────────────────
+    const days   = getDaysInPeriod(period)
+    const dayMap = new Map<string, ChartDataPoint>()
 
-    const expenseTrend = prevTotalExpense === 0 ? 0
-      : ((totalExpense - prevTotalExpense) / prevTotalExpense) * 100
-
-    // ── Chart data ────────────────────────────────────────────────────────────
-    const daysMap = new Map<string, DailyData>()
-
-    if (period !== 'ALL') {
-  const todayStart = startOfDay(now)
-  const startDate  = period === '1W'
-    ? subDays(todayStart, 7)
-    : period === '1M'
-      ? subDays(todayStart, 30)
-      : subDays(todayStart, 90)
-
-  let tempDate = startDate
-  while (tempDate <= todayStart) {  // ← hasta hoy inclusive
-    const dateStr = format(tempDate, 'yyyy-MM-dd')
-    daysMap.set(dateStr, {
-      date:    dateStr,
-      income:  0,
-      expense: 0,
-      label:   format(tempDate, 'd MMM', { locale: es }),
-    })
-    tempDate = new Date(tempDate.getTime() + 24 * 60 * 60 * 1000)
-  }
-}
-
-    filteredTransactions.forEach((t) => {
-      const dateStr = format(parseLocalDate(t.date), 'yyyy-MM-dd')  // ← parseLocalDate
-      const entry   = daysMap.get(dateStr)
-      if (entry) {
-        if (t.type === 'INCOME')  entry.income  += t.amount
-        if (t.type === 'EXPENSE') entry.expense += t.amount
-      }
+    days.forEach((dateStr) => {
+      const date  = parseLocalDate(dateStr)
+      const label = format(date, 'd MMM', { locale: es })
+      dayMap.set(dateStr, { date: dateStr, income: 0, expense: 0, label })
     })
 
-    console.log('🔍 filteredTransactions:', filteredTransactions.slice(0, 3).map(t => ({
-  date:   t.date,
-  type:   t.type,
-  amount: t.amount,
-  status: t.status,
-})))
-console.log('🗺 daysMap keys (primeros 5):', Array.from(daysMap.keys()).slice(0, 5))
+    // Acumular en dayMap — correcto
+    current.forEach((t) => {
+      const dateStr = format(parseLocalDate(t.date), 'yyyy-MM-dd')
+      const entry   = dayMap.get(dateStr)
+      if (!entry) return
+      if (t.type === 'INCOME')  entry.income  += t.amount
+      if (t.type === 'EXPENSE') entry.expense += t.amount
+    })
 
-// Justo después del forEach de filteredTransactions
-console.log('📅 fechas en transacciones:', filteredTransactions.map(t => t.date))
-console.log('🗺 todas las keys del daysMap:', Array.from(daysMap.keys()))
+    const chartData = Array.from(dayMap.values())
 
+    // ── 6. Category data — solo EXPENSE ───────────────────────────────────────
+    const catMap = new Map<string, { income: number; expense: number }>()
 
-    const chartData = Array.from(daysMap.values())
-
-    // ── Category distribution ─────────────────────────────────────────────────
-    const expenseByCategory = new Map<string, number>()
-
-    filteredTransactions
-      .filter((t) => t.type === 'EXPENSE')
+    current
+      .filter((t) => t.type === 'EXPENSE' && t.category_id)
       .forEach((t) => {
-        const category = categories.find((c) => c.id === t.category_id)
-        const catName  = category?.name ?? 'Sin Categoría'
-        expenseByCategory.set(catName, (expenseByCategory.get(catName) ?? 0) + t.amount)
+        const existing = catMap.get(t.category_id!) ?? { income: 0, expense: 0 }
+        existing.expense += t.amount
+        catMap.set(t.category_id!, existing)
       })
 
-    const categoryData = Array.from(expenseByCategory.entries())
-      .map(([name, value]) => ({ name, value }))
+    const categoryData: CategoryData[] = Array.from(catMap.entries())
+      .map(([categoryId, amounts]) => {
+        const cat = categories.find((c) => c.id === categoryId)
+        return {
+          categoryId,
+          name:       cat?.name  ?? 'Sin categoría',
+          color:      cat?.color ?? '#9ca3af',
+          income:     0,
+          expense:    amounts.expense,
+          value:      amounts.expense,
+          percentage: totalExpense > 0
+            ? (amounts.expense / totalExpense) * 100
+            : 0,
+        }
+      })
+      .filter((d) => d.value > 0)
       .sort((a, b) => b.value - a.value)
+      .slice(0, 8)
 
     return {
-      totalIncome,
-      totalExpense,
-      netIncome,
-      incomeTrend,
-      expenseTrend,
       chartData,
       categoryData,
+      totalIncome,
+      totalExpense,
+      netBalance: totalIncome - totalExpense,
+      prevIncome,
+      prevExpense,
     }
   }, [transactions, categories, period])
-  return metrics
 }

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { categoryService } from '@/services/category.service'
 import { updateCategorySchema } from '@/lib/validations/category.schema'
+import { getUserId } from '@/lib/auth.server'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -11,6 +12,9 @@ export async function PATCH(
   { params }: Params
 ) {
   try {
+    const userId = await getUserId()
+    if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const { id } = await params
     const body   = await req.json()
 
@@ -22,7 +26,7 @@ export async function PATCH(
       )
     }
 
-    const category = await categoryService.updateCategory(id, parsed.data)
+    const category = await categoryService.updateCategory(id, parsed.data, userId)
     return NextResponse.json({ data: category })
   } catch (error: any) {
     return handleError(error)
@@ -35,8 +39,11 @@ export async function DELETE(
   { params }: Params
 ) {
   try {
+    const userId = await getUserId()
+    if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const { id } = await params
-    await categoryService.deleteCategory(id)
+    await categoryService.deleteCategory(id, userId)
     return NextResponse.json({ success: true })
   } catch (error: any) {
     return handleError(error)
@@ -51,6 +58,7 @@ function handleError(error: any): NextResponse {
     'No autorizado':                      401,
     'Token inválido o expirado':          401,
     'Categoría no encontrada.':           404,
+    'Categoría no encontrada o no autorizada.': 404,
     'No se puede eliminar una categoría que tiene transacciones asociadas.': 409,
   }
 

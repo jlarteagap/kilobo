@@ -4,14 +4,14 @@ import { accountsRepository } from '@/repositories/accounts.repository'
 import type { CreateDebtData, CreateDebtPaymentData } from '@/types/debt'
 
 export const debtService = {
-  async getDebts() {
-    return debtRepository.findAll()
+  async getDebts(userId: string) {
+    return debtRepository.findAll(userId)
   },
 
-  async createDebt(data: CreateDebtData) {
+  async createDebt(data: CreateDebtData, userId: string) {
     // 1. Verificar que la cuenta existe
-    const account = await accountsRepository.findById(data.account_id)
-    if (!account) throw new Error('Cuenta no encontrada.')
+    const account = await accountsRepository.findById(data.account_id, userId)
+    if (!account) throw new Error('Cuenta no encontrada o no autorizada.')
 
     // 2. Mover balance según tipo
     //    GIVEN    → presté dinero → resta de mi cuenta
@@ -19,21 +19,21 @@ export const debtService = {
     const delta = data.type === 'GIVEN' ? -data.amount : +data.amount
     await accountsRepository.update(data.account_id, {
       balance: account.balance + delta,
-    })
+    }, userId)
 
     // 3. Crear la deuda
-    return debtRepository.create(data)
+    return debtRepository.create(data, userId)
   },
 
-  async registerPayment(debtId: string, data: CreateDebtPaymentData) {
+  async registerPayment(debtId: string, data: CreateDebtPaymentData, userId: string) {
     // 1. Verificar deuda
-    const debt = await debtRepository.findById(debtId)
-    if (!debt) throw new Error('Deuda no encontrada.')
+    const debt = await debtRepository.findById(debtId, userId)
+    if (!debt) throw new Error('Deuda no encontrada o no autorizada.')
     if (debt.status === 'PAID') throw new Error('La deuda ya está pagada.')
 
     // 2. Verificar cuenta
-    const account = await accountsRepository.findById(data.account_id)
-    if (!account) throw new Error('Cuenta no encontrada.')
+    const account = await accountsRepository.findById(data.account_id, userId)
+    if (!account) throw new Error('Cuenta no encontrada o no autorizada.')
 
     // 3. Validar que el pago no supere el saldo pendiente
     const pending = debt.amount - debt.paid_amount
@@ -47,7 +47,7 @@ export const debtService = {
     const delta = debt.type === 'GIVEN' ? +data.amount : -data.amount
     await accountsRepository.update(data.account_id, {
       balance: account.balance + delta,
-    })
+    }, userId)
 
     // 5. Registrar el pago
     const payment = await debtRepository.createPayment(debtId, data)
@@ -59,36 +59,36 @@ export const debtService = {
     await debtRepository.update(debtId, {
       paid_amount: newPaidAmount,
       status:      newStatus,
-    })
+    }, userId)
 
     return payment
   },
 
-  async cancelDebt(debtId: string) {
-    const debt = await debtRepository.findById(debtId)
-    if (!debt) throw new Error('Deuda no encontrada.')
+  async cancelDebt(debtId: string, userId: string) {
+    const debt = await debtRepository.findById(debtId, userId)
+    if (!debt) throw new Error('Deuda no encontrada o no autorizada.')
     if (debt.status === 'PAID') throw new Error('La deuda ya está pagada.')
 
     // Revertir el balance original si no hay pagos parciales
-    const account = await accountsRepository.findById(debt.account_id)
+    const account = await accountsRepository.findById(debt.account_id, userId)
     if (account) {
       const reverseDelta = debt.type === 'GIVEN'
         ? +(debt.amount - debt.paid_amount)   // devolver lo no cobrado
         : -(debt.amount - debt.paid_amount)   // devolver lo no pagado
       await accountsRepository.update(debt.account_id, {
         balance: account.balance + reverseDelta,
-      })
+      }, userId)
     }
 
-    return debtRepository.update(debtId, { status: 'CANCELLED' })
+    return debtRepository.update(debtId, { status: 'CANCELLED' }, userId)
   },
 
-  async deleteDebt(debtId: string) {
-    const debt = await debtRepository.findById(debtId)
-    if (!debt) throw new Error('Deuda no encontrada.')
+  async deleteDebt(debtId: string, userId: string) {
+    const debt = await debtRepository.findById(debtId, userId)
+    if (!debt) throw new Error('Deuda no encontrada o no autorizada.')
     if (debt.status === 'ACTIVE') {
       throw new Error('No puedes eliminar una deuda activa. Cancélala primero.')
     }
-    return debtRepository.delete(debtId)
+    return debtRepository.delete(debtId, userId)
   },
 }

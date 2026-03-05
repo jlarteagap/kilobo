@@ -6,8 +6,9 @@ import { FieldValue } from 'firebase-admin/firestore'
 const accountsCollection = adminDb.collection('accounts')
 
 export const accountsRepository = {
-  async findAll(): Promise<Account[]> {
+  async findAll(userId: string): Promise<Account[]> {
     const snapshot = await accountsCollection
+      .where('user_id', '==', userId)
       .orderBy('createdAt', 'desc')
       .get()
 
@@ -17,16 +18,20 @@ export const accountsRepository = {
     }))
   },
 
-  async findById(accountId: string): Promise<Account | null> {
+  async findById(accountId: string, userId: string): Promise<Account | null> {
     const doc = await accountsCollection.doc(accountId).get()
     if (!doc.exists) return null
 
-    return { id: doc.id, ...(doc.data() as Omit<Account, 'id'>) }
+    const data = doc.data()!
+    if (data.user_id !== userId) return null
+
+    return { id: doc.id, ...(data as Omit<Account, 'id'>) }
   },
 
-  async create(data: CreateAccountData): Promise<Account> {
+  async create(data: CreateAccountData, userId: string): Promise<Account> {
     const payload = {
       ...data,
+      user_id: userId,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     }
@@ -37,7 +42,7 @@ export const accountsRepository = {
     return { id: docRef.id, ...(created.data() as Omit<Account, 'id'>) }
   },
 
-  async update(accountId: string, data: UpdateAccountData): Promise<Account> {
+  async update(accountId: string, data: UpdateAccountData, userId: string): Promise<Account> {
     const docRef = accountsCollection.doc(accountId)
 
     await docRef.update({
@@ -49,13 +54,14 @@ export const accountsRepository = {
     return { id: docRef.id, ...(updated.data() as Omit<Account, 'id'>) }
   },
 
-  async delete(accountId: string): Promise<void> {
+  async delete(accountId: string, userId: string): Promise<void> {
     await accountsCollection.doc(accountId).delete()
   },
 
-  async isUsedInTransactions(accountId: string): Promise<boolean> {
+  async isUsedInTransactions(accountId: string, userId: string): Promise<boolean> {
   const snapshot = await adminDb.collection('transactions')
     .where('account_id', '==', accountId)
+    .where('user_id', '==', userId)
     .limit(1)
     .get()
 
@@ -64,6 +70,7 @@ export const accountsRepository = {
   // Verificar también como cuenta destino
   const snapshotDest = await adminDb.collection('transactions')
     .where('to_account_id', '==', accountId)
+    .where('user_id', '==', userId)
     .limit(1)
     .get()
 

@@ -12,9 +12,11 @@ import {
   ChevronRight,
   User,
   Settings,
+  LogOut,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/useAuth"
 import {
   Sidebar as ShadcnSidebar,
   SidebarContent,
@@ -39,6 +41,7 @@ const navigation = [
 export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>) {
   const pathname = usePathname()
   const { state } = useSidebar()
+  const { user, signOut } = useAuth()
 
   return (
     <ShadcnSidebar 
@@ -117,9 +120,19 @@ export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>
                 "flex flex-col gap-0.5 truncate transition-all duration-300",
                 state === "collapsed" ? "opacity-0 invisible w-0" : "opacity-100 visible ml-2"
               )}>
-                <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Jorge L.</span>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">Pro Plan</span>
+                <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user?.displayName || "Usuario"}</span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{user?.email || "Sin email"}</span>
               </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={signOut}
+              className="h-10 px-3 rounded-lg text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+              tooltip="Cerrar sesión"
+            >
+              <LogOut className="size-5" />
+              <span className="font-medium">Cerrar sesión</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

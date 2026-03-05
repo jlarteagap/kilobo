@@ -2,11 +2,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { accountsService } from '@/services/accounts.service'
 import { updateAccountSchema } from '@/lib/validations/account.schema'
+import { getUserId } from '@/lib/auth.server'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
+    const userId = await getUserId()
+    if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const { id } = await params
     const body   = await req.json()
 
@@ -15,7 +19,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
-    const account = await accountsService.updateAccount(id, parsed.data)
+    const account = await accountsService.updateAccount(id, parsed.data, userId)
     return NextResponse.json({ data: account })
   } catch (error: any) {
     return handleError(error)
@@ -24,8 +28,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
+    const userId = await getUserId()
+    if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const { id } = await params
-    await accountsService.deleteAccount(id)
+    await accountsService.deleteAccount(id, userId)
     return NextResponse.json({ success: true })  // ← nunca 204, siempre JSON
   } catch (error: any) {
     return handleError(error)

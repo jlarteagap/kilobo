@@ -2,10 +2,14 @@
 import { NextRequest } from 'next/server'
 import { accountsService } from '@/services/accounts.service'
 import { createAccountSchema } from '@/lib/validations/account.schema'
+import { getUserId } from '@/lib/auth.server'
 
 export async function GET(req: NextRequest) {
   try {
-    const accounts = await accountsService.getAccounts()
+    const userId = await getUserId()
+    if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })
+
+    const accounts = await accountsService.getAccounts(userId)
     return Response.json(accounts)
   } catch (error: any) {
     if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
@@ -17,6 +21,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const userId = await getUserId()
+    if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })
+
     const body = await req.json()
 
     const parsed = createAccountSchema.safeParse(body)
@@ -24,7 +31,7 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
-    const account = await accountsService.createAccount(parsed.data)
+    const account = await accountsService.createAccount(parsed.data, userId)
     return Response.json(account, { status: 201 })
   } catch (error: any) {
     if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {

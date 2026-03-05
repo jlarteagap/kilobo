@@ -36,25 +36,29 @@ function mapPayment(id: string, data: FirebaseFirestore.DocumentData): DebtPayme
 
 export const debtRepository = {
   // ── Debts ──────────────────────────────────────────────────────────────────
-  async findAll(): Promise<Debt[]> {
+  async findAll(userId: string): Promise<Debt[]> {
     const snapshot = await debtsCollection
+      .where('user_id', '==', userId)
       .orderBy('created_at', 'desc')
       .get()
     return snapshot.docs.map((doc) => mapDebt(doc.id, doc.data()))
   },
 
-  async findById(id: string): Promise<Debt | null> {
+  async findById(id: string, userId: string): Promise<Debt | null> {
     const doc = await debtsCollection.doc(id).get()
     if (!doc.exists) return null
-    return mapDebt(doc.id, doc.data()!)
+    const data = doc.data()!
+    if (data.user_id !== userId) return null
+    return mapDebt(doc.id, data)
   },
 
-  async create(data: CreateDebtData): Promise<Debt> {
+  // ── Debts ──────────────────────────────────────────────────────────────────
+  async create(data: CreateDebtData, userId: string): Promise<Debt> {
     const payload = {
       ...data,
       paid_amount: 0,
       status:      'ACTIVE',
-      user_id:     '',
+      user_id:     userId,
       created_at:  Timestamp.now(),
       updated_at:  Timestamp.now(),
     }
@@ -63,14 +67,14 @@ export const debtRepository = {
     return mapDebt(docRef.id, created.data()!)
   },
 
-  async update(id: string, data: Partial<Debt>): Promise<Debt> {
+  async update(id: string, data: Partial<Debt>, userId: string): Promise<Debt> {
     const docRef = debtsCollection.doc(id)
     await docRef.update({ ...data, updated_at: Timestamp.now() })
     const updated = await docRef.get()
     return mapDebt(docRef.id, updated.data()!)
   },
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, userId: string): Promise<void> {
     await debtsCollection.doc(id).delete()
   },
 

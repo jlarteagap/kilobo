@@ -17,11 +17,9 @@ export function middleware(request: NextRequest) {
   }
 
   // Si YA hay sesión y el usuario intenta volver a entrar al login -> a /dashboard
-  // Para este proyecto, parece ser que la ruta principal es `/transactions`, usaremos esa o el dashboard de su elección.
-  // Asumiremos que es `/transactions` por los tabs, modificaremos si es necesario.
   if (session && isAuthRoute) {
     // Evitar loop en la raíz o en los links de login
-    return NextResponse.redirect(new URL('/transactions', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return NextResponse.next()

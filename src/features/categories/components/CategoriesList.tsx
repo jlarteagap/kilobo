@@ -98,11 +98,11 @@ function CategoryCard({
               <p className="font-medium text-gray-900 text-sm leading-tight truncate">
                 {category.name}
               </p>
-              {tags.length > 0 && (
+              {tags.length > 0 ? (
                 <p className="text-[11px] text-gray-400 mt-0.5">
                   {tags.length} etiqueta{tags.length !== 1 ? 's' : ''}
                 </p>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -126,7 +126,7 @@ function CategoryCard({
         </div>
 
         {/* Tags */}
-        {tags.length > 0 && (
+        {tags.length > 0 ? (
           <div className="flex flex-wrap gap-1 mt-3">
             {visibleTags.map((tag) => (
               <span
@@ -136,24 +136,25 @@ function CategoryCard({
                 {tag}
               </span>
             ))}
-            {!expanded && hiddenCount > 0 && (
+            {!expanded && hiddenCount > 0 ? (
               <button
                 onClick={() => setExpanded(true)}
                 className="text-[11px] text-gray-400 hover:text-gray-600 px-2 py-0.5 rounded-full border border-dashed border-gray-200 hover:border-gray-300 transition-colors"
               >
                 +{hiddenCount} más
               </button>
-            )}
-            {expanded && (
+            ) : null}
+            {expanded ? (
               <button
                 onClick={() => setExpanded(false)}
                 className="text-[11px] text-gray-400 hover:text-gray-600 px-2 py-0.5 transition-colors"
               >
                 Ver menos
               </button>
-            )}
+            ) : null}
+            {/* Fin tags */}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )
@@ -329,27 +330,27 @@ export function CategoriesList() {
             </DialogHeader>
 
             {/* Renderiza el form correcto según el modo */}
-            {dialog.mode === 'create' && (
+            {dialog.mode === 'create' ? (
               <CategoryForm
                 mode="create"
                 preselectedType={dialog.preselectedType}
                 onSuccess={() => setDialog({ mode: 'closed' })}
               />
-            )}
-            {dialog.mode === 'edit' && (
+            ) : null}
+            {dialog.mode === 'edit' ? (
               <CategoryForm
                 mode="edit"
                 category={dialog.category}
                 lockedTags={dialog.lockedTags}
                 onSuccess={() => setDialog({ mode: 'closed' })}
               />
-            )}
+            ) : null}
           </DialogContent>
         </Dialog>
       </div>
 
       {/* ── Stats ── */}
-      {!isLoading && (
+      {!isLoading ? (
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-emerald-50 rounded-2xl px-4 py-3 flex items-center justify-between">
             <span className="text-sm font-medium text-emerald-700">Ingresos</span>
@@ -360,10 +361,10 @@ export function CategoriesList() {
             <span className="text-2xl font-semibold text-rose-600">{totalExpense}</span>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ── Búsqueda ── */}
-      {!isLoading && (
+      {!isLoading ? (
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
           <input
@@ -379,7 +380,7 @@ export function CategoriesList() {
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
           />
         </div>
-      )}
+      ) : null}
 
       {/* ── Kanban / Skeleton / Empty ── */}
       {isLoading ? (

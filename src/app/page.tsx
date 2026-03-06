@@ -2,7 +2,14 @@
 "use client"
 
 import AppLayout from "@/components/layout/AppLayout"
-import { CashflowSection }  from "@/features/dashboard/CashflowSection"
+import dynamic from "next/dynamic"
+import { CashflowSectionSkeleton } from "@/features/dashboard/components/skeletons/CashflowSectionSkeleton"
+
+const CashflowSection = dynamic(
+  () => import("@/features/dashboard/CashflowSection").then(m => m.CashflowSection),
+  { ssr: false, loading: () => <CashflowSectionSkeleton /> }
+)
+
 import { AssetsSection }    from "@/features/dashboard/AssetsSection"
 import { AssetsTable }      from "@/features/dashboard/AssetsTable"
 import { DashboardSkeleton } from "@/features/dashboard/components/skeletons/DashboardSkeleton"

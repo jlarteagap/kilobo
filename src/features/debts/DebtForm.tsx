@@ -73,7 +73,7 @@ function AccountBalanceHint({
       <span>Balance disponible</span>
       <span className={cn('font-semibold', isOverdraft && 'text-rose-600')}>
         {account.balance} {account.currency}
-        {isOverdraft && <span className="ml-1.5 font-normal">· insuficiente</span>}
+        {isOverdraft ? <span className="ml-1.5 font-normal">· insuficiente</span> : null}
       </span>
     </div>
   )

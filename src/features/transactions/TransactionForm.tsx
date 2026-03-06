@@ -77,11 +77,11 @@ function AccountBalanceHint({
       <span>Balance disponible</span>
       <span className={cn('font-semibold', isOverdraft && 'text-rose-600')}>
         {formatCurrency(account.balance, account.currency)}
-        {isOverdraft && (
+        {isOverdraft ? (
           <span className="ml-1.5 font-normal">
             · insuficiente
           </span>
-        )}
+        ) : null}
       </span>
     </div>
   )
@@ -292,7 +292,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
 
         {/* ── Tags — chips dinámicos según categoría ── */}
-        {showCategory && availableTags.length > 0 && (
+        {showCategory && availableTags.length > 0 ? (
           <FormField
             control={form.control}
             name="tag"
@@ -337,7 +337,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
               </FormItem>
             )}
           />
-        )}
+        ) : null}
 
         <AccountBalanceHint
           accountId={form.watch('account_id')}
@@ -413,7 +413,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   )}
 />
         {/* ── Recurrente ── */}
-        {(type === 'EXPENSE' || type === 'SAVING' || type === 'DEBT') && (
+        {(type === 'EXPENSE' || type === 'SAVING' || type === 'DEBT') ? (
           <FormField
             control={form.control}
             name="is_recurring"
@@ -431,7 +431,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
               </FormItem>
             )}
           />
-        )}
+        ) : null}
 
         {/* ── Submit ── */}
         <Button

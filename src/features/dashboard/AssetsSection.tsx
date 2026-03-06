@@ -46,9 +46,9 @@ export function AssetsSection({ groups }: AssetsSectionProps) {
         {groups.map((group, index) => (
           <Fragment key={group.currency}>
             {/* Separador entre grupos */}
-            {index > 0 && (
+            {index > 0 ? (
               <div className="border-t border-gray-50" />
-            )}
+            ) : null}
 
             <div className="space-y-4">
               {/* Total por moneda */}

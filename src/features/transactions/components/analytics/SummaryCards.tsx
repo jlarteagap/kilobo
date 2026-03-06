@@ -3,7 +3,13 @@
 
 import { useMemo } from "react"
 import { TrendingUp, TrendingDown, Minus } from "lucide-react"
-import { SparklineChart } from "./SparklineChart"
+import dynamic from "next/dynamic"
+
+const SparklineChart = dynamic(
+  () => import("./SparklineChart").then(m => m.SparklineChart),
+  { ssr: false }
+)
+
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { filterByPeriod, getPreviousPeriod, getDaysInPeriod, parseLocalDate } from "@/utils/date.utils"

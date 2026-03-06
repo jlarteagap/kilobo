@@ -269,7 +269,7 @@ export function AssetsTable({
       />
 
       {/* ── Pasivos ── */}
-      {liabilityAssets.length > 0 && (
+      {liabilityAssets.length > 0 ? (
         <AssetSection
           title="Pasivos"
           assets={sortAssets(liabilityAssets)}
@@ -280,7 +280,7 @@ export function AssetsTable({
           totalValue={totalLiabilitiesFormatted}
           totalColor="text-rose-500"
         />
-      )}
+      ) : null}
 
       {/* ── Footer: resumen ── */}
       <div className="px-5 py-3 bg-gray-50/60 border-t border-gray-100 grid grid-cols-3 gap-4">

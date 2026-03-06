@@ -83,9 +83,9 @@ export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>
                       isActive ? "text-emerald-600" : ""
                     )} />
                     <span className="font-medium">{item.name}</span>
-                    {isActive && (
+                    {isActive ? (
                       <ChevronRight className="ml-auto size-4 text-emerald-600/50" />
-                    )}
+                    ) : null}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

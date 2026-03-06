@@ -15,8 +15,17 @@ import { useTransactionMetrics } from "@/features/transactions/hooks/useTransact
 import { PeriodSelector }      from "./components/PeriodSelector"
 import { TransactionFilters }  from "@/features/transactions/components/TransactionFilters"
 import { SummaryCards }        from "@/features/transactions/components/analytics/SummaryCards"
-import { IncomeExpenseChart }  from "@/features/transactions/components/analytics/IncomeExpenseChart"
-import { CategoryOverview }    from "@/features/transactions/components/analytics/CategoryOverview"
+import dynamic                 from "next/dynamic"
+
+const IncomeExpenseChart = dynamic(
+  () => import("@/features/transactions/components/analytics/IncomeExpenseChart").then(m => m.IncomeExpenseChart),
+  { ssr: false }
+)
+const CategoryOverview = dynamic(
+  () => import("@/features/transactions/components/analytics/CategoryOverview").then(m => m.CategoryOverview),
+  { ssr: false }
+)
+
 import { TransactionList }     from "@/features/transactions/TransactionList"
 import { TransactionForm }     from "@/features/transactions/TransactionForm"
 import { TransactionsSkeleton } from "./components/skeletons/TransactionsSkeleton"

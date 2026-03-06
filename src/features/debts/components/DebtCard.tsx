@@ -58,7 +58,7 @@ export function DebtCard({ debt, onPay, onCancel, onDelete }: DebtCardProps) {
 
         {/* Acciones — visibles en hover */}
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-          {isActive && (
+          {isActive ? (
             <>
               <button
                 onClick={() => onCancel(debt)}
@@ -75,8 +75,8 @@ export function DebtCard({ debt, onPay, onCancel, onDelete }: DebtCardProps) {
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </>
-          )}
-          {!isActive && (
+          ) : null}
+          {!isActive ? (
             <button
               onClick={() => onDelete(debt)}
               title="Eliminar"
@@ -84,7 +84,7 @@ export function DebtCard({ debt, onPay, onCancel, onDelete }: DebtCardProps) {
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -114,7 +114,7 @@ export function DebtCard({ debt, onPay, onCancel, onDelete }: DebtCardProps) {
       </div>
 
       {/* ── Barra de progreso ── */}
-      {debt.paid_amount > 0 && (
+      {debt.paid_amount > 0 ? (
         <div className="space-y-1.5">
           <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
             <div
@@ -134,17 +134,17 @@ export function DebtCard({ debt, onPay, onCancel, onDelete }: DebtCardProps) {
             </p>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ── Descripción ── */}
-      {debt.description && (
+      {debt.description ? (
         <p className="text-[12px] text-gray-400 leading-relaxed border-t border-gray-50 pt-3">
           {debt.description}
         </p>
-      )}
+      ) : null}
 
       {/* ── Botón pagar ── */}
-      {isActive && (
+      {isActive ? (
         <button
           onClick={() => onPay(debt)}
           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-900 hover:text-white text-gray-600 text-[13px] font-medium transition-all duration-200 border border-gray-100 hover:border-gray-900"
@@ -152,7 +152,7 @@ export function DebtCard({ debt, onPay, onCancel, onDelete }: DebtCardProps) {
           <CreditCard className="w-3.5 h-3.5" />
           Registrar pago
         </button>
-      )}
+      ) : null}
     </div>
   )
 }

@@ -8,14 +8,16 @@ export async function GET(req: NextRequest) {
   try {
     const userId = await getUserId()
     if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })
+      console.log('userId', userId)
 
     const accounts = await accountsService.getAccounts(userId)
     return Response.json(accounts)
   } catch (error: any) {
+    console.error('GET /api/accounts error:', error)
     if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
       return Response.json({ error: error.message }, { status: 401 })
     }
-    return Response.json({ error: 'Error interno del servidor' }, { status: 500 })
+    return Response.json({ error: 'Error interno del servidor', details: error.message }, { status: 500 })
   }
 }
 

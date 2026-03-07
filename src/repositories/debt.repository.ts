@@ -39,9 +39,9 @@ export const debtRepository = {
   async findAll(userId: string): Promise<Debt[]> {
     const snapshot = await debtsCollection
       .where('user_id', '==', userId)
-      .orderBy('created_at', 'desc')
       .get()
-    return snapshot.docs.map((doc) => mapDebt(doc.id, doc.data()))
+    const debts = snapshot.docs.map((doc) => mapDebt(doc.id, doc.data()))
+    return debts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
   async findById(id: string, userId: string): Promise<Debt | null> {
@@ -82,9 +82,13 @@ export const debtRepository = {
   async findPaymentsByDebt(debtId: string): Promise<DebtPayment[]> {
     const snapshot = await paymentsCollection
       .where('debt_id', '==', debtId)
-      .orderBy('date', 'desc')
       .get()
-    return snapshot.docs.map((doc) => mapPayment(doc.id, doc.data()))
+    const payments = snapshot.docs.map((doc) => mapPayment(doc.id, doc.data()))
+    return payments.sort((a, b) => {
+      const dateA = (a as any).date || a.created_at;
+      const dateB = (b as any).date || b.created_at;
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
+    });
   },
 
   async createPayment(

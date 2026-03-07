@@ -64,55 +64,61 @@ function AccountCard({
   onDelete: (id: string) => void
 }) {
   const { icon: Icon, color, bg, label } = getAccountTypeDetails(account.type)
-
-  const isDebt      = account.type === 'DEBT'
-  const balanceColor = isDebt ? 'text-rose-500' : 'text-gray-900'
+  const isDebt = account.type === 'DEBT'
 
   return (
     <div
-      className="group relative bg-white rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 hover:shadow-md"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
+      className="group relative bg-white dark:bg-neutral-900 rounded-[2rem] p-6 flex flex-col gap-6 border border-neutral-200/50 dark:border-neutral-800/50 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:-translate-y-1"
     >
       {/* ── Header ── */}
       <div className="flex items-start justify-between">
-        {/* Icono */}
-        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', `${bg}/10`)}>
-          <Icon className={cn('w-5 h-5', color)} />
+        {/* Icono con profundidad sutil */}
+        <div className={cn(
+          'w-12 h-12 rounded-2xl flex items-center justify-center ring-1 ring-inset ring-black/5 dark:ring-white/5 shadow-sm',
+          bg.includes('emerald') ? 'bg-emerald-50 dark:bg-emerald-950/30' : 
+          bg.includes('rose') ? 'bg-rose-50 dark:bg-rose-950/30' : 'bg-neutral-100 dark:bg-neutral-800'
+        )}>
+          <Icon className={cn('w-6 h-6', color)} />
         </div>
 
-        {/* Acciones — visibles en hover */}
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        {/* Acciones flotantes */}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
           <button
             onClick={() => onEdit(account)}
-            title="Editar"
-            className="p-1.5 rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-all duration-150"
+            className="p-2 rounded-xl text-neutral-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
           >
-            <Pencil className="w-3.5 h-3.5" />
+            <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(account.id)}
-            title="Eliminar"
-            className="p-1.5 rounded-lg text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-all duration-150"
+            className="p-2 rounded-xl text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* ── Info ── */}
-      <div className="flex-1">
-        <p className="font-semibold text-gray-900 text-sm leading-tight">
+      {/* ── Content ── */}
+      <div className="space-y-1">
+        <h3 className="text-[15px] font-bold text-neutral-900 dark:text-neutral-100 tracking-tight leading-snug">
           {account.name}
+        </h3>
+        <p className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+          {label}
         </p>
-        <p className="text-[12px] text-gray-400 mt-0.5">{label}</p>
       </div>
 
       {/* ── Balance ── */}
-      <div className="pt-3 border-t border-gray-50">
-        <p className="text-[11px] text-gray-400 mb-0.5">Balance</p>
-        <p className={cn('text-xl font-semibold tracking-tight', balanceColor)}>
-          {formatCurrency(account.balance, account.currency)}
-        </p>
+      <div className="pt-5 mt-auto border-t border-neutral-100 dark:border-neutral-800/50">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Balance Actual</span>
+        <div className="flex items-baseline gap-1 mt-1">
+          <p className={cn(
+            'text-2xl font-extrabold tracking-tighter',
+            isDebt ? 'text-rose-500' : 'text-neutral-900 dark:text-neutral-100'
+          )}>
+            {formatCurrency(account.balance, account.currency)}
+          </p>
+        </div>
       </div>
     </div>
   )
@@ -135,7 +141,6 @@ export function AccountsList() {
   const [dialog, setDialog]                   = useState<DialogState>({ mode: 'closed' })
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
-  // ─── Handlers ──────────────────────────────────────────────────────────────
   const handleCreate = (data: CreateAccountData) => {
     createAccount.mutate(data, {
       onSuccess: () => {
@@ -174,7 +179,6 @@ export function AccountsList() {
   const isDialogOpen = dialog.mode !== 'closed'
   const isPending    = createAccount.isPending || updateAccount.isPending
 
-  // ─── Total patrimonio ───────────────────────────────────────────────────────
   const totalBalance = accounts
     .filter((a) => a.type !== 'DEBT')
     .reduce((sum, a) => sum + a.balance, 0)
@@ -184,68 +188,68 @@ export function AccountsList() {
     .reduce((sum, a) => sum + a.balance, 0)
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Header ── */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+      <div className="flex items-end justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100 tracking-tighter">
             Cuentas
           </h1>
-          <p className="text-[13px] text-gray-400 mt-0.5">
-            {accounts.length} cuenta{accounts.length !== 1 ? 's' : ''}
+          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+            Control total sobre tu liquidez y deudas.
           </p>
         </div>
 
         <Button
           onClick={() => setDialog({ mode: 'create' })}
-          className="gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+          className="h-12 px-6 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-2xl font-bold transition-all duration-200 active:scale-95 shadow-xl shadow-black/10 dark:shadow-white/5 hover:opacity-90"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5 mr-2" />
           Nueva Cuenta
         </Button>
       </div>
 
-      {/* ── Stats rápidas ── */}
+      {/* ── Overview Cards ── */}
       {!isLoading && accounts.length > 0 && (
-        <div className="grid grid-cols-2 gap-3">
-          <div
-            className="bg-white rounded-2xl px-4 py-3 flex items-center justify-between"
-            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-          >
-            <span className="text-[13px] font-medium text-gray-500">Patrimonio</span>
-            <span className="text-sm font-semibold text-gray-900">
-              {formatCurrency(totalBalance, 'BOB')}
-            </span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative overflow-hidden bg-emerald-600 rounded-[2rem] p-8 text-white shadow-2xl shadow-emerald-500/20">
+            <div className="relative z-10">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-80">Patrimonio Total</span>
+              <p className="text-4xl font-black tracking-tighter mt-2">
+                {formatCurrency(totalBalance, 'BOB')}
+              </p>
+            </div>
+            {/* Decoración sutil */}
+            <div className="absolute -right-8 -bottom-8 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           </div>
-          <div
-            className="bg-white rounded-2xl px-4 py-3 flex items-center justify-between"
-            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-          >
-            <span className="text-[13px] font-medium text-gray-500">Deudas</span>
-            <span className="text-sm font-semibold text-rose-500">
+
+          <div className="relative overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200/50 dark:border-neutral-800/50 rounded-[2rem] p-8 shadow-sm">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">Deuda Acumulada</span>
+            <p className="text-4xl font-black tracking-tighter mt-2 text-rose-500">
               {formatCurrency(totalDebt, 'BOB')}
-            </span>
+            </p>
           </div>
         </div>
       )}
 
-      {/* ── Grid de cuentas ── */}
+      {/* ── Grid ── */}
       {isLoading ? (
         <AccountsGridSkeleton />
       ) : isError ? (
-        <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl">
-          Error al cargar las cuentas. Intenta nuevamente.
+        <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-500 text-sm p-6 rounded-[2rem] border border-rose-100 dark:border-rose-900/50 font-medium">
+          Error al cargar tus cuentas. Por favor, intenta de nuevo.
         </div>
       ) : accounts.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-gray-400 text-sm">No hay cuentas registradas.</p>
-          <p className="text-gray-300 text-[13px] mt-1">
-            Crea tu primera cuenta con el botón de arriba.
-          </p>
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="w-20 h-20 rounded-[2.5rem] bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex items-center justify-center mb-6">
+            <Plus className="w-8 h-8 text-neutral-300" />
+          </div>
+          <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">Comienza tu legado</h3>
+          <p className="text-sm text-neutral-500 mt-2 max-w-[280px]">Registra tu primera cuenta para empezar a rastrear tu patrimonio real.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
           {accounts.map((account) => (
             <AccountCard
               key={account.id}
@@ -257,12 +261,12 @@ export function AccountsList() {
         </div>
       )}
 
-      {/* ── Dialog crear / editar ── */}
+      {/* ── Modals ── */}
       <Dialog open={isDialogOpen} onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-neutral-200/50 dark:border-neutral-800/50 backdrop-blur-2xl p-8">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">
-              {dialog.mode === 'edit' ? 'Editar cuenta' : 'Nueva cuenta'}
+            <DialogTitle className="text-2xl font-black tracking-tight">
+              {dialog.mode === 'edit' ? 'Ajustar Cuenta' : 'Nueva Cuenta'}
             </DialogTitle>
           </DialogHeader>
           <AccountForm
@@ -274,26 +278,24 @@ export function AccountsList() {
         </DialogContent>
       </Dialog>
 
-      {/* ── AlertDialog confirmar borrado ── */}
       <AlertDialog
         open={!!pendingDeleteId}
         onOpenChange={(open) => !open && setPendingDeleteId(null)}
       >
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-[2.5rem] border-neutral-200 dark:border-neutral-800 p-8">
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar esta cuenta?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Las transacciones asociadas
-              perderán la referencia a esta cuenta.
+            <AlertDialogTitle className="text-xl font-bold tracking-tight">¿Eliminar cuenta?</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-500 dark:text-neutral-400 text-[13px] font-medium leading-relaxed">
+              Esta acción es irreversible. Todas las transacciones asociadas perderán su origen, afectando la precisión de tus reportes históricos.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="mt-8 gap-3">
+            <AlertDialogCancel className="rounded-2xl border-neutral-200/50 px-6 font-bold">Mantener</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white"
+              className="rounded-2xl bg-rose-600 hover:bg-rose-700 text-white px-6 font-bold"
             >
-              Eliminar
+              Eliminar Definitivamente
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

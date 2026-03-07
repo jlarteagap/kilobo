@@ -9,13 +9,18 @@ export const accountsRepository = {
   async findAll(userId: string): Promise<Account[]> {
     const snapshot = await accountsCollection
       .where('user_id', '==', userId)
-      .orderBy('createdAt', 'desc')
       .get()
 
-    return snapshot.docs.map((doc) => ({
+    const accounts = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...(doc.data() as Omit<Account, 'id'>),
     }))
+
+    return accounts.sort((a, b) => {
+      const timeA = (a.createdAt as any)?.toMillis?.() || new Date(a.createdAt).getTime() || 0;
+      const timeB = (b.createdAt as any)?.toMillis?.() || new Date(b.createdAt).getTime() || 0;
+      return timeB - timeA;
+    });
   },
 
   async findById(accountId: string, userId: string): Promise<Account | null> {

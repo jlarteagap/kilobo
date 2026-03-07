@@ -46,10 +46,11 @@ export const transactionsRepository = {
   async findAll(userId: string): Promise<Transaction[]> {
     const snapshot = await transactionsCollection
       .where('user_id', '==', userId)
-      .orderBy('date', 'desc')
       .get()
 
-    return snapshot.docs.map((doc) => mapTransaction(doc.id, doc.data()))
+    const transactions = snapshot.docs.map((doc) => mapTransaction(doc.id, doc.data()))
+    
+    return transactions.sort((a, b) => b.date.localeCompare(a.date));
   },
 
   async findById(transactionId: string, userId: string): Promise<Transaction | null> {

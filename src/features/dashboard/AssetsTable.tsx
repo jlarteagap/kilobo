@@ -70,38 +70,38 @@ function SortableHeader({
 // ─── Fila de asset ────────────────────────────────────────────────────────────
 function AssetRow({ asset }: { asset: AssetDetail }) {
   return (
-    <tr className="hover:bg-gray-50/60 transition-colors duration-100">
+    <tr className="hover:bg-muted/40 transition-colors duration-150">
       {/* Activo */}
-      <td className="px-5 py-3">
-        <div className="flex items-center gap-2.5">
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-3">
           <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: `${asset.color}20` }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: `${asset.color}15` }}
           >
-            <asset.icon className="w-4 h-4" style={{ color: asset.color }} />
+            <asset.icon className="w-4.5 h-4.5" style={{ color: asset.color }} />
           </div>
-          <span className="font-medium text-gray-800 text-sm">{asset.name}</span>
+          <span className="font-bold text-foreground text-[13px] tracking-tight">{asset.name}</span>
         </div>
       </td>
 
       {/* Categoría */}
-      <td className="px-5 py-3">
-        <span className="text-[13px] text-gray-500">{asset.category}</span>
+      <td className="px-6 py-4">
+        <span className="text-[12px] font-medium text-muted-foreground/70">{asset.category}</span>
       </td>
 
       {/* Peso */}
-      <td className="px-5 py-3">
+      <td className="px-6 py-4">
         <Badge
           variant="secondary"
-          className="text-[11px] rounded-full bg-gray-100 text-gray-500 hover:bg-gray-100"
+          className="text-[10px] font-bold rounded-full bg-muted text-muted-foreground/80 border-none px-2.5"
         >
           {asset.weight}
         </Badge>
       </td>
 
       {/* Valor */}
-      <td className="px-5 py-3 text-right">
-        <span className="text-sm font-semibold text-gray-900">
+      <td className="px-6 py-4 text-right">
+        <span className="text-[13px] font-bold text-foreground tabular-nums">
           {asset.formattedValue}
         </span>
       </td>
@@ -134,11 +134,11 @@ function AssetSection({
   return (
     <div>
       {/* Sub-header de sección */}
-      <div className="px-5 py-2.5 bg-gray-50/60 border-y border-gray-50 flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+      <div className="px-6 py-3 bg-muted/30 border-y border-border/40 flex items-center justify-between">
+        <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
           {title}
         </span>
-        <span className={cn('text-[12px] font-semibold', totalColor)}>
+        <span className={cn('text-[11px] font-bold tabular-nums', totalColor)}>
           {totalValue}
         </span>
       </div>
@@ -233,23 +233,23 @@ export function AssetsTable({
 
   return (
     <div
-      className="bg-white rounded-2xl overflow-hidden"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
+      className="bg-card rounded-3xl overflow-hidden border border-border/40"
+      style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}
     >
       {/* ── Header principal ── */}
-      <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold text-gray-700">Balance patrimonial</h3>
-          <p className="text-[11px] text-gray-400 mt-0.5">
-            {assets.length} cuenta{assets.length !== 1 ? 's' : ''}
+      <div className="px-6 py-6 border-b border-border/40 flex items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">Balance patrimonial</h3>
+          <p className="text-[11px] text-muted-foreground/60">
+            Detalle por cuenta y categoría
           </p>
         </div>
         {/* Patrimonio neto */}
         <div className="text-right">
-          <p className="text-[11px] text-gray-400">Patrimonio neto</p>
+          <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-1">Patrimonio neto</p>
           <p className={cn(
-            'text-lg font-semibold tracking-tight',
-            netWorthPositive ? 'text-gray-900' : 'text-rose-500'
+            'text-2xl font-bold tabular-nums tracking-tight',
+            netWorthPositive ? 'text-foreground' : 'text-debt'
           )}>
             {netWorthFormatted}
           </p>
@@ -283,20 +283,20 @@ export function AssetsTable({
       ) : null}
 
       {/* ── Footer: resumen ── */}
-      <div className="px-5 py-3 bg-gray-50/60 border-t border-gray-100 grid grid-cols-3 gap-4">
-        <div>
-          <p className="text-[11px] text-gray-400">Total activos</p>
-          <p className="text-[13px] font-semibold text-emerald-600">{totalAssetsFormatted}</p>
+      <div className="px-6 py-6 bg-muted/20 border-t border-border/40 grid grid-cols-3 gap-8">
+        <div className="flex flex-col gap-1">
+          <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Total activos</p>
+          <p className="text-[15px] font-bold text-growth tabular-nums tracking-tight">{totalAssetsFormatted}</p>
         </div>
-        <div>
-          <p className="text-[11px] text-gray-400">Total pasivos</p>
-          <p className="text-[13px] font-semibold text-rose-500">{totalLiabilitiesFormatted}</p>
+        <div className="flex flex-col gap-1">
+          <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Total pasivos</p>
+          <p className="text-[15px] font-bold text-debt tabular-nums tracking-tight">{totalLiabilitiesFormatted}</p>
         </div>
-        <div className="text-right">
-          <p className="text-[11px] text-gray-400">Neto</p>
+        <div className="text-right flex flex-col gap-1">
+          <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Balance Neto</p>
           <p className={cn(
-            'text-[13px] font-semibold',
-            netWorthPositive ? 'text-gray-900' : 'text-rose-500'
+            'text-[15px] font-bold tabular-nums tracking-tight',
+            netWorthPositive ? 'text-foreground' : 'text-debt'
           )}>
             {netWorthFormatted}
           </p>

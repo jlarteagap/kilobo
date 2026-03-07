@@ -130,14 +130,14 @@ export function CashflowSection() {
 
   return (
     <div
-      className="bg-white rounded-2xl p-5"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
+      className="bg-card rounded-3xl p-6 border border-border/40"
+      style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}
     >
       {/* ── Header + PeriodSelector ── */}
-      <div className="flex items-start justify-between gap-4 mb-5">
+      <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-sm font-semibold text-gray-700">Flujo de caja</h3>
-          <p className="text-[11px] text-gray-400 mt-0.5 capitalize">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">Flujo de caja</h3>
+          <p className="text-[11px] text-muted-foreground/60 mt-1 capitalize">
             {getPeriodLabel(period)}
           </p>
         </div>
@@ -156,16 +156,16 @@ export function CashflowSection() {
           </div>
 
           {/* ── Leyenda ── */}
-          <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-50">
+          <div className="flex items-center gap-6 mt-6 pt-6 border-t border-border/40">
             {[
-              { color: '#34d399', label: 'Ingresos' },
-              { color: '#fb7185', label: 'Gastos'   },
-              { color: '#60a5fa', label: 'Cuentas'  },
-              { color: '#9ca3af', label: 'Balance'  },
+              { color: 'var(--growth)', label: 'Ingresos' },
+              { color: 'var(--debt)',   label: 'Gastos'   },
+              { color: 'var(--primary)', label: 'Cuentas'  },
+              { color: 'var(--muted-foreground)', label: 'Balance' },
             ].map(({ color, label }) => (
-              <div key={label} className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-[11px] text-gray-400">{label}</span>
+              <div key={label} className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">{label}</span>
               </div>
             ))}
           </div>

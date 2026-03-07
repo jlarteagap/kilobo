@@ -1,15 +1,31 @@
+'use client'
+
 import { LandingHeader } from '@/features/landing/components/LandingHeader'
 import { Hero } from '@/features/landing/components/Hero'
 import { BentoGrid } from '@/features/landing/components/BentoGrid'
 import { LandingFooter } from '@/features/landing/components/LandingFooter'
-import { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  title: 'Kilo | Conoce tu patrimonio real',
-  description: 'Gestiona tus activos, pasivos y flujos de caja en un único centro de mando diseñado para el largo plazo.',
-}
+import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function LandingPage() {
+  const { user, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard')
+    }
+  }, [user, loading, router])
+
+  if (loading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
+        <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-neutral-50 selection:bg-emerald-100 selection:text-emerald-900">
       <LandingHeader />

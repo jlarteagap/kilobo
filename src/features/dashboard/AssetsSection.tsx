@@ -30,40 +30,42 @@ export function AssetsSection({ groups }: AssetsSectionProps) {
 
   return (
     <div
-      className="bg-white rounded-2xl p-5"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
+      className="bg-card rounded-3xl p-6 border border-border/40"
+      style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}
     >
       {/* ── Header ── */}
-      <div className="mb-5">
-        <h3 className="text-sm font-semibold text-gray-700">Patrimonio neto</h3>
-        <p className="text-[11px] text-gray-400 mt-0.5">
-          {groups.length} moneda{groups.length !== 1 ? 's' : ''}
+      <div className="mb-6">
+        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">Patrimonio neto</h3>
+        <p className="text-[11px] text-muted-foreground/60 mt-1">
+          Consolidado en {groups.length} divisa{groups.length !== 1 ? 's' : ''}
         </p>
       </div>
 
       {/* ── Grupos por moneda ── */}
-      <div className="space-y-6">
+      <div className="space-y-8">
         {groups.map((group, index) => (
           <Fragment key={group.currency}>
-            {/* Separador entre grupos */}
+            {/* Separador sutil */}
             {index > 0 ? (
-              <div className="border-t border-gray-50" />
+              <div className="h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
             ) : null}
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* Total por moneda */}
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+              <div className="flex items-end justify-between">
+                <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">
                   {getCurrencyLabel(group.currency)}
                 </span>
-                <span className="text-lg font-semibold text-gray-900 tracking-tight">
+                <span className="text-2xl font-bold text-foreground tabular-nums tracking-tight">
                   {group.formattedTotal}
                 </span>
               </div>
 
               {/* Barra + Leyenda */}
-              <AssetBar    assets={group.assets} />
-              <AssetLegend assets={group.assets} />
+              <div className="space-y-4">
+                <AssetBar assets={group.assets} />
+                <AssetLegend assets={group.assets} />
+              </div>
             </div>
           </Fragment>
         ))}

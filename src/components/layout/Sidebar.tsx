@@ -9,6 +9,8 @@ import {
   PieChart,
   Wallet,
   Tags,
+  HandCoins,    // ← para Deudas
+  LayoutGrid,   // ← para Categorías
   ChevronRight,
   User,
   Settings,
@@ -30,12 +32,12 @@ import {
 } from "@/components/ui/sidebar"
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: Home },
-  { name: "Cuentas", href: "/accounts", icon: Wallet },
-  { name: "Transacciones", href: "/transactions", icon: CreditCard },
-  { name: "Deudas y prestamos", href: "/debts", icon: Tags },
-  { name: "Presupuestos", href: "/budgets", icon: PieChart },
-  { name: "Categorías", href: "/categories", icon: Tags },
+  { name: "Dashboard",        href: "/",            icon: Home        },
+  { name: "Cuentas",          href: "/accounts",    icon: Wallet      },
+  { name: "Transacciones",    href: "/transactions", icon: CreditCard },
+  { name: "Deudas y Préstamos", href: "/debts",     icon: HandCoins   },
+  { name: "Presupuestos",     href: "/budgets",      icon: PieChart    },
+  { name: "Categorías",       href: "/categories",   icon: LayoutGrid  },
 ]
 
 export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>) {

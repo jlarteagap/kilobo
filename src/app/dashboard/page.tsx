@@ -2,78 +2,112 @@
 "use client"
 
 import AppLayout from "@/components/layout/AppLayout"
-import dynamic from "next/dynamic"
+import dynamic   from "next/dynamic"
+
+import { DashboardHeader }             from "@/features/dashboard/components/DashboardHeader"
+import { DashboardDebts }              from "@/features/dashboard/components/DashboardDebts"
+// import { DashboardBudgets }            from "@/features/dashboard/components/DashboardBudgets"
+// import { DashboardRecentTransactions } from "@/features/dashboard/components/DashboardRecentTransactions"
+import { AssetsSection }               from "@/features/dashboard/AssetsSection"
+import { IncomeExpenseChart }          from "@/features/transactions/components/analytics/IncomeExpenseChart"
+import { DashboardSkeleton }           from "@/features/dashboard/components/skeletons/DashboardSkeleton"
+
+import { useDashboard }          from "@/features/dashboard/hooks/useDashboard"
+import { useTransactionMetrics } from "@/features/transactions/hooks/useTransactionMetrics"
+import { useCategories }         from "@/features/categories/hooks/useCategories"
+
 import { CashflowSectionSkeleton } from "@/features/dashboard/components/skeletons/CashflowSectionSkeleton"
 
-const CashflowSection = dynamic(
-  () => import("@/features/dashboard/CashflowSection").then(m => m.CashflowSection),
-  { ssr: false, loading: () => <CashflowSectionSkeleton /> }
-)
-
-import { AssetsSection }    from "@/features/dashboard/AssetsSection"
-import { AssetsTable }      from "@/features/dashboard/AssetsTable"
-import { DashboardSkeleton } from "@/features/dashboard/components/skeletons/DashboardSkeleton"
-import { useAccounts }           from "@/features/accounts/hooks/useAccounts"
-import { useAccountsDashboard }  from "@/features/accounts/hooks/useAccountsDashboard"
+// const CashflowSection = dynamic(
+//   () => import("@/features/cashflow/CashflowSection").then(m => m.CashflowSection),
+//   { ssr: false, loading: () => <CashflowSectionSkeleton /> }
+// )
 
 export default function DashboardPage() {
-  const { data: accounts = [], isLoading, isError } = useAccounts()
-
   const {
-    assetsDetail,
-    currencyGroups,
-    totalAssetsFormatted,
-    totalLiabilitiesFormatted,
-    netWorthFormatted,
-    netWorthPositive,
-  } = useAccountsDashboard(accounts)
+    isLoading,
+    accountsDashboard,
+    monthlyStats,
+    trends,
+    currentPeriod,
+    recentTransactions,
+    monthlyTransactions,
+    activeDebts,
+    debtSummary,
+    // topBudgets,
+    greeting,
+    currentMonthLabel,
+  } = useDashboard()
+
+  const { data: categories = [] } = useCategories()
+
+  const metrics = useTransactionMetrics(
+    monthlyTransactions,
+    categories,
+    currentPeriod
+  )
 
   if (isLoading) {
     return <AppLayout><DashboardSkeleton /></AppLayout>
   }
 
-  if (isError) {
-    return (
-      <AppLayout>
-        <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl">
-          Error al cargar los datos del dashboard.
-        </div>
-      </AppLayout>
-    )
-  }
+  // Calcular patrimonio neto desde accountsDashboard
+  // const netWorthRaw = accountsDashboard.assetsDetail
+  //   .reduce((sum, a) => {
+  //     const val = parseFloat(a.value.replace(/[^0-9.-]/g, '')) || 0
+  //     return a.category === 'Deuda' ? sum - val : sum + val
+  //   }, 0)
 
   return (
     <AppLayout>
-      <div className="flex flex-col gap-10 container mx-auto max-w-7xl py-12 px-6">
+      <div className="flex flex-col gap-8 container mx-auto max-w-7xl py-8 px-4">
 
-        {/* ── Header ── */}
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            Gestión de Patrimonio
-          </h1>
-          <p className="text-sm font-medium text-muted-foreground/70">
-            Vista consolidada de activos, pasivos y flujos de capital.
-          </p>
-        </div>
-
-        {/* ── Fila 1: Patrimonio (1/3) + Flujo de caja (2/3) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-1">
-            <AssetsSection groups={currencyGroups} />
-          </div>
-          <div className="md:col-span-2">
-            <CashflowSection />
-          </div>
-        </div>
-
-        {/* ── Fila 2: Balance patrimonial — ancho completo ── */}
-        <AssetsTable
-          assets={assetsDetail}
-          totalAssetsFormatted={totalAssetsFormatted}
-          totalLiabilitiesFormatted={totalLiabilitiesFormatted}
-          netWorthFormatted={netWorthFormatted}
-          netWorthPositive={netWorthPositive}
+        {/* ── Header + Stats ── */}
+        <DashboardHeader
+          greeting={greeting}
+          currentMonthLabel={currentMonthLabel}
+          netWorth={0}
+          monthlyStats={monthlyStats}
+          trends={trends}
+          netWorthPositive={accountsDashboard.netWorthPositive}
         />
+
+        {/* ── Fila 1: Patrimonio (1/3) + Cashflow (2/3) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <AssetsSection groups={accountsDashboard.currencyGroups} />
+          </div>
+          <div className="lg:col-span-2">
+            {/* <CashflowSection /> */}
+          </div>
+        </div>
+
+        {/* ── Fila 2: Ingresos vs Gastos (2/3) + Deudas (1/3) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <IncomeExpenseChart
+              key={`dashboard-chart-${metrics.chartData.length}`}
+              data={metrics.chartData}
+            />
+          </div>
+          <div className="lg:col-span-1">
+            <DashboardDebts
+              activeDebts={activeDebts}
+              pendingGiven={debtSummary.pendingGiven}
+              pendingReceived={debtSummary.pendingReceived}
+            />
+          </div>
+        </div>
+
+        {/* ── Fila 3: Presupuestos (1/3) + Últimas transacciones (2/3) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            {/* <DashboardBudgets topBudgets={topBudgets} /> */}
+          </div>
+          <div className="lg:col-span-2">
+            {/* <DashboardRecentTransactions transactions={recentTransactions} /> */}
+          </div>
+        </div>
 
       </div>
     </AppLayout>

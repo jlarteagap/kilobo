@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale'
 import { useAccounts }        from '@/features/accounts/hooks/useAccounts'
 import { useTransactions }    from '@/features/transactions/hooks/useTransactions'
 import { useDebts }           from '@/features/debts/hooks/useDebts'
-// import { useBudgetProgress }  from '@/features/budgets/hooks/useBudgets'
+import { useBudgetProgress }  from '@/features/budgets/hooks/useBudgets'
 import { useAccountsDashboard } from '@/features/accounts/hooks/useAccountsDashboard'
 import { filterByPeriod }     from '@/utils/date.utils'
 import { formatCurrency }     from '@/features/accounts/utils/account-display.utils'
@@ -15,7 +15,7 @@ export function useDashboard() {
   const { data: accounts     = [], isLoading: loadingAccounts     } = useAccounts()
   const { data: transactions = [], isLoading: loadingTransactions } = useTransactions()
   const { data: debts        = [], isLoading: loadingDebts        } = useDebts()
-//   const budgetProgress                                               = useBudgetProgress()
+  const budgetProgress                                               = useBudgetProgress()
 
   const accountsDashboard = useAccountsDashboard(accounts)
 
@@ -100,17 +100,17 @@ export function useDashboard() {
   }, [activeDebts])
 
   // ── Top 3 presupuestos activos ────────────────────────────────────────────
-//   const topBudgets = useMemo(() =>
-//     budgetProgress
-//       .filter((p) => p.budget.is_active)
-//       .sort((a, b) => {
-//         // Primero los AT_RISK y OVERDUE
-//         const priority = { OVERDUE: 0, AT_RISK: 1, ON_TRACK: 2, COMPLETED: 3 }
-//         return priority[a.status] - priority[b.status]
-//       })
-//       .slice(0, 3),
-//     [budgetProgress]
-//   )
+  const topBudgets = useMemo(() =>
+    budgetProgress
+      .filter((p) => p.budget.is_active)
+      .sort((a, b) => {
+        // Primero los AT_RISK y OVERDUE
+        const priority = { OVERDUE: 0, AT_RISK: 1, ON_TRACK: 2, COMPLETED: 3 }
+        return priority[a.status] - priority[b.status]
+      })
+      .slice(0, 3),
+    [budgetProgress]
+  )
 
   // ── Saludo según hora ─────────────────────────────────────────────────────
   const greeting = useMemo(() => {
@@ -142,7 +142,7 @@ export function useDashboard() {
     debtSummary,
 
     // Presupuestos
-    // topBudgets,
+    topBudgets,
 
     // UI
     greeting,

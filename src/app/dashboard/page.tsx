@@ -6,8 +6,8 @@ import dynamic   from "next/dynamic"
 
 import { DashboardHeader }             from "@/features/dashboard/components/DashboardHeader"
 import { DashboardDebts }              from "@/features/dashboard/components/DashboardDebts"
-// import { DashboardBudgets }            from "@/features/dashboard/components/DashboardBudgets"
-// import { DashboardRecentTransactions } from "@/features/dashboard/components/DashboardRecentTransactions"
+import { DashboardBudgets }            from "@/features/dashboard/components/DashboardBudgets"
+import { DashboardRecentTransactions } from "@/features/dashboard/components/DashboardRecentTransactions"
 import { AssetsSection }               from "@/features/dashboard/AssetsSection"
 import { IncomeExpenseChart }          from "@/features/transactions/components/analytics/IncomeExpenseChart"
 import { DashboardSkeleton }           from "@/features/dashboard/components/skeletons/DashboardSkeleton"
@@ -18,10 +18,10 @@ import { useCategories }         from "@/features/categories/hooks/useCategories
 
 import { CashflowSectionSkeleton } from "@/features/dashboard/components/skeletons/CashflowSectionSkeleton"
 
-// const CashflowSection = dynamic(
-//   () => import("@/features/cashflow/CashflowSection").then(m => m.CashflowSection),
-//   { ssr: false, loading: () => <CashflowSectionSkeleton /> }
-// )
+const CashflowSection = dynamic(
+  () => import("@/features/dashboard/CashflowSection").then(m => m.CashflowSection),
+  { ssr: false, loading: () => <CashflowSectionSkeleton /> }
+)
 
 export default function DashboardPage() {
   const {
@@ -34,7 +34,7 @@ export default function DashboardPage() {
     monthlyTransactions,
     activeDebts,
     debtSummary,
-    // topBudgets,
+    topBudgets,
     greeting,
     currentMonthLabel,
   } = useDashboard()
@@ -51,12 +51,7 @@ export default function DashboardPage() {
     return <AppLayout><DashboardSkeleton /></AppLayout>
   }
 
-  // Calcular patrimonio neto desde accountsDashboard
-  // const netWorthRaw = accountsDashboard.assetsDetail
-  //   .reduce((sum, a) => {
-  //     const val = parseFloat(a.value.replace(/[^0-9.-]/g, '')) || 0
-  //     return a.category === 'Deuda' ? sum - val : sum + val
-  //   }, 0)
+  const netWorthRaw = accountsDashboard.netWorthRaw
 
   return (
     <AppLayout>
@@ -66,7 +61,7 @@ export default function DashboardPage() {
         <DashboardHeader
           greeting={greeting}
           currentMonthLabel={currentMonthLabel}
-          netWorth={0}
+          netWorth={netWorthRaw}
           monthlyStats={monthlyStats}
           trends={trends}
           netWorthPositive={accountsDashboard.netWorthPositive}
@@ -78,7 +73,7 @@ export default function DashboardPage() {
             <AssetsSection groups={accountsDashboard.currencyGroups} />
           </div>
           <div className="lg:col-span-2">
-            {/* <CashflowSection /> */}
+            <CashflowSection />
           </div>
         </div>
 
@@ -102,10 +97,10 @@ export default function DashboardPage() {
         {/* ── Fila 3: Presupuestos (1/3) + Últimas transacciones (2/3) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
-            {/* <DashboardBudgets topBudgets={topBudgets} /> */}
+            <DashboardBudgets topBudgets={topBudgets} />
           </div>
           <div className="lg:col-span-2">
-            {/* <DashboardRecentTransactions transactions={recentTransactions} /> */}
+            <DashboardRecentTransactions transactions={recentTransactions} />
           </div>
         </div>
 

@@ -126,6 +126,8 @@ export function useAccountsDashboard(accounts: Account[]) {
     totalAssetsFormatted:      formatCurrency(totalGlobalAssetsInBOB,      'BOB'),
     totalLiabilitiesFormatted: formatCurrency(totalGlobalLiabilitiesInBOB, 'BOB'),
     netWorthFormatted:         formatCurrency(Math.abs(netWorthInBOB),     'BOB'),
+    netWorthInBOB,
+    netWorthRaw: netWorthInBOB,
     netWorthPositive,
   }
 }

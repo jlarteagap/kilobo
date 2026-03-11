@@ -2,19 +2,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { debtService } from '@/services/debt.service'
 import { createDebtPaymentSchema } from '@/lib/validations/debt.schema'
+import { getUserId } from '@/lib/auth.server'
 
 type Params = { params: Promise<{ id: string }> }
 
 // Registrar pago
 export async function POST(req: NextRequest, { params }: Params) {
   try {
+    const userId = await getUserId()
+    if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const { id }  = await params
     const body    = await req.json()
     const parsed  = createDebtPaymentSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
-    const payment = await debtService.registerPayment(id, parsed.data)
+    const payment = await debtService.registerPayment(id, parsed.data, userId)
     return NextResponse.json({ data: payment }, { status: 201 })
   } catch (error: any) {
     return handleError(error)
@@ -24,8 +28,11 @@ export async function POST(req: NextRequest, { params }: Params) {
 // Cancelar deuda
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
+    const userId = await getUserId()
+    if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const { id } = await params
-    const debt   = await debtService.cancelDebt(id)
+    const debt   = await debtService.cancelDebt(id, userId)
     return NextResponse.json({ data: debt })
   } catch (error: any) {
     return handleError(error)
@@ -35,8 +42,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 // Eliminar deuda
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
+    const userId = await getUserId()
+    if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const { id } = await params
-    await debtService.deleteDebt(id)
+    await debtService.deleteDebt(id, userId)
     return NextResponse.json({ success: true })
   } catch (error: any) {
     return handleError(error)
@@ -48,6 +58,8 @@ function handleError(error: any): NextResponse {
   const statusMap: Record<string, number> = {
     'Cuenta no encontrada.':   404,
     'Deuda no encontrada.':    404,
+    'Cuenta no encontrada o no autorizada.': 404,
+    'Deuda no encontrada o no autorizada.':  404,
     'La deuda ya está pagada.': 409,
     'No puedes eliminar una deuda activa. Cancélala primero.': 409,
   }

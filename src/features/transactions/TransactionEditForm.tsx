@@ -147,7 +147,7 @@ export function TransactionEditForm({
         />
 
         {/* ── Categoría ── */}
-        {showCategory && (
+        {showCategory ? (
           <FormField<EditFormValues>
             control={form.control as any}
             name="category_id"
@@ -161,7 +161,7 @@ export function TransactionEditForm({
                   defaultValue={field.value as string}
                 >
                   <FormControl>
-                    <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                     <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
                       <SelectValue placeholder="Sin categoría" />
                     </SelectTrigger>
                   </FormControl>
@@ -181,10 +181,10 @@ export function TransactionEditForm({
               </FormItem>
             )}
           />
-        )}
+        ) : null}
 
         {/* ── Tags ── */}
-        {showCategory && availableTags.length > 0 && (
+        {showCategory && availableTags.length > 0 ? (
           <FormField<EditFormValues>
             control={form.control as any}
             name="tag"
@@ -229,7 +229,7 @@ export function TransactionEditForm({
               </FormItem>
             )}
           />
-        )}
+        ) : null}
 
         {/* ── Nota ── */}
         <FormField<EditFormValues>
@@ -298,7 +298,7 @@ export function TransactionEditForm({
   )}
 />
         {/* ── Recurrente ── */}
-        {(transaction.type === 'EXPENSE' || transaction.type === 'SAVING' || transaction.type === 'DEBT') && (
+        {(transaction.type === 'EXPENSE' || transaction.type === 'SAVING' || transaction.type === 'DEBT') ? (
           <FormField<EditFormValues>
             control={form.control as any}
             name="is_recurring"
@@ -316,7 +316,7 @@ export function TransactionEditForm({
               </FormItem>
             )}
           />
-        )}
+        ) : null}
 
         {/* ── Submit ── */}
         <Button

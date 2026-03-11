@@ -62,9 +62,14 @@ export interface UpdateTransactionData extends Partial<CreateTransactionData> {}
 export interface CategoryData {
   name: string
   value: number
+  categoryId: string
+  color: string
+  income: number
+  expense: number
+  percentage: number
 }
 
-export interface DataPoint {
+export interface ChartDataPoint {
   date: string
   income: number
   expense: number

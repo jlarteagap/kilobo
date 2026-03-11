@@ -1,6 +1,5 @@
 // features/transactions/components/analytics/CategoryOverview.tsx
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
-import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import type { CategoryData } from "@/types/transaction"
 

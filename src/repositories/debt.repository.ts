@@ -36,25 +36,29 @@ function mapPayment(id: string, data: FirebaseFirestore.DocumentData): DebtPayme
 
 export const debtRepository = {
   // ── Debts ──────────────────────────────────────────────────────────────────
-  async findAll(): Promise<Debt[]> {
+  async findAll(userId: string): Promise<Debt[]> {
     const snapshot = await debtsCollection
-      .orderBy('created_at', 'desc')
+      .where('user_id', '==', userId)
       .get()
-    return snapshot.docs.map((doc) => mapDebt(doc.id, doc.data()))
+    const debts = snapshot.docs.map((doc) => mapDebt(doc.id, doc.data()))
+    return debts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
-  async findById(id: string): Promise<Debt | null> {
+  async findById(id: string, userId: string): Promise<Debt | null> {
     const doc = await debtsCollection.doc(id).get()
     if (!doc.exists) return null
-    return mapDebt(doc.id, doc.data()!)
+    const data = doc.data()!
+    if (data.user_id !== userId) return null
+    return mapDebt(doc.id, data)
   },
 
-  async create(data: CreateDebtData): Promise<Debt> {
+  // ── Debts ──────────────────────────────────────────────────────────────────
+  async create(data: CreateDebtData, userId: string): Promise<Debt> {
     const payload = {
       ...data,
       paid_amount: 0,
       status:      'ACTIVE',
-      user_id:     '',
+      user_id:     userId,
       created_at:  Timestamp.now(),
       updated_at:  Timestamp.now(),
     }
@@ -63,14 +67,14 @@ export const debtRepository = {
     return mapDebt(docRef.id, created.data()!)
   },
 
-  async update(id: string, data: Partial<Debt>): Promise<Debt> {
+  async update(id: string, data: Partial<Debt>, userId: string): Promise<Debt> {
     const docRef = debtsCollection.doc(id)
     await docRef.update({ ...data, updated_at: Timestamp.now() })
     const updated = await docRef.get()
     return mapDebt(docRef.id, updated.data()!)
   },
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, userId: string): Promise<void> {
     await debtsCollection.doc(id).delete()
   },
 
@@ -78,9 +82,13 @@ export const debtRepository = {
   async findPaymentsByDebt(debtId: string): Promise<DebtPayment[]> {
     const snapshot = await paymentsCollection
       .where('debt_id', '==', debtId)
-      .orderBy('date', 'desc')
       .get()
-    return snapshot.docs.map((doc) => mapPayment(doc.id, doc.data()))
+    const payments = snapshot.docs.map((doc) => mapPayment(doc.id, doc.data()))
+    return payments.sort((a, b) => {
+      const dateA = (a as any).date || a.created_at;
+      const dateB = (b as any).date || b.created_at;
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
+    });
   },
 
   async createPayment(

@@ -2,32 +2,33 @@ import { transactionsRepository } from '@/repositories/transactions.repository'
 import { CreateTransactionData, Transaction } from "@/types/transaction"
 
 export const transactionService = {
-  async getTransactions(): Promise<Transaction[]> {
-    return transactionsRepository.findAll()
+  async getTransactions(userId: string): Promise<Transaction[]> {
+    return transactionsRepository.findAll(userId)
   },
 
-  async createTransaction(data: CreateTransactionData): Promise<Transaction> {
-    return transactionsRepository.create(data)
+  async createTransaction(data: CreateTransactionData, userId: string): Promise<Transaction> {
+    return transactionsRepository.create(data, userId)
   },
 
   async updateTransaction(
     transactionId: string,
-    data: Partial<CreateTransactionData>
+    data: Partial<CreateTransactionData>,
+    userId: string
   ): Promise<Transaction> {
-    const transaction = await transactionsRepository.findById(transactionId)
+    const transaction = await transactionsRepository.findById(transactionId, userId)
     if (!transaction) {
-      throw new Error('Transacción no encontrada.')
+      throw new Error('Transacción no encontrada o no autorizada.')
     }
 
-    return transactionsRepository.update(transactionId, data)
+    return transactionsRepository.update(transactionId, data, userId)
   },
 
-  async deleteTransaction(transactionId: string): Promise<void> {
-    const transaction = await transactionsRepository.findById(transactionId)
+  async deleteTransaction(transactionId: string, userId: string): Promise<void> {
+    const transaction = await transactionsRepository.findById(transactionId, userId)
     if (!transaction) {
-      throw new Error('Transacción no encontrada.')
+      throw new Error('Transacción no encontrada o no autorizada.')
     }
 
-    return transactionsRepository.delete(transactionId)
+    return transactionsRepository.delete(transactionId, userId)
   },
 }

@@ -43,25 +43,29 @@ function mapTransaction(id: string, data: FirebaseFirestore.DocumentData): Trans
 }
 
 export const transactionsRepository = {
-  async findAll(): Promise<Transaction[]> {
+  async findAll(userId: string): Promise<Transaction[]> {
     const snapshot = await transactionsCollection
-      .orderBy('date', 'desc')
+      .where('user_id', '==', userId)
       .get()
 
-    return snapshot.docs.map((doc) => mapTransaction(doc.id, doc.data()))
+    const transactions = snapshot.docs.map((doc) => mapTransaction(doc.id, doc.data()))
+    
+    return transactions.sort((a, b) => b.date.localeCompare(a.date));
   },
 
-  async findById(transactionId: string): Promise<Transaction | null> {
+  async findById(transactionId: string, userId: string): Promise<Transaction | null> {
     const doc = await transactionsCollection.doc(transactionId).get()
     if (!doc.exists) return null
-    return mapTransaction(doc.id, doc.data()!)
+    const data = doc.data()!
+    if (data.user_id !== userId) return null
+    return mapTransaction(doc.id, data)
   },
 
-  async create(data: CreateTransactionData): Promise<Transaction> {
+  async create(data: CreateTransactionData, userId: string): Promise<Transaction> {
     const payload = {
       ...data,
       status:     data.status     ?? 'COMPLETED',
-      user_id:    data.user_id    ?? '',
+      user_id:    userId,
       created_at: FieldValue.serverTimestamp(),
       updated_at: FieldValue.serverTimestamp(),
     }
@@ -73,7 +77,8 @@ export const transactionsRepository = {
 
   async update(
     transactionId: string,
-    data: Partial<CreateTransactionData>
+    data: Partial<CreateTransactionData>,
+    userId: string
   ): Promise<Transaction> {
     const docRef = transactionsCollection.doc(transactionId)
 
@@ -86,7 +91,8 @@ export const transactionsRepository = {
     return mapTransaction(docRef.id, updated.data()!)
   },
 
-  async delete(transactionId: string): Promise<void> {
+  async delete(transactionId: string, userId: string): Promise<void> {
+    // Note: The service layer should pre-verify ownership using findById
     await transactionsCollection.doc(transactionId).delete()
   },
 }

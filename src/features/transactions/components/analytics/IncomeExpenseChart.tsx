@@ -7,7 +7,7 @@ import {
 } from "recharts"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
-import type { DataPoint } from "@/types/transaction"
+import type { ChartDataPoint } from "@/types/transaction"
 
 type ChartType = 'area' | 'bar' | 'line'
 
@@ -107,7 +107,7 @@ function EmptyChart() {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 interface IncomeExpenseChartProps {
-  data: DataPoint[]
+  data: ChartDataPoint[]
 }
 
 export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {

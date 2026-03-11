@@ -1,74 +1,58 @@
-// app/(dashboard)/page.tsx
-"use client"
+'use client'
 
-import AppLayout from "@/components/layout/AppLayout"
-import { CashflowSection }  from "@/features/dashboard/CashflowSection"
-import { AssetsSection }    from "@/features/dashboard/AssetsSection"
-import { AssetsTable }      from "@/features/dashboard/AssetsTable"
-import { DashboardSkeleton } from "@/features/dashboard/components/skeletons/DashboardSkeleton"
-import { useAccounts }           from "@/features/accounts/hooks/useAccounts"
-import { useAccountsDashboard }  from "@/features/accounts/hooks/useAccountsDashboard"
+import { LandingHeader } from '@/features/landing/components/LandingHeader'
+import { Hero } from '@/features/landing/components/Hero'
+import { BentoGrid } from '@/features/landing/components/BentoGrid'
+import { LandingFooter } from '@/features/landing/components/LandingFooter'
+import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
-export default function DashboardPage() {
-  const { data: accounts = [], isLoading, isError } = useAccounts()
+export default function LandingPage() {
+  const { user, loading } = useAuth()
+  const router = useRouter()
 
-  const {
-    assetsDetail,
-    currencyGroups,
-    totalAssetsFormatted,
-    totalLiabilitiesFormatted,
-    netWorthFormatted,
-    netWorthPositive,
-  } = useAccountsDashboard(accounts)
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard')
+    }
+  }, [user, loading, router])
 
-  if (isLoading) {
-    return <AppLayout><DashboardSkeleton /></AppLayout>
-  }
-
-  if (isError) {
+  if (loading || user) {
     return (
-      <AppLayout>
-        <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl">
-          Error al cargar los datos del dashboard.
-        </div>
-      </AppLayout>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
+        <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+      </div>
     )
   }
 
   return (
-    <AppLayout>
-      <div className="flex flex-col gap-6 container mx-auto max-w-7xl py-8 px-4">
+    <div className="min-h-screen flex flex-col bg-neutral-50 selection:bg-emerald-100 selection:text-emerald-900">
+      <LandingHeader />
+      
+      <main className="flex-1">
+        <Hero />
+        <BentoGrid />
 
-        {/* ── Header ── */}
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-            Dashboard
-          </h1>
-          <p className="text-[13px] text-gray-400 mt-0.5">
-            Resumen de tu situación financiera
-          </p>
-        </div>
-
-        {/* ── Fila 1: Patrimonio (1/3) + Flujo de caja (2/3) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-1">
-            <AssetsSection groups={currencyGroups} />
+        {/* The Final Call CTA */}
+        <section className="bg-neutral-50 py-24 sm:py-32">
+          <div className="container mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">
+              Empieza a construir tu tranquilidad financiera hoy.
+            </h2>
+            <div className="mt-10 flex items-center justify-center gap-x-6">
+              <a
+                href="/login"
+                className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-all font-medium"
+              >
+                Crear tu cuenta
+              </a>
+            </div>
           </div>
-          <div className="md:col-span-2">
-            <CashflowSection />
-          </div>
-        </div>
+        </section>
+      </main>
 
-        {/* ── Fila 2: Balance patrimonial — ancho completo ── */}
-        <AssetsTable
-          assets={assetsDetail}
-          totalAssetsFormatted={totalAssetsFormatted}
-          totalLiabilitiesFormatted={totalLiabilitiesFormatted}
-          netWorthFormatted={netWorthFormatted}
-          netWorthPositive={netWorthPositive}
-        />
-
-      </div>
-    </AppLayout>
+      <LandingFooter />
+    </div>
   )
 }

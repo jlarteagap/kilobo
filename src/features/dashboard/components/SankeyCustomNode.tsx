@@ -1,12 +1,11 @@
 // features/cashflow/components/SankeyCustomNode.tsx
 import { Layer, Rectangle } from "recharts"
 
-// Colores consistentes con el proyecto
 const TYPE_COLORS: Record<string, string> = {
-  income:  '#34d399',  // emerald-400
-  expense: '#fb7185',  // rose-400
-  account: '#60a5fa',  // blue-400
-  balance: '#9ca3af',  // gray-400
+  income:  '#34d399',
+  expense: '#fb7185',
+  account: '#60a5fa',
+  balance: '#9ca3af',
 }
 
 const NODE_COLORS: Record<string, string> = {
@@ -22,6 +21,7 @@ interface SankeyNodeProps {
   index?:          number
   payload?:        any
   containerWidth?: number
+  fontSize?:       number   // ← nuevo
 }
 
 export function SankeyCustomNode({
@@ -32,18 +32,24 @@ export function SankeyCustomNode({
   index = 0,
   payload = {},
   containerWidth = 0,
+  fontSize = 11,            // ← nuevo
 }: SankeyNodeProps) {
-  const isRight = x + width + 6 > containerWidth
+  const isRight = x + width + 6 > containerWidth / 2
 
   const fill =
-    NODE_COLORS[payload.name]  ??
-    payload.color              ??
-    TYPE_COLORS[payload.type]  ??
+    NODE_COLORS[payload.name] ??
+    payload.color             ??
+    TYPE_COLORS[payload.type] ??
     '#60a5fa'
+
+  // Truncar labels largos en pantallas pequeñas
+  const maxChars = containerWidth < 400 ? 8 : containerWidth < 600 ? 12 : 20
+  const label    = payload.name?.length > maxChars
+    ? payload.name.slice(0, maxChars) + '…'
+    : payload.name
 
   return (
     <Layer key={`node-${index}`}>
-      {/* Barra del nodo */}
       <Rectangle
         x={x}
         y={y}
@@ -53,18 +59,17 @@ export function SankeyCustomNode({
         fillOpacity={1}
         radius={4}
       />
-      {/* Label */}
       <text
         x={isRight ? x - 8 : x + width + 8}
         y={y + height / 2}
         textAnchor={isRight ? 'end' : 'start'}
         dominantBaseline="middle"
         fill="#6b7280"
-        fontSize={11}
+        fontSize={fontSize}
         fontWeight={500}
         fontFamily="inherit"
       >
-        {payload.name}
+        {label}
       </text>
     </Layer>
   )

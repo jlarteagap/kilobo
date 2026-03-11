@@ -122,11 +122,11 @@ function TransactionRow({
             <p className="text-sm font-medium text-gray-800 truncate">
               {category.name ?? (tx.type === 'TRANSFER' ? 'Transferencia' : 'Sin categoría')}
             </p>
-            {tx.description && (
+            {tx.description ? (
               <p className="text-[11px] text-gray-400 truncate max-w-[160px]">
                 {tx.description}
               </p>
-            )}
+            ) : null}
           </div>
         </div>
       </td>
@@ -134,19 +134,19 @@ function TransactionRow({
       {/* ── Tag ── */}
 <td className="px-4 py-3">
   <div className="flex gap-2">
-    {tx.tag && (
+    {tx.tag ? (
       <span className="inline-flex items-center text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
         {tx.tag}
       </span>
-    )}
-    {tx.payment_method && (
+    ) : null}
+    {tx.payment_method ? (
       <span className="inline-flex items-center text-[11px] text-gray-400 px-2 py-0.5">
         {PAYMENT_METHOD_LABELS[tx.payment_method]}
       </span>
-    )}
-    {!tx.tag && !tx.payment_method && (
+    ) : null}
+    {!tx.tag && !tx.payment_method ? (
       <span className="text-gray-200">—</span>
-    )}
+    ) : null}
   </div>
 </td>
 
@@ -172,19 +172,19 @@ function TransactionRow({
         <span className="text-[13px] text-gray-600">
           {getAccountName(tx.account_id, accounts)}
         </span>
-        {tx.to_account_id && (
+        {tx.to_account_id ? (
           <span className="text-[13px] text-gray-400">
             {' → '}{getAccountName(tx.to_account_id, accounts)}
           </span>
-        )}
+        ) : null}
       </td>
 
       {/* ── Monto ── */}
       <td className={cn('px-4 py-3 text-right font-semibold text-sm', amountColor)}>
         <div className="flex items-center justify-end gap-1">
-          {tx.is_recurring && (
+          {tx.is_recurring ? (
             <Repeat className="w-3 h-3 text-gray-400 flex-shrink-0" />
-          )}
+          ) : null}
           {sign}{formatCurrency(tx.amount, normalizeCurrency(tx.currency))}
         </div>
       </td>
@@ -307,9 +307,9 @@ export function TransactionList({
             )}
           </tbody>
           {/* ── Totales — solo si hay transacciones y no está cargando ── */}
-          {!loading && transactions.length > 0 && (
+          {!loading && transactions.length > 0 ? (
             <TransactionTotals transactions={transactions} />
-          )}
+          ) : null}
         </table>
       </div>
 
@@ -321,7 +321,7 @@ export function TransactionList({
               Editar Transacción
             </SheetTitle>
           </SheetHeader>
-          {editingTx && (
+          {editingTx ? (
             <div className="mt-6">
               <TransactionEditForm
                 transaction={editingTx}
@@ -330,7 +330,7 @@ export function TransactionList({
                 onSave={handleEditSave}
               />
             </div>
-          )}
+          ) : null}
         </SheetContent>
       </Sheet>
 

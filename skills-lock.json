@@ -26,6 +26,11 @@
       "sourceType": "github",
       "computedHash": "d004c5e5e2e7132e1d64e9c2a339db7f7aaa69053a5c19cddc210dd35dd6fff5"
     },
+    "mobile-responsiveness": {
+      "source": "hoodini/ai-agents-skills",
+      "sourceType": "github",
+      "computedHash": "d40ffbede786927da70723ebd4bfd332505d04f495e7e75ab4b6651a13006a62"
+    },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",

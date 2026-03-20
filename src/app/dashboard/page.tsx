@@ -55,7 +55,7 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col gap-8 container mx-auto max-w-7xl py-8 px-4">
+      <div className="flex flex-col gap-4 md:gap-8 container mx-auto max-w-7xl py-4 md:py-8 px-4">
 
         {/* ── Header + Stats ── */}
         <DashboardHeader

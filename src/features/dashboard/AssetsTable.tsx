@@ -38,6 +38,7 @@ function SortableHeader({
   sortKey,
   sortOrder,
   align = 'left',
+  className,
   onSort,
 }: {
   label:     string
@@ -45,12 +46,14 @@ function SortableHeader({
   sortKey:   SortKey
   sortOrder: SortOrder
   align?:    'left' | 'right'
+  className?: string
   onSort:    (col: SortKey) => void
 }) {
   return (
     <th className={cn(
       'px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider',
-      align === 'right' && 'text-right'
+      align === 'right' && 'text-right',
+      className
     )}>
       <button
         type="button"
@@ -85,12 +88,12 @@ function AssetRow({ asset }: { asset: AssetDetail }) {
       </td>
 
       {/* Categoría */}
-      <td className="px-6 py-4">
+      <td className="px-6 py-4 hidden sm:table-cell">
         <span className="text-[12px] font-medium text-muted-foreground/70">{asset.category}</span>
       </td>
 
       {/* Peso */}
-      <td className="px-6 py-4">
+      <td className="px-6 py-4 hidden sm:table-cell">
         <Badge
           variant="secondary"
           className="text-[10px] font-bold rounded-full bg-muted text-muted-foreground/80 border-none px-2.5"
@@ -147,8 +150,8 @@ function AssetSection({
         <thead>
           <tr className="border-b border-gray-50">
             <SortableHeader label="Activo"    column="name"     sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} />
-            <SortableHeader label="Categoría" column="category" sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} />
-            <SortableHeader label="Peso"      column="weight"   sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} />
+            <SortableHeader className="hidden sm:table-cell" label="Categoría" column="category" sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} />
+            <SortableHeader className="hidden sm:table-cell" label="Peso"      column="weight"   sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} />
             <SortableHeader label="Valor"     column="value"    sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} align="right" />
           </tr>
         </thead>

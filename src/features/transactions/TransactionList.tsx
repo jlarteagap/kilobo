@@ -62,8 +62,8 @@ function TransactionRowSkeleton() {
               </div>
             </div>
           </td>
-          <td className="px-4 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
-          <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+          <td className="px-4 py-3 hidden sm:table-cell"><Skeleton className="h-5 w-14 rounded-full" /></td>
+          <td className="px-4 py-3 hidden sm:table-cell"><Skeleton className="h-5 w-16 rounded-full" /></td>
           <td className="px-4 py-3"><Skeleton className="h-4 w-20 rounded-full" /></td>
           <td className="px-4 py-3 text-right"><Skeleton className="h-4 w-16 rounded-full ml-auto" /></td>
           <td className="px-4 py-3" />
@@ -132,7 +132,7 @@ function TransactionRow({
       </td>
 
       {/* ── Tag ── */}
-<td className="px-4 py-3">
+<td className="px-4 py-3 hidden sm:table-cell">
   <div className="flex gap-2">
     {tx.tag ? (
       <span className="inline-flex items-center text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
@@ -151,7 +151,7 @@ function TransactionRow({
 </td>
 
       {/* ── Tipo ── */}
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 hidden sm:table-cell">
         <Badge
           variant="secondary"
           className={cn(
@@ -266,7 +266,8 @@ export function TransactionList({
                   key={h}
                   className={cn(
                     'px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider',
-                    h === 'Monto' && 'text-right'
+                    h === 'Monto' && 'text-right',
+                    (h === 'Etiqueta' || h === 'Tipo') && 'hidden sm:table-cell'
                   )}
                 >
                   {h}

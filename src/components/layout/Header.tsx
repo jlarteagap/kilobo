@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
+import { QuickActionMenu } from "@/components/layout/QuickActionMenu"
 
 export function Header() {
   const { user } = useAuth()
@@ -26,10 +27,7 @@ export function Header() {
       </div>
       
       <div className="flex items-center gap-3">
-        <Button className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 shadow-sm rounded-full transition-all duration-200 active:scale-95">
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">Nuevo</span>
-        </Button>
+        <QuickActionMenu />
         <Avatar className="size-8 ring-2 ring-neutral-100 dark:ring-neutral-800">
           <AvatarImage src={user?.photoURL || undefined} />
           <AvatarFallback>{initials}</AvatarFallback>

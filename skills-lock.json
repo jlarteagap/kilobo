@@ -4,7 +4,17 @@
     "brainstorming": {
       "source": "obra/superpowers",
       "sourceType": "github",
-      "computedHash": "5cafa1558b0b6bd4d4c71f23d5567b7fcbbcdb4b0a50b0c5f69a80a3cebaf9b8"
+      "computedHash": "efddfd0efbd0e7b5075c5a66ff91a706ac506c88c7b5ddd7fd45a351cb3fe3af"
+    },
+    "changelog-maintenance": {
+      "source": "supercent-io/skills-template",
+      "sourceType": "github",
+      "computedHash": "1700614a8a35135a4b7fa466797b224a76a7a34e7a70497ecee4c69ecadc12e3"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "d31e234f0c90694a670222cdd1dafa853e051d7066beda389f1097c22dadd461"
     },
     "git-commit": {
       "source": "github/awesome-copilot",

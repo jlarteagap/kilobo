@@ -12,6 +12,7 @@ export default function LoginPage() {
   useEffect(() => {
     // Si hay usuario y no está cargando, redirigir al dashboard
     if (!loading && user) {
+      router.refresh()
       router.push('/dashboard')
     }
   }, [user, loading, router])

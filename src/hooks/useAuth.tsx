@@ -32,14 +32,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onIdTokenChanged(auth, async (currentUser) => {
       try {
+        setLoading(true)
         if (!currentUser) {
-          setUser(null)
           // Limpiar la cookie de sesión si no hay usuario en Firebase
           await fetch('/api/auth/session', { method: 'DELETE' })
+          setUser(null)
           return
         }
 
-        setUser(currentUser)
         const idToken = await currentUser.getIdToken(true)
 
         // Enviar el token al backend para crear la cookie de sesión
@@ -50,6 +50,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           },
           body: JSON.stringify({ idToken }),
         })
+
+        setUser(currentUser)
       } catch (error) {
         console.error('Error handling auth state change:', error)
       } finally {

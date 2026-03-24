@@ -64,7 +64,6 @@ function AccountCard({
   onDelete: (id: string) => void
 }) {
   const { icon: Icon, color, bg, label } = getAccountTypeDetails(account.type)
-  const isDebt = account.type === 'DEBT'
 
   return (
     <div
@@ -112,10 +111,7 @@ function AccountCard({
       <div className="pt-5 mt-auto border-t border-neutral-100 dark:border-neutral-800/50">
         <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Balance Actual</span>
         <div className="flex items-baseline gap-1 mt-1">
-          <p className={cn(
-            'text-2xl font-extrabold tracking-tighter',
-            isDebt ? 'text-rose-500' : 'text-neutral-900 dark:text-neutral-100'
-          )}>
+          <p className="text-2xl font-extrabold tracking-tighter text-neutral-900 dark:text-neutral-100">
             {formatCurrency(account.balance, account.currency)}
           </p>
         </div>
@@ -179,13 +175,7 @@ export function AccountsList() {
   const isDialogOpen = dialog.mode !== 'closed'
   const isPending    = createAccount.isPending || updateAccount.isPending
 
-  const totalBalance = accounts
-    .filter((a) => a.type !== 'DEBT')
-    .reduce((sum, a) => sum + a.balance, 0)
-
-  const totalDebt = accounts
-    .filter((a) => a.type === 'DEBT')
-    .reduce((sum, a) => sum + a.balance, 0)
+  const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0)
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -212,7 +202,7 @@ export function AccountsList() {
 
       {/* ── Overview Cards ── */}
       {!isLoading && accounts.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className="relative overflow-hidden bg-emerald-600 rounded-[2rem] p-8 text-white shadow-2xl shadow-emerald-500/20">
             <div className="relative z-10">
               <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-80">Patrimonio Total</span>
@@ -222,13 +212,6 @@ export function AccountsList() {
             </div>
             {/* Decoración sutil */}
             <div className="absolute -right-8 -bottom-8 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
-          </div>
-
-          <div className="relative overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200/50 dark:border-neutral-800/50 rounded-[2rem] p-8 shadow-sm">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">Deuda Acumulada</span>
-            <p className="text-4xl font-black tracking-tighter mt-2 text-rose-500">
-              {formatCurrency(totalDebt, 'BOB')}
-            </p>
           </div>
         </div>
       )}

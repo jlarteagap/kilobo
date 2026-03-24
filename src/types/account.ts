@@ -1,6 +1,6 @@
 import { LucideIcon } from "lucide-react"
 
-export type AccountType = "BANK" | "WALLET" | "CASH" | "CRYPTO" | "DEBT" | "OTHER"
+export type AccountType = "BANK" | "WALLET" | "CASH" | "CRYPTO" | "OTHER"
 export type CurrencyType = "BOB" | "USD" | "BTC" | "ETH" | "USDT" | "XRP" | "BNB" | "USDC" | "OTHER"
 
 export interface Account {
@@ -23,7 +23,6 @@ export const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
   { value: "WALLET", label: "Billetera Digital" },
   { value: "CASH",   label: "Efectivo" },
   { value: "CRYPTO", label: "Criptomoneda" },
-  { value: "DEBT",   label: "Deuda" },
   { value: "OTHER",  label: "Otro" },
 ]
 

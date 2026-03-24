@@ -77,18 +77,10 @@ export function formatTransactionDate(dateStr: string): string {
   return format(parseLocalDate(dateStr), "d 'de' MMMM", { locale: es })
 }
 
-export const TRANSACTION_TYPE_LABELS: Record<typeof TRANSACTION_TYPES[number], string> = {
+export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
   EXPENSE:  "Gasto",
   INCOME:   "Ingreso",
   TRANSFER: "Transfer",
   SAVING:   "Ahorro",
   DEBT:     "Deuda",
-}
-
-export const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  CASH:     'Efectivo',
-  QR:       'QR',
-  CARD:     'Tarjeta',
-  TRANSFER: 'Transferencia',
-  OTHER:    'Otro',
 }

@@ -1,8 +1,7 @@
 // lib/validations/transaction.schema.ts
 import { z } from 'zod'
 
-export const TRANSACTION_TYPES    = ['INCOME', 'EXPENSE', 'TRANSFER', 'SAVING', 'DEBT'] as const
-export const PAYMENT_METHODS      = ['CASH', 'QR', 'CARD', 'TRANSFER', 'OTHER'] as const
+export const TRANSACTION_TYPES    = ['INCOME', 'EXPENSE', 'TRANSFER', 'SAVING'] as const
 export const CURRENCY_TYPE_VALUES = ['BOB', 'USD', 'BTC', 'ETH', 'USDT', 'XRP', 'BNB', 'USDC', 'OTHER'] as const
 
 const transactionBaseSchema = z.object({
@@ -14,7 +13,6 @@ const transactionBaseSchema = z.object({
   tag:                 z.string().optional(),   // ← nuevo
   date:                z.string().min(1, 'Selecciona una fecha'),
   description:         z.string().optional(),
-  payment_method:      z.enum(PAYMENT_METHODS).optional(),
   is_recurring:        z.boolean().default(false),
   currency:            z.string().optional(),
 })

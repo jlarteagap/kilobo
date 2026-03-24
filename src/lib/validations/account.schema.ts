@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 // Source of truth para los valores válidos — evita duplicar el enum
-const ACCOUNT_TYPE_VALUES = ["BANK", "WALLET", "CASH", "CRYPTO", "DEBT", "OTHER"] as const
+const ACCOUNT_TYPE_VALUES = ["BANK", "WALLET", "CASH", "CRYPTO", "OTHER"] as const
 const CURRENCY_TYPE_VALUES = ["BOB", "USD", "BTC", "ETH", "USDT", "XRP", "BNB", "USDC", "OTHER"] as const
 
 // Schema para crear — lo que el usuario envía desde el formulario

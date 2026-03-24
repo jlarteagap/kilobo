@@ -1,7 +1,7 @@
 // features/transactions/hooks/useTransactions.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAccounts, useUpdateAccount, accountKeys } from '@/features/accounts/hooks/useAccounts'
-import type { Transaction, CreateTransactionData, PaymentMethod } from '@/types/transaction'
+import type { Transaction, CreateTransactionData } from '@/types/transaction'
 import { CreateTransactionInput } from '@/lib/validations/transaction.schema'
 import { toast } from 'sonner'
 
@@ -130,7 +130,6 @@ export type EditableTransactionFields = {
   tag?:            string | null
   description?:    string | null
   date?:           string
-  payment_method?: PaymentMethod | null  // ← tipo estricto, no string
   is_recurring?:   boolean
 }
 

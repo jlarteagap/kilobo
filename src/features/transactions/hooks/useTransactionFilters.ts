@@ -12,7 +12,6 @@ export type TransactionTypeFilter =
   | 'EXPENSE'
   | 'TRANSFER'
   | 'SAVING'
-  | 'DEBT'
 
 export interface TransactionFilters {
   period:      Period

@@ -4,7 +4,6 @@
 import { Fragment, useState } from "react"
 import { Repeat, Trash2, Pencil } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { PAYMENT_METHOD_LABELS } from '@/features/transactions/utils/transaction-display.utils'
 
 import {
   AlertDialog,
@@ -139,12 +138,7 @@ function TransactionRow({
         {tx.tag}
       </span>
     ) : null}
-    {tx.payment_method ? (
-      <span className="inline-flex items-center text-[11px] text-gray-400 px-2 py-0.5">
-        {PAYMENT_METHOD_LABELS[tx.payment_method]}
-      </span>
-    ) : null}
-    {!tx.tag && !tx.payment_method ? (
+    {!tx.tag ? (
       <span className="text-gray-200">—</span>
     ) : null}
   </div>

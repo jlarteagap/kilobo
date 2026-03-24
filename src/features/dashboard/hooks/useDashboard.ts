@@ -17,7 +17,7 @@ export function useDashboard() {
   const { data: debts        = [], isLoading: loadingDebts        } = useDebts()
   const budgetProgress                                               = useBudgetProgress()
 
-  const accountsDashboard = useAccountsDashboard(accounts)
+  const accountsDashboard = useAccountsDashboard(accounts, debts)
 
   const isLoading = loadingAccounts || loadingTransactions || loadingDebts
 

@@ -16,7 +16,6 @@ const TYPE_OPTIONS: { value: TransactionTypeFilter; label: string; color: string
   { value: 'EXPENSE',  label: 'Gastos',        color: 'text-rose-500'    },
   { value: 'TRANSFER', label: 'Transferencias', color: 'text-blue-500'   },
   { value: 'SAVING',   label: 'Ahorros',       color: 'text-violet-500'  },
-  { value: 'DEBT',     label: 'Deudas',        color: 'text-orange-500'  },
 ]
 
 // ─── Dropdown genérico ────────────────────────────────────────────────────────

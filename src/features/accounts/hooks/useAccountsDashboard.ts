@@ -6,6 +6,8 @@ import {
   getValueInBOB,
   formatCurrency,
 } from "@/features/accounts/utils/account-display.utils"
+import { Debt } from "@/types/debt"
+import { convertToBOB } from "@/lib/config/exchange-rates"
 
 // Mapa de colores hex por tipo — para AssetDetail
 const ASSET_HEX_COLORS: Record<string, string> = {
@@ -17,24 +19,23 @@ const ASSET_HEX_COLORS: Record<string, string> = {
   'text-gray-500':    '#6b7280',
 }
 
-export function useAccountsDashboard(accounts: Account[]) {
+export function useAccountsDashboard(accounts: Account[], debts: Debt[] = []) {
 
   // ── Total activos en BOB ───────────────────────────────────────────────────
   const totalGlobalAssetsInBOB = useMemo(
-    () => accounts.reduce((acc, account) => {
-      if (account.type === 'DEBT') return acc
-      return acc + getValueInBOB(account)
-    }, 0),
+    () => accounts.reduce((acc, account) => acc + getValueInBOB(account), 0),
     [accounts]
   )
 
   // ── Total pasivos en BOB ───────────────────────────────────────────────────
   const totalGlobalLiabilitiesInBOB = useMemo(
-    () => accounts.reduce((acc, account) => {
-      if (account.type !== 'DEBT') return acc
-      return acc + getValueInBOB(account)
-    }, 0),
-    [accounts]
+    () => debts
+      .filter((d) => d.status === 'ACTIVE' && d.type === 'RECEIVED')
+      .reduce((acc, debt) => {
+        const pending = debt.amount - debt.paid_amount
+        return acc + convertToBOB(pending, debt.currency)
+      }, 0),
+    [debts]
   )
 
   const netWorthInBOB     = totalGlobalAssetsInBOB - totalGlobalLiabilitiesInBOB
@@ -46,9 +47,7 @@ export function useAccountsDashboard(accounts: Account[]) {
       const details    = getAccountTypeDetails(account.type)
       const valueInBOB = getValueInBOB(account)
 
-      const weight = account.type === 'DEBT'
-        ? 'N/A'
-        : `${((valueInBOB / totalGlobalAssetsInBOB) * 100).toFixed(1)}%`
+      const weight = `${((valueInBOB / totalGlobalAssetsInBOB) * 100).toFixed(1)}%`
 
       // Color hex en lugar de clases Tailwind combinadas
       const hexColor = ASSET_HEX_COLORS[details.color] ?? '#6b7280'
@@ -73,19 +72,12 @@ export function useAccountsDashboard(accounts: Account[]) {
     return currencies.map((currency) => {
       const currencyAccounts = accounts.filter((a) => a.currency === currency)
 
-      const totalWealth = currencyAccounts.reduce((acc, account) => {
-        if (account.type === 'DEBT') return acc - account.balance
-        return acc + account.balance
-      }, 0)
+      const totalWealth = currencyAccounts.reduce((acc, account) => acc + account.balance, 0)
 
-      const totalAssets = currencyAccounts.reduce((acc, account) => {
-        if (account.type === 'DEBT') return acc
-        return acc + account.balance
-      }, 0)
+      const totalAssets = currencyAccounts.reduce((acc, account) => acc + account.balance, 0)
 
       const assetsByType = currencyAccounts.reduce(
         (acc, account) => {
-          if (account.type === 'DEBT') return acc
           const existing = acc.find((a) => a.type === account.type)
           if (existing) {
             existing.value += account.balance

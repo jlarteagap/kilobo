@@ -1,7 +1,6 @@
 // types/transaction.ts
 
 export type TransactionType = 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'SAVING' | 'DEBT'
-export type PaymentMethod = 'CASH' | 'QR' | 'CARD' | 'TRANSFER' | 'OTHER'
 export type TransactionStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED'
 
 export interface Transaction {
@@ -17,7 +16,6 @@ export interface Transaction {
   date: string
   description: string | null
   status: TransactionStatus
-  payment_method: PaymentMethod | null
   is_recurring: boolean
   recurrence_interval: string | null
   created_at: string
@@ -49,7 +47,6 @@ export interface CreateTransactionData {
   amount: number
   date: string
   description?: string | null
-  payment_method?: PaymentMethod | null
   is_recurring?: boolean
   currency?: string
   status?: TransactionStatus

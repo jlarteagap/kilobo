@@ -5,8 +5,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { PAYMENT_METHODS } from "@/lib/validations/transaction.schema"
-import { PAYMENT_METHOD_LABELS } from '@/features/transactions/utils/transaction-display.utils'
 
 import { useCategories } from "@/features/categories/hooks/useCategories"
 import { useAccounts } from "@/features/accounts/hooks/useAccounts"
@@ -64,7 +62,7 @@ function AccountBalanceHint({
   const account     = accounts.find((a) => a.id === accountId)
   if (!account) return null
 
-  const showBalance = type === 'EXPENSE' || type === 'DEBT'
+  const showBalance = type === 'EXPENSE'
   const isOverdraft = showBalance && amount > account.balance
 
   return (
@@ -248,7 +246,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
                     <SelectContent>
                       {categories
                         .filter((c) => !c.parent_id && c.type === (
-                          type === 'DEBT' ? 'EXPENSE' : type
+                          type
                         ))
                         .map((cat) => (
                           <SelectItem key={cat.id} value={cat.id}>
@@ -368,52 +366,8 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
             </FormItem>
           )}
         />
-<FormField
-  control={form.control}
-  name="payment_method"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel className="text-[13px] font-medium text-gray-600">
-        Método de pago
-        <span className="text-gray-400 font-normal ml-1">(opcional)</span>
-      </FormLabel>
-      <FormControl>
-        <div className="flex flex-wrap gap-1.5">
-          <button
-            type="button"
-            onClick={() => form.setValue('payment_method', undefined)}
-            className={cn(
-              'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
-              !field.value
-                ? 'bg-gray-900 text-white'
-                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-            )}
-          >
-            Ninguno
-          </button>
-          {PAYMENT_METHODS.map((method) => (
-            <button
-              key={method}
-              type="button"
-              onClick={() => form.setValue('payment_method', method)}
-              className={cn(
-                'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
-                field.value === method
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-              )}
-            >
-              {PAYMENT_METHOD_LABELS[method]}
-            </button>
-          ))}
-        </div>
-      </FormControl>
-      <FormMessage className="text-[12px]" />
-    </FormItem>
-  )}
-/>
         {/* ── Recurrente ── */}
-        {(type === 'EXPENSE' || type === 'SAVING' || type === 'DEBT') ? (
+        {(type === 'EXPENSE' || type === 'SAVING') ? (
           <FormField
             control={form.control}
             name="is_recurring"

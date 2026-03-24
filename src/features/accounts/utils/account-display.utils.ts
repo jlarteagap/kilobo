@@ -14,8 +14,7 @@ export const getAccountTypeDetails = (
       return { label: "Efectivo", icon: Banknote, color: "text-emerald-500", bg: "bg-emerald-500" }
     case "CRYPTO":
       return { label: "Cripto", icon: Bitcoin, color: "text-orange-500", bg: "bg-orange-500" }
-    case "DEBT":
-      return { label: "Deuda", icon: CreditCard, color: "text-red-500", bg: "bg-red-500" }
+
     default:
       return { label: "Otro", icon: PiggyBank, color: "text-gray-500", bg: "bg-gray-500" }
   }
@@ -43,13 +42,13 @@ export const getAccountIcon = (type: AccountType): LucideIcon => {
     case "WALLET": return Wallet
     case "CASH":   return Banknote
     case "CRYPTO": return Bitcoin
-    case "DEBT":   return CreditCard
+
     default:       return CircleEllipsis
   }
 }
 export const getAccountIconColor = (type: AccountType): string => {
   switch (type) {
-    case "DEBT": return "bg-orange-100 text-orange-600"
+
     default:     return "bg-emerald-100 text-emerald-600"
   }
 }

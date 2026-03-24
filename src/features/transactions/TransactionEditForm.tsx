@@ -108,7 +108,6 @@ export function TransactionEditForm({
                 transaction.type === 'EXPENSE'  && 'bg-rose-100    text-rose-700',
                 transaction.type === 'TRANSFER' && 'bg-blue-100    text-blue-700',
                 transaction.type === 'SAVING'   && 'bg-violet-100  text-violet-700',
-                transaction.type === 'DEBT'     && 'bg-orange-100  text-orange-700',
               )}
             >
               {transaction.type}
@@ -163,9 +162,7 @@ export function TransactionEditForm({
                   </FormControl>
                   <SelectContent>
                     {categories
-                      .filter((c) => !c.parent_id && c.type === (
-                        transaction.type === 'DEBT' ? 'EXPENSE' : transaction.type
-                      ))
+                      .filter((c) => !c.parent_id && c.type === transaction.type)
                       .map((cat) => (
                         <SelectItem key={cat.id} value={cat.id}>
                           {cat.icon} {cat.name}
@@ -250,7 +247,7 @@ export function TransactionEditForm({
           )}
         />
         {/* ── Recurrente ── */}
-        {(transaction.type === 'EXPENSE' || transaction.type === 'SAVING' || transaction.type === 'DEBT') ? (
+        {(transaction.type === 'EXPENSE' || transaction.type === 'SAVING') ? (
           <FormField<EditFormValues>
             control={form.control as any}
             name="is_recurring"

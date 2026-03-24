@@ -1,6 +1,6 @@
 // types/transaction.ts
 
-export type TransactionType = 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'SAVING' | 'DEBT'
+export type TransactionType = 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'SAVING'
 export type TransactionStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED'
 
 export interface Transaction {

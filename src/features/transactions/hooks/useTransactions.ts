@@ -37,10 +37,6 @@ function getRevertBalanceOps(
       if (source) ops.push({ id: source.id, balance: source.balance - tx.amount })
       break
     case 'EXPENSE':
-    case 'DEBT':
-      // Revertir gasto/deuda → sumar a la cuenta
-      if (source) ops.push({ id: source.id, balance: source.balance + tx.amount })
-      break
     case 'TRANSFER':
     case 'SAVING':
       // Revertir transferencia → sumar en origen, restar en destino
@@ -86,7 +82,7 @@ export function useCreateTransaction() {
           id:   data.account_id,
           data: { balance: sourceAccount.balance + data.amount },
         })
-      } else if ((data.type === 'EXPENSE' || data.type === 'DEBT') && sourceAccount) {
+      } else if (data.type === 'EXPENSE' && sourceAccount) {
         await updateAccount.mutateAsync({
           id:   data.account_id,
           data: { balance: sourceAccount.balance - data.amount },

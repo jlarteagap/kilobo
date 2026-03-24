@@ -1,8 +1,7 @@
-import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, PiggyBank, CreditCard } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, PiggyBank } from "lucide-react"
 import { TransactionType } from "@/types/transaction"
 import { Account } from "@/types/account"
 import { Category } from "@/types/category"
-import { TRANSACTION_TYPES } from "@/lib/validations/transaction.schema"
 import { parseLocalDate } from '@/lib/utils'
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -19,7 +18,6 @@ export const getTransactionAmountColor = (type: TransactionType): string => {
     case "EXPENSE":  return "text-rose-600"
     case "TRANSFER": return "text-blue-600"
     case "SAVING":   return "text-purple-600"
-    case "DEBT":     return "text-orange-600"
     default:         return "text-gray-900"
   }
 }
@@ -31,22 +29,21 @@ export const getTransactionIcon = (type: TransactionType) => {
     case "EXPENSE":  return ArrowUpRight
     case "TRANSFER": return ArrowRightLeft
     case "SAVING":   return PiggyBank
-    case "DEBT":     return CreditCard
     default:         return null
   }
 }
 
 // Prefijo de signo según tipo
 export const getTransactionSign = (type: TransactionType): string => {
-  return ["EXPENSE", "SAVING", "DEBT"].includes(type) ? "-" : "+"
+  return ["EXPENSE", "SAVING"].includes(type) ? "-" : "+"
 }
 
 // Color de cuenta según tipo
-export const getAccountColor = (accountId: string | null, accounts: Account[]): string => {
-  if (!accountId) return "text-gray-600"
-  const account = accounts.find((a) => a.id === accountId)
-  return account?.type === "DEBT" ? "text-orange-600 font-semibold" : "text-gray-600"
-}
+// export const getAccountColor = (accountId: string | null, accounts: Account[]): string => {
+//   if (!accountId) return "text-gray-600"
+//   const account = accounts.find((a) => a.id === accountId)
+//   return account?.type === "DEBT" ? "text-orange-600 font-semibold" : "text-gray-600"
+// }
 
 // Nombre de cuenta
 export const getAccountName = (accountId: string | null, accounts: Account[]): string => {
@@ -82,5 +79,4 @@ export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
   INCOME:   "Ingreso",
   TRANSFER: "Transfer",
   SAVING:   "Ahorro",
-  DEBT:     "Deuda",
 }

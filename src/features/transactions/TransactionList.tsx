@@ -154,7 +154,6 @@ function TransactionRow({
             tx.type === 'EXPENSE'  && 'bg-rose-100    text-rose-700    hover:bg-rose-100',
             tx.type === 'TRANSFER' && 'bg-blue-100    text-blue-700    hover:bg-blue-100',
             tx.type === 'SAVING'   && 'bg-violet-100  text-violet-700  hover:bg-violet-100',
-            tx.type === 'DEBT'     && 'bg-orange-100  text-orange-700  hover:bg-orange-100',
           )}
         >
           {TRANSACTION_TYPE_LABELS[tx.type]}

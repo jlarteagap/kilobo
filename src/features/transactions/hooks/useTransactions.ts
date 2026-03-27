@@ -125,6 +125,8 @@ export type EditableTransactionFields = {
   category_id?:    string | null
   tag?:            string | null
   description?:    string | null
+  project_id?:     string | null
+  subtype?:        string | null
   date?:           string
   is_recurring?:   boolean
 }

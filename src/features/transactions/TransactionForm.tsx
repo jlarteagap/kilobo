@@ -36,14 +36,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useProjects } from '@/features/projects/hooks/useProjects'
 
 import { TRANSACTION_TYPE_LABELS } from "./utils/transaction-display.utils"
 import type { Category } from "@/types/category"
 import type { Account } from "@/types/account"
+import type { Project } from '@/types/project'
 // ─── Helper ───────────────────────────────────────────────────────────────────
 function getTagsForCategory(categoryId: string | undefined, categories: Category[]): string[] {
   if (!categoryId) return []
   return categories.find((c) => c.id === categoryId)?.tags ?? []
+}
+function getSubtypesForProject(projectId: string | null | undefined, projects: Project[]): string[] {
+  if (!projectId) return []
+  return projects.find((p) => p.id === projectId)?.subtypes ?? []
 }
 
 function AccountBalanceHint({
@@ -88,6 +94,7 @@ function AccountBalanceHint({
 export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const { data: categories = [] } = useCategories()
   const { data: accounts   = [] } = useAccounts()
+  const { data: projects = [] } = useProjects()
   const createTransaction         = useCreateTransaction()
 
   const form = useForm<CreateTransactionInput>({
@@ -96,13 +103,22 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       type:         'EXPENSE',
       date:         new Date().toISOString().split('T')[0],
       is_recurring: false,
-      amount:       0,
+      amount:       undefined as any,
+      account_id:   '',
+      category_id:  undefined,
+      to_account_id: undefined,
+      description:  '',
+      project_id:   null,
       tag:          undefined,
+      subtype:      undefined,
     },
   })
 
   const type       = form.watch('type')
   const categoryId = form.watch('category_id')
+  const projectId  = form.watch('project_id')
+  const availableSubtypes = getSubtypesForProject(projectId, projects)
+
   const availableTags = getTagsForCategory(categoryId, categories)
   const showCategory  = type !== 'TRANSFER' && type !== 'SAVING'
   const showDestAccount = type === 'TRANSFER' || type === 'SAVING'
@@ -110,6 +126,11 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const handleCategoryChange = (value: string) => {
     form.setValue('category_id', value)
     form.setValue('tag', undefined)
+  }
+
+  const handleProjectChange = (value: string) => {
+    form.setValue('project_id', value === 'none' ? null : value)
+    form.setValue('subtype', undefined)
   }
 
   const handleTypeChange = (t: typeof TRANSACTION_TYPES[number]) => {
@@ -194,7 +215,91 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
             )}
           />
         </div>
+{/* ── Proyecto ── */}
+<FormField
+  control={form.control}
+  name="project_id"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel className="text-[13px] font-medium text-gray-600">
+        Proyecto
+        <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+      </FormLabel>
+      <Select
+        onValueChange={handleProjectChange}
+        value={field.value ?? 'none'}
+      >
+        <FormControl>
+          <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+            <SelectValue placeholder="Gasto personal" />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          <SelectItem value="none">
+            <span className="text-gray-400">Sin proyecto</span>
+          </SelectItem>
+          {projects.map((p) => (
+            <SelectItem key={p.id} value={p.id}>
+              <span className="flex items-center gap-2">
+                {p.icon && <span>{p.icon}</span>}
+                {p.name}
+              </span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <FormMessage className="text-[12px]" />
+    </FormItem>
+  )}
+/>
 
+{/* ── Subtype — chips dinámicos según proyecto (igual que los tags) ── */}
+{projectId && availableSubtypes.length > 0 ? (
+  <FormField
+    control={form.control}
+    name="subtype"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel className="text-[13px] font-medium text-gray-600">
+          Subtipo
+          <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+        </FormLabel>
+        <FormControl>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => form.setValue('subtype', undefined)}
+              className={cn(
+                'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
+                !field.value
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              )}
+            >
+              Ninguno
+            </button>
+            {availableSubtypes.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => form.setValue('subtype', s)}
+                className={cn(
+                  'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
+                  field.value === s
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </FormControl>
+        <FormMessage className="text-[12px]" />
+      </FormItem>
+    )}
+  />
+) : null}
         {/* ── Fila 2: Cuenta origen + Categoría ── */}
         <div className="grid grid-cols-2 gap-4">
           <FormField

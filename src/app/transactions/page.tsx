@@ -8,6 +8,7 @@ import AppLayout          from "@/components/layout/AppLayout"
 import { useTransactions } from "@/features/transactions/hooks/useTransactions"
 import { useAccounts }     from "@/features/accounts/hooks/useAccounts"
 import { useCategories }   from "@/features/categories/hooks/useCategories"
+import { useProjects }     from "@/features/projects/hooks/useProjects"
 
 import { useTransactionFilters } from "@/features/transactions/hooks/useTransactionFilters"
 import { useTransactionMetrics } from "@/features/transactions/hooks/useTransactionMetrics"
@@ -47,9 +48,10 @@ export default function TransactionsPage() {
   const { data: transactions = [], isLoading: loadingTx,  error: txError  } = useTransactions()
   const { data: accounts     = [], isLoading: loadingAcc                  } = useAccounts()
   const { data: categories   = [], isLoading: loadingCat                  } = useCategories()
+  const { data: projects     = [], isLoading: loadingProj                 } = useProjects()
 
 
-  const isLoading = loadingTx || loadingAcc || loadingCat
+  const isLoading = loadingTx || loadingAcc || loadingCat || loadingProj
   const isError   = !!txError
 
   // ── Filtros — hook centralizado ─────────────────────────────────────────────
@@ -63,6 +65,7 @@ export default function TransactionsPage() {
     setPeriod,
     setAccountId,
     setCategoryId,
+    setProjectId,
     setTag,
     setType,
     resetFilters,
@@ -213,11 +216,13 @@ export default function TransactionsPage() {
               filters={filters}
               accounts={accounts}
               categories={categories}
+              projects={projects}
               availableTags={availableTags}
               availableCategoryIds={availableCategoryIds}
               activeFilterCount={activeFilterCount}
               onAccountChange={setAccountId}
               onCategoryChange={setCategoryId}
+              onProjectChange={setProjectId}
               onTagChange={setTag}
               onTypeChange={setType}
               onReset={resetFilters}
@@ -229,6 +234,7 @@ export default function TransactionsPage() {
             transactions={filtered}
             accounts={accounts}
             categories={categories}
+            projects={projects}
             loading={isLoading}
           />
         </div>

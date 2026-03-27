@@ -1,4 +1,3 @@
-// features/transactions/TransactionEditForm.tsx
 "use client"
 
 import { useForm, type SubmitHandler } from "react-hook-form"
@@ -7,48 +6,52 @@ import { z } from "zod"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form, FormControl, FormField,
+  FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Input }     from "@/components/ui/input"
+import { Textarea }  from "@/components/ui/textarea"
+import { Checkbox }  from "@/components/ui/checkbox"
+import { Button }    from "@/components/ui/button"
+import { Badge }     from "@/components/ui/badge"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent,
+  SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 
+import { useProjects } from "@/features/projects/hooks/useProjects"  // ← NUEVO
 import { EditableTransactionFields } from "@/features/transactions/hooks/useTransactions"
-import { useUpdateTransaction } from "@/features/transactions/hooks/useTransactions"
+import { useUpdateTransaction }      from "@/features/transactions/hooks/useTransactions"
 import type { Transaction } from "@/types/transaction"
-import type { Category } from "@/types/category"
+import type { Category }    from "@/types/category"
+import type { Project }     from "@/types/project"                   // ← NUEVO
 
-// ─── Schema — solo campos editables ──────────────────────────────────────────
+// ─── Schema — agregar project_id y subtype ────────────────────────────────────
 const editTransactionSchema = z.object({
-  category_id:    z.string().optional(),
-  tag:            z.string().optional(),
-  description:    z.string().optional(),
-  date:           z.string().min(1, 'Selecciona una fecha'),
-  is_recurring:   z.boolean().optional(),
+  category_id:  z.string().optional(),
+  tag:          z.string().optional(),
+  subtype:      z.string().nullable().optional(),   // ← NUEVO
+  project_id:   z.string().nullable().optional(),   // ← NUEVO
+  description:  z.string().optional(),
+  date:         z.string().min(1, 'Selecciona una fecha'),
+  is_recurring: z.boolean().optional(),
 })
 
 type EditFormValues = z.infer<typeof editTransactionSchema>
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function getTagsForCategory(categoryId: string | undefined, categories: Category[]): string[] {
   if (!categoryId) return []
   return categories.find((c) => c.id === categoryId)?.tags ?? []
 }
+
+// ← NUEVO
+function getSubtypesForProject(projectId: string | null | undefined, projects: Project[]): string[] {
+  if (!projectId) return []
+  return projects.find((p) => p.id === projectId)?.subtypes ?? []
+}
+
 // ─── Componente ───────────────────────────────────────────────────────────────
 export function TransactionEditForm({
   transaction,
@@ -61,33 +64,40 @@ export function TransactionEditForm({
   onSuccess:   () => void
   onSave:      (data: EditableTransactionFields) => Promise<void>
 }) {
-  const updateTransaction = useUpdateTransaction()
+  const updateTransaction      = useUpdateTransaction()
+  const { data: projects = [] } = useProjects()          // ← NUEVO
 
   const form = useForm<EditFormValues>({
     resolver: zodResolver(editTransactionSchema),
     defaultValues: {
-      category_id:    transaction.category_id ?? undefined,
-      tag:            transaction.tag         ?? undefined,
-      description:    transaction.description ?? '',
-      date:           transaction.date,
-      is_recurring:   transaction.is_recurring,
+      category_id:  transaction.category_id ?? undefined,
+      tag:          transaction.tag         ?? undefined,
+      subtype:      transaction.subtype     ?? undefined, // ← NUEVO
+      project_id:   transaction.project_id  ?? null,     // ← NUEVO
+      description:  transaction.description ?? '',
+      date:         transaction.date,
+      is_recurring: transaction.is_recurring,
     },
   })
 
-  const categoryId    = form.watch('category_id')
-  const availableTags = getTagsForCategory(categoryId, categories)
-  const categoryData  = categories.find((c) => c.id === transaction.category_id)
-  const showCategory  = transaction.type !== 'TRANSFER' && transaction.type !== 'SAVING'
+  const categoryId      = form.watch('category_id')
+  const projectId       = form.watch('project_id')        // ← NUEVO
+  const availableTags   = getTagsForCategory(categoryId, categories)
+  const availableSubtypes = getSubtypesForProject(projectId, projects)  // ← NUEVO
+  const showCategory    = transaction.type !== 'TRANSFER' && transaction.type !== 'SAVING'
 
   const handleCategoryChange = (value: string) => {
     form.setValue('category_id', value)
     form.setValue('tag', undefined)
   }
 
+  // ← NUEVO
+  const handleProjectChange = (value: string) => {
+    form.setValue('project_id', value === 'none' ? null : value)
+    form.setValue('subtype', undefined)
+  }
+
   const onSubmit: SubmitHandler<EditFormValues> = async (data) => {
-    // Usamos onSave si existe (se pasa desde la lista para manejar el cierre)
-    // O directamente mutateAsync si queremos manejarlo aquí.
-    // Viendo TransactionList.tsx, se espera que onSave sea handleEditSave.
     await onSave(data as EditableTransactionFields)
     onSuccess()
   }
@@ -96,7 +106,7 @@ export function TransactionEditForm({
     <Form {...(form as any)}>
       <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-5">
 
-        {/* ── Info de solo lectura — tipo + monto ── */}
+        {/* ── Info de solo lectura ── */}
         <div className="flex items-center justify-between px-3 py-2.5 bg-gray-50 rounded-xl">
           <div className="flex items-center gap-2">
             <span className="text-[13px] text-gray-500">Tipo</span>
@@ -125,9 +135,7 @@ export function TransactionEditForm({
           name="date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
-                Fecha
-              </FormLabel>
+              <FormLabel className="text-[13px] font-medium text-gray-600">Fecha</FormLabel>
               <FormControl>
                 <Input
                   type="date"
@@ -141,6 +149,92 @@ export function TransactionEditForm({
           )}
         />
 
+        {/* ── Proyecto ── */}       {/* ← NUEVO BLOQUE */}
+        <FormField<EditFormValues>
+          control={form.control as any}
+          name="project_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[13px] font-medium text-gray-600">
+                Proyecto
+                <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+              </FormLabel>
+              <Select
+                onValueChange={handleProjectChange}
+                value={(field.value as string) ?? 'none'}
+              >
+                <FormControl>
+                  <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                    <SelectValue placeholder="Sin proyecto" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">
+                    <span className="text-gray-400">Sin proyecto</span>
+                  </SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="flex items-center gap-2">
+                        {p.icon && <span>{p.icon}</span>}
+                        {p.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-[12px]" />
+            </FormItem>
+          )}
+        />
+
+        {/* ── Subtype — chips según proyecto ── */}    {/* ← NUEVO BLOQUE */}
+        {projectId && availableSubtypes.length > 0 ? (
+          <FormField<EditFormValues>
+            control={form.control as any}
+            name="subtype"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[13px] font-medium text-gray-600">
+                  Subtipo
+                  <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                </FormLabel>
+                <FormControl>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => form.setValue('subtype', undefined)}
+                      className={cn(
+                        'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
+                        !field.value
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      )}
+                    >
+                      Ninguno
+                    </button>
+                    {availableSubtypes.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => form.setValue('subtype', s)}
+                        className={cn(
+                          'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
+                          field.value === s
+                            ? 'bg-gray-900 text-white'
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        )}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </FormControl>
+                <FormMessage className="text-[12px]" />
+              </FormItem>
+            )}
+          />
+        ) : null}
+
         {/* ── Categoría ── */}
         {showCategory ? (
           <FormField<EditFormValues>
@@ -148,15 +242,10 @@ export function TransactionEditForm({
             name="category_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
-                  Categoría
-                </FormLabel>
-                <Select
-                  onValueChange={handleCategoryChange}
-                  defaultValue={field.value as string}
-                >
+                <FormLabel className="text-[13px] font-medium text-gray-600">Categoría</FormLabel>
+                <Select onValueChange={handleCategoryChange} defaultValue={field.value as string}>
                   <FormControl>
-                     <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                    <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
                       <SelectValue placeholder="Sin categoría" />
                     </SelectTrigger>
                   </FormControl>
@@ -246,6 +335,7 @@ export function TransactionEditForm({
             </FormItem>
           )}
         />
+
         {/* ── Recurrente ── */}
         {(transaction.type === 'EXPENSE' || transaction.type === 'SAVING') ? (
           <FormField<EditFormValues>

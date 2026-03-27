@@ -43,6 +43,7 @@ import {
 import type { Transaction } from "@/types/transaction"
 import type { Account } from "@/types/account"
 import type { Category } from "@/types/category"
+import type { Project } from '@/types/project'
 
 import { TransactionEditForm } from "./TransactionEditForm"
 import { TransactionTotals } from "./TransactionTotal"
@@ -90,16 +91,19 @@ function TransactionRow({
   tx,
   accounts,
   categories,
+  projects,
   onEdit,
   onDelete,
 }: {
   tx:         Transaction
   accounts:   Account[]
   categories: Category[]
+  projects:   Project[]
   onEdit:     (tx: Transaction) => void
   onDelete:   (tx: Transaction) => void
 }) {
   const category     = getCategoryDisplay(tx.category_id, categories)
+  const project      = projects.find((p) => p.id === tx.project_id)
   const categoryData = categories.find((c) => c.id === tx.category_id)
   const accentColor  = categoryData?.color ?? '#E0E0E0'
   const amountColor  = getTransactionAmountColor(tx.type)
@@ -144,6 +148,16 @@ function TransactionRow({
   </div>
 </td>
 
+          <td className="px-4 py-3 hidden md:table-cell">
+                {project ? (
+                  <span className="inline-flex items-center gap-1.5 text-[12px] text-gray-600 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
+                    {project.icon && <span className="text-[11px]">{project.icon}</span>}
+                    {project.name}
+                  </span>
+                ) : (
+                  <span className="text-gray-200 text-[13px]">—</span>
+                )}
+              </td>
       {/* ── Tipo ── */}
       <td className="px-4 py-3 hidden sm:table-cell">
         <Badge
@@ -210,11 +224,13 @@ export function TransactionList({
   transactions,
   accounts,
   categories,
+  projects,
   loading = false,
 }: {
   transactions: Transaction[]
   accounts:     Account[]
   categories:   Category[]
+  projects:     Project[]
   loading?:     boolean
 }) {
   const deleteTransaction = useDeleteTransaction()
@@ -254,13 +270,14 @@ export function TransactionList({
           {/* ── Header ── */}
           <thead>
             <tr className="border-b border-gray-100">
-              {['Categoría', 'Etiqueta', 'Tipo', 'Cuenta', 'Monto', ''].map((h) => (
+              {['Categoría', 'Etiqueta', 'Proyecto', 'Tipo', 'Cuenta', 'Monto', ''].map((h) => (
                 <th
                   key={h}
                   className={cn(
                     'px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider',
                     h === 'Monto' && 'text-right',
-                    (h === 'Etiqueta' || h === 'Tipo') && 'hidden sm:table-cell'
+                    (h === 'Etiqueta' || h === 'Tipo') && 'hidden sm:table-cell',
+                    h === 'Proyecto' && 'hidden md:table-cell',
                   )}
                 >
                   {h}
@@ -292,6 +309,7 @@ export function TransactionList({
                       tx={tx}
                       accounts={accounts}
                       categories={categories}
+                      projects={projects}
                       onEdit={setEditingTx}
                       onDelete={setPendingDelete}
                     />

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import type { Account } from "@/types/account"
 import type { Category } from "@/types/category"
 import type { TransactionTypeFilter, TransactionFilters } from "../hooks/useTransactionFilters"
+import type { Project } from '@/types/project'
 
 // ─── Tipos de transacción ─────────────────────────────────────────────────────
 const TYPE_OPTIONS: { value: TransactionTypeFilter; label: string; color: string }[] = [
@@ -123,11 +124,13 @@ interface TransactionFiltersProps {
   filters:              TransactionFilters
   accounts:             Account[]
   categories:           Category[]
+  projects:             Project[]
   availableTags:        string[]
   availableCategoryIds: string[]
   activeFilterCount:    number
   onAccountChange:      (id: string | null) => void
   onCategoryChange:     (id: string | null) => void
+  onProjectChange:      (id: string | null) => void
   onTagChange:          (tag: string | null) => void
   onTypeChange:         (type: TransactionTypeFilter) => void
   onReset:              () => void
@@ -137,20 +140,20 @@ export function TransactionFilters({
   filters,
   accounts,
   categories,
+  projects,
   availableTags,
   availableCategoryIds,
   activeFilterCount,
   onAccountChange,
   onCategoryChange,
+  onProjectChange,
   onTagChange,
   onTypeChange,
   onReset,
 }: TransactionFiltersProps) {
   const [openDropdown, setOpenDropdown] = useState<
-    'account' | 'category' | 'tag' | 'type' | null
+    'account' | 'category' | 'tag' | 'type' | 'project' | null
   >(null)
-
-  console.log(categories)
 
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -175,6 +178,7 @@ export function TransactionFilters({
   // ── Labels activos ─────────────────────────────────────────────────────────
   const activeAccount  = accounts.find((a) => a.id === filters.accountId)
   const activeCategory = categories.find((c) => c.id === filters.categoryId)
+  const activeProject = projects.find((p) => p.id === filters.projectId)
   const activeType     = TYPE_OPTIONS.find((t) => t.value === filters.type)
 
   return (
@@ -216,7 +220,37 @@ export function TransactionFilters({
           ))}
         </div>
       </FilterDropdown>
-
+<FilterDropdown
+  label={
+    filters.projectId === '__personal__'
+      ? 'Personal'
+      : (activeProject?.name ?? 'Proyecto')
+  }
+  isActive={!!filters.projectId}
+  isOpen={openDropdown === 'project'}
+  onToggle={() => toggle('project')}
+  onClear={() => { onProjectChange(null); setOpenDropdown(null) }}
+>
+  <div className="py-1">
+    <DropdownItem
+      label="Personal (sin proyecto)"
+      isSelected={filters.projectId === '__personal__'}
+      onClick={() => { onProjectChange('__personal__'); setOpenDropdown(null) }}
+    />
+    {projects.length > 0 && (
+      <div className="h-px bg-gray-100 mx-3 my-1" />
+    )}
+    {projects.map((p) => (
+      <DropdownItem
+        key={p.id}
+        label={p.icon ? `${p.icon} ${p.name}` : p.name}
+        dot={p.color}
+        isSelected={filters.projectId === p.id}
+        onClick={() => { onProjectChange(p.id); setOpenDropdown(null) }}
+      />
+    ))}
+  </div>
+</FilterDropdown>
       {/* ── Dropdown Cuenta ── */}
       <FilterDropdown
         label={activeAccount?.name ?? 'Cuenta'}

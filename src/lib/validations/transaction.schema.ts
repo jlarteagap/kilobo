@@ -15,6 +15,8 @@ const transactionBaseSchema = z.object({
   description:         z.string().optional(),
   is_recurring:        z.boolean().default(false),
   currency:            z.string().optional(),
+  project_id:          z.string().nullable().optional(),
+  subtype:             z.string().max(40).nullable().optional(),
 })
 
 export const createTransactionSchema = transactionBaseSchema.refine((data) => {

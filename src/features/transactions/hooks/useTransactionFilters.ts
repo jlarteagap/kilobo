@@ -17,6 +17,7 @@ export interface TransactionFilters {
   period:      Period
   accountId:   string | null
   categoryId:  string | null
+  projectId:   string | null
   tag:         string | null
   type:        TransactionTypeFilter
 }
@@ -27,6 +28,7 @@ export const DEFAULT_FILTERS: TransactionFilters = {
   categoryId: null,
   tag:        null,
   type:       'ALL',
+  projectId:  null,
 }
 
 // ─── Conteo de filtros activos — para el badge ────────────────────────────────
@@ -36,6 +38,7 @@ export function countActiveFilters(filters: TransactionFilters): number {
   if (filters.categoryId) count++
   if (filters.tag)        count++
   if (filters.type !== 'ALL') count++
+  if (filters.projectId)  count++
   // El período no cuenta — siempre hay uno activo
   return count
 }
@@ -48,6 +51,7 @@ export function useTransactionFilters(transactions: Transaction[]) {
   const setPeriod     = (period: Period)                  => setFilters((f) => ({ ...f, period     }))
   const setAccountId  = (accountId:  string | null)       => setFilters((f) => ({ ...f, accountId  }))
   const setCategoryId = (categoryId: string | null)       => setFilters((f) => ({ ...f, categoryId }))
+  const setProjectId  = (projectId:  string | null)       => setFilters((f) => ({ ...f, projectId  }))
   const setTag        = (tag: string | null)              => setFilters((f) => ({ ...f, tag        }))
   const setType       = (type: TransactionTypeFilter)     => setFilters((f) => ({ ...f, type       }))
 
@@ -60,6 +64,7 @@ export function useTransactionFilters(transactions: Transaction[]) {
     categoryId: null,
     tag:        null,
     type:       'ALL',
+    projectId:  null,
   }))
 
   // ── Transacciones filtradas ─────────────────────────────────────────────────
@@ -88,6 +93,13 @@ export function useTransactionFilters(transactions: Transaction[]) {
     // 5. Filtrar por tag
     if (filters.tag) {
       result = result.filter((t) => t.tag === filters.tag)
+    }
+
+    if (filters.projectId) {
+      // null == gasto personal (sin proyecto asignado)
+      result = filters.projectId === '__personal__'
+        ? result.filter((t) => !t.project_id)
+        : result.filter((t) => t.project_id === filters.projectId)
     }
 
     return result
@@ -168,6 +180,7 @@ export function useTransactionFilters(transactions: Transaction[]) {
     setPeriod,
     setAccountId,
     setCategoryId,
+    setProjectId,
     setTag,
     setType,
     resetFilters,

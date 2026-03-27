@@ -36,6 +36,9 @@ export interface Transaction {
     id: string
     name: string
   } | null
+
+  project_id?: string | null    // null = gasto personal sin proyecto
+  subtype?:    string | null    // "gasolina", "hosting", etc.
 }
 
 export interface CreateTransactionData {
@@ -51,6 +54,9 @@ export interface CreateTransactionData {
   currency?: string
   status?: TransactionStatus
   user_id?: string
+
+  project_id?: string | null
+  subtype?:    string | null
 }
 
 export interface UpdateTransactionData extends Partial<CreateTransactionData> {}

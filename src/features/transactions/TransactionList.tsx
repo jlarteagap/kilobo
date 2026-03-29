@@ -109,55 +109,86 @@ function TransactionRow({
   const amountColor  = getTransactionAmountColor(tx.type)
   const sign         = getTransactionSign(tx.type)
 
-  return (
-    <tr className="group hover:bg-gray-50/60 transition-colors duration-100">
+  // ── Colores derivados del proyecto ────────────────────────────────────────
+  const projectColor  = project?.color ?? null
+  const rowBg         = projectColor ? `${projectColor}06` : 'transparent'
+  const rowBorder     = projectColor ? `2px solid ${projectColor}` : '2px solid transparent'
+  const iconBg        = projectColor ? `${projectColor}25` : `${accentColor}40`
+  const badgeBg       = projectColor ? `${projectColor}18` : 'transparent'
+  const badgeBorder   = projectColor ? `0.5px solid ${projectColor}28` : 'none'
 
-      {/* ── Categoría + descripción ── */}
-      <td className="px-4 py-3">
+  return (
+    <tr
+      className="group transition-colors duration-100"
+      style={{
+        backgroundColor: rowBg,
+        borderLeft:      rowBorder,
+      }}
+    >
+<td className="px-4 py-3">
         <div className="flex items-center gap-2.5">
+
+          {/* Ícono */}
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
-            style={{ backgroundColor: `${accentColor}40` }}
+            style={{ backgroundColor: iconBg }}
           >
-            {categoryData?.icon ?? '📁'}
+            {project ? (project.icon ?? '📁') : (categoryData?.icon ?? '📁')}
           </div>
+
           <div className="min-w-0">
+            {/* Línea principal — subtipo o categoría */}
             <p className="text-sm font-medium text-gray-800 truncate">
-              {category.name ?? (tx.type === 'TRANSFER' ? 'Transferencia' : 'Sin categoría')}
+              {project
+                ? (tx.subtype ?? 'Sin subtipo')
+                : (category.name ?? (tx.type === 'TRANSFER' ? 'Transferencia' : 'Sin categoría'))
+              }
             </p>
-            {tx.description ? (
-              <p className="text-[11px] text-gray-400 truncate max-w-[160px]">
-                {tx.description}
-              </p>
-            ) : null}
+
+            {/* Línea secundaria — badge proyecto o descripción */}
+            <div className="flex items-center gap-1.5 mt-0.5">
+              {project ? (
+                <span
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                  style={{
+                    color:           projectColor!,
+                    backgroundColor: badgeBg,
+                    border:          badgeBorder,
+                  }}
+                >
+                  {project.icon && (
+                    <span className="mr-0.5">{project.icon}</span>
+                  )}
+                  {project.name}
+                </span>
+              ) : null}
+
+              {tx.description ? (
+                <p
+                  className="text-[11px] truncate max-w-[120px]"
+                  style={{ color: project ? projectColor! : '#9ca3af' }}
+                >
+                  {project ? `· ${tx.description}` : tx.description}
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
       </td>
 
       {/* ── Tag ── */}
-<td className="px-4 py-3 hidden sm:table-cell">
-  <div className="flex gap-2">
-    {tx.tag ? (
-      <span className="inline-flex items-center text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
-        {tx.tag}
-      </span>
-    ) : null}
-    {!tx.tag ? (
-      <span className="text-gray-200">—</span>
-    ) : null}
-  </div>
-</td>
-
-          <td className="px-4 py-3 hidden md:table-cell">
-                {project ? (
-                  <span className="inline-flex items-center gap-1.5 text-[12px] text-gray-600 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
-                    {project.icon && <span className="text-[11px]">{project.icon}</span>}
-                    {project.name}
-                  </span>
-                ) : (
-                  <span className="text-gray-200 text-[13px]">—</span>
-                )}
-              </td>
+      <td className="px-4 py-3 hidden sm:table-cell">
+        <div className="flex gap-2">
+          {tx.tag ? (
+            <span className="inline-flex items-center text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+              {tx.tag}
+            </span>
+          ) : null}
+          {!tx.tag ? (
+            <span className="text-gray-200">—</span>
+          ) : null}
+        </div>
+      </td>
       {/* ── Tipo ── */}
       <td className="px-4 py-3 hidden sm:table-cell">
         <Badge
@@ -270,7 +301,7 @@ export function TransactionList({
           {/* ── Header ── */}
           <thead>
             <tr className="border-b border-gray-100">
-              {['Categoría', 'Etiqueta', 'Proyecto', 'Tipo', 'Cuenta', 'Monto', ''].map((h) => (
+              {['Categoría / Subtipo', 'Tags', 'Tipo', 'Cuenta', 'Monto', ''].map((h) => (
                 <th
                   key={h}
                   className={cn(

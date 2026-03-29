@@ -144,6 +144,7 @@ export default function TransactionsPage() {
             <SummaryCards
               transactions={metricsTransactions}
               period={filters.period}
+              projects={projects}
             />
 
             {/* Charts */}
@@ -156,8 +157,11 @@ export default function TransactionsPage() {
               </div>
               <div>
                 <CategoryOverview
-                  key={`cat-${filters.period.type}`}
+                  key={`cat-${filters.period.type}-${filters.projectId}`}
                   data={metrics.categoryData}
+                  transactions={metricsTransactions}
+                  projects={projects}
+                  projectId={filters.projectId}
                 />
               </div>
             </div>

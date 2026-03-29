@@ -84,7 +84,9 @@ export function TransactionEditForm({
   const projectId       = form.watch('project_id')        // ← NUEVO
   const availableTags   = getTagsForCategory(categoryId, categories)
   const availableSubtypes = getSubtypesForProject(projectId, projects)  // ← NUEVO
-  const showCategory    = transaction.type !== 'TRANSFER' && transaction.type !== 'SAVING'
+const hasProject   = !!projectId && projectId !== 'none'
+const showCategory = transaction.type !== 'TRANSFER' && transaction.type !== 'SAVING' && !hasProject
+const showTags     = showCategory && availableTags.length > 0
 
   const handleCategoryChange = (value: string) => {
     form.setValue('category_id', value)
@@ -266,7 +268,7 @@ export function TransactionEditForm({
         ) : null}
 
         {/* ── Tags ── */}
-        {showCategory && availableTags.length > 0 ? (
+        {showTags ? (
           <FormField<EditFormValues>
             control={form.control as any}
             name="tag"

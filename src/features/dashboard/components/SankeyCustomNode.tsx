@@ -6,6 +6,8 @@ const TYPE_COLORS: Record<string, string> = {
   expense: '#fb7185',
   account: '#60a5fa',
   balance: '#9ca3af',
+  project: '#8B5CF6',  // ← NUEVO — violeta para proyectos
+  subtype: '#F59E0B',  // ← NUEVO — amber para subtipos y tags
 }
 
 const NODE_COLORS: Record<string, string> = {

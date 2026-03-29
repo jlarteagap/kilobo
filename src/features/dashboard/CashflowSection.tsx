@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useTransactions } from "@/features/transactions/hooks/useTransactions"
 import { useCategories }   from "@/features/categories/hooks/useCategories"
 import { useAccounts }     from "@/features/accounts/hooks/useAccounts"
+import { useProjects }     from "@/features/projects/hooks/useProjects"
 import { useCashflowData } from "./hooks/useCashflowData"
 import { SankeyCustomNode } from "./components/SankeyCustomNode"
 import { PeriodSelector }  from "@/app/transactions/components/PeriodSelector"
@@ -74,6 +75,7 @@ interface CashflowSankeyProps {
 }
 
 function CashflowSankey({ width = 0, height = 0, sankeyData }: CashflowSankeyProps) {
+  
   // Ajustar márgenes según el ancho disponible
   const isSmall  = width < 400
   const isMedium = width < 600
@@ -115,6 +117,8 @@ export function CashflowSection() {
   const { data: transactions = [], isLoading: loadingTx  } = useTransactions()
   const { data: categories   = [], isLoading: loadingCat } = useCategories()
   const { data: accounts     = [], isLoading: loadingAcc } = useAccounts()
+  const { data: projects = [], isLoading: loadingProj } = useProjects()
+
 
   const isLoading = loadingTx || loadingCat || loadingAcc
 
@@ -124,6 +128,7 @@ export function CashflowSection() {
     accounts,
     isLoading,
     period,
+    projects,
   })
 
   if (isLoading) return <CashflowSkeleton />
@@ -162,10 +167,14 @@ export function CashflowSection() {
               { color: 'var(--debt)',   label: 'Gastos'   },
               { color: 'var(--primary)', label: 'Cuentas'  },
               { color: 'var(--muted-foreground)', label: 'Balance' },
+              { color: '#8B5CF6',  label: 'Proyectos' },  // ← NUEVO
+              { color: '#F59E0B',  label: 'Subtipos'  },  // ← NUEVO
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">{label}</span>
+                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
+                  {label}
+                </span>
               </div>
             ))}
           </div>

@@ -120,7 +120,9 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const availableSubtypes = getSubtypesForProject(projectId, projects)
 
   const availableTags = getTagsForCategory(categoryId, categories)
-  const showCategory  = type !== 'TRANSFER' && type !== 'SAVING'
+  const hasProject      = !!projectId && projectId !== 'none'
+  const showCategory    = type !== 'TRANSFER' && type !== 'SAVING' && !hasProject
+  const showTags        = showCategory && availableTags.length > 0
   const showDestAccount = type === 'TRANSFER' || type === 'SAVING'
 
   const handleCategoryChange = (value: string) => {
@@ -395,7 +397,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
 
         {/* ── Tags — chips dinámicos según categoría ── */}
-        {showCategory && availableTags.length > 0 ? (
+        {showTags ? (
           <FormField
             control={form.control}
             name="tag"

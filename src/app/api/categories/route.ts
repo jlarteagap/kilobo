@@ -3,16 +3,17 @@ import { categoryService } from '@/services/category.service'
 import { createCategorySchema } from '@/lib/validations/category.schema'
 import { getUserId } from '@/lib/auth.server'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
     const categories = await categoryService.getCategories(userId)
     return NextResponse.json({ data: categories ?? [] })
-  } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return NextResponse.json({ error: error.message }, { status: 401 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error interno del servidor';
+    if (message === 'No autorizado' || message === 'Token inválido o expirado') {
+      return NextResponse.json({ error: message }, { status: 401 })
     }
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
@@ -36,9 +37,10 @@ export async function POST(req: NextRequest) {
     // Let's assume automatic compatibility or simple spread.
     const category = await categoryService.createCategory(parsed.data, userId)
     return NextResponse.json({ data: category }, { status: 201 })
-  } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return NextResponse.json({ error: error.message }, { status: 401 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error interno del servidor';
+    if (message === 'No autorizado' || message === 'Token inválido o expirado') {
+      return NextResponse.json({ error: message }, { status: 401 })
     }
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }

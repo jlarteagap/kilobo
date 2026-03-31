@@ -59,7 +59,7 @@ export interface CreateTransactionData {
   subtype?:    string | null
 }
 
-export interface UpdateTransactionData extends Partial<CreateTransactionData> {}
+export type UpdateTransactionData = Partial<CreateTransactionData>
 
 // ─── Analytics ────────────────────────────────────────────────────────────────
 export interface CategoryData {

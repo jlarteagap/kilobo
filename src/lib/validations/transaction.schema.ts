@@ -6,11 +6,11 @@ export const CURRENCY_TYPE_VALUES = ['BOB', 'USD', 'BTC', 'ETH', 'USDT', 'XRP', 
 
 const transactionBaseSchema = z.object({
   type:                z.enum(TRANSACTION_TYPES),
-  amount:              z.coerce.number().min(0.01, 'El monto debe ser mayor a 0'),
+  amount: z.coerce.number().min(0.01, 'El monto debe ser mayor a 0'),
   account_id:          z.string().min(1, 'Selecciona una cuenta'),
   to_account_id:       z.string().optional(),
-  category_id:         z.string().optional(),
-  tag:                 z.string().optional(),   // ← nuevo
+  category_id:         z.string().nullable().optional(),
+  tag:                 z.string().nullable().optional(),   // ← nuevo
   date:                z.string().min(1, 'Selecciona una fecha'),
   description:         z.string().optional(),
   is_recurring:        z.boolean().default(false),

@@ -4,7 +4,7 @@ import { transactionService } from '@/services/transactions.service'
 import { createTransactionSchema } from '@/lib/validations/transaction.schema'
 import { getUserId } from '@/lib/auth.server'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const userId = await getUserId()
     if (!userId) {
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     const transactions = await transactionService.getTransactions(userId)
     return NextResponse.json({ data: transactions ?? [] })  // ← estandarizado
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
@@ -34,13 +34,13 @@ export async function POST(req: NextRequest) {
 
     const transaction = await transactionService.createTransaction(parsed.data, userId)
     return NextResponse.json({ data: transaction }, { status: 201 })  // ← estandarizado
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
 
-function handleError(error: any): NextResponse {
-  const message = error?.message ?? 'Error interno del servidor'
+function handleError(error: unknown): NextResponse {
+  const message = error instanceof Error ? error.message : 'Error interno del servidor'
   const statusMap: Record<string, number> = {
     'No autorizado':             401,
     'Token inválido o expirado': 401,

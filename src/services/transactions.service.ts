@@ -20,7 +20,7 @@ export const transactionService = {
       throw new Error('Transacción no encontrada o no autorizada.')
     }
 
-    return transactionsRepository.update(transactionId, data, userId)
+    return transactionsRepository.update(transactionId, data)
   },
 
   async deleteTransaction(transactionId: string, userId: string): Promise<void> {
@@ -29,6 +29,6 @@ export const transactionService = {
       throw new Error('Transacción no encontrada o no autorizada.')
     }
 
-    return transactionsRepository.delete(transactionId, userId)
+    return transactionsRepository.delete(transactionId)
   },
 }

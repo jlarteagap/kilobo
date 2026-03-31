@@ -1,7 +1,7 @@
 // features/debts/DebtForm.tsx
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, useWatch, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -85,7 +85,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
   const createDebt              = useCreateDebt()
 
   const form = useForm<CreateDebtInput>({
-    resolver: zodResolver(createDebtSchema) as any,
+    resolver: zodResolver(createDebtSchema) as unknown as Resolver<CreateDebtInput>,
     defaultValues: {
       type:         'GIVEN',
       contact_name: '',
@@ -96,9 +96,9 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
     },
   })
 
-  const type      = form.watch('type')
-  const accountId = form.watch('account_id')
-  const amount    = form.watch('amount') ?? 0
+  const type      = useWatch({ control: form.control, name: 'type' })
+  const accountId = useWatch({ control: form.control, name: 'account_id' })
+  const amount    = useWatch({ control: form.control, name: 'amount' }) ?? 0
 
   const onSubmit = async (data: CreateDebtInput) => {
     await createDebt.mutateAsync(data, {
@@ -114,7 +114,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
         {/* ── Tipo — GIVEN / RECEIVED ── */}
-        <FormField
+        <FormField<CreateDebtInput>
           control={form.control}
           name="type"
           render={({ field }) => (
@@ -158,7 +158,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
         />
 
         {/* ── Nombre del contacto ── */}
-        <FormField
+        <FormField<CreateDebtInput>
           control={form.control}
           name="contact_name"
           render={({ field }) => (
@@ -180,7 +180,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
 
         {/* ── Monto + Moneda ── */}
         <div className="grid grid-cols-2 gap-4">
-          <FormField
+          <FormField<CreateDebtInput>
             control={form.control}
             name="amount"
             render={({ field }) => (
@@ -202,7 +202,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
             )}
           />
 
-          <FormField
+          <FormField<CreateDebtInput>
             control={form.control}
             name="currency"
             render={({ field }) => (
@@ -210,7 +210,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                 <FormLabel className="text-[13px] font-medium text-gray-600">
                   Moneda
                 </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} defaultValue={field.value as string}>
                   <FormControl>
                     <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
                       <SelectValue placeholder="Moneda" />
@@ -231,7 +231,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
 
         {/* ── Cuenta ── */}
-        <FormField
+        <FormField<CreateDebtInput>
           control={form.control}
           name="account_id"
           render={({ field }) => (
@@ -239,7 +239,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
               <FormLabel className="text-[13px] font-medium text-gray-600">
                 {type === 'GIVEN' ? 'Cuenta origen' : 'Cuenta destino'}
               </FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value as string}>
                 <FormControl>
                   <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
                     <SelectValue placeholder="Seleccionar cuenta" />
@@ -267,7 +267,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
         />
 
         {/* ── Descripción ── */}
-        <FormField
+        <FormField<CreateDebtInput>
           control={form.control}
           name="description"
           render={({ field }) => (

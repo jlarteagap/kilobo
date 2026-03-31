@@ -26,7 +26,7 @@ export async function PATCH(
 
     const transaction = await transactionService.updateTransaction(id, parsed.data, userId)
     return NextResponse.json({ data: transaction })  // ← estandarizado
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
@@ -44,13 +44,13 @@ export async function DELETE(
     const { id } = await params
     await transactionService.deleteTransaction(id, userId)
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
 
-function handleError(error: any): NextResponse {
-  const message = error?.message ?? 'Error interno del servidor'
+function handleError(error: unknown): NextResponse {
+  const message = error instanceof Error ? error.message : 'Error interno del servidor'
   const statusMap: Record<string, number> = {
     'No autorizado':                  401,
     'Transacción no encontrada o no autorizada.': 404,

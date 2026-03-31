@@ -6,11 +6,21 @@ import type { Debt, CreateDebtData, DebtPayment, CreateDebtPaymentData } from '@
 const debtsCollection    = adminDb.collection('debts')
 const paymentsCollection = adminDb.collection('debt_payments')
 
-// ─── Mapper ───────────────────────────────────────────────────────────────────
+interface SerializedTimestamp { _seconds: number; _nanoseconds: number }
+
+function isSerializedTimestamp(val: unknown): val is SerializedTimestamp {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    '_seconds' in val &&
+    typeof (val as SerializedTimestamp)._seconds === 'number'
+  )
+}
+
 function toISOString(value: unknown): string {
   if (value instanceof Timestamp) return value.toDate().toISOString()
-  if (typeof value === 'object' && value !== null && '_seconds' in value) {
-    return new Date((value as any)._seconds * 1000).toISOString()
+  if (isSerializedTimestamp(value)) {
+    return new Date(value._seconds * 1000).toISOString()
   }
   if (typeof value === 'string') return value
   return new Date().toISOString()
@@ -67,14 +77,14 @@ export const debtRepository = {
     return mapDebt(docRef.id, created.data()!)
   },
 
-  async update(id: string, data: Partial<Debt>, userId: string): Promise<Debt> {
+  async update(id: string, data: Partial<Debt>): Promise<Debt> {
     const docRef = debtsCollection.doc(id)
     await docRef.update({ ...data, updated_at: Timestamp.now() })
     const updated = await docRef.get()
     return mapDebt(docRef.id, updated.data()!)
   },
 
-  async delete(id: string, userId: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await debtsCollection.doc(id).delete()
   },
 
@@ -85,8 +95,8 @@ export const debtRepository = {
       .get()
     const payments = snapshot.docs.map((doc) => mapPayment(doc.id, doc.data()))
     return payments.sort((a, b) => {
-      const dateA = (a as any).date || a.created_at;
-      const dateB = (b as any).date || b.created_at;
+      const dateA = a.date || a.created_at;
+      const dateB = b.date || b.created_at;
       return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
   },

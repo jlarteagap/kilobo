@@ -28,7 +28,7 @@ export async function PATCH(
 
     const category = await categoryService.updateCategory(id, parsed.data, userId)
     return NextResponse.json({ data: category })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
@@ -45,14 +45,14 @@ export async function DELETE(
     const { id } = await params
     await categoryService.deleteCategory(id, userId)
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
 
 // ─── Handler de errores centralizado ─────────────────────────────────────────
-function handleError(error: any): NextResponse {
-  const message = error?.message ?? 'Error interno del servidor'
+function handleError(error: unknown): NextResponse {
+  const message = error instanceof Error ? error.message : 'Error interno del servidor'
 
   const statusMap: Record<string, number> = {
     'No autorizado':                      401,

@@ -126,7 +126,6 @@ interface TransactionFiltersProps {
   categories:           Category[]
   projects:             Project[]
   availableTags:        string[]
-  availableCategoryIds: string[]
   activeFilterCount:    number
   onAccountChange:      (id: string | null) => void
   onCategoryChange:     (id: string | null) => void
@@ -142,7 +141,6 @@ export function TransactionFilters({
   categories,
   projects,
   availableTags,
-  availableCategoryIds,
   activeFilterCount,
   onAccountChange,
   onCategoryChange,

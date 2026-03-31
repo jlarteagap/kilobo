@@ -10,9 +10,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
     const body   = await req.json()
+    console.log('BODY:', JSON.stringify(body))          // ← agregar
 
     const parsed = updateBudgetSchema.safeParse(body)
+    console.log('PARSED OK:', parsed.success)           // ← agregar
+
     if (!parsed.success) {
+      console.log('ERRORS:', JSON.stringify(parsed.error.flatten()))  // ← agregar
+
       return NextResponse.json(
         { error: parsed.error.flatten() },
         { status: 400 }
@@ -21,7 +26,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     const budget = await budgetService.updateBudget(id, parsed.data)
     return NextResponse.json({ data: budget })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
@@ -32,7 +37,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     const { id } = await params
     const budget = await budgetService.archiveBudget(id)
     return NextResponse.json({ data: budget })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
@@ -43,13 +48,13 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     const { id } = await params
     await budgetService.deleteBudget(id)
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
 
-function handleError(error: any): NextResponse {
-  const message = error?.message ?? 'Error interno del servidor'
+function handleError(error: unknown): NextResponse {
+  const message = error instanceof Error ? error.message : 'Error interno del servidor'
   const statusMap: Record<string, number> = {
     'Selecciona al menos una categoría.':                400,
     'Los gastos fijos requieren un día de vencimiento.': 400,

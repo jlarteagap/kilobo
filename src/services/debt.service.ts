@@ -19,7 +19,7 @@ export const debtService = {
     const delta = data.type === 'GIVEN' ? -data.amount : +data.amount
     await accountsRepository.update(data.account_id, {
       balance: account.balance + delta,
-    }, userId)
+    })
 
     // 3. Crear la deuda
     return debtRepository.create(data, userId)
@@ -47,7 +47,7 @@ export const debtService = {
     const delta = debt.type === 'GIVEN' ? +data.amount : -data.amount
     await accountsRepository.update(data.account_id, {
       balance: account.balance + delta,
-    }, userId)
+    })
 
     // 5. Registrar el pago
     const payment = await debtRepository.createPayment(debtId, data)
@@ -59,7 +59,7 @@ export const debtService = {
     await debtRepository.update(debtId, {
       paid_amount: newPaidAmount,
       status:      newStatus,
-    }, userId)
+    })
 
     return payment
   },
@@ -77,10 +77,10 @@ export const debtService = {
         : -(debt.amount - debt.paid_amount)   // devolver lo no pagado
       await accountsRepository.update(debt.account_id, {
         balance: account.balance + reverseDelta,
-      }, userId)
+      })
     }
 
-    return debtRepository.update(debtId, { status: 'CANCELLED' }, userId)
+    return debtRepository.update(debtId, { status: 'CANCELLED' })
   },
 
   async deleteDebt(debtId: string, userId: string) {
@@ -89,6 +89,6 @@ export const debtService = {
     if (debt.status === 'ACTIVE') {
       throw new Error('No puedes eliminar una deuda activa. Cancélala primero.')
     }
-    return debtRepository.delete(debtId, userId)
+    return debtRepository.delete(debtId)
   },
 }

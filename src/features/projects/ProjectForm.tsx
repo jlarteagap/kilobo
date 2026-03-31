@@ -1,7 +1,7 @@
 // features/projects/ProjectForm.tsx
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, useWatch, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, X } from "lucide-react"
 import { useState } from "react"
@@ -48,7 +48,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
   const [subtypeInput, setSubtypeInput] = useState('')
 
   const form = useForm<CreateProjectInput>({
-    resolver: zodResolver(createProjectSchema) as any,
+    resolver: zodResolver(createProjectSchema) as Resolver<CreateProjectInput>,
     defaultValues: {
       name:        initialData?.name        ?? '',
       description: initialData?.description ?? '',
@@ -58,9 +58,10 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
     },
   })
 
-  const selectedColor    = form.watch('color')
-  const selectedIcon     = form.watch('icon')
-  const currentSubtypes  = form.watch('subtypes')
+  const selectedColor    = useWatch({ control: form.control, name: 'color' })
+  const selectedIcon     = useWatch({ control: form.control, name: 'icon' })
+  const projectName      = useWatch({ control: form.control, name: 'name' })
+  const currentSubtypes  = useWatch({ control: form.control, name: 'subtypes' }) ?? []
 
   const addSubtype = () => {
     const value = subtypeInput.trim()
@@ -82,7 +83,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
         {/* ── Icono — chips seleccionables ── */}
-        <FormField
+        <FormField<CreateProjectInput>
           control={form.control}
           name="icon"
           render={({ field }) => (
@@ -115,7 +116,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
         />
 
         {/* ── Color ── */}
-        <FormField
+        <FormField<CreateProjectInput>
           control={form.control}
           name="color"
           render={({ field }) => (
@@ -156,7 +157,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
           </div>
           <div>
             <p className="text-[13px] font-bold text-neutral-900 leading-tight">
-              {form.watch('name') || 'Nombre del proyecto'}
+              {projectName || 'Nombre del proyecto'}
             </p>
             <p className="text-[11px] text-neutral-400 mt-0.5">
               {currentSubtypes.length > 0
@@ -167,7 +168,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
         </div>
 
         {/* ── Nombre ── */}
-        <FormField
+        <FormField<CreateProjectInput>
           control={form.control}
           name="name"
           render={({ field }) => (
@@ -179,7 +180,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
                 <Input
                   placeholder="Ej: Uber, Edición de video…"
                   {...field}
-                  className="rounded-xl border-0 bg-neutral-50 focus-visible:ring-neutral-900/10"
+                  value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ""}
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -188,7 +189,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
         />
 
         {/* ── Descripción ── */}
-        <FormField
+        <FormField<CreateProjectInput>
           control={form.control}
           name="description"
           render={({ field }) => (
@@ -201,7 +202,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
                 <Input
                   placeholder="Ej: Ingresos y gastos de Uber"
                   {...field}
-                  value={field.value ?? ''}
+                  value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ""}
                   className="rounded-xl border-0 bg-neutral-50 focus-visible:ring-neutral-900/10"
                 />
               </FormControl>
@@ -211,7 +212,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
         />
 
         {/* ── Subtipos ── */}
-        <FormField
+        <FormField<CreateProjectInput>
           control={form.control}
           name="subtypes"
           render={() => (

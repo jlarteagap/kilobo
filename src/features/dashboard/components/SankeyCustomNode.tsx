@@ -1,5 +1,8 @@
 // features/cashflow/components/SankeyCustomNode.tsx
 import { Layer, Rectangle } from "recharts"
+import type { SankeyData } from "../hooks/useCashflowData"
+
+type SankeyNode = SankeyData['nodes'][number]
 
 const TYPE_COLORS: Record<string, string> = {
   income:  '#34d399',
@@ -21,7 +24,7 @@ interface SankeyNodeProps {
   width?:          number
   height?:         number
   index?:          number
-  payload?:        any
+  payload?:        SankeyNode
   containerWidth?: number
   fontSize?:       number   // ← nuevo
 }
@@ -32,23 +35,24 @@ export function SankeyCustomNode({
   width = 0,
   height = 0,
   index = 0,
-  payload = {},
+  payload,
   containerWidth = 0,
   fontSize = 11,            // ← nuevo
 }: SankeyNodeProps) {
   const isRight = x + width + 6 > containerWidth / 2
 
   const fill =
-    NODE_COLORS[payload.name] ??
-    payload.color             ??
-    TYPE_COLORS[payload.type] ??
+    (payload?.name ? NODE_COLORS[payload.name] : null) ??
+    payload?.color             ??
+    (payload?.type ? TYPE_COLORS[payload.type] : null) ??
     '#60a5fa'
 
   // Truncar labels largos en pantallas pequeñas
   const maxChars = containerWidth < 400 ? 8 : containerWidth < 600 ? 12 : 20
-  const label    = payload.name?.length > maxChars
-    ? payload.name.slice(0, maxChars) + '…'
-    : payload.name
+  const name     = payload?.name ?? ''
+  const label    = name.length > maxChars
+    ? name.slice(0, maxChars) + '…'
+    : name
 
   return (
     <Layer key={`node-${index}`}>

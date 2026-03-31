@@ -1,6 +1,6 @@
 // features/dashboard/hooks/useDashboard.ts
 import { useMemo } from 'react'
-import { format, startOfMonth, endOfMonth } from 'date-fns'
+import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 import { useAccounts }        from '@/features/accounts/hooks/useAccounts'
@@ -9,7 +9,7 @@ import { useDebts }           from '@/features/debts/hooks/useDebts'
 import { useBudgetProgress }  from '@/features/budgets/hooks/useBudgets'
 import { useAccountsDashboard } from '@/features/accounts/hooks/useAccountsDashboard'
 import { filterByPeriod }     from '@/utils/date.utils'
-import { formatCurrency }     from '@/features/accounts/utils/account-display.utils'
+
 
 export function useDashboard() {
   const { data: accounts     = [], isLoading: loadingAccounts     } = useAccounts()

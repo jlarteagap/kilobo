@@ -119,7 +119,6 @@ function AssetSection({
   sortKey,
   sortOrder,
   onSort,
-  totalLabel,
   totalValue,
   totalColor,
 }: {
@@ -128,7 +127,6 @@ function AssetSection({
   sortKey:    SortKey
   sortOrder:  SortOrder
   onSort:     (col: SortKey) => void
-  totalLabel: string
   totalValue: string
   totalColor: string
 }) {
@@ -266,7 +264,6 @@ export function AssetsTable({
         sortKey={sortKey}
         sortOrder={sortOrder}
         onSort={handleSort}
-        totalLabel="Total activos"
         totalValue={totalAssetsFormatted}
         totalColor="text-emerald-600"
       />
@@ -279,7 +276,6 @@ export function AssetsTable({
           sortKey={sortKey}
           sortOrder={sortOrder}
           onSort={handleSort}
-          totalLabel="Total pasivos"
           totalValue={totalLiabilitiesFormatted}
           totalColor="text-rose-500"
         />

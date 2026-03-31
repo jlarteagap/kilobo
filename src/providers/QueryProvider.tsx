@@ -17,10 +17,11 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             refetchOnWindowFocus: false,
           },
           mutations: {
-            onError: (error: any) => {
+            onError: (error: unknown) => {
               // Conectado toast global con sonner
-              console.error('[Mutation Error]', error.message)
-              toast.error(error.message || "Ocurrió un error inesperado")
+              const message = error instanceof Error ? error.message : "Ocurrió un error inesperado"
+              console.error('[Mutation Error]', message)
+              toast.error(message)
             },
           },
         },

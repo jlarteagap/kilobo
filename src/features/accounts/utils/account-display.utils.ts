@@ -1,5 +1,5 @@
 import { Account, AccountType, CURRENCY_TYPES, CurrencyType, ACCOUNT_TYPES } from "@/types/account"
-import { Wallet, Building2, Banknote, Bitcoin, CreditCard, PiggyBank, LucideIcon, Landmark, CircleEllipsis } from "lucide-react"
+import { Wallet, Building2, Banknote, Bitcoin, PiggyBank, LucideIcon, Landmark, CircleEllipsis } from "lucide-react"
 import { convertToBOB } from "@/lib/config/exchange-rates"
 
 export const getAccountTypeDetails = (

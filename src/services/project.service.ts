@@ -19,11 +19,11 @@ export const projectService = {
 
   async update(id: string, data: UpdateProjectData, userId: string): Promise<Project> {
     await projectService.getById(id, userId) // valida ownership
-    return projectRepository.update(id, data, userId)
+    return projectRepository.update(id, data)
   },
 
   async archive(id: string, userId: string): Promise<void> {
     await projectService.getById(id, userId)
-    await projectRepository.update(id, { status: 'archived' }, userId)
+    await projectRepository.update(id, { status: 'archived' })
   },
 }

@@ -20,7 +20,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
     const payment = await debtService.registerPayment(id, parsed.data, userId)
     return NextResponse.json({ data: payment }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const { id } = await params
     const debt   = await debtService.cancelDebt(id, userId)
     return NextResponse.json({ data: debt })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
@@ -48,13 +48,13 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     const { id } = await params
     await debtService.deleteDebt(id, userId)
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
 
-function handleError(error: any): NextResponse {
-  const message = error?.message ?? 'Error interno del servidor'
+function handleError(error: unknown): NextResponse {
+  const message = error instanceof Error ? error.message : 'Error interno del servidor'
   const statusMap: Record<string, number> = {
     'Cuenta no encontrada.':   404,
     'Deuda no encontrada.':    404,

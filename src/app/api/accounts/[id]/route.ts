@@ -21,7 +21,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
     const account = await accountsService.updateAccount(id, parsed.data, userId)
     return NextResponse.json({ data: account })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
@@ -34,14 +34,14 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     const { id } = await params
     await accountsService.deleteAccount(id, userId)
     return NextResponse.json({ success: true })  // ← nunca 204, siempre JSON
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
 
 // ─── Handler centralizado — usado por ambos ───────────────────────────────────
-function handleError(error: any): NextResponse {
-  const message = error?.message ?? 'Error interno del servidor'
+function handleError(error: unknown): NextResponse {
+  const message = error instanceof Error ? error.message : 'Error interno del servidor'
   const statusMap: Record<string, number> = {
     'No autorizado':             401,
     'Token inválido o expirado': 401,

@@ -130,22 +130,7 @@ export function useTransactionFilters(transactions: Transaction[]) {
     return tags
   }, [transactions, filters.period, filters.type, filters.accountId, filters.categoryId])
 
-  // ── Categorías disponibles según filtros actuales ──────────────────────────
-  const availableCategoryIds = useMemo(() => {
-    let base = filterByPeriod(transactions, filters.period)
 
-    if (filters.type !== 'ALL') {
-      base = base.filter((t) => t.type === filters.type)
-    }
-    if (filters.accountId) {
-      base = base.filter((t) =>
-        t.account_id === filters.accountId ||
-        t.to_account_id === filters.accountId
-      )
-    }
-
-    return Array.from(new Set(base.map((t) => t.category_id).filter(Boolean) as string[]))
-  }, [transactions, filters.period, filters.type, filters.accountId])
 
   // ── Estadísticas rápidas de los filtrados ──────────────────────────────────
   const stats = useMemo(() => {
@@ -173,7 +158,6 @@ export function useTransactionFilters(transactions: Transaction[]) {
     filtered,
     activeFilterCount,
     availableTags,
-    availableCategoryIds,
     stats,
 
     // Setters

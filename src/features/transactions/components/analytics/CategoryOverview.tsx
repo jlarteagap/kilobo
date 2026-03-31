@@ -24,7 +24,14 @@ interface SliceItem {
 }
 
 // ─── Tooltip ─────────────────────────────────────────────────────────────────
-function CustomTooltip({ active, payload }: any) {
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: Array<{
+    payload: SliceItem
+  }>
+}
+
+function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
   const item: SliceItem = payload[0].payload
   return (
@@ -122,11 +129,6 @@ export function CategoryOverview({
     const result: SliceItem[] = []
 
     // 1. Categorías personales (transacciones sin project_id)
-    const personalExpenses = transactions.filter(
-      (t) => t.type === 'EXPENSE' && !t.project_id
-    )
-    const totalPersonal = personalExpenses.reduce((s, t) => s + t.amount, 0)
-
     // Usar data del hook (ya viene calculada y con nombres de categoría)
     data.forEach((cat, i) => {
       if (cat.value > 0) {

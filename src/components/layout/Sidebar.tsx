@@ -8,7 +8,7 @@ import {
   CreditCard,
   PieChart,
   Wallet,
-  Tags,
+
   HandCoins,    // ← para Deudas
   LayoutGrid,   // ← para Categorías
   ChevronRight,

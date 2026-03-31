@@ -1,7 +1,7 @@
 // features/transactions/TransactionForm.tsx
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, useWatch, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -43,7 +43,7 @@ import type { Category } from "@/types/category"
 import type { Account } from "@/types/account"
 import type { Project } from '@/types/project'
 // ─── Helper ───────────────────────────────────────────────────────────────────
-function getTagsForCategory(categoryId: string | undefined, categories: Category[]): string[] {
+function getTagsForCategory(categoryId: string | null | undefined, categories: Category[]): string[] {
   if (!categoryId) return []
   return categories.find((c) => c.id === categoryId)?.tags ?? []
 }
@@ -98,57 +98,73 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const createTransaction         = useCreateTransaction()
 
   const form = useForm<CreateTransactionInput>({
-    resolver: zodResolver(createTransactionSchema) as any,
+    resolver: zodResolver(createTransactionSchema) as unknown as Resolver<CreateTransactionInput>, // Bypass structural mismatch with explicit Resolver cast
     defaultValues: {
       type:         'EXPENSE',
       date:         new Date().toISOString().split('T')[0],
       is_recurring: false,
-      amount:       undefined as any,
+      amount:       0,
       account_id:   '',
-      category_id:  undefined,
+      category_id:  null,
       to_account_id: undefined,
       description:  '',
       project_id:   null,
-      tag:          undefined,
-      subtype:      undefined,
+      tag:          null,
+      subtype:      null,
     },
   })
 
-  const type       = form.watch('type')
-  const categoryId = form.watch('category_id')
-  const projectId  = form.watch('project_id')
+  const type       = useWatch({ control: form.control, name: 'type' })
+  const categoryId = useWatch({ control: form.control, name: 'category_id' })
+  const projectId  = useWatch({ control: form.control, name: 'project_id' })
+  const accountId  = useWatch({ control: form.control, name: 'account_id' })
+  const amount     = useWatch({ control: form.control, name: 'amount' }) ?? 0
   const availableSubtypes = getSubtypesForProject(projectId, projects)
 
   const availableTags = getTagsForCategory(categoryId, categories)
   const hasProject      = !!projectId && projectId !== 'none'
   const showCategory    = type !== 'TRANSFER' && type !== 'SAVING' && !hasProject
-  const showTags        = showCategory && availableTags.length > 0
   const showDestAccount = type === 'TRANSFER' || type === 'SAVING'
+  const showTags        = showCategory && availableTags.length > 0
+  const showSecondSlot  = showDestAccount || showCategory
 
   const handleCategoryChange = (value: string) => {
     form.setValue('category_id', value)
-    form.setValue('tag', undefined)
+    form.setValue('tag', null)        // ← undefined → null
   }
 
   const handleProjectChange = (value: string) => {
     form.setValue('project_id', value === 'none' ? null : value)
-    form.setValue('subtype', undefined)
+    form.setValue('subtype', null)    // ← undefined → null
   }
 
   const handleTypeChange = (t: typeof TRANSACTION_TYPES[number]) => {
     form.setValue('type', t)
-    form.setValue('category_id', undefined)
-    form.setValue('tag', undefined)
+    form.setValue('category_id', null)  // ← undefined → null
+    form.setValue('tag', null)          // ← undefined → null
   }
 
-  const onSubmit = async (data: CreateTransactionInput) => {
-    await createTransaction.mutateAsync(data, {
-      onSuccess: () => {
-        form.reset()
-        onSuccess()
-      },
-    })
-  }
+  // TransactionForm.tsx — en onSubmit
+const onSubmit = async (data: CreateTransactionInput) => {
+  await createTransaction.mutateAsync(data, {
+    onSuccess: () => {
+      form.reset({
+        type:         'EXPENSE',
+        date:         new Date().toISOString().split('T')[0],
+        is_recurring: false,
+        amount:       0,
+        tag:          null,
+        project_id:   null,
+        subtype:      null,
+        category_id:  null,
+        account_id:   '',
+        to_account_id:undefined,
+        description:  '',
+      })
+      onSuccess()
+    },
+  })
+}
 
   return (
     <Form {...form}>
@@ -175,7 +191,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
 
         {/* ── Fila 1: Monto + Fecha ── */}
         <div className="grid grid-cols-2 gap-4">
-          <FormField
+          <FormField<CreateTransactionInput>
             control={form.control}
             name="amount"
             render={({ field }) => (
@@ -189,6 +205,8 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
                     step="0.01"
                     placeholder="0.00"
                     {...field}
+                    onChange={(e) => field.onChange(e.target.value === '' ? 0 : +e.target.value)}
+                    value={typeof field.value === 'number' || typeof field.value === 'string' ? field.value : ''}
                     className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
                   />
                 </FormControl>
@@ -209,6 +227,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
                   <Input
                     type="date"
                     {...field}
+                    value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ''}
                     className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
                   />
                 </FormControl>
@@ -303,97 +322,102 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   />
 ) : null}
         {/* ── Fila 2: Cuenta origen + Categoría ── */}
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="account_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
-                  {type === 'INCOME' ? 'Cuenta destino' : 'Cuenta origen'}
-                </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
-                      <SelectValue placeholder="Seleccionar cuenta" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {accounts.map((acc) => (
-                      <SelectItem key={acc.id} value={acc.id}>
-                        {acc.name} ({acc.currency})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage className="text-[12px]" />
-              </FormItem>
-            )}
-          />
+        <div className={cn(
+          "grid gap-4",
+          showSecondSlot ? "grid-cols-2" : "grid-cols-1"   // ← una columna si es proyecto
+        )}>
+          {/* Cuenta origen — siempre visible */}
+        <FormField
+          control={form.control}
+          name="account_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[13px] font-medium text-gray-600">
+                {type === 'INCOME' ? 'Cuenta destino' : 'Cuenta origen'}
+              </FormLabel>
+              <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                <FormControl>
+                  <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                    <SelectValue placeholder="Seleccionar cuenta" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {accounts.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.name} ({acc.currency})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-[12px]" />
+            </FormItem>
+          )}
+        />
 
           {/* Categoría o Cuenta destino según tipo */}
-          {showCategory ? (
-            <FormField
-              control={form.control}
-              name="category_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-600">
-                    Categoría
-                  </FormLabel>
-                  <Select
-                    onValueChange={handleCategoryChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
-                        <SelectValue placeholder="Sin categoría" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories
-                        .filter((c) => !c.parent_id && c.type === (
-                          type
-                        ))
-                        .map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id}>
-                            {cat.icon} {cat.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage className="text-[12px]" />
-                </FormItem>
-              )}
-            />
-          ) : (
-            <FormField
-              control={form.control}
-              name="to_account_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-600">
-                    Cuenta destino
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
-                        <SelectValue placeholder="Seleccionar cuenta" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {accounts.map((acc) => (
-                        <SelectItem key={acc.id} value={acc.id}>
-                          {acc.name} ({acc.currency})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage className="text-[12px]" />
-                </FormItem>
-              )}
-            />
-          )}
+           {/* Segundo slot — categoría o cuenta destino, nunca los dos */}
+  {showDestAccount && (
+    <FormField
+      control={form.control}
+      name="to_account_id"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="text-[13px] font-medium text-gray-600">
+            Cuenta destino
+          </FormLabel>
+          <Select onValueChange={field.onChange} value={field.value ?? ''}>
+            <FormControl>
+              <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                <SelectValue placeholder="Seleccionar cuenta" />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              {accounts.map((acc) => (
+                <SelectItem key={acc.id} value={acc.id}>
+                  {acc.name} ({acc.currency})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FormMessage className="text-[12px]" />
+        </FormItem>
+      )}
+    />
+  )}
+
+          {showCategory && (
+    <FormField
+      control={form.control}
+      name="category_id"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="text-[13px] font-medium text-gray-600">
+            Categoría
+          </FormLabel>
+          <Select
+            onValueChange={handleCategoryChange}
+            value={field.value ?? ''}      // ← nunca undefined
+          >
+            <FormControl>
+              <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                <SelectValue placeholder="Sin categoría" />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              {categories
+                .filter((c) => !c.parent_id && c.type === type)
+                .map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.icon} {cat.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+          <FormMessage className="text-[12px]" />
+        </FormItem>
+      )}
+    />
+  )}
         </div>
 
         {/* ── Tags — chips dinámicos según categoría ── */}
@@ -445,8 +469,8 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
         ) : null}
 
         <AccountBalanceHint
-          accountId={form.watch('account_id')}
-          amount={form.watch('amount') ?? 0}
+          accountId={accountId}
+          amount={amount}
           type={type}
           accounts={accounts}
         />
@@ -465,7 +489,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
                 <Textarea
                   rows={2}
                   {...field}
-                  value={field.value ?? ''}
+                  value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ''}
                   className="rounded-xl border-0 bg-gray-50 resize-none focus-visible:ring-gray-900/10"
                 />
               </FormControl>

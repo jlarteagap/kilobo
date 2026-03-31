@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, KeyboardEvent } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { X, Loader2 } from "lucide-react"
@@ -57,8 +57,8 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
     },
   })
 
-  const selectedColor = form.watch('color')
-  const selectedType  = form.watch('type')
+  const selectedColor = useWatch({ control: form.control, name: 'color' })
+  const selectedType  = useWatch({ control: form.control, name: 'type' })
 
   // ─── Tag logic ──────────────────────────────────────────────────────────────
   const addTag = () => {

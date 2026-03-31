@@ -4,11 +4,11 @@
 import { useState, useRef, useEffect } from "react"
 import { ChevronDown, Calendar, X } from "lucide-react"
 import { format } from "date-fns"
-import { es } from "date-fns/locale"
+
 import { cn } from "@/lib/utils"
 
 import { getAvailableMonths, getPeriodLabel } from "@/utils/date.utils"
-import { PREDEFINED_PERIOD_LABELS, DEFAULT_PERIOD } from "@/types/period"
+import { DEFAULT_PERIOD } from "@/types/period"
 import type { Period } from "@/types/period"
 
 interface PeriodSelectorProps {

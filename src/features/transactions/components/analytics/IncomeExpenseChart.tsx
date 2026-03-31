@@ -21,7 +21,18 @@ const INCOME_COLOR  = '#34d399'
 const EXPENSE_COLOR = '#fb7185'
 
 // ─── Tooltip ──────────────────────────────────────────────────────────────────
-function CustomTooltip({ active, payload, label }: any) {
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: Array<{
+    name:     string
+    value:    number
+    color:    string
+    dataKey?: string | number
+  }>
+  label?: string
+}
+
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
 
   return (
@@ -32,7 +43,7 @@ function CustomTooltip({ active, payload, label }: any) {
       <p className="text-[11px] font-semibold text-gray-400 mb-1.5 capitalize">
         {label}
       </p>
-      {payload.map((entry: any) => (
+      {payload.map((entry) => (
         <div key={entry.dataKey} className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />

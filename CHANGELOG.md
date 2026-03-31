@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-03-31
+
+### Added
+- **Budget Enhancements**: Added support for budget types (budget vs saving), status tracking (active/completed/paused), category association, recurrence (`is_recurring`), and specific due days.
+- **Transaction Tags**: Added support for nullable `tag` and `category_id` fields in transactions for more flexible categorization.
+
+### Changed
+- **Form Optimization**: Migrated from `form.watch()` to `useWatch()` across forms for improved reactivity and reduced component re-renders.
+- **Code Quality**: Undertook comprehensive refactoring to resolve TypeScript type mismatches, enforce strict type safety, and refine React hooks.
+
+### Fixed
+- **Linting & Unused Code**: Removed unused repository parameters across services, cleaning up the codebase and resolving React Compiler warnings.
+- **Form Type Definitions**: Fixed null and undefined handling for various form fields, particularly concerning `currency`, `due_day`, and `description` types in `BudgetForm` and `TransactionForm`.
+
 ## [1.4.0] - 2026-03-27
 
 ### Added
@@ -40,5 +54,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.2] - 2026-03-11
 - Initial version found in this log.
 
+[1.5.0]: https://github.com/jlarteagap/kilobo/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/jlarteagap/kilobo/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/jlarteagap/kilobo/compare/v1.2.2...v1.3.0

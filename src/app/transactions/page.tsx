@@ -60,7 +60,6 @@ export default function TransactionsPage() {
     filtered,
     activeFilterCount,
     availableTags,
-    availableCategoryIds,
     stats,
     setPeriod,
     setAccountId,
@@ -222,7 +221,6 @@ export default function TransactionsPage() {
               categories={categories}
               projects={projects}
               availableTags={availableTags}
-              availableCategoryIds={availableCategoryIds}
               activeFilterCount={activeFilterCount}
               onAccountChange={setAccountId}
               onCategoryChange={setCategoryId}

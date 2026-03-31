@@ -11,7 +11,7 @@ export async function GET() {
 
     const debts = await debtService.getDebts(userId)
     return NextResponse.json({ data: debts })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
@@ -28,13 +28,13 @@ export async function POST(req: NextRequest) {
     }
     const debt = await debtService.createDebt(parsed.data, userId)
     return NextResponse.json({ data: debt }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
 
-function handleError(error: any): NextResponse {
-  const message = error?.message ?? 'Error interno del servidor'
+function handleError(error: unknown): NextResponse {
+  const message = error instanceof Error ? error.message : 'Error interno del servidor'
   const statusMap: Record<string, number> = {
     'Cuenta no encontrada.': 404,
     'Deuda no encontrada.':  404,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2 } from 'lucide-react'
@@ -58,9 +58,8 @@ function CreateCategoryForm({ preselectedType, onSuccess }: Omit<CreateModeProps
     },
   })
 
-  const selectedType  = form.watch('type')
-  const selectedColor = form.watch('color') ?? DEFAULT_COLOR
-  const selectedTags  = form.watch('tags')  ?? []
+  const selectedType  = useWatch({ control: form.control, name: 'type' })
+
 
   const onSubmit = async (data: CreateFormValues) => {
     await createCategory.mutateAsync(data)

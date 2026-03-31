@@ -2,10 +2,10 @@
 import { useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { startOfDay, subDays, isAfter, isEqual, format } from 'date-fns'
+import { startOfDay, format } from 'date-fns'
 
 import { useTransactions } from '@/features/transactions/hooks/useTransactions'
-import { transactionKeys } from '@/features/transactions/hooks/useTransactions'
+
 import type { Budget, BudgetProgress, BudgetSummaryData } from '@/types/budget'
 import type { CreateBudgetInput, UpdateBudgetInput } from '@/lib/validations/budget.schema'
 import type { Transaction } from '@/types/transaction'
@@ -25,24 +25,40 @@ export const budgetKeys = {
 }
 
 // ─── Helper: calcular progreso de un budget ───────────────────────────────────
+// features/budgets/hooks/useBudgets.ts
+// Reemplazar SOLO la función calcProgress
+
 function calcProgress(
   budget:       Budget,
   transactions: Transaction[]
 ): BudgetProgress {
-  const now        = new Date()
+  const now          = new Date()
   const currentMonth = format(now, 'yyyy-MM')
 
-  // Filtrar transacciones del mes actual vinculadas a las categorías del budget
   const linked = transactions.filter((t) => {
-    const txMonth = t.date.slice(0, 7)  // "yyyy-MM"
-    const inMonth = txMonth === currentMonth
-    const inCats  = !!t.category_id && budget.category_ids.includes(t.category_id)
+    const txMonth = t.date.slice(0, 7)
+    if (txMonth !== currentMonth) return false
 
-    if (!inMonth || !inCats) return false
+    // ── Modo proyecto ────────────────────────────────────────────────────────
+    if (budget.project_id) {
+      if (t.project_id !== budget.project_id) return false
 
-    // INCOME_SOURCE → solo INCOME
-    // FIXED_EXPENSE → solo EXPENSE
-    // SAVINGS_GOAL  → solo INCOME
+      // Si el budget tiene subtipos específicos, filtrar por ellos
+      if (budget.subtypes && budget.subtypes.length > 0) {
+        if (!t.subtype || !budget.subtypes.includes(t.subtype)) return false
+      }
+
+      // Filtrar por tipo de transacción igual que el modo personal
+      if (budget.type === 'INCOME_SOURCE') return t.type === 'INCOME'
+      if (budget.type === 'FIXED_EXPENSE') return t.type === 'EXPENSE'
+      if (budget.type === 'SAVINGS_GOAL')  return t.type === 'INCOME'
+      return false
+    }
+
+    // ── Modo personal (comportamiento original) ───────────────────────────────
+    const inCats = !!t.category_id && budget.category_ids.includes(t.category_id)
+    if (!inCats) return false
+
     if (budget.type === 'INCOME_SOURCE') return t.type === 'INCOME'
     if (budget.type === 'FIXED_EXPENSE') return t.type === 'EXPENSE'
     if (budget.type === 'SAVINGS_GOAL')  return t.type === 'INCOME'
@@ -53,13 +69,13 @@ function calcProgress(
   const percent        = Math.min((current_amount / budget.target_amount) * 100, 100)
   const remaining      = budget.target_amount - current_amount
 
-  // ── Días hasta vencimiento ─────────────────────────────────────────────────
+  // ── Días hasta vencimiento (sin cambios) ──────────────────────────────────
   let days_until_due: number | null = null
   let is_overdue = false
 
   if (budget.due_day) {
-    const dueDate  = new Date(now.getFullYear(), now.getMonth(), budget.due_day)
-    const today    = startOfDay(now)
+    const dueDate      = new Date(now.getFullYear(), now.getMonth(), budget.due_day)
+    const today        = startOfDay(now)
     const dueDateStart = startOfDay(dueDate)
 
     days_until_due = Math.ceil(
@@ -68,7 +84,7 @@ function calcProgress(
     is_overdue = days_until_due < 0 && percent < 100
   }
 
-  // ── Status ─────────────────────────────────────────────────────────────────
+  // ── Status (sin cambios) ──────────────────────────────────────────────────
   let status: BudgetProgress['status']
 
   if (percent >= 100) {
@@ -76,7 +92,6 @@ function calcProgress(
   } else if (is_overdue) {
     status = 'OVERDUE'
   } else if (budget.due_day) {
-    // AT_RISK: estamos en la segunda mitad del mes y llevamos menos del 50%
     const daysInMonth  = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
     const dayOfMonth   = now.getDate()
     const halfwayPoint = daysInMonth / 2

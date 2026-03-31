@@ -1,0 +1,281 @@
+
+> kilobo@1.4.1 lint
+> eslint
+
+
+/Users/jorge/Documents/kipos/kilo/.agents/skills/brainstorming/scripts/server.cjs
+    1:16  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+    2:14  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+    3:12  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+    4:14  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  186:16  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+  241:41  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+  313:61  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/jorge/Documents/kipos/kilo/scripts/migrate-timestamps.ts
+  40:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/accounts/[id]/route.ts
+  24:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/accounts/route.ts
+   7:27  warning  '_req' is defined but never used          @typescript-eslint/no-unused-vars
+  15:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/auth/session/route.ts
+  25:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:12  warning  '_error' is defined but never used        @typescript-eslint/no-unused-vars
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/budgets/[id]/route.ts
+  29:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/budgets/route.ts
+  10:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/categories/[id]/route.ts
+  31:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/categories/route.ts
+   6:27  warning  '_req' is defined but never used          @typescript-eslint/no-unused-vars
+  13:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/debts/[id]/route.ts
+  23:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/debts/route.ts
+  14:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/projects/[id]/route.ts
+  22:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/projects/route.ts
+  13:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  27:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/transactions/[id]/route.ts
+  29:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  47:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/app/api/transactions/route.ts
+   7:27  warning  '_req' is defined but never used          @typescript-eslint/no-unused-vars
+  16:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/components/ui/sidebar.tsx
+  611:26  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/jorge/Documents/kipos/kilo/src/components/ui/sidebar.tsx:611:26
+  609 |   // Random width between 50 to 90%.
+  610 |   const width = React.useMemo(() => {
+> 611 |     return `${Math.floor(Math.random() * 40) + 50}%`
+      |                          ^^^^^^^^^^^^^ Cannot call impure function
+  612 |   }, [])
+  613 |
+  614 |   return (  react-hooks/purity
+
+/Users/jorge/Documents/kipos/kilo/src/features/accounts/AccountForm.tsx
+  42:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/features/budgets/BudgetForm.tsx
+  52:10  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  66:23  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/jorge/Documents/kipos/kilo/src/features/budgets/BudgetForm.tsx:66:23
+  64 |   })
+  65 |
+> 66 |   const type        = form.watch('type')
+     |                       ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  67 |   const categoryIds = form.watch('category_ids') ?? []
+  68 |   const projectId   = form.watch('project_id')
+  69 |   const subtypes    = form.watch('subtypes') ?? []  react-hooks/incompatible-library
+
+/Users/jorge/Documents/kipos/kilo/src/features/categories/components/CategoryForm.tsx
+  60:25  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/jorge/Documents/kipos/kilo/src/features/categories/components/CategoryForm.tsx:60:25
+  58 |   })
+  59 |
+> 60 |   const selectedColor = form.watch('color')
+     |                         ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  61 |   const selectedType  = form.watch('type')
+  62 |
+  63 |   // ─── Tag logic ──────────────────────────────────────────────────────────────  react-hooks/incompatible-library
+
+/Users/jorge/Documents/kipos/kilo/src/features/categories/components/form/CategoryForm.tsx
+  61:25  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/jorge/Documents/kipos/kilo/src/features/categories/components/form/CategoryForm.tsx:61:25
+  59 |   })
+  60 |
+> 61 |   const selectedType  = form.watch('type')
+     |                         ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  62 |
+  63 |
+  64 |   const onSubmit = async (data: CreateFormValues) => {  react-hooks/incompatible-library
+
+/Users/jorge/Documents/kipos/kilo/src/features/dashboard/CashflowSection.tsx
+  54:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  74:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/features/dashboard/components/SankeyCustomNode.tsx
+  24:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/features/debts/DebtForm.tsx
+  88:48  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  99:21  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/jorge/Documents/kipos/kilo/src/features/debts/DebtForm.tsx:99:21
+   97 |   })
+   98 |
+>  99 |   const type      = form.watch('type')
+      |                     ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  100 |   const accountId = form.watch('account_id')
+  101 |   const amount    = form.watch('amount') ?? 0
+  102 |  react-hooks/incompatible-library
+
+/Users/jorge/Documents/kipos/kilo/src/features/debts/components/DebtPaymentForm.tsx
+   97:55  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  106:21  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/jorge/Documents/kipos/kilo/src/features/debts/components/DebtPaymentForm.tsx:106:21
+  104 |   })
+  105 |
+> 106 |   const amount    = form.watch('amount') ?? 0
+      |                     ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  107 |   const accountId = form.watch('account_id')
+  108 |   const account   = accounts.find((a) => a.id === accountId)
+  109 |  react-hooks/incompatible-library
+
+/Users/jorge/Documents/kipos/kilo/src/features/projects/ProjectForm.tsx
+  51:51  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  61:28  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/jorge/Documents/kipos/kilo/src/features/projects/ProjectForm.tsx:61:28
+  59 |   })
+  60 |
+> 61 |   const selectedColor    = form.watch('color')
+     |                            ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  62 |   const selectedIcon     = form.watch('icon')
+  63 |   const currentSubtypes  = form.watch('subtypes')
+  64 |  react-hooks/incompatible-library
+
+/Users/jorge/Documents/kipos/kilo/src/features/transactions/TransactionEditForm.tsx
+   83:27  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/jorge/Documents/kipos/kilo/src/features/transactions/TransactionEditForm.tsx:83:27
+  81 |   })
+  82 |
+> 83 |   const categoryId      = form.watch('category_id')
+     |                           ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  84 |   const projectId       = form.watch('project_id')        // ← NUEVO
+  85 |   const availableTags   = getTagsForCategory(categoryId, categories)
+  86 |   const availableSubtypes = getSubtypesForProject(projectId, projects)  // ← NUEVO  react-hooks/incompatible-library
+  108:24  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  109:53  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  136:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  156:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  195:38  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  243:38  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  273:38  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  320:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  344:38  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/features/transactions/TransactionForm.tsx
+  101:55  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  106:34  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  117:22  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/jorge/Documents/kipos/kilo/src/features/transactions/TransactionForm.tsx:117:22
+  115 |   })
+  116 |
+> 117 |   const type       = form.watch('type')
+      |                      ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  118 |   const categoryId = form.watch('category_id')
+  119 |   const projectId  = form.watch('project_id')
+  120 |   const availableSubtypes = getSubtypesForProject(projectId, projects)  react-hooks/incompatible-library
+  153:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/features/transactions/components/analytics/CategoryOverview.tsx
+  27:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/features/transactions/components/analytics/IncomeExpenseChart.tsx
+  24:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/features/transactions/hooks/useTransactionFilters.ts
+  134:9  warning  'availableCategoryIds' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/jorge/Documents/kipos/kilo/src/providers/QueryProvider.tsx
+  20:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/repositories/accounts.repository.ts
+  20:37  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:37  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:60  warning  '_userId' is defined but never used       @typescript-eslint/no-unused-vars
+  62:35  warning  '_userId' is defined but never used       @typescript-eslint/no-unused-vars
+
+/Users/jorge/Documents/kipos/kilo/src/repositories/budget.repository.ts
+  12:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/repositories/categories.repository.ts
+  76:61  warning  '_userId' is defined but never used  @typescript-eslint/no-unused-vars
+  88:36  warning  '_userId' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/jorge/Documents/kipos/kilo/src/repositories/debt.repository.ts
+  13:31  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:49  warning  '_userId' is defined but never used       @typescript-eslint/no-unused-vars
+  77:28  warning  '_userId' is defined but never used       @typescript-eslint/no-unused-vars
+  88:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jorge/Documents/kipos/kilo/src/repositories/project.repository.ts
+  12:31  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:53  warning  '_userId' is defined but never used       @typescript-eslint/no-unused-vars
+
+/Users/jorge/Documents/kipos/kilo/src/repositories/transactions.repository.ts
+  19:31  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:5   warning  '_userId' is defined but never used       @typescript-eslint/no-unused-vars
+  94:39  warning  '_userId' is defined but never used       @typescript-eslint/no-unused-vars
+
+/Users/jorge/Documents/kipos/kilo/src/types/transaction.ts
+  62:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+✖ 99 problems (74 errors, 25 warnings)
+

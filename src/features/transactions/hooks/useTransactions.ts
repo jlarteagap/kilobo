@@ -1,7 +1,7 @@
 // features/transactions/hooks/useTransactions.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAccounts, useUpdateAccount, accountKeys } from '@/features/accounts/hooks/useAccounts'
-import type { Transaction, CreateTransactionData } from '@/types/transaction'
+import type { Transaction } from '@/types/transaction'
 import { CreateTransactionInput } from '@/lib/validations/transaction.schema'
 import { toast } from 'sonner'
 

@@ -1,7 +1,7 @@
 // features/accounts/AccountForm.tsx
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -39,7 +39,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
   const isEdit = !!initialData
 
   const form = useForm<CreateAccountInput>({
-    resolver: zodResolver(createAccountSchema) as any,
+    resolver: zodResolver(createAccountSchema) as Resolver<CreateAccountInput>,
     defaultValues: {
       name:     initialData?.name     ?? '',
       type:     initialData?.type     ?? 'BANK',
@@ -48,14 +48,14 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
     },
   })
 
-  const selectedType = form.watch('type')
+
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
         {/* ── Tipo de cuenta — segmented visual ── */}
-        <FormField
+        <FormField<CreateAccountInput>
           control={form.control}
           name="type"
           render={({ field }) => (
@@ -94,7 +94,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
         />
 
         {/* ── Nombre ── */}
-        <FormField
+        <FormField<CreateAccountInput>
           control={form.control}
           name="name"
           render={({ field }) => (
@@ -116,7 +116,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
 
         {/* ── Saldo + Moneda ── */}
         <div className="grid grid-cols-2 gap-4">
-          <FormField
+          <FormField<CreateAccountInput>
             control={form.control}
             name="balance"
             render={({ field }) => (
@@ -139,7 +139,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
             )}
           />
 
-          <FormField
+          <FormField<CreateAccountInput>
             control={form.control}
             name="currency"
             render={({ field }) => (
@@ -147,7 +147,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
                 <FormLabel className="text-[13px] font-medium text-gray-600">
                   Moneda
                 </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value as string}>
                   <FormControl>
                     <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
                       <SelectValue placeholder="Moneda" />

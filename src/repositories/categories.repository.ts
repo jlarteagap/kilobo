@@ -73,7 +73,7 @@ export const categoriesRepository = {
     return { id: docRef.id, ...(created.data() as Omit<Category, 'id'>) }
   },
 
-  async update(categoryId: string, data: UpdateCategoryDTO, userId: string): Promise<Category> {
+  async update(categoryId: string, data: UpdateCategoryDTO): Promise<Category> {
     const docRef = categoriesCol.doc(categoryId)
 
     await docRef.update({
@@ -85,7 +85,7 @@ export const categoriesRepository = {
     return { id: docRef.id, ...(updated.data() as Omit<Category, 'id'>) }
   },
 
-  async delete(categoryId: string, userId: string): Promise<void> {
+  async delete(categoryId: string): Promise<void> {
     await categoriesCol.doc(categoryId).delete()
   },
 }

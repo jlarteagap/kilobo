@@ -28,7 +28,7 @@ export const accountsService = {
       throw new Error('Cuenta no encontrada.')
     }
 
-    return accountsRepository.update(accountId, data, userId)
+    return accountsRepository.update(accountId, data)
   },
 
 async deleteAccount(accountId: string, userId: string): Promise<void> {
@@ -40,7 +40,7 @@ async deleteAccount(accountId: string, userId: string): Promise<void> {
     throw new Error('No se puede eliminar una cuenta que tiene transacciones asociadas.')
   }
 
-  return accountsRepository.delete(accountId, userId)
+  return accountsRepository.delete(accountId)
 },
 }
 

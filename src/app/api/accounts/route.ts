@@ -4,7 +4,7 @@ import { accountsService } from '@/services/accounts.service'
 import { createAccountSchema } from '@/lib/validations/account.schema'
 import { getUserId } from '@/lib/auth.server'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const userId = await getUserId()
     if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })
@@ -12,12 +12,13 @@ export async function GET(req: NextRequest) {
 
     const accounts = await accountsService.getAccounts(userId)
     return Response.json(accounts)
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error interno del servidor';
     console.error('GET /api/accounts error:', error)
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return Response.json({ error: error.message }, { status: 401 })
+    if (message === 'No autorizado' || message === 'Token inválido o expirado') {
+      return Response.json({ error: message }, { status: 401 })
     }
-    return Response.json({ error: 'Error interno del servidor', details: error.message }, { status: 500 })
+    return Response.json({ error: 'Error interno del servidor', details: message }, { status: 500 })
   }
 }
 
@@ -35,12 +36,13 @@ export async function POST(req: NextRequest) {
 
     const account = await accountsService.createAccount(parsed.data, userId)
     return Response.json(account, { status: 201 })
-  } catch (error: any) {
-    if (error.message === 'No autorizado' || error.message === 'Token inválido o expirado') {
-      return Response.json({ error: error.message }, { status: 401 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error interno del servidor';
+    if (message === 'No autorizado' || message === 'Token inválido o expirado') {
+      return Response.json({ error: message }, { status: 401 })
     }
-    if (error.message.includes('límite')) {
-      return Response.json({ error: error.message }, { status: 422 })
+    if (message.includes('límite')) {
+      return Response.json({ error: message }, { status: 422 })
     }
     return Response.json({ error: 'Error interno del servidor' }, { status: 500 })
   }

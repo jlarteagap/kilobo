@@ -5,7 +5,17 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 
 const transactionsCollection = adminDb.collection('transactions')
 
-// ─── Helper: convierte cualquier formato de fecha a string ISO ────────────────
+interface SerializedTimestamp { _seconds: number; _nanoseconds: number }
+
+function isSerializedTimestamp(val: unknown): val is SerializedTimestamp {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    '_seconds' in val &&
+    typeof (val as SerializedTimestamp)._seconds === 'number'
+  )
+}
+
 function toISOString(value: unknown): string {
   if (!value) return new Date().toISOString()
 
@@ -15,8 +25,8 @@ function toISOString(value: unknown): string {
   }
 
   // Timestamp plano — cuando llega serializado desde Firestore Admin
-  if (typeof value === 'object' && value !== null && '_seconds' in value) {
-    return new Date((value as any)._seconds * 1000).toISOString()
+  if (isSerializedTimestamp(value)) {
+    return new Date(value._seconds * 1000).toISOString()
   }
 
   // Ya es string ISO — documentos viejos
@@ -77,8 +87,7 @@ export const transactionsRepository = {
 
   async update(
     transactionId: string,
-    data: Partial<CreateTransactionData>,
-    userId: string
+    data: Partial<CreateTransactionData>
   ): Promise<Transaction> {
     const docRef = transactionsCollection.doc(transactionId)
 
@@ -91,7 +100,7 @@ export const transactionsRepository = {
     return mapTransaction(docRef.id, updated.data()!)
   },
 
-  async delete(transactionId: string, userId: string): Promise<void> {
+  async delete(transactionId: string): Promise<void> {
     // Note: The service layer should pre-verify ownership using findById
     await transactionsCollection.doc(transactionId).delete()
   },

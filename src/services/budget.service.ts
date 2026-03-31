@@ -15,12 +15,11 @@ export const budgetService = {
 
   // ── Crear ─────────────────────────────────────────────────────────────────
   async createBudget(data: CreateBudgetData) {
-    // Validar que category_ids no esté vacío
-    if (!data.category_ids?.length) {
+    // En modo proyecto no se requieren categorías — son mutuamente excluyentes
+    if (!data.project_id && !data.category_ids?.length) {
       throw new Error('Selecciona al menos una categoría.')
     }
 
-    // Validar due_day para FIXED_EXPENSE
     if (data.type === 'FIXED_EXPENSE' && !data.due_day) {
       throw new Error('Los gastos fijos requieren un día de vencimiento.')
     }

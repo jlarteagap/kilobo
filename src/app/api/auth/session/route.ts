@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ success: true }, { status: 200 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Session creation error:', error)
     return NextResponse.json({ error: 'Error al crear la sesión' }, { status: 401 })
   }
@@ -33,7 +33,7 @@ export async function DELETE() {
     const cookieStore = await cookies()
     cookieStore.delete('session')
     return NextResponse.json({ success: true }, { status: 200 })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Error al eliminar la sesión' }, { status: 500 })
   }
 }

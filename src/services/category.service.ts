@@ -38,7 +38,7 @@ export const categoryService = {
       }
     }
 
-    return categoriesRepository.update(categoryId, data, userId)
+    return categoriesRepository.update(categoryId, data)
   },
 
   // ─── Delete ────────────────────────────────────────────────────────────────
@@ -52,6 +52,6 @@ export const categoryService = {
       throw new Error('No se puede eliminar una categoría que tiene transacciones asociadas.')
     }
 
-    return categoriesRepository.delete(categoryId, userId)
+    return categoriesRepository.delete(categoryId)
   },
 }

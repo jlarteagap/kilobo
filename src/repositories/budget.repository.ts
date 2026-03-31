@@ -5,11 +5,21 @@ import type { Budget, CreateBudgetData, UpdateBudgetData } from '@/types/budget'
 
 const budgetsCollection = adminDb.collection('budgets')
 
-// ─── Mapper ───────────────────────────────────────────────────────────────────
+interface SerializedTimestamp { _seconds: number; _nanoseconds: number }
+
+function isSerializedTimestamp(val: unknown): val is SerializedTimestamp {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    '_seconds' in val &&
+    typeof (val as SerializedTimestamp)._seconds === 'number'
+  )
+}
+
 function toISOString(value: unknown): string {
   if (value instanceof Timestamp) return value.toDate().toISOString()
-  if (typeof value === 'object' && value !== null && '_seconds' in value) {
-    return new Date((value as any)._seconds * 1000).toISOString()
+  if (isSerializedTimestamp(value)) {
+    return new Date(value._seconds * 1000).toISOString()
   }
   if (typeof value === 'string') return value
   return new Date().toISOString()

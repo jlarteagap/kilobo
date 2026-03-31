@@ -5,11 +5,23 @@ import type { Project, CreateProjectData, UpdateProjectData } from '@/types/proj
 
 const col = adminDb.collection('projects')
 
+interface SerializedTimestamp { _seconds: number; _nanoseconds: number }
+
+function isSerializedTimestamp(val: unknown): val is SerializedTimestamp {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    '_seconds' in val &&
+    typeof (val as SerializedTimestamp)._seconds === 'number'
+  )
+}
+
 function toISOString(value: unknown): string {
   if (!value) return new Date().toISOString()
   if (value instanceof Timestamp) return value.toDate().toISOString()
-  if (typeof value === 'object' && value !== null && '_seconds' in value)
-    return new Date((value as any)._seconds * 1000).toISOString()
+  if (isSerializedTimestamp(value)) {
+    return new Date(value._seconds * 1000).toISOString()
+  }
   if (typeof value === 'string') return value
   if (value instanceof Date) return value.toISOString()
   return new Date().toISOString()
@@ -50,7 +62,7 @@ export const projectRepository = {
     return mapProject(ref.id, created.data()!)
   },
 
-  async update(id: string, data: UpdateProjectData, userId: string): Promise<Project> {
+  async update(id: string, data: UpdateProjectData): Promise<Project> {
     const ref = col.doc(id)
     await ref.update({ ...data, updated_at: FieldValue.serverTimestamp() })
     const updated = await ref.get()

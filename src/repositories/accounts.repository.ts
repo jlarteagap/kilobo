@@ -1,7 +1,7 @@
 // src/repositories/accounts.repository.ts
 import { adminDb } from '@/lib/firebase.admin'
 import { Account, CreateAccountData, UpdateAccountData } from '@/types/account'
-import { FieldValue } from 'firebase-admin/firestore'
+import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 
 const accountsCollection = adminDb.collection('accounts')
 
@@ -17,8 +17,8 @@ export const accountsRepository = {
     }))
 
     return accounts.sort((a, b) => {
-      const timeA = (a.createdAt as any)?.toMillis?.() || new Date(a.createdAt).getTime() || 0;
-      const timeB = (b.createdAt as any)?.toMillis?.() || new Date(b.createdAt).getTime() || 0;
+      const timeA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : new Date(a.createdAt).getTime() || 0;
+      const timeB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : new Date(b.createdAt).getTime() || 0;
       return timeB - timeA;
     });
   },
@@ -47,7 +47,7 @@ export const accountsRepository = {
     return { id: docRef.id, ...(created.data() as Omit<Account, 'id'>) }
   },
 
-  async update(accountId: string, data: UpdateAccountData, userId: string): Promise<Account> {
+  async update(accountId: string, data: UpdateAccountData): Promise<Account> {
     const docRef = accountsCollection.doc(accountId)
 
     await docRef.update({
@@ -59,7 +59,7 @@ export const accountsRepository = {
     return { id: docRef.id, ...(updated.data() as Omit<Account, 'id'>) }
   },
 
-  async delete(accountId: string, userId: string): Promise<void> {
+  async delete(accountId: string): Promise<void> {
     await accountsCollection.doc(accountId).delete()
   },
 

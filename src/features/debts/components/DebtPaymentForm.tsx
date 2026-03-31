@@ -1,7 +1,7 @@
 // features/debts/components/DebtPaymentForm.tsx
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, useWatch, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -94,7 +94,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
   const pending = debt.amount - debt.paid_amount
 
   const form = useForm<CreateDebtPaymentInput>({
-    resolver: zodResolver(createDebtPaymentSchema) as any,
+    resolver: zodResolver(createDebtPaymentSchema) as unknown as Resolver<CreateDebtPaymentInput>,
     defaultValues: {
       amount:     pending,  // ← por defecto el total pendiente
       account_id: debt.account_id,  // ← por defecto la cuenta original
@@ -103,8 +103,8 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
     },
   })
 
-  const amount    = form.watch('amount') ?? 0
-  const accountId = form.watch('account_id')
+  const amount    = useWatch({ control: form.control, name: 'amount' }) ?? 0
+  const accountId = useWatch({ control: form.control, name: 'account_id' })
   const account   = accounts.find((a) => a.id === accountId)
 
   // Validación visual — pago supera pendiente
@@ -149,7 +149,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
         <PaymentProgress debt={debt} />
 
         {/* ── Monto del pago ── */}
-        <FormField
+        <FormField<CreateDebtPaymentInput>
           control={form.control}
           name="amount"
           render={({ field }) => (
@@ -167,6 +167,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
                     'rounded-xl border-0 focus-visible:ring-gray-900/10',
                     isOverAmount ? 'bg-rose-50' : 'bg-gray-50'
                   )}
+                  value={typeof field.value === 'number' || typeof field.value === 'string' ? field.value : ''}
                 />
               </FormControl>
               {isOverAmount && (
@@ -180,7 +181,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
         />
 
         {/* ── Fecha ── */}
-        <FormField
+        <FormField<CreateDebtPaymentInput>
           control={form.control}
           name="date"
           render={({ field }) => (
@@ -201,7 +202,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
         />
 
         {/* ── Cuenta ── */}
-        <FormField
+        <FormField<CreateDebtPaymentInput>
           control={form.control}
           name="account_id"
           render={({ field }) => (
@@ -209,7 +210,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
               <FormLabel className="text-[13px] font-medium text-gray-600">
                 {debt.type === 'GIVEN' ? 'Cuenta destino' : 'Cuenta origen'}
               </FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value as string}>
                 <FormControl>
                   <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
                     <SelectValue placeholder="Seleccionar cuenta" />
@@ -244,7 +245,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
         />
 
         {/* ── Notas ── */}
-        <FormField
+        <FormField<CreateDebtPaymentInput>
           control={form.control}
           name="notes"
           render={({ field }) => (

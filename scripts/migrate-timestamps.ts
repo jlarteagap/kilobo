@@ -36,8 +36,8 @@ function toISOString(value: unknown): string | null {
   }
 
   // Objeto plano { _seconds, _nanoseconds }
-  if (typeof value === 'object' && value !== null && '_seconds' in value) {
-    return new Date((value as any)._seconds * 1000).toISOString()
+  if (typeof value === 'object' && value !== null && '_seconds' in value && typeof (value as { _seconds: number })._seconds === 'number') {
+    return new Date((value as { _seconds: number })._seconds * 1000).toISOString()
   }
 
   // Ya es string — no necesita conversión

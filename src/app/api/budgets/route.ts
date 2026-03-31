@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const budgets = await budgetService.getBudgets()
     return NextResponse.json({ data: budgets })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
@@ -26,13 +26,13 @@ export async function POST(req: NextRequest) {
 
     const budget = await budgetService.createBudget(parsed.data)
     return NextResponse.json({ data: budget }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleError(error)
   }
 }
 
-function handleError(error: any): NextResponse {
-  const message = error?.message ?? 'Error interno del servidor'
+function handleError(error: unknown): NextResponse {
+  const message = error instanceof Error ? error.message : 'Error interno del servidor'
   const statusMap: Record<string, number> = {
     'Selecciona al menos una categoría.':              400,
     'Los gastos fijos requieren un día de vencimiento.': 400,

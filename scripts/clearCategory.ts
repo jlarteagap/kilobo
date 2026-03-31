@@ -27,24 +27,24 @@ const db = getFirestore(app)
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function migrate() {
-  console.log('\n🚀 Iniciando limpieza de categoría "trabajo"...\n')
+  console.log('\n🚀 Iniciando limpieza de categoría "Uber"...\n')
 
-  // ── Paso 1: Encontrar el ID real de "trabajo" en la colección category ────
-  console.log('🔍 Paso 1/2: Buscando categoría "trabajo"...')
+  // ── Paso 1: Encontrar el ID real de "Uber" en la colección category ────
+  console.log('🔍 Paso 1/2: Buscando categoría "Uber"...')
 
   const categorySnap = await db.collection('category')
-    .where('name', '==', 'trabajo')
+    .where('name', '==', 'Uber')
     .get()
 
   if (categorySnap.empty) {
     // Intentar case-insensitive buscando variantes comunes
-    console.warn('  ⚠️  No se encontró con name == "trabajo", probando "Trabajo"...')
+    console.warn('  ⚠️  No se encontró con name == "Uber", probando "Uber"...')
     const retrySnap = await db.collection('category')
-      .where('name', '==', 'Trabajo')
+      .where('name', '==', 'Uber')
       .get()
 
     if (retrySnap.empty) {
-      console.error('  ❌ No se encontró ninguna categoría llamada "trabajo" o "Trabajo".')
+      console.error('  ❌ No se encontró ninguna categoría llamada "Uber" o "Uber".')
       console.error('     Verificá el nombre exacto en Firestore y ajustá el script.')
       process.exit(1)
     }
@@ -53,7 +53,7 @@ async function migrate() {
   // Puede haber más de un doc con ese nombre — los procesamos todos
   const trabajoIds = new Set<string>()
   const finalSnap  = categorySnap.empty
-    ? await db.collection('category').where('name', '==', 'Trabajo').get()
+    ? await db.collection('category').where('name', '==', 'Uber').get()
     : categorySnap
 
   finalSnap.docs.forEach((doc) => {

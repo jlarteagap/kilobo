@@ -19,8 +19,9 @@ export async function PATCH(
 
     const project = await projectService.update(id, parsed.data, userId)
     return NextResponse.json({ data: project })
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message ?? 'Error interno' }, { status: 500 })
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Error interno'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
@@ -35,7 +36,8 @@ export async function DELETE(
     const { id } = await params
     await projectService.archive(id, userId)
     return NextResponse.json({ success: true })
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message ?? 'Error interno' }, { status: 500 })
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Error interno'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -1,8 +1,7 @@
 // features/debts/components/DebtCard.tsx
 "use client"
 
-import { useState } from "react"
-import { Pencil, Trash2, CreditCard, Ban } from "lucide-react"
+import { Trash2, CreditCard, Ban } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import type { Debt } from "@/types/debt"

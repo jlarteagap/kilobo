@@ -9,8 +9,9 @@ import { useTransactions } from "@/features/transactions/hooks/useTransactions"
 import { useCategories }   from "@/features/categories/hooks/useCategories"
 import { useAccounts }     from "@/features/accounts/hooks/useAccounts"
 import { useProjects }     from "@/features/projects/hooks/useProjects"
-import { useCashflowData } from "./hooks/useCashflowData"
 import { SankeyCustomNode } from "./components/SankeyCustomNode"
+import { useCashflowData } from "./hooks/useCashflowData"
+import type { SankeyData } from "./hooks/useCashflowData"
 import { PeriodSelector }  from "@/app/transactions/components/PeriodSelector"
 import { formatCurrency }  from "@/features/accounts/utils/account-display.utils"
 import { getPeriodLabel }  from "@/utils/date.utils"
@@ -51,7 +52,17 @@ function CashflowEmpty({ period }: { period: Period }) {
   )
 }
 
-function CustomTooltip({ active, payload }: any) {
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: Array<{
+    payload: {
+      name:  string
+      value: number
+    }
+  }>
+}
+
+function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
   const { name, value } = payload[0]?.payload ?? {}
   if (!name || !value) return null
@@ -71,7 +82,7 @@ function CustomTooltip({ active, payload }: any) {
 interface CashflowSankeyProps {
   width?: number
   height?: number
-  sankeyData: any
+  sankeyData: SankeyData
 }
 
 function CashflowSankey({ width = 0, height = 0, sankeyData }: CashflowSankeyProps) {
@@ -117,7 +128,7 @@ export function CashflowSection() {
   const { data: transactions = [], isLoading: loadingTx  } = useTransactions()
   const { data: categories   = [], isLoading: loadingCat } = useCategories()
   const { data: accounts     = [], isLoading: loadingAcc } = useAccounts()
-  const { data: projects = [], isLoading: loadingProj } = useProjects()
+  const { data: projects = [] } = useProjects()
 
 
   const isLoading = loadingTx || loadingCat || loadingAcc

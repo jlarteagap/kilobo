@@ -1,7 +1,6 @@
 "use client"
 
-import { Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"

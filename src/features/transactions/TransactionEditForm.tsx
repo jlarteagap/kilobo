@@ -1,6 +1,6 @@
 "use client"
 
-import { useForm, type SubmitHandler } from "react-hook-form"
+import { useForm, useWatch, type SubmitHandler, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2 } from "lucide-react"
@@ -68,7 +68,7 @@ export function TransactionEditForm({
   const { data: projects = [] } = useProjects()          // ← NUEVO
 
   const form = useForm<EditFormValues>({
-    resolver: zodResolver(editTransactionSchema),
+    resolver: zodResolver(editTransactionSchema) as unknown as Resolver<EditFormValues>,
     defaultValues: {
       category_id:  transaction.category_id ?? undefined,
       tag:          transaction.tag         ?? undefined,
@@ -80,8 +80,8 @@ export function TransactionEditForm({
     },
   })
 
-  const categoryId      = form.watch('category_id')
-  const projectId       = form.watch('project_id')        // ← NUEVO
+  const categoryId      = useWatch({ control: form.control, name: 'category_id' })
+  const projectId       = useWatch({ control: form.control, name: 'project_id' })        // ← NUEVO
   const availableTags   = getTagsForCategory(categoryId, categories)
   const availableSubtypes = getSubtypesForProject(projectId, projects)  // ← NUEVO
 const hasProject   = !!projectId && projectId !== 'none'
@@ -105,8 +105,8 @@ const showTags     = showCategory && availableTags.length > 0
   }
 
   return (
-    <Form {...(form as any)}>
-      <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-5">
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
         {/* ── Info de solo lectura ── */}
         <div className="flex items-center justify-between px-3 py-2.5 bg-gray-50 rounded-xl">
@@ -133,7 +133,7 @@ const showTags     = showCategory && availableTags.length > 0
 
         {/* ── Fecha ── */}
         <FormField<EditFormValues>
-          control={form.control as any}
+          control={form.control}
           name="date"
           render={({ field }) => (
             <FormItem>
@@ -153,7 +153,7 @@ const showTags     = showCategory && availableTags.length > 0
 
         {/* ── Proyecto ── */}       {/* ← NUEVO BLOQUE */}
         <FormField<EditFormValues>
-          control={form.control as any}
+          control={form.control}
           name="project_id"
           render={({ field }) => (
             <FormItem>
@@ -192,7 +192,7 @@ const showTags     = showCategory && availableTags.length > 0
         {/* ── Subtype — chips según proyecto ── */}    {/* ← NUEVO BLOQUE */}
         {projectId && availableSubtypes.length > 0 ? (
           <FormField<EditFormValues>
-            control={form.control as any}
+            control={form.control}
             name="subtype"
             render={({ field }) => (
               <FormItem>
@@ -240,7 +240,7 @@ const showTags     = showCategory && availableTags.length > 0
         {/* ── Categoría ── */}
         {showCategory ? (
           <FormField<EditFormValues>
-            control={form.control as any}
+            control={form.control}
             name="category_id"
             render={({ field }) => (
               <FormItem>
@@ -270,7 +270,7 @@ const showTags     = showCategory && availableTags.length > 0
         {/* ── Tags ── */}
         {showTags ? (
           <FormField<EditFormValues>
-            control={form.control as any}
+            control={form.control}
             name="tag"
             render={({ field }) => (
               <FormItem>
@@ -317,7 +317,7 @@ const showTags     = showCategory && availableTags.length > 0
 
         {/* ── Nota ── */}
         <FormField<EditFormValues>
-          control={form.control as any}
+          control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
@@ -329,7 +329,7 @@ const showTags     = showCategory && availableTags.length > 0
                 <Textarea
                   rows={2}
                   {...field}
-                  value={(field.value as string) ?? ''}
+                  value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ''}
                   className="rounded-xl border-0 bg-gray-50 resize-none focus-visible:ring-gray-900/10"
                 />
               </FormControl>
@@ -341,13 +341,13 @@ const showTags     = showCategory && availableTags.length > 0
         {/* ── Recurrente ── */}
         {(transaction.type === 'EXPENSE' || transaction.type === 'SAVING') ? (
           <FormField<EditFormValues>
-            control={form.control as any}
+            control={form.control}
             name="is_recurring"
             render={({ field }) => (
               <FormItem className="flex items-center gap-2 space-y-0 px-1">
                 <FormControl>
                   <Checkbox
-                    checked={field.value as boolean}
+                    checked={!!field.value}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>

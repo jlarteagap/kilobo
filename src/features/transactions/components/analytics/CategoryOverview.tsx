@@ -1,7 +1,7 @@
 // features/transactions/components/analytics/CategoryOverview.tsx
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import type { CategoryData } from "@/types/transaction"
@@ -21,6 +21,7 @@ interface SliceItem {
   color:      string
   icon?:      string
   isProject:  boolean
+  itemId?:    string
 }
 
 // ─── Tooltip ─────────────────────────────────────────────────────────────────
@@ -92,6 +93,9 @@ export function CategoryOverview({
   projects,
   projectId,
 }: CategoryOverviewProps) {
+  const [selectedItem, setSelectedItem] = useState<{ id: string, name: string, color: string, isProject: boolean } | null>(null)
+
+  const isProjectMode = !!projectId && projectId !== '__personal__'
 
   // ── Modo proyecto activo: subtipos del proyecto seleccionado ─────────────
   const projectSlices = useMemo((): SliceItem[] => {
@@ -135,8 +139,9 @@ export function CategoryOverview({
         result.push({
           name:      cat.name,
           value:     cat.value,
-          color:     CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+          color:     cat.color || CATEGORY_COLORS[i % CATEGORY_COLORS.length],
           isProject: false,
+          itemId:    cat.categoryId,
         })
       }
     })
@@ -154,6 +159,7 @@ export function CategoryOverview({
           color:     project.color,
           icon:      project.icon ?? undefined,
           isProject: true,
+          itemId:    project.id,
         })
       }
     })
@@ -162,9 +168,36 @@ export function CategoryOverview({
     return result.sort((a, b) => b.value - a.value)
   }, [transactions, projects, data, projectId])
 
+  // ── Modo drill-down activo: tags/subtipos del item seleccionado ─────────────
+  const detailSlices = useMemo((): SliceItem[] => {
+    if (!selectedItem || isProjectMode) return []
+
+    const expenses = transactions.filter(
+      (t) => t.type === 'EXPENSE' && (
+        selectedItem.isProject ? t.project_id === selectedItem.id : (t.category_id === selectedItem.id && !t.project_id)
+      )
+    )
+    if (expenses.length === 0) return []
+
+    const bySubItem = new Map<string, number>()
+    expenses.forEach((t) => {
+      const key = (selectedItem.isProject ? t.subtype : t.tag) ?? (selectedItem.isProject ? 'Sin subtipo' : 'Sin tag')
+      bySubItem.set(key, (bySubItem.get(key) ?? 0) + t.amount)
+    })
+
+    const color = selectedItem.color || '#6b7280'
+    const entries = Array.from(bySubItem.entries()).sort((a, b) => b[1] - a[1])
+    return entries.map(([name, value], i) => ({
+      name,
+      value,
+      color:     i === 0 ? color : color + Math.floor(255 * (1 - i * 0.15)).toString(16).padStart(2, '0'),
+      isProject: selectedItem.isProject,
+      itemId:    selectedItem.id,
+    }))
+  }, [transactions, selectedItem, isProjectMode])
+
   // ── Seleccionar modo ──────────────────────────────────────────────────────
-  const isProjectMode = !!projectId && projectId !== '__personal__'
-  const items         = isProjectMode ? projectSlices : mixedSlices
+  const items         = isProjectMode ? projectSlices : selectedItem ? detailSlices : mixedSlices
   const project       = isProjectMode ? projects.find((p) => p.id === projectId) : null
 
   // ── Empty state ───────────────────────────────────────────────────────────
@@ -216,6 +249,26 @@ export function CategoryOverview({
               {project.name}
             </span>
           </div>
+        ) : selectedItem ? (
+          <div className="flex items-center gap-1.5 mt-1">
+            <button 
+              onClick={() => setSelectedItem(null)}
+              className="text-[11px] font-medium text-gray-500 hover:text-gray-800 flex items-center transition-colors"
+            >
+              <span className="mr-1">←</span> Volver
+            </button>
+            <span className="text-[11px] text-gray-400">·</span>
+            <span
+              className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+              style={{
+                color:           selectedItem.color,
+                backgroundColor: selectedItem.color + '18',
+                border:          `0.5px solid ${selectedItem.color}30`,
+              }}
+            >
+              {selectedItem.name}
+            </span>
+          </div>
         ) : (
           <p className="text-[11px] text-gray-400 mt-0.5">
             {items.length} elemento{items.length !== 1 ? 's' : ''}
@@ -238,7 +291,16 @@ export function CategoryOverview({
               strokeWidth={0}
             >
               {items.map((item, index) => (
-                <Cell key={`cell-${index}`} fill={item.color} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={item.color} 
+                  cursor={!isProjectMode && !selectedItem && item.itemId ? "pointer" : "default"}
+                  onClick={() => {
+                    if (!isProjectMode && !selectedItem && item.itemId) {
+                      setSelectedItem({ id: item.itemId, name: item.name, color: item.color, isProject: item.isProject })
+                    }
+                  }}
+                />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />

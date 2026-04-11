@@ -58,23 +58,44 @@ interface CustomTooltipProps {
     payload: {
       name:  string
       value: number
+      payload?: {
+        breakdown?: Record<string, number>
+      }
+      breakdown?: Record<string, number>
     }
   }>
 }
 
 function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
-  const { name, value } = payload[0]?.payload ?? {}
-  if (!name || !value) return null
+  const item = payload[0]?.payload
+  if (!item?.name || !item?.value) return null
+
+  // Recharts sometimes nests the custom node properties in payload.payload
+  const breakdownData = item.payload?.breakdown || item.breakdown
+
   return (
     <div
-      className="bg-white px-3 py-2 rounded-xl text-sm"
+      className="bg-white px-3 py-2 rounded-xl text-sm min-w-[140px]"
       style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)', border: '1px solid #f3f4f6' }}
     >
-      <p className="text-[12px] font-medium text-gray-600">{name}</p>
-      <p className="text-[13px] font-semibold text-gray-900">
-        {formatCurrency(value, 'BOB')}
+      <p className="text-[12px] font-medium text-gray-600">{item.name}</p>
+      <p className="text-[13px] font-semibold text-gray-900 mb-1">
+        {formatCurrency(item.value, 'BOB')}
       </p>
+
+      {breakdownData && Object.keys(breakdownData).length > 0 && (
+        <div className="mt-2 pt-2 border-t border-gray-100 flex flex-col gap-1">
+          {Object.entries(breakdownData)
+            .sort((a, b) => b[1] - a[1])
+            .map(([key, val]) => (
+            <div key={key} className="flex justify-between items-center gap-4 text-[11px]">
+              <span className="text-gray-500 truncate max-w-[120px]">{key}</span>
+              <span className="text-gray-700 font-medium">{formatCurrency(val, 'BOB')}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

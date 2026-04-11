@@ -12,6 +12,7 @@ type SankeyNode = {
   name:   string
   type?:  "income" | "expense" | "account" | "balance" | "project" | "subtype"
   color?: string
+  breakdown?: Record<string, number>
 }
 
 type SankeyLink = {
@@ -108,11 +109,24 @@ function buildSankeyData(
         // Proyecto como destino de gasto — nodo derecho
         const label  = `${project.icon ?? ''} ${project.name}`.trim()
         const dstIdx = getNodeIndex(`expense-project::${project.id}`, label, 'expense', project.color)
+
+        const subtype = t.subtype || 'General'
+        const node = nodes[dstIdx]
+        if (!node.breakdown) node.breakdown = {}
+        node.breakdown[subtype] = (node.breakdown[subtype] || 0) + amountBOB
+
         upsertLink(accIdx, dstIdx, amountBOB)
       } else {
         const cat = categories.find((c) => c.id === t.category_id)
         if (!cat) return
+        
         const dstIdx = getNodeIndex(`expense-cat::${cat.id}`, cat.name, 'expense')
+
+        const tag = t.tag || 'General'
+        const node = nodes[dstIdx]
+        if (!node.breakdown) node.breakdown = {}
+        node.breakdown[tag] = (node.breakdown[tag] || 0) + amountBOB
+
         upsertLink(accIdx, dstIdx, amountBOB)
       }
     }
@@ -142,7 +156,7 @@ interface UseCashflowDataProps {
   transactions: Transaction[]
   categories:   Category[]
   accounts:     Account[]
-  projects:     Project[]     // ← NUEVO
+  projects:     Project[]
   isLoading:    boolean
   period:       Period
 }
@@ -151,7 +165,7 @@ export function useCashflowData({
   transactions,
   categories,
   accounts,
-  projects,                   // ← NUEVO
+  projects,
   isLoading,
   period,
 }: UseCashflowDataProps) {

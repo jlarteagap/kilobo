@@ -311,7 +311,7 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
               className="h-16 px-10 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all font-medium text-lg shadow-lg shadow-emerald-600/20 active:scale-[0.98]" 
               disabled={isPending || activeCycle.trips.length === 0}
             >
-              Cerrar Ciclo <ArrowRight className="size-5 ml-2" />
+              Registrar Carga y Cobrar <ArrowRight className="size-5 ml-2" />
             </Button>
           </div>
         </section>
@@ -365,24 +365,31 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
                     </Button>
                     
                     <div className="space-y-4">
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center border-b border-neutral-50 dark:border-neutral-800 pb-3">
                         <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">{startDate} — {endDate}</span>
+                        <span className="text-[10px] uppercase font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{cycle.gasAmount} Bs</span>
                       </div>
                       
-                      <div className="space-y-1">
-                        <p className="text-xs text-neutral-500">A cargo de <span className="text-neutral-900 dark:text-neutral-100 font-medium">{payer}</span></p>
+                      <div className="space-y-3">
+                        {cycle.debtSummary.map(user => (
+                          <div key={user.name} className="flex justify-between items-center text-xs">
+                            <span className={cn("font-medium", user.name === payer ? "text-neutral-400" : "text-neutral-900 dark:text-neutral-100")}>
+                              {user.name} {user.name === payer && "(Pagó)"}
+                            </span>
+                            <span className="tabular-nums text-neutral-500">{user.totalKm} km ({user.percentage.toFixed(0)}%)</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="pt-4 border-t border-emerald-100/50 dark:border-emerald-900/50 flex flex-col gap-1">
+                        <p className="text-[10px] uppercase tracking-tighter text-neutral-400 font-bold">Saldo a transferir</p>
                         <div className="flex items-baseline gap-1">
                           <span className="text-3xl font-light tracking-tight tabular-nums text-emerald-600">{debt?.cost.toFixed(2)}</span>
                           <span className="text-sm font-medium text-emerald-600/60 uppercase">Bs</span>
                         </div>
-                        <p className="text-[10px] font-bold text-neutral-900 dark:text-white uppercase tracking-tighter italic">
-                          Debe pagar: {debt?.name}
+                        <p className="text-[10px] font-bold text-neutral-950 dark:text-white uppercase tracking-tight italic">
+                          {debt?.name} → {payer}
                         </p>
-                      </div>
-
-                      <div className="pt-3 border-t border-neutral-50 dark:border-neutral-800 flex justify-between items-center text-[10px] text-neutral-400 tabular-nums">
-                        <span>Total Ciclo: {cycle.gasAmount} Bs</span>
-                        <span>{debt?.totalKm} km ({debt?.percentage.toFixed(0)}%)</span>
                       </div>
                     </div>
                   </div>

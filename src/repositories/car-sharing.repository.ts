@@ -60,10 +60,11 @@ export const carSharingRepository = {
   async getClosedCycles(): Promise<CarCycle[]> {
     const snapshot = await CYCLES_COLLECTION
       .where('status', '==', 'closed')
-      .orderBy('endDate', 'desc')
       .get()
 
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CarCycle))
+    return snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() } as CarCycle))
+      .sort((a, b) => (b.endDate || 0) - (a.endDate || 0))
   },
 
   async addTrip(data: { userName: string, initialKm: number, finalKm: number }): Promise<void> {

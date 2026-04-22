@@ -1,5 +1,5 @@
 import { CarSharingDashboard } from "./components/CarSharingDashboard"
-import { getTripsAction, getConfigAction } from "./actions"
+import { getActiveCycleAction, getClosedCyclesAction } from "./actions"
 
 export const metadata = {
   title: "Gasolina | Kilo",
@@ -9,15 +9,15 @@ export const metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function CarSharingPage() {
-  const trips = await getTripsAction()
-  const config = await getConfigAction()
+  const activeCycle = await getActiveCycleAction()
+  const closedCycles = await getClosedCyclesAction()
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 font-sans selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden relative">
       {/* Decorative background element */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[500px] bg-emerald-50/50 dark:bg-emerald-950/20 blur-[120px] rounded-full -z-10 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-emerald-50/50 dark:bg-emerald-950/20 blur-[120px] rounded-full -z-10 pointer-events-none" />
       
-      <div className="max-w-4xl mx-auto px-6 py-12 md:py-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <header className="mb-16 text-center">
           <div className="inline-flex items-center justify-center size-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 mb-6 shadow-sm ring-1 ring-emerald-100 dark:ring-emerald-800/50">
             <span className="text-2xl">🚗</span>
@@ -30,7 +30,10 @@ export default async function CarSharingPage() {
           </p>
         </header>
 
-        <CarSharingDashboard initialTrips={trips} initialGasAmount={config.gasAmount} />
+        <CarSharingDashboard 
+          activeCycle={activeCycle} 
+          closedCycles={closedCycles} 
+        />
       </div>
     </div>
   )

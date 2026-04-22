@@ -3,97 +3,162 @@ import { adminDb } from '@/lib/firebase.admin'
 import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 
 export interface CarTrip {
-  id: string
   userName: string
   initialKm: number
   finalKm: number
   totalKm: number
-  createdAt: string
+  date: string
+  createdAt: number
 }
 
-export interface CarSharingConfig {
+export interface DebtResult {
+  name: string
+  totalKm: number
+  percentage: number
+  cost: number
+}
+
+export interface CarCycle {
+  id: string
+  status: 'active' | 'closed'
+  startDate: number
+  endDate: number | null
   gasAmount: number
+  paidBy: string | null
+  trips: CarTrip[]
+  debtSummary: DebtResult[]
 }
 
-// We use a single document for simplicity since it doesn't require auth
-const CACHE_DOC = 'car_sharing/current_period'
-const TRIPS_COLLECTION = adminDb.collection('car_sharing_trips')
+const CYCLES_COLLECTION = adminDb.collection('car_sharing_cycles')
 
 export const carSharingRepository = {
-  async getTrips(): Promise<CarTrip[]> {
-    const snapshot = await TRIPS_COLLECTION.orderBy('createdAt', 'asc').get()
+  async getActiveCycle(): Promise<CarCycle> {
+    const snapshot = await CYCLES_COLLECTION
+      .where('status', '==', 'active')
+      .limit(1)
+      .get()
 
-    return snapshot.docs.map((doc) => {
-      const data = doc.data()
-      return {
-        id: doc.id,
-        userName: data.userName,
-        initialKm: data.initialKm,
-        finalKm: data.finalKm,
-        totalKm: data.totalKm,
-        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt
+    if (snapshot.empty) {
+      // Create a new active cycle
+      const newCycle = {
+        status: 'active',
+        startDate: Date.now(),
+        endDate: null,
+        gasAmount: 0,
+        paidBy: null,
+        trips: [],
+        debtSummary: []
       }
-    })
+      const docRef = await CYCLES_COLLECTION.add(newCycle)
+      return { id: docRef.id, ...newCycle } as CarCycle
+    }
+
+    const doc = snapshot.docs[0]
+    return { id: doc.id, ...doc.data() } as CarCycle
   },
 
-  async addTrip(data: { userName: string, initialKm: number, finalKm: number }): Promise<CarTrip> {
+  async getClosedCycles(): Promise<CarCycle[]> {
+    const snapshot = await CYCLES_COLLECTION
+      .where('status', '==', 'closed')
+      .orderBy('endDate', 'desc')
+      .get()
+
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CarCycle))
+  },
+
+  async addTrip(data: { userName: string, initialKm: number, finalKm: number }): Promise<void> {
+    const activeCycle = await this.getActiveCycle()
+    
     let totalKm = 0
     if (data.finalKm >= data.initialKm) {
       totalKm = data.finalKm - data.initialKm
     } else {
-      // Odometer reset handling (e.g. 920 to 024)
       totalKm = 1000 + data.finalKm - data.initialKm
     }
 
-    const payload = {
+    const now = new Date()
+    const trip: CarTrip = {
       userName: data.userName,
       initialKm: data.initialKm,
       finalKm: data.finalKm,
       totalKm,
-      createdAt: FieldValue.serverTimestamp(),
+      date: `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`,
+      createdAt: Date.now()
     }
 
-    const docRef = await TRIPS_COLLECTION.add(payload)
-    const created = await docRef.get()
-    const createdData = created.data()
-
-    return {
-      id: docRef.id,
-      userName: createdData!.userName,
-      initialKm: createdData!.initialKm,
-      finalKm: createdData!.finalKm,
-      totalKm: createdData!.totalKm,
-      createdAt: new Date().toISOString() // Fallback
-    }
-  },
-
-  async deleteTrip(tripId: string): Promise<void> {
-    await TRIPS_COLLECTION.doc(tripId).delete()
-  },
-
-  async getConfig(): Promise<CarSharingConfig> {
-    const doc = await adminDb.doc(CACHE_DOC).get()
-    if (!doc.exists) {
-      return { gasAmount: 0 }
-    }
-    return doc.data() as CarSharingConfig
-  },
-
-  async updateGasAmount(gasAmount: number): Promise<void> {
-    await adminDb.doc(CACHE_DOC).set({ gasAmount }, { merge: true })
-  },
-
-  async resetPeriod(): Promise<void> {
-    // Delete all trips
-    const snapshot = await TRIPS_COLLECTION.get()
-    const batch = adminDb.batch()
-    snapshot.docs.forEach((doc) => {
-      batch.delete(doc.ref)
+    await CYCLES_COLLECTION.doc(activeCycle.id).update({
+      trips: FieldValue.arrayUnion(trip)
     })
-    
-    // Reset Gas Amount to 0
-    batch.set(adminDb.doc(CACHE_DOC), { gasAmount: 0 }, { merge: true })
+  },
 
+  async deleteTrip(createdAt: number): Promise<void> {
+    const activeCycle = await this.getActiveCycle()
+    const updatedTrips = activeCycle.trips.filter(t => t.createdAt !== createdAt)
+    
+    await CYCLES_COLLECTION.doc(activeCycle.id).update({
+      trips: updatedTrips
+    })
+  },
+
+  async closeActiveCycle(gasAmount: number, paidBy: string): Promise<void> {
+    const activeCycle = await this.getActiveCycle()
+    
+    // Calculate Summary
+    const totalKmOverall = activeCycle.trips.reduce((acc, trip) => acc + trip.totalKm, 0)
+    const map = new Map<string, number>()
+    activeCycle.trips.forEach(trip => {
+      map.set(trip.userName, (map.get(trip.userName) || 0) + trip.totalKm)
+    })
+
+    const debtSummary: DebtResult[] = Array.from(map.entries()).map(([name, totalKm]) => {
+      const percentage = totalKmOverall > 0 ? (totalKm / totalKmOverall) : 0
+      const cost = percentage * gasAmount
+      return {
+        name,
+        totalKm,
+        percentage: percentage * 100,
+        cost
+      }
+    })
+
+    // 1. Close current cycle
+    const lastKm = activeCycle.trips.length > 0 
+      ? activeCycle.trips[activeCycle.trips.length - 1].finalKm 
+      : 0
+
+    await CYCLES_COLLECTION.doc(activeCycle.id).update({
+      status: 'closed',
+      endDate: Date.now(),
+      gasAmount,
+      paidBy,
+      debtSummary
+    })
+
+    // 2. Start new active cycle
+    // Note: The next trip will automatically use the lastKm logic from UI if handled correctly,
+    // or we can store lastKm in a config if needed. But for now, we just create the next cycle.
+    await CYCLES_COLLECTION.add({
+      status: 'active',
+      startDate: Date.now(),
+      endDate: null,
+      gasAmount: 0,
+      paidBy: null,
+      trips: [],
+      debtSummary: []
+    })
+  },
+
+  async deleteCycle(id: string): Promise<void> {
+    await CYCLES_COLLECTION.doc(id).delete()
+  },
+
+  async resetAll(): Promise<void> {
+    const snapshot = await CYCLES_COLLECTION.get()
+    const batch = adminDb.batch()
+    snapshot.docs.forEach(doc => batch.delete(doc.ref))
     await batch.commit()
+    
+    // Ensure one active cycle exists
+    await this.getActiveCycle()
   }
 }

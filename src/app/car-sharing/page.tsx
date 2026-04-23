@@ -17,16 +17,21 @@ export default async function CarSharingPage() {
       {/* Decorative background element */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-emerald-50/50 dark:bg-emerald-950/20 blur-[120px] rounded-full -z-10 pointer-events-none" />
       
-      <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-        <header className="mb-16 text-center">
-          <div className="inline-flex items-center justify-center size-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 mb-6 shadow-sm ring-1 ring-emerald-100 dark:ring-emerald-800/50">
-            <span className="text-2xl">🚗</span>
+      <div className="max-w-6xl mx-auto px-6 py-12 md:py-24 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <header className="mb-20 text-center space-y-6">
+          <div className="inline-flex flex-col items-center">
+            <div className="size-16 rounded-[2rem] bg-neutral-950 dark:bg-white text-white dark:text-black flex items-center justify-center shadow-2xl shadow-emerald-500/20 mb-8 rotate-3 hover:rotate-0 transition-transform duration-500">
+              <span className="text-3xl">🚗</span>
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-5xl md:text-6xl font-light tracking-tighter text-neutral-950 dark:text-white">
+                Kilo <span className="text-emerald-500 font-medium italic">Sharing</span>
+              </h1>
+              <div className="h-1 w-12 bg-emerald-500 mx-auto rounded-full" />
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-light tracking-tight text-neutral-950 dark:text-white mb-4">
-            División de <span className="font-medium text-emerald-600 dark:text-emerald-400">Gasolina</span>
-          </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 text-lg max-w-md mx-auto leading-relaxed">
-            Un registro honesto y preciso para el uso compartido del vehículo.
+          <p className="text-neutral-500 dark:text-neutral-400 text-lg max-w-lg mx-auto leading-relaxed font-light">
+            Gestión inteligente y transparente de gastos compartidos para tu vehículo.
           </p>
         </header>
 

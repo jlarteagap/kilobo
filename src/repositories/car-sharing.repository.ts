@@ -83,7 +83,7 @@ export const carSharingRepository = {
       initialKm: data.initialKm,
       finalKm: data.finalKm,
       totalKm,
-      date: `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`,
+      date: `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}`,
       createdAt: Date.now()
     }
 

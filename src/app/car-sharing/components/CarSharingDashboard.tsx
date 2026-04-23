@@ -125,8 +125,14 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
     })
   }
 
-  const totalKmActive = useMemo(() => {
-    return activeCycle.trips.reduce((acc, trip) => acc + trip.totalKm, 0)
+  const { totalKmActive, activeBreakdown } = useMemo(() => {
+    const total = activeCycle.trips.reduce((acc, trip) => acc + trip.totalKm, 0)
+    const map = new Map<string, number>()
+    activeCycle.trips.forEach(trip => {
+      map.set(trip.userName, (map.get(trip.userName) || 0) + trip.totalKm)
+    })
+    const breakdown = Array.from(map.entries()).map(([name, km]) => ({ name, km }))
+    return { totalKmActive: total, activeBreakdown: breakdown }
   }, [activeCycle.trips])
 
   return (
@@ -204,11 +210,27 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
               </Button>
             </form>
 
-            <div className="p-8 rounded-3xl bg-neutral-50/50 dark:bg-neutral-900/20 border border-neutral-100 dark:border-neutral-900/50 h-full flex flex-col justify-center">
-              <p className="text-[10px] uppercase tracking-widest text-neutral-400 font-medium mb-2 text-center">KM Acumulados</p>
-              <p className="text-5xl font-light text-center tabular-nums text-neutral-900 dark:text-white">
-                {totalKmActive} <span className="text-xl text-neutral-400">km</span>
-              </p>
+            <div className="p-8 rounded-3xl bg-neutral-50/50 dark:bg-neutral-900/20 border border-neutral-100 dark:border-neutral-900/50 h-full flex flex-col justify-center space-y-6">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-neutral-400 font-medium mb-2 text-center">KM Acumulados Ciclo</p>
+                <p className="text-5xl font-light text-center tabular-nums text-neutral-900 dark:text-white">
+                  {totalKmActive} <span className="text-xl text-neutral-400">km</span>
+                </p>
+              </div>
+              
+              {activeBreakdown.length > 0 && (
+                <div className="pt-6 border-t border-neutral-100 dark:border-neutral-800 space-y-3">
+                  <p className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold text-center">Desglose por persona</p>
+                  <div className="flex justify-center gap-6">
+                    {activeBreakdown.map(user => (
+                      <div key={user.name} className="text-center">
+                        <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{user.name}</p>
+                        <p className="text-lg font-light tabular-nums text-emerald-600">{user.km} <span className="text-[10px]">km</span></p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>

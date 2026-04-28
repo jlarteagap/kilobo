@@ -83,7 +83,7 @@ export const carSharingRepository = {
       initialKm: data.initialKm,
       finalKm: data.finalKm,
       totalKm,
-      date: `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}`,
+      date: `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
       createdAt: Date.now()
     }
 
@@ -96,6 +96,42 @@ export const carSharingRepository = {
     const activeCycle = await this.getActiveCycle()
     const updatedTrips = activeCycle.trips.filter(t => t.createdAt !== createdAt)
     
+    await CYCLES_COLLECTION.doc(activeCycle.id).update({
+      trips: updatedTrips
+    })
+  },
+
+  async updateTrip(createdAt: number, data: { userName: string, finalKm: number }): Promise<void> {
+    const activeCycle = await this.getActiveCycle()
+    const tripIndex = activeCycle.trips.findIndex(t => t.createdAt === createdAt)
+    if (tripIndex === -1) return
+
+    const updatedTrips = [...activeCycle.trips]
+    
+    // Update the targeted trip
+    const trip = updatedTrips[tripIndex]
+    let totalKm = data.finalKm >= trip.initialKm 
+      ? data.finalKm - trip.initialKm 
+      : 1000 + data.finalKm - trip.initialKm
+
+    updatedTrips[tripIndex] = {
+      ...trip,
+      userName: data.userName,
+      finalKm: data.finalKm,
+      totalKm
+    }
+
+    // Recalculate subsequent trips to maintain sequence
+    for (let i = tripIndex + 1; i < updatedTrips.length; i++) {
+      const prev = updatedTrips[i - 1]
+      const current = updatedTrips[i]
+      
+      current.initialKm = prev.finalKm
+      current.totalKm = current.finalKm >= current.initialKm 
+        ? current.finalKm - current.initialKm 
+        : 1000 + current.finalKm - current.initialKm
+    }
+
     await CYCLES_COLLECTION.doc(activeCycle.id).update({
       trips: updatedTrips
     })

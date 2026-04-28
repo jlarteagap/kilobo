@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
     request.nextUrl.pathname === '/'
 
   // features públicas que no requieren auth y tampoco te sacan si estas logueado
-  const isPublicFeature = request.nextUrl.pathname.startsWith('/car-sharing')
+  const isPublicFeature = request.nextUrl.pathname.startsWith('/gasolina') || request.nextUrl.pathname.startsWith('/car-sharing')
 
   // Si no hay sesión y el usuario intenta acceder a una ruta privada -> a /login
   if (!session && !isAuthRoute && !isPublicFeature) {

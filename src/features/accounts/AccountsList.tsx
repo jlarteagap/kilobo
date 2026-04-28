@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Pencil, Trash2 } from "lucide-react"
+import { Plus, Pencil, Trash2, Landmark } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -33,20 +33,18 @@ import type { Account, CreateAccountData } from "@/types/account"
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function AccountsGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {Array.from({ length: 3 }).map((_, i) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-2xl p-5"
-          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+          className="bg-white dark:bg-neutral-900/50 rounded-xl p-4 flex items-center gap-4 border border-neutral-200/60 dark:border-neutral-800/60"
         >
-          <div className="flex items-start justify-between mb-4">
-            <Skeleton className="w-10 h-10 rounded-xl" />
-            <Skeleton className="w-16 h-5 rounded-full" />
+          <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-24 rounded-full" />
+            <Skeleton className="h-3 w-16 rounded-full" />
           </div>
-          <Skeleton className="h-4 w-28 rounded-full mb-2" />
-          <Skeleton className="h-3 w-16 rounded-full mb-4" />
-          <Skeleton className="h-7 w-32 rounded-full" />
+          <Skeleton className="h-5 w-20 rounded-full" />
         </div>
       ))}
     </div>
@@ -67,54 +65,52 @@ function AccountCard({
 
   return (
     <div
-      className="group relative bg-white dark:bg-neutral-900 rounded-[2rem] p-6 flex flex-col gap-6 border border-neutral-200/50 dark:border-neutral-800/50 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:-translate-y-1"
+      className="group relative bg-white dark:bg-neutral-900/50 rounded-xl p-4 flex items-center gap-4 border border-neutral-200/60 dark:border-neutral-800/60 transition-all duration-200 hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-sm"
     >
-      {/* ── Header ── */}
-      <div className="flex items-start justify-between">
-        {/* Icono con profundidad sutil */}
-        <div className={cn(
-          'w-12 h-12 rounded-2xl flex items-center justify-center ring-1 ring-inset ring-black/5 dark:ring-white/5 shadow-sm',
-          bg.includes('emerald') ? 'bg-emerald-50 dark:bg-emerald-950/30' : 
-          bg.includes('rose') ? 'bg-rose-50 dark:bg-rose-950/30' : 'bg-neutral-100 dark:bg-neutral-800'
-        )}>
-          <Icon className={cn('w-6 h-6', color)} />
-        </div>
-
-        {/* Acciones flotantes */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
-          <button
-            onClick={() => onEdit(account)}
-            className="p-2 rounded-xl text-neutral-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onDelete(account.id)}
-            className="p-2 rounded-xl text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Icono más compacto */}
+      <div className={cn(
+        'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors',
+        bg.includes('emerald') ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30' : 
+        bg.includes('rose') ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/30' : 
+        bg.includes('blue') ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/30' :
+        bg.includes('purple') ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/30' :
+        bg.includes('orange') ? 'bg-orange-50 text-orange-600 dark:bg-orange-950/30' :
+        'bg-neutral-100 text-neutral-600 dark:bg-neutral-800'
+      )}>
+        <Icon className="w-5 h-5" />
       </div>
 
-      {/* ── Content ── */}
-      <div className="space-y-1">
-        <h3 className="text-[15px] font-bold text-neutral-900 dark:text-neutral-100 tracking-tight leading-snug">
+      {/* Info Principal */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-[14px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
           {account.name}
         </h3>
-        <p className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+        <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
           {label}
         </p>
       </div>
 
-      {/* ── Balance ── */}
-      <div className="pt-5 mt-auto border-t border-neutral-100 dark:border-neutral-800/50">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Balance Actual</span>
-        <div className="flex items-baseline gap-1 mt-1">
-          <p className="text-2xl font-extrabold tracking-tighter text-neutral-900 dark:text-neutral-100">
-            {formatCurrency(account.balance, account.currency)}
-          </p>
-        </div>
+      {/* Balance - alineación derecha */}
+      <div className="text-right">
+        <p className="text-[15px] font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+          {formatCurrency(account.balance, account.currency)}
+        </p>
+      </div>
+
+      {/* Acciones flotantes discretas */}
+      <div className="flex items-center gap-0.5 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={() => onEdit(account)}
+          className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={() => onDelete(account.id)}
+          className="p-1.5 rounded-md text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
       </div>
     </div>
   )
@@ -178,61 +174,62 @@ export function AccountsList() {
   const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0)
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Header ── */}
-      <div className="flex items-end justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100 tracking-tighter">
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
             Cuentas
           </h1>
-          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-            Control total sobre tu liquidez y deudas.
+          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+            Resumen de tu liquidez y activos.
           </p>
         </div>
 
         <Button
           onClick={() => setDialog({ mode: 'create' })}
-          className="h-12 px-6 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-2xl font-bold transition-all duration-200 active:scale-95 shadow-xl shadow-black/10 dark:shadow-white/5 hover:opacity-90"
+          className="h-9 px-4 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg text-xs font-bold transition-all duration-200 active:scale-95 shadow-sm hover:opacity-90"
         >
-          <Plus className="w-5 h-5 mr-2" />
+          <Plus className="w-4 h-4 mr-1.5" />
           Nueva Cuenta
         </Button>
       </div>
 
-      {/* ── Overview Cards ── */}
+      {/* ── Overview Card — Más sutil y elegante ── */}
       {!isLoading && accounts.length > 0 && (
-        <div className="grid grid-cols-1 gap-4">
-          <div className="relative overflow-hidden bg-emerald-600 rounded-[2rem] p-8 text-white shadow-2xl shadow-emerald-500/20">
-            <div className="relative z-10">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-80">Patrimonio Total</span>
-              <p className="text-4xl font-black tracking-tighter mt-2">
+        <div className="relative overflow-hidden bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200/60 dark:border-neutral-800/60 rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">Patrimonio Total</span>
+              <p className="text-2xl font-bold tracking-tight mt-1 text-neutral-900 dark:text-neutral-100">
                 {formatCurrency(totalBalance, 'BOB')}
               </p>
             </div>
-            {/* Decoración sutil */}
-            <div className="absolute -right-8 -bottom-8 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
+            <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+              <Landmark className="w-6 h-6 text-emerald-600 dark:text-emerald-500" />
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── Grid ── */}
+      {/* ── Grid — 2 columnas para tarjetas horizontales ── */}
       {isLoading ? (
         <AccountsGridSkeleton />
       ) : isError ? (
-        <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-500 text-sm p-6 rounded-[2rem] border border-rose-100 dark:border-rose-900/50 font-medium">
-          Error al cargar tus cuentas. Por favor, intenta de nuevo.
+        <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-500 text-[13px] p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 font-medium">
+          Error al cargar tus cuentas.
         </div>
       ) : accounts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-20 h-20 rounded-[2.5rem] bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex items-center justify-center mb-6">
-            <Plus className="w-8 h-8 text-neutral-300" />
+        <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/20">
+          <div className="w-12 h-12 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex items-center justify-center mb-4">
+            <Plus className="w-5 h-5 text-neutral-300" />
           </div>
-          <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">Comienza tu legado</h3>
-          <p className="text-sm text-neutral-500 mt-2 max-w-[280px]">Registra tu primera cuenta para empezar a rastrear tu patrimonio real.</p>
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">Sin cuentas aún</h3>
+          <p className="text-[12px] text-neutral-500 mt-1 max-w-[240px]">Registra tu primera cuenta para empezar a rastrear tu patrimonio.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-12">
           {accounts.map((account) => (
             <AccountCard
               key={account.id}

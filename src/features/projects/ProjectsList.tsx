@@ -32,22 +32,18 @@ import {
   useDeleteProject,
 } from "./hooks/useProjects"
 import type { Project, CreateProjectData } from "@/types/project"
+import { cn } from "@/lib/utils"
 
-// ─── Skeleton — mismas dimensiones que AccountCard ───────────────────────────
+// ─── Skeleton ────────────────────────────────────────────────────────────────
 function ProjectsGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="bg-white rounded-[2rem] p-6 border border-neutral-200/50">
-          <div className="flex items-start justify-between mb-4">
-            <Skeleton className="w-12 h-12 rounded-2xl" />
-            <Skeleton className="w-16 h-5 rounded-full" />
-          </div>
-          <Skeleton className="h-4 w-28 rounded-full mb-2" />
-          <Skeleton className="h-3 w-20 rounded-full mb-6" />
-          <div className="flex gap-1.5 pt-4 border-t border-neutral-100">
-            <Skeleton className="h-6 w-16 rounded-full" />
-            <Skeleton className="h-6 w-16 rounded-full" />
+        <div key={i} className="bg-white dark:bg-neutral-900/50 rounded-xl p-4 flex items-center gap-4 border border-neutral-200/60 dark:border-neutral-800/60">
+          <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-24 rounded-full" />
+            <Skeleton className="h-3 w-16 rounded-full" />
           </div>
         </div>
       ))}
@@ -55,81 +51,55 @@ function ProjectsGridSkeleton() {
   )
 }
 
-// ─── Project Card — mismo lenguaje visual que AccountCard ────────────────────
+// ─── Project Card ─────────────────────────────────────────────────────────────
 function ProjectCard({
   project,
   onEdit,
   onDelete,
+  compact = false,
 }: {
   project:  Project
   onEdit:   (project: Project) => void
   onDelete: (id: string) => void
+  compact?: boolean
 }) {
   return (
-    <div className="group relative bg-white dark:bg-neutral-900 rounded-[2rem] p-6 flex flex-col gap-5 border border-neutral-200/50 dark:border-neutral-800/50 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:-translate-y-1">
-
-      {/* ── Header ── */}
-      <div className="flex items-start justify-between">
-        <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl ring-1 ring-inset ring-black/5 dark:ring-white/5 shadow-sm"
-          style={{ backgroundColor: project.color + '18' }}
-        >
-          {project.icon ?? '📁'}
-        </div>
-
-        {/* Acciones — igual que AccountCard */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
-          <button
-            onClick={() => onEdit(project)}
-            className="p-2 rounded-xl text-neutral-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onDelete(project.id)}
-            className="p-2 rounded-xl text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
+    <div className="group relative bg-white dark:bg-neutral-900/50 rounded-xl p-4 flex items-center gap-4 border border-neutral-200/60 dark:border-neutral-800/60 transition-all duration-200 hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-sm">
+      
+      {/* Icono con color sutil */}
+      <div
+        className="w-10 h-10 rounded-lg flex items-center justify-center text-xl shrink-0"
+        style={{ backgroundColor: project.color + '12' }}
+      >
+        {project.icon ?? '📁'}
       </div>
 
-      {/* ── Nombre + descripción ── */}
-      <div className="space-y-1">
-        <h3 className="text-[15px] font-bold text-neutral-900 dark:text-neutral-100 tracking-tight leading-snug">
+      {/* Info Principal */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-[14px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
           {project.name}
         </h3>
-        {project.description ? (
-          <p className="text-[12px] text-neutral-400 leading-relaxed line-clamp-2">
+        {!compact && project.description && (
+          <p className="text-[11px] text-neutral-500 truncate">
             {project.description}
-          </p>
-        ) : (
-          <p className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
-            Sin descripción
           </p>
         )}
       </div>
 
-      {/* ── Subtipos — al fondo, igual que el balance en AccountCard ── */}
-      <div className="pt-4 mt-auto border-t border-neutral-100 dark:border-neutral-800/50">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
-          Subtipos
-        </span>
-        {project.subtypes.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {project.subtypes.map((s) => (
-              <span
-                key={s}
-                className="text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"
-                style={{ borderColor: project.color + '40', color: project.color }}
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="text-[12px] text-neutral-300 mt-1">Sin subtipos definidos</p>
-        )}
+      {/* Acciones flotantes discretas */}
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={() => onEdit(project)}
+          className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={() => onDelete(project.id)}
+          className="p-1.5 rounded-md text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
       </div>
     </div>
   )
@@ -142,7 +112,7 @@ type DialogState =
   | { mode: 'edit'; project: Project }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
-export function ProjectsList() {
+export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
   const { data: projects = [], isLoading, isError } = useProjects()
 
   const createProject = useCreateProject()
@@ -193,23 +163,31 @@ export function ProjectsList() {
   return (
     <div className="space-y-6">
 
-      {/* ── Header — mismo estilo que AccountsList ── */}
-      <div className="flex items-end justify-between">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-black text-neutral-900 dark:text-neutral-100 tracking-tighter">
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <h2 className={cn(
+            "font-bold text-neutral-900 dark:text-neutral-100 tracking-tight",
+            isSidebar ? "text-lg" : "text-2xl"
+          )}>
             Proyectos
           </h2>
-          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-            Unidades de negocio para rastrear rentabilidad.
-          </p>
+          {!isSidebar && (
+            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+              Unidades de negocio para rastrear rentabilidad.
+            </p>
+          )}
         </div>
 
         <Button
           onClick={() => setDialog({ mode: 'create' })}
-          className="h-12 px-6 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-2xl font-bold transition-all duration-200 active:scale-95 shadow-xl shadow-black/10 dark:shadow-white/5 hover:opacity-90"
+          className={cn(
+            "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg text-xs font-bold transition-all duration-200 active:scale-95 shadow-sm hover:opacity-90",
+            isSidebar ? "h-8 px-3" : "h-9 px-4"
+          )}
         >
-          <Plus className="w-5 h-5 mr-2" />
-          Nuevo Proyecto
+          <Plus className={cn("mr-1.5", isSidebar ? "w-3.5 h-3.5" : "w-4 h-4")} />
+          {isSidebar ? "Nuevo" : "Nuevo Proyecto"}
         </Button>
       </div>
 
@@ -217,27 +195,31 @@ export function ProjectsList() {
       {isLoading ? (
         <ProjectsGridSkeleton />
       ) : isError ? (
-        <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-500 text-sm p-6 rounded-[2rem] border border-rose-100 dark:border-rose-900/50 font-medium">
-          Error al cargar los proyectos. Por favor, intenta de nuevo.
+        <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-500 text-[13px] p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 font-medium">
+          Error al cargar los proyectos.
         </div>
       ) : projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-20 h-20 rounded-[2.5rem] bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex items-center justify-center mb-6 text-3xl">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/20">
+          <div className="w-10 h-10 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex items-center justify-center mb-3 text-xl">
             📁
           </div>
-          <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
-            Sin proyectos aún
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+            Sin proyectos
           </h3>
-          <p className="text-sm text-neutral-500 mt-2 max-w-[280px]">
-            Crea tu primer proyecto para separar y analizar tus ingresos y gastos por actividad.
+          <p className="text-[11px] text-neutral-500 mt-1 max-w-[200px]">
+            Crea tu primer proyecto para separar actividades.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className={cn(
+          "grid gap-3",
+          isSidebar ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        )}>
           {projects.map((project) => (
             <ProjectCard
               key={project.id}
               project={project}
+              compact={isSidebar}
               onEdit={(p) => setDialog({ mode: 'edit', project: p })}
               onDelete={setPendingDeleteId}
             />

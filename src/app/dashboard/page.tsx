@@ -17,6 +17,7 @@ import { useTransactionMetrics } from "@/features/transactions/hooks/useTransact
 import { useCategories }         from "@/features/categories/hooks/useCategories"
 
 import { CashflowSectionSkeleton } from "@/features/dashboard/components/skeletons/CashflowSectionSkeleton"
+import { InsightsWidget } from "@/features/insights/components/InsightsWidget"
 
 const CashflowSection = dynamic(
   () => import("@/features/dashboard/CashflowSection").then(m => m.CashflowSection),
@@ -67,6 +68,7 @@ export default function DashboardPage() {
           netWorthPositive={accountsDashboard.netWorthPositive}
         />
 
+
         {/* ── Fila 1: Patrimonio (1/3) + Cashflow (2/3) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
@@ -93,7 +95,7 @@ export default function DashboardPage() {
             />
           </div>
         </div>
-
+<InsightsWidget />
         {/* ── Fila 3: Presupuestos (1/3) + Últimas transacciones (2/3) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">

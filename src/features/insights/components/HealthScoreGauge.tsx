@@ -24,48 +24,48 @@ const GRADE_CONFIG = {
 
 export function HealthScoreGauge({ score, grade, breakdown }: Props) {
   const config      = GRADE_CONFIG[grade]
-  const radius      = 52
-  const stroke      = 8
+  const radius      = 54
+  const stroke      = 4
   const normalised  = radius - stroke / 2
   const circumference = 2 * Math.PI * normalised
   const offset      = circumference - (score / 100) * circumference
 
   const bars = [
-    { label: 'Tasa de ahorro',    value: breakdown.savings_rate,      hint: 'Porcentaje de ingresos que no se gastan'    },
-    { label: 'Estabilidad',       value: breakdown.expense_stability,  hint: 'Qué tan consistentes son tus gastos'        },
-    { label: 'Control de gastos', value: breakdown.budget_adherence,   hint: 'Ausencia de anomalías y sobrecostos'        },
+    { label: 'Tasa de ahorro',    value: breakdown.savings_rate,      hint: 'Capacidad de reserva'    },
+    { label: 'Estabilidad',       value: breakdown.expense_stability,  hint: 'Consistencia de gasto'  },
+    { label: 'Control',           value: breakdown.budget_adherence,   hint: 'Apego a presupuesto'    },
   ]
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-8">
+    <div className="flex flex-col sm:flex-row items-center gap-10 lg:gap-14">
 
       {/* Gauge SVG */}
       <div className="relative flex items-center justify-center shrink-0"
-           style={{ width: 140, height: 140 }}>
-        <svg width={140} height={140} className="-rotate-90">
+           style={{ width: 160, height: 160 }}>
+        <svg width={160} height={160} className="-rotate-90">
           <circle
-            cx={70} cy={70} r={normalised}
+            cx={80} cy={80} r={normalised}
             fill="none" stroke="currentColor"
             strokeWidth={stroke}
-            className="text-muted/20"
+            className="text-muted/10"
           />
           <circle
-            cx={70} cy={70} r={normalised}
+            cx={80} cy={80} r={normalised}
             fill="none"
             stroke={config.color}
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
-            style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+            style={{ transition: 'stroke-dashoffset 1.5s cubic-bezier(0.2, 0, 0, 1)' }}
           />
         </svg>
-        <div className="absolute flex flex-col items-center leading-none gap-1">
-          <span className="text-4xl font-bold tabular-nums" style={{ color: config.color }}>
+        <div className="absolute flex flex-col items-center leading-none gap-2">
+          <span className="text-5xl font-extrabold tracking-tight tabular-nums" style={{ color: config.color }}>
             {score}
           </span>
           <span
-            className={cn('text-xs font-semibold px-2 py-0.5 rounded-full', config.bg)}
+            className={cn('text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md', config.bg)}
             style={{ color: config.color }}
           >
             {config.label}
@@ -74,23 +74,23 @@ export function HealthScoreGauge({ score, grade, breakdown }: Props) {
       </div>
 
       {/* Breakdown bars */}
-      <div className="flex-1 w-full space-y-4">
+      <div className="flex-1 w-full space-y-6">
         {bars.map(({ label, value, hint }) => (
-          <div key={label} className="space-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-sm font-medium">{label}</span>
-                <p className="text-[11px] text-muted-foreground">{hint}</p>
+          <div key={label} className="space-y-2">
+            <div className="flex items-end justify-between px-0.5">
+              <div className="space-y-0.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-foreground/70">{label}</span>
+                <p className="text-[10px] text-muted-foreground/60">{hint}</p>
               </div>
-              <span className="text-sm font-bold tabular-nums">{value}</span>
+              <span className="text-sm font-medium tabular-nums">{value}%</span>
             </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div className="h-1 bg-muted/30 rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full transition-all duration-1000"
+                className="h-full rounded-full transition-all duration-1000 ease-out"
                 style={{
                   width     : `${Math.min(value, 100)}%`,
                   backgroundColor: config.color,
-                  opacity   : 0.8,
+                  opacity   : 0.6,
                 }}
               />
             </div>

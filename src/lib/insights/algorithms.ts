@@ -110,18 +110,41 @@ export function detectTrends(
 ): CategoryTrend[] {
   const periods = getMonthsBack(monthsBack)
   const expenses = transactions.filter(tx =>
-    EXPENSE_TYPES.includes(tx.type) && tx.category_id && tx.status === 'COMPLETED',
+    EXPENSE_TYPES.includes(tx.type) && (tx.category_id || tx.project_id) && tx.status === 'COMPLETED',
   )
 
-  // Agrupar categorías únicas
+  // Agrupar categorías/proyectos únicos
   const categoryMap = new Map<string, { name: string; color: string | null }>()
+  
   expenses.forEach(tx => {
-    if (tx.category_id && !categoryMap.has(tx.category_id)) {
-      categoryMap.set(tx.category_id, {
-        name : tx.category?.name  ?? 'Sin categoría',
-        color: tx.category?.color ?? null,
-      })
+    let key = '';
+    let name = '';
+    let color: string | null = null;
+
+    if (tx.project_id) {
+      key = `project:${tx.project_id}`;
+      name = tx.project?.name ?? 'Proyecto';
+      color = tx.project?.color ?? null;
+      if (tx.subtype) {
+        key += `::${tx.subtype}`;
+        name += ` - ${tx.subtype}`;
+      }
+    } else if (tx.category_id) {
+      key = `category:${tx.category_id}`;
+      name = tx.category?.name ?? 'Sin categoría';
+      color = tx.category?.color ?? null;
+      if (tx.tag) {
+        key += `::${tx.tag}`;
+        name += ` - ${tx.tag}`;
+      }
     }
+
+    if (key && !categoryMap.has(key)) {
+      categoryMap.set(key, { name, color })
+    }
+    
+    // Asignar llave temporal
+    ;(tx as any)._group_key = key;
   })
 
   const trends: CategoryTrend[] = []
@@ -129,7 +152,7 @@ export function detectTrends(
   categoryMap.forEach((meta, category_id) => {
     const monthly: MonthlySpend[] = periods.map(({ start, end, key }) => {
       const slice = filterByPeriod(expenses, start, end).filter(
-        tx => tx.category_id === category_id,
+        tx => (tx as any)._group_key === category_id,
       )
       return { month: key, amount: sumAmount(slice) }
     })

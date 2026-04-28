@@ -71,47 +71,50 @@ export function TrendChart({ trends, maxLines = 4 }: Props) {
 
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <LineChart data={chartData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+      <LineChart data={chartData} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
 
         <CartesianGrid
-          strokeDasharray="3 3"
-          stroke="hsl(var(--border))"
-          opacity={0.5}
+          vertical={false}
+          stroke="hsl(var(--muted))"
+          strokeOpacity={0.2}
         />
 
         <XAxis
           dataKey="month"
           tickFormatter={formatMonth}
-          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+          tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontWeight: 500 }}
           axisLine={false}
           tickLine={false}
+          dy={10}
         />
 
         <YAxis
           tickFormatter={formatCurrency}
-          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+          tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontWeight: 500 }}
           axisLine={false}
           tickLine={false}
-          width={64}
+          width={70}
         />
 
         <Tooltip
           formatter={(value: number, name: string) => [formatCurrency(value), name]}
           labelFormatter={formatMonth}
+          cursor={{ stroke: 'hsl(var(--muted))', strokeWidth: 1 }}
           contentStyle={{
             backgroundColor : 'hsl(var(--card))',
             border          : '1px solid hsl(var(--border))',
-            borderRadius    : '12px',
-            fontSize        : '12px',
-            boxShadow       : '0 4px 24px rgba(0,0,0,0.08)',
+            borderRadius    : '16px',
+            fontSize        : '11px',
+            boxShadow       : '0 8px 32px rgba(0,0,0,0.04)',
+            padding         : '12px',
           }}
-          labelStyle={{ fontWeight: 600 }}
+          labelStyle={{ fontWeight: 700, marginBottom: '8px', color: 'hsl(var(--foreground))' }}
         />
 
         <Legend
           iconType="circle"
-          iconSize={8}
-          wrapperStyle={{ fontSize: '12px', paddingTop: '16px' }}
+          iconSize={6}
+          wrapperStyle={{ fontSize: '10px', paddingTop: '24px', fontWeight: 600, opacity: 0.6 }}
         />
 
         {topTrends.map((trend, i) => (
@@ -120,9 +123,11 @@ export function TrendChart({ trends, maxLines = 4 }: Props) {
             type="monotone"
             dataKey={trend.category_name}
             stroke={trend.category_color ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length]}
-            strokeWidth={2}
-            dot={{ r: 3, strokeWidth: 0 }}
-            activeDot={{ r: 5, strokeWidth: 0 }}
+            strokeWidth={1.5}
+            dot={false}
+            activeDot={{ r: 4, strokeWidth: 0 }}
+            animationDuration={1500}
+            animationEasing="ease-in-out"
           />
         ))}
 

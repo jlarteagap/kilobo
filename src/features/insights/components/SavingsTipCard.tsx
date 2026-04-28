@@ -18,44 +18,49 @@ export function SavingsTipCard({ opportunity, aiTip, rank }: Props) {
   const tip    = aiTip?.tip ?? opportunity.insight
 
   return (
-    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3
-                    hover:border-emerald-500/40 transition-colors duration-200">
+    <div className="group rounded-2xl border border-muted/40 bg-card/10 p-6 transition-all duration-300 hover:shadow-sm hover:border-emerald-500/20 space-y-4">
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-emerald-600 bg-emerald-500/15
-                           w-5 h-5 rounded-full flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-600 ring-1 ring-emerald-500/10">
             {rank}
-          </span>
-          {opportunity.category_color && (
-            <div
-              className="w-2.5 h-2.5 rounded-full shrink-0"
-              style={{ backgroundColor: opportunity.category_color }}
-            />
-          )}
-          <span className="text-sm font-semibold">{opportunity.category_name}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {opportunity.category_color && (
+              <div
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ backgroundColor: opportunity.category_color }}
+              />
+            )}
+            <span className="text-sm font-bold tracking-tight text-foreground/80">{opportunity.category_name}</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-1 text-emerald-600 shrink-0">
-          <TrendingDown className="h-3.5 w-3.5" />
-          <span className="text-xs font-bold">
-            ~${saving.toLocaleString()}/mes
+        <div className="flex flex-col items-end">
+          <span className="text-sm font-bold text-emerald-600 tabular-nums">
+            +${saving.toLocaleString()}
           </span>
+          <span className="text-[9px] uppercase tracking-widest font-bold text-emerald-600/50">Mensual</span>
         </div>
       </div>
 
       {/* Tip */}
-      <div className="flex items-start gap-2">
-        <Lightbulb className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
-        <p className="text-xs text-muted-foreground leading-relaxed">{tip}</p>
+      <div className="bg-emerald-500/[0.02] border border-emerald-500/5 rounded-xl p-4 flex items-start gap-3">
+        <Lightbulb className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+        <p className="text-xs text-muted-foreground/80 leading-relaxed font-medium">
+          {tip}
+        </p>
       </div>
 
       {/* Potential annual */}
-      <div className="flex items-center justify-between pt-1 border-t border-emerald-500/15">
-        <span className="text-[10px] text-muted-foreground">Ahorro anual estimado</span>
-        <span className="text-xs font-bold text-emerald-600">
-          ~${(saving * 12).toLocaleString()}
+      <div className="flex items-center justify-between pt-1">
+        <div className="flex items-center gap-1.5">
+          <div className="h-1 w-1 rounded-full bg-emerald-500/30" />
+          <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground/40">Potencial anual</span>
+        </div>
+        <span className="text-sm font-bold text-emerald-600/80 tabular-nums">
+          ${(saving * 12).toLocaleString()}
         </span>
       </div>
 

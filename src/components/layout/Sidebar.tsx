@@ -15,6 +15,7 @@ import {
   User,
   Settings,
   LogOut,
+  Sparkles,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -38,6 +39,7 @@ const navigation = [
   { name: "Deudas y Préstamos", href: "/debts",     icon: HandCoins   },
   { name: "Presupuestos",     href: "/budgets",      icon: PieChart    },
   { name: "Categorías",       href: "/categories",   icon: LayoutGrid  },
+  { name: "Insights",         href: "/insights",     icon: Sparkles    },
 ]
 
 export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>) {

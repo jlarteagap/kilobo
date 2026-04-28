@@ -14,9 +14,9 @@ interface Props {
 }
 
 const SEVERITY = {
-  high  : { border: 'border-red-500/25',    bg: 'bg-red-500/5',    icon: 'text-red-500',    badge: 'bg-red-500/10 text-red-600'    },
-  medium: { border: 'border-amber-500/25',  bg: 'bg-amber-500/5',  icon: 'text-amber-500',  badge: 'bg-amber-500/10 text-amber-600'  },
-  low   : { border: 'border-blue-500/25',   bg: 'bg-blue-500/5',   icon: 'text-blue-500',   badge: 'bg-blue-500/10 text-blue-600'   },
+  high  : { border: 'border-red-500/10',    bg: 'bg-red-500/[0.02]',    icon: 'text-red-500',    badge: 'bg-red-500/10 text-red-600',    label: 'Crítico' },
+  medium: { border: 'border-amber-500/10',  bg: 'bg-amber-500/[0.02]',  icon: 'text-amber-500',  badge: 'bg-amber-500/10 text-amber-600',  label: 'Moderado' },
+  low   : { border: 'border-blue-500/10',   bg: 'bg-blue-500/[0.02]',   icon: 'text-blue-500',   badge: 'bg-blue-500/10 text-blue-600',   label: 'Leve' },
 }
 
 export function AnomalyCard({ anomaly, aiExplanation }: Props) {
@@ -25,61 +25,54 @@ export function AnomalyCard({ anomaly, aiExplanation }: Props) {
   const absDelta = Math.abs(anomaly.delta_pct)
 
   return (
-    <div className={cn('rounded-2xl border p-4 space-y-3', s.border, s.bg)}>
+    <div className={cn('rounded-2xl border p-6 transition-all duration-300 hover:shadow-sm space-y-5', s.border, s.bg)}>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {anomaly.category_color && (
             <div
-              className="w-2.5 h-2.5 rounded-full shrink-0"
+              className="w-1.5 h-1.5 rounded-full shrink-0"
               style={{ backgroundColor: anomaly.category_color }}
             />
           )}
-          <span className="text-sm font-semibold">{anomaly.category_name}</span>
+          <span className="text-sm font-bold tracking-tight text-foreground/80">{anomaly.category_name}</span>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
-          <Badge className={cn('text-xs gap-1', s.badge)}>
-            {isUp
-              ? <ArrowUpRight className="h-3 w-3" />
-              : <ArrowDownRight className="h-3 w-3" />
-            }
-            {absDelta}%
-          </Badge>
-          <Badge variant="outline" className="text-[10px] capitalize">
-            {anomaly.severity === 'high' ? 'Alta' : anomaly.severity === 'medium' ? 'Media' : 'Baja'}
-          </Badge>
-        </div>
+        <Badge variant="outline" className={cn('text-[10px] uppercase tracking-widest font-bold px-2 py-0 h-5 border-transparent', s.badge)}>
+          {s.label}
+        </Badge>
       </div>
 
       {/* Amounts */}
-      <div className="flex items-center gap-4 text-sm">
-        <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Este mes</p>
-          <p className="font-bold">${anomaly.current_amount.toLocaleString()}</p>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="space-y-1">
+          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest font-bold">Real</p>
+          <p className="text-sm font-bold tabular-nums">${anomaly.current_amount.toLocaleString()}</p>
         </div>
-        <div className="h-8 w-px bg-border" />
-        <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Promedio</p>
-          <p className="font-medium text-muted-foreground">${anomaly.average_amount.toLocaleString()}</p>
+        <div className="space-y-1 border-x border-muted/20 px-2">
+          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest font-bold">Media</p>
+          <p className="text-sm font-medium text-muted-foreground/70 tabular-nums">${anomaly.average_amount.toLocaleString()}</p>
         </div>
-        <div className="h-8 w-px bg-border" />
-        <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Diferencia</p>
-          <p className={cn('font-bold', isUp ? 'text-red-500' : 'text-green-500')}>
-            {isUp ? '+' : '-'}${Math.abs(anomaly.current_amount - anomaly.average_amount).toLocaleString()}
-          </p>
+        <div className="space-y-1 text-right">
+          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest font-bold">Variación</p>
+          <div className="flex items-center justify-end gap-1">
+            <span className={cn('text-sm font-bold tabular-nums', isUp ? 'text-red-500' : 'text-emerald-500')}>
+              {isUp ? '+' : '-'}{absDelta}%
+            </span>
+          </div>
         </div>
       </div>
 
       {/* AI Explanation */}
       {aiExplanation && (
-        <div className="space-y-1.5 pt-1 border-t border-border/40">
-          <p className="text-xs text-foreground/80">{aiExplanation.explanation}</p>
-          <div className="flex items-start gap-1.5">
-            <AlertTriangle className={cn('h-3 w-3 mt-0.5 shrink-0', s.icon)} />
-            <p className="text-xs font-medium">{aiExplanation.action}</p>
+        <div className="space-y-3 pt-4 border-t border-muted/40">
+          <p className="text-xs text-muted-foreground leading-relaxed italic">
+            {aiExplanation.explanation}
+          </p>
+          <div className="flex items-start gap-2 bg-foreground/[0.02] rounded-lg p-3">
+            <AlertTriangle className={cn('h-3.5 w-3.5 mt-0.5 shrink-0', s.icon)} />
+            <p className="text-xs font-bold leading-tight">{aiExplanation.action}</p>
           </div>
         </div>
       )}

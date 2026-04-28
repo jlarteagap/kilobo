@@ -3,6 +3,9 @@
 export type TransactionType = 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'SAVING'
 export type TransactionStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED'
 
+import { Category } from './category'
+import { Project } from './project'
+
 export interface Transaction {
   id: string
   user_id: string
@@ -21,13 +24,7 @@ export interface Transaction {
   created_at: string
   updated_at: string
   // Joins opcionales — para mostrar en UI sin llamadas extra
-  category?: {
-    id: string
-    name: string
-    icon: string | null
-    color: string | null       // ← añadido para mostrar acento de color
-    tags: string[]             // ← añadido para mostrar tags disponibles
-  } | null
+  category?: Category | null
   account?: {
     id: string
     name: string
@@ -39,6 +36,7 @@ export interface Transaction {
 
   project_id?: string | null    // null = gasto personal sin proyecto
   subtype?:    string | null    // "gasolina", "hosting", etc.
+  project?: Project | null
 }
 
 export interface CreateTransactionData {

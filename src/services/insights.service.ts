@@ -4,6 +4,8 @@ import { insightsRepository } from '@/repositories/insightsRepository'
 import { buildInsightsPayload, InsightsPayload } from '@/lib/insights/algorithms'
 import { generateAIInsights, AIInsights }        from '@/lib/insights/ai-narrator'
 import { transactionsRepository }                 from '@/repositories/transactions.repository'
+import { categoriesRepository }                   from '@/repositories/categories.repository'
+import { projectRepository }                      from '@/repositories/project.repository'
 import { CachedInsights, InsightsResult } from '@/types/insights'
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -45,8 +47,22 @@ export const insightsService = {
       return d.toISOString().split('T')[0]
     })()
 
-    const allTransactions = await transactionsRepository.findAll(userId)
-    const transactions = allTransactions.filter(t => t.date >= dateFrom)
+    const [allTransactions, categories, projects] = await Promise.all([
+      transactionsRepository.findAll(userId),
+      categoriesRepository.findAll(userId),
+      projectRepository.findAll(userId)
+    ])
+
+    const categoryMap = new Map(categories.map(c => [c.id, c]))
+    const projectMap = new Map(projects.map(p => [p.id, p]))
+
+    const hydratedTransactions = allTransactions.map(tx => ({
+      ...tx,
+      category: tx.category_id ? categoryMap.get(tx.category_id) : null,
+      project: tx.project_id ? projectMap.get(tx.project_id) : null,
+    }))
+
+    const transactions = hydratedTransactions.filter(t => t.date >= dateFrom)
 
 
     // 2b. Algoritmos determinísticos (síncronos, rápidos)

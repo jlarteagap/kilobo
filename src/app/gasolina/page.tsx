@@ -1,5 +1,7 @@
 import { CarSharingDashboard } from "./components/CarSharingDashboard"
+import { MaintenanceWidgets } from "./components/MaintenanceWidgets"
 import { getActiveCycleAction, getClosedCyclesAction } from "./actions"
+import { getAbsoluteOdometerAction, getMaintenanceLogsAction } from "./maintenance.actions"
 
 export const metadata = {
   title: "Gasolina | Kilo",
@@ -11,6 +13,8 @@ export const dynamic = 'force-dynamic';
 export default async function CarSharingPage() {
   const activeCycle = await getActiveCycleAction()
   const closedCycles = await getClosedCyclesAction()
+  const absoluteOdometer = await getAbsoluteOdometerAction()
+  const maintenanceLogs = await getMaintenanceLogsAction()
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 font-sans selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden relative">
@@ -34,6 +38,13 @@ export default async function CarSharingPage() {
             Gestión inteligente y transparente de gastos compartidos para tu vehículo.
           </p>
         </header>
+
+        <div className="mb-16">
+          <MaintenanceWidgets 
+            absoluteOdometer={absoluteOdometer} 
+            logs={maintenanceLogs} 
+          />
+        </div>
 
         <CarSharingDashboard 
           activeCycle={activeCycle} 

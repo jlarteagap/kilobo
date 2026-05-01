@@ -1,6 +1,6 @@
 "use client"
 
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2 } from 'lucide-react'
@@ -29,9 +29,8 @@ type CreateFormValues = z.infer<typeof createCategorySchema>
 type UpdateFormValues = z.infer<typeof updateCategorySchema>
 
 interface CreateModeProps {
-  mode:             'create'
-  preselectedType?: 'INCOME' | 'EXPENSE'
-  onSuccess?:       () => void
+  mode:       'create'
+  onSuccess?: () => void
 }
 
 interface EditModeProps {
@@ -44,21 +43,20 @@ interface EditModeProps {
 type CategoryFormProps = CreateModeProps | EditModeProps
 
 // ─── Formulario de creación ───────────────────────────────────────────────────
-function CreateCategoryForm({ preselectedType, onSuccess }: Omit<CreateModeProps, 'mode'>) {
+function CreateCategoryForm({ onSuccess }: Omit<CreateModeProps, 'mode'>) {
   const createCategory = useCreateCategory()
 
   const form = useForm<CreateFormValues>({
     resolver: zodResolver(createCategorySchema),
     defaultValues: {
       name:  '',
-      type:  preselectedType ?? 'EXPENSE',
+      type:  'EXPENSE',
       icon:  '',
       color: DEFAULT_COLOR,
       tags:  [],
     },
   })
 
-  const selectedType  = useWatch({ control: form.control, name: 'type' })
 
 
   const onSubmit = async (data: CreateFormValues) => {
@@ -71,24 +69,6 @@ function CreateCategoryForm({ preselectedType, onSuccess }: Omit<CreateModeProps
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-        {/* Selector de tipo */}
-        <div className="flex gap-1.5 p-1 bg-gray-100 rounded-xl">
-          {(['EXPENSE', 'INCOME'] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => form.setValue('type', t)}
-              className={cn(
-                'flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200',
-                selectedType === t
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600'
-              )}
-            >
-              {t === 'EXPENSE' ? 'Gasto' : 'Ingreso'}
-            </button>
-          ))}
-        </div>
 
         {/* Nombre */}
         <FormField
@@ -208,21 +188,6 @@ function EditCategoryForm({ category, lockedTags = [], onSuccess }: Omit<EditMod
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-        {/* Badge de tipo — solo lectura */}
-        <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-xl">
-          <span className="text-[13px] text-gray-500">Tipo</span>
-          <Badge
-            variant="secondary"
-            className={cn(
-              category.type === 'INCOME'
-                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100'
-                : 'bg-rose-100 text-rose-700 hover:bg-rose-100'
-            )}
-          >
-            {category.type === 'INCOME' ? 'Ingreso' : 'Gasto'}
-          </Badge>
-          <span className="text-[11px] text-gray-400 ml-auto">No editable</span>
-        </div>
 
         {/* Nombre */}
         <FormField
@@ -334,7 +299,6 @@ export function CategoryForm(props: CategoryFormProps) {
 
   return (
     <CreateCategoryForm
-      preselectedType={props.preselectedType}
       onSuccess={props.onSuccess}
     />
   )

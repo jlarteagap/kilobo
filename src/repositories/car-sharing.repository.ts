@@ -1,6 +1,7 @@
 // src/repositories/car-sharing.repository.ts
 import { adminDb } from '@/lib/firebase.admin'
 import { FieldValue, Timestamp } from 'firebase-admin/firestore'
+import { carMaintenanceRepository } from './car-maintenance.repository'
 
 export interface CarTrip {
   userName: string
@@ -90,15 +91,22 @@ export const carSharingRepository = {
     await CYCLES_COLLECTION.doc(activeCycle.id).update({
       trips: FieldValue.arrayUnion(trip)
     })
+    
+    await carMaintenanceRepository.incrementAbsoluteOdometer(totalKm)
   },
 
   async deleteTrip(createdAt: number): Promise<void> {
     const activeCycle = await this.getActiveCycle()
+    const tripToDelete = activeCycle.trips.find(t => t.createdAt === createdAt)
+    if (!tripToDelete) return
+
     const updatedTrips = activeCycle.trips.filter(t => t.createdAt !== createdAt)
     
     await CYCLES_COLLECTION.doc(activeCycle.id).update({
       trips: updatedTrips
     })
+
+    await carMaintenanceRepository.incrementAbsoluteOdometer(-tripToDelete.totalKm)
   },
 
   async updateTrip(createdAt: number, data: { userName: string, finalKm: number }): Promise<void> {
@@ -135,6 +143,13 @@ export const carSharingRepository = {
     await CYCLES_COLLECTION.doc(activeCycle.id).update({
       trips: updatedTrips
     })
+
+    // Calculate delta for absolute odometer
+    const oldSum = activeCycle.trips.reduce((acc, t) => acc + t.totalKm, 0)
+    const newSum = updatedTrips.reduce((acc, t) => acc + t.totalKm, 0)
+    const delta = newSum - oldSum
+    
+    await carMaintenanceRepository.incrementAbsoluteOdometer(delta)
   },
 
   async closeActiveCycle(gasAmount: number, paidBy: string): Promise<void> {

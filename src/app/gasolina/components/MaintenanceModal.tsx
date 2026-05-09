@@ -22,7 +22,7 @@ interface MaintenanceModalProps {
 
 const TYPE_NAMES = {
   oil: 'Cambio de Aceite',
-  injectors: 'Limpia Inyectores',
+  injectors: 'Aditivo de Gasolina',
   wash: 'Lavado de Auto'
 }
 

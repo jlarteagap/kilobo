@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { CarMaintenanceLog, MaintenanceType } from '@/repositories/car-maintenance.repository'
-import { Droplets, Wrench, Sparkles, ChevronRight, AlertCircle, Settings2 } from 'lucide-react'
+import { Droplets, Wrench, Sparkles, ChevronRight, AlertCircle, Settings2, X } from 'lucide-react'
 import { MaintenanceModal } from './MaintenanceModal'
 import { cn } from '@/lib/utils'
 import { setAbsoluteOdometerAction } from '../maintenance.actions'
@@ -17,6 +17,12 @@ interface MaintenanceWidgetsProps {
 const LIMITS = {
   oil: 10000,
   injectors: 4000
+}
+
+const TYPE_NAMES = {
+  oil: 'Cambio de Aceite',
+  injectors: 'Aditivos de Gasolina',
+  wash: 'Lavado de Auto'
 }
 
 export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidgetsProps) {
@@ -77,19 +83,26 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
   const latestWash = logs.find(l => l.type === 'wash')
 
   const getProgress = (latestLog: CarMaintenanceLog | undefined, limit: number) => {
-    if (!latestLog) return { remaining: limit, percentage: 0, status: 'good', nextKm: absoluteOdometer + limit }
+    // If no log exists, we calculate based on the start of the odometer (0) 
+    // or we could say we just don't know. 
+    // Let's assume progress is 0 until first log is added for clarity.
+    if (!latestLog) return { remaining: limit, percentage: 0, status: 'good', nextKm: (absoluteOdometer || 0) + limit }
     
     const kmDriven = absoluteOdometer - latestLog.odometer
     const remaining = limit - kmDriven
+    
+    // Allow percentage to go above 100 if they pass the limit
     let percentage = (kmDriven / limit) * 100
-    if (percentage > 100) percentage = 100
     if (percentage < 0) percentage = 0
+    // We don't cap at 100 anymore to show "overdue" state visually if needed, 
+    // but the bar itself should probably cap at 100 for layout.
+    const displayPercentage = Math.min(percentage, 100)
 
     let status = 'good'
-    if (percentage >= 90) status = 'danger'
-    else if (percentage >= 75) status = 'warning'
+    if (percentage >= 100) status = 'danger'
+    else if (percentage >= 85) status = 'warning'
 
-    return { remaining, percentage, status, nextKm: latestLog.odometer + limit }
+    return { remaining, percentage, displayPercentage, status, nextKm: latestLog.odometer + limit }
   }
 
   const oilStats = getProgress(latestOil, LIMITS.oil)
@@ -164,7 +177,7 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
           <div className="mt-6 h-1.5 w-full bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
             <div 
               className={cn("h-full rounded-full transition-all duration-1000 ease-out", barColor)}
-              style={{ width: `${percentage}%` }}
+              style={{ width: `${percentage > 100 ? 100 : percentage}%` }}
             />
           </div>
         )}
@@ -181,22 +194,83 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-700">
+      {/* Odometer Display & Manual Update */}
+      <div className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-100 dark:border-neutral-900 rounded-[2.5rem] animate-in fade-in slide-in-from-top-4 duration-1000">
+        <div className="space-y-1">
+          <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-400">Kilometraje Total del Auto</p>
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-4xl font-light tracking-tight tabular-nums text-neutral-900 dark:text-white">
+              {absoluteOdometer.toLocaleString()}
+            </h2>
+            <span className="text-lg font-medium text-neutral-400 uppercase">km</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {isSettingOdo ? (
+            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
+              <Input 
+                type="number"
+                placeholder="Nuevo valor..."
+                value={initialOdo}
+                onChange={e => setInitialOdo(e.target.value)}
+                className="h-12 w-40 bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 rounded-xl"
+              />
+              <Button 
+                onClick={() => {
+                  const val = parseInt(initialOdo, 10)
+                  if (!isNaN(val) && val >= 0) {
+                    setAbsoluteOdometerAction(val)
+                    setIsSettingOdo(false)
+                    setInitialOdo('')
+                  }
+                }}
+                size="icon"
+                className="size-12 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+              >
+                <ChevronRight className="size-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setIsSettingOdo(false)}
+                className="size-12 rounded-xl"
+              >
+                <X className="size-5" />
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              onClick={() => {
+                setInitialOdo(absoluteOdometer.toString())
+                setIsSettingOdo(true)
+              }}
+              variant="outline"
+              className="h-12 rounded-xl border-neutral-200 dark:border-neutral-800 px-6 gap-2 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all"
+            >
+              <Settings2 className="size-4" />
+              Actualizar Odómetro
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-700 delay-150">
         <StatusCard 
           title="Cambio de Aceite" 
           icon={Droplets} 
           type="oil"
-          remainingText={`${oilStats.remaining > 0 ? oilStats.remaining.toLocaleString() : 0}`}
-          subtitleText="km restantes"
+          remainingText={`${oilStats.remaining.toLocaleString()}`}
+          subtitleText={oilStats.remaining < 0 ? "km pasados" : "km restantes"}
           percentage={oilStats.percentage}
           status={oilStats.status}
         />
         <StatusCard 
-          title="Limpia Inyectores" 
+          title="Aditivos de Gasolina" 
           icon={Wrench} 
           type="injectors"
-          remainingText={`${injectorStats.remaining > 0 ? injectorStats.remaining.toLocaleString() : 0}`}
-          subtitleText="km restantes"
+          remainingText={`${injectorStats.remaining.toLocaleString()}`}
+          subtitleText={injectorStats.remaining < 0 ? "km pasados" : "km restantes"}
           percentage={injectorStats.percentage}
           status={injectorStats.status}
         />

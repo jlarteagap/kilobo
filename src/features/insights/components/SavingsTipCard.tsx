@@ -6,6 +6,7 @@ import { SavingOpportunity }   from '@/lib/insights/algorithms'
 import { AIInsights }          from '@/lib/insights/ai-narrator'
 import { Lightbulb, TrendingDown } from 'lucide-react'
 import { cn }                  from '@/lib/utils'
+import { Badge }               from '@/components/ui/badge'
 
 interface Props {
   opportunity : SavingOpportunity
@@ -13,9 +14,17 @@ interface Props {
   rank        : number
 }
 
+const FEASIBILITY = {
+  alta : { label: 'Alta',  class: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/15' },
+  media: { label: 'Media', class: 'bg-amber-500/10 text-amber-600 border-amber-500/15' },
+  baja : { label: 'Baja',  class: 'bg-muted/30 text-muted-foreground border-muted-foreground/10' },
+}
+
 export function SavingsTipCard({ opportunity, aiTip, rank }: Props) {
-  const saving = aiTip?.estimated_monthly_saving ?? opportunity.potential_saving
-  const tip    = aiTip?.tip ?? opportunity.insight
+  const saving    = aiTip?.estimated_monthly_saving ?? opportunity.potential_saving
+  const tip       = aiTip?.tip ?? opportunity.insight
+  const feas      = aiTip?.feasibility
+  const feasStyle = feas ? FEASIBILITY[feas] : null
 
   return (
     <div className="group rounded-2xl border border-muted/40 bg-card/10 p-6 transition-all duration-300 hover:shadow-sm hover:border-emerald-500/20 space-y-4">
@@ -35,6 +44,11 @@ export function SavingsTipCard({ opportunity, aiTip, rank }: Props) {
             )}
             <span className="text-sm font-bold tracking-tight text-foreground/80">{opportunity.category_name}</span>
           </div>
+          {feasStyle && (
+            <Badge variant="outline" className={cn('text-[10px] uppercase tracking-widest font-bold px-2 py-0 h-5', feasStyle.class)}>
+              {feasStyle.label}
+            </Badge>
+          )}
         </div>
 
         <div className="flex flex-col items-end">

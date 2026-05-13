@@ -9,8 +9,10 @@ import { ArrowUpRight, ArrowDownRight, AlertTriangle } from 'lucide-react'
 import { cn }                   from '@/lib/utils'
 
 interface Props {
-  anomaly    : Anomaly
-  aiExplanation?: AIInsights['anomaly_explanations'][number]
+  anomaly        : Anomaly
+  aiExplanation? : AIInsights['anomaly_explanations'][number]
+  clusterName?   : string
+  clusterColor?  : string
 }
 
 const SEVERITY = {
@@ -19,7 +21,7 @@ const SEVERITY = {
   low   : { border: 'border-blue-500/10',   bg: 'bg-blue-500/[0.02]',   icon: 'text-blue-500',   badge: 'bg-blue-500/10 text-blue-600',   label: 'Leve' },
 }
 
-export function AnomalyCard({ anomaly, aiExplanation }: Props) {
+export function AnomalyCard({ anomaly, aiExplanation, clusterName, clusterColor }: Props) {
   const s       = SEVERITY[anomaly.severity]
   const isUp    = anomaly.delta_pct > 0
   const absDelta = Math.abs(anomaly.delta_pct)
@@ -39,9 +41,17 @@ export function AnomalyCard({ anomaly, aiExplanation }: Props) {
           <span className="text-sm font-bold tracking-tight text-foreground/80">{anomaly.category_name}</span>
         </div>
 
-        <Badge variant="outline" className={cn('text-[10px] uppercase tracking-widest font-bold px-2 py-0 h-5 border-transparent', s.badge)}>
-          {s.label}
-        </Badge>
+        <div className="flex items-center gap-1.5">
+          {clusterName && (
+            <Badge variant="outline" className="text-[10px] uppercase tracking-widest font-bold px-2 py-0 h-5 border-transparent"
+              style={{ backgroundColor: `${clusterColor ?? '#888'}15`, color: clusterColor ?? '#888' }}>
+              {clusterName}
+            </Badge>
+          )}
+          <Badge variant="outline" className={cn('text-[10px] uppercase tracking-widest font-bold px-2 py-0 h-5 border-transparent', s.badge)}>
+            {s.label}
+          </Badge>
+        </div>
       </div>
 
       {/* Amounts */}

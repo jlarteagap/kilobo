@@ -16,8 +16,9 @@ import { CategoryTrend }  from '@/lib/insights/algorithms'
 import { useMemo }        from 'react'
 
 interface Props {
-  trends   : CategoryTrend[]
-  maxLines?: number   // cuántas categorías mostrar (top N)
+  trends     : CategoryTrend[]
+  maxLines?  : number
+  annotation?: string
 }
 
 interface ChartPoint {
@@ -31,7 +32,7 @@ const FALLBACK_COLORS = [
   '#ec4899', '#10b981', '#f97316',
 ]
 
-export function TrendChart({ trends, maxLines = 4 }: Props) {
+export function TrendChart({ trends, maxLines = 4, annotation }: Props) {
   const topTrends = trends.slice(0, maxLines)
 
   // Transformar de { category, monthly[] } → [{ month, cat1, cat2 }]
@@ -70,6 +71,7 @@ export function TrendChart({ trends, maxLines = 4 }: Props) {
   }
 
   return (
+    <>
     <ResponsiveContainer width="100%" height={240}>
       <LineChart data={chartData} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
 
@@ -133,5 +135,12 @@ export function TrendChart({ trends, maxLines = 4 }: Props) {
 
       </LineChart>
     </ResponsiveContainer>
+
+    {annotation && (
+      <p className="text-xs text-muted-foreground/70 leading-relaxed mt-4 px-1 italic border-l-2 border-violet-500/30 pl-3">
+        {annotation}
+      </p>
+    )}
+    </>
   )
 }

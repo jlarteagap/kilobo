@@ -3,6 +3,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { Info } from 'lucide-react'
 
 interface Props {
   score: number
@@ -12,6 +13,11 @@ interface Props {
     expense_stability : number
     budget_adherence  : number
   }
+  aiExplanation?: {
+    reason     : string
+    main_factor: string
+    detail     : string
+  } | null
 }
 
 const GRADE_CONFIG = {
@@ -22,7 +28,7 @@ const GRADE_CONFIG = {
   F: { color: '#ef4444', label: 'Crítico',     bg: 'bg-red-500/10'    },
 }
 
-export function HealthScoreGauge({ score, grade, breakdown }: Props) {
+export function HealthScoreGauge({ score, grade, breakdown, aiExplanation }: Props) {
   const config      = GRADE_CONFIG[grade]
   const radius      = 54
   const stroke      = 4
@@ -73,7 +79,7 @@ export function HealthScoreGauge({ score, grade, breakdown }: Props) {
         </div>
       </div>
 
-      {/* Breakdown bars */}
+      {/* Breakdown + AI explanation */}
       <div className="flex-1 w-full space-y-6">
         {bars.map(({ label, value, hint }) => (
           <div key={label} className="space-y-2">
@@ -96,6 +102,23 @@ export function HealthScoreGauge({ score, grade, breakdown }: Props) {
             </div>
           </div>
         ))}
+
+        {aiExplanation && (
+          <div className="w-full pt-5 border-t border-muted/30 space-y-3">
+            <div className="flex items-start gap-2 bg-violet-500/[0.03] rounded-xl p-4">
+              <Info className="h-4 w-4 text-violet-500 mt-0.5 shrink-0" />
+              <div className="space-y-1.5">
+                <p className="text-xs font-bold text-foreground/70">{aiExplanation.reason}</p>
+                <p className="text-xs text-muted-foreground/70 leading-relaxed">{aiExplanation.detail}</p>
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-violet-500/60">
+                    Factor principal: {aiExplanation.main_factor}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
     </div>

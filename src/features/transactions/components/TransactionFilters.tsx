@@ -5,6 +5,14 @@ import { useRef, useState, useEffect } from "react"
 import { ChevronDown, X, SlidersHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+
 import type { Account } from "@/types/account"
 import type { Category } from "@/types/category"
 import type { TransactionTypeFilter, TransactionFilters } from "../hooks/useTransactionFilters"
@@ -27,62 +35,58 @@ function FilterDropdown({
   onToggle,
   onClear,
   children,
-  align = 'left',
+  align = 'start',
 }: {
   label:    string
   isActive: boolean
   isOpen:   boolean
-  onToggle: () => void
+  onToggle: (open: boolean) => void
   onClear:  () => void
   children: React.ReactNode
-  align?:   'left' | 'right'
+  align?:   'start' | 'end' | 'center'
 }) {
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={onToggle}
-        className={cn(
-          'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200',
-          isActive || isOpen
-            ? 'bg-gray-900 text-white border-gray-900'
-            : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200 hover:text-gray-700'
-        )}
-      >
-        <span>{label}</span>
-        {isActive ? (
-          <span
-            role="button"
-            onClick={(e) => { e.stopPropagation(); onClear() }}
-            className="hover:opacity-70 transition-opacity"
-          >
-            <X className="w-3 h-3" />
-          </span>
-        ) : (
-          <ChevronDown className={cn(
-            'w-3 h-3 transition-transform duration-200',
-            isOpen && 'rotate-180'
-          )} />
-        )}
-      </button>
-
-      {isOpen && (
-        <div
+    <DropdownMenu open={isOpen} onOpenChange={onToggle}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
           className={cn(
-            'absolute top-full mt-1.5 z-50 bg-white rounded-2xl min-w-[180px]',
-            align === 'right' ? 'right-0' : 'left-0'
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 whitespace-nowrap',
+            isActive || isOpen
+              ? 'bg-gray-900 text-white border-gray-900'
+              : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200 hover:text-gray-700'
           )}
-          style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)' }}
         >
-          {children}
-        </div>
-      )}
-    </div>
+          <span>{label}</span>
+          {isActive ? (
+            <span
+              role="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClear() }}
+              className="hover:opacity-70 transition-opacity"
+            >
+              <X className="w-3 h-3" />
+            </span>
+          ) : (
+            <ChevronDown className={cn(
+              'w-3 h-3 transition-transform duration-200',
+              isOpen && 'rotate-180'
+            )} />
+          )}
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        align={align}
+        className="z-50 bg-white rounded-2xl min-w-[180px] p-0 shadow-lg border-gray-100"
+      >
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
 // ─── Item de dropdown ─────────────────────────────────────────────────────────
-function DropdownItem({
+function CustomDropdownItem({
   label,
   isSelected,
   onClick,
@@ -96,14 +100,17 @@ function DropdownItem({
   dot?:       string  // color hex para el dot
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <DropdownMenuItem
+      onClick={(e) => {
+        // Usamos preventDefault si queremos mantener el menu abierto o manejar el cierre manualmente
+        // pero por defecto DropdownMenuItem cierra el menu al hacer click.
+        onClick()
+      }}
       className={cn(
-        'w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-[13px] transition-colors duration-100',
+        'w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-[13px] transition-colors duration-100 cursor-pointer outline-none rounded-none',
         isSelected
-          ? 'bg-gray-900 text-white font-medium'
-          : 'text-gray-600 hover:bg-gray-50'
+          ? 'bg-gray-900 text-white font-medium focus:bg-gray-800 focus:text-white'
+          : 'text-gray-600 hover:bg-gray-50 focus:bg-gray-50'
       )}
     >
       {dot && (
@@ -115,7 +122,7 @@ function DropdownItem({
       <span className={cn(!dot && color && !isSelected && color)}>
         {label}
       </span>
-    </button>
+    </DropdownMenuItem>
   )
 }
 
@@ -180,7 +187,7 @@ export function TransactionFilters({
   const activeType     = TYPE_OPTIONS.find((t) => t.value === filters.type)
 
   return (
-    <div ref={containerRef} className="flex items-center gap-2 flex-wrap">
+    <div ref={containerRef} className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-2 -mb-2">
 
       {/* ── Icono filtros + badge ── */}
       <div className="flex items-center gap-1.5 text-[12px] text-gray-400">
@@ -200,12 +207,12 @@ export function TransactionFilters({
         label={filters.type === 'ALL' ? 'Tipo' : activeType?.label ?? 'Tipo'}
         isActive={filters.type !== 'ALL'}
         isOpen={openDropdown === 'type'}
-        onToggle={() => toggle('type')}
+        onToggle={(open) => setOpenDropdown(open ? 'type' : null)}
         onClear={() => { onTypeChange('ALL'); setOpenDropdown(null) }}
       >
         <div className="py-1">
           {TYPE_OPTIONS.map((opt) => (
-            <DropdownItem
+            <CustomDropdownItem
               key={opt.value}
               label={opt.label}
               color={opt.color}
@@ -226,20 +233,20 @@ export function TransactionFilters({
   }
   isActive={!!filters.projectId}
   isOpen={openDropdown === 'project'}
-  onToggle={() => toggle('project')}
+  onToggle={(open) => setOpenDropdown(open ? 'project' : null)}
   onClear={() => { onProjectChange(null); setOpenDropdown(null) }}
 >
   <div className="py-1">
-    <DropdownItem
+    <CustomDropdownItem
       label="Personal (sin proyecto)"
       isSelected={filters.projectId === '__personal__'}
       onClick={() => { onProjectChange('__personal__'); setOpenDropdown(null) }}
     />
     {projects.length > 0 && (
-      <div className="h-px bg-gray-100 mx-3 my-1" />
+      <DropdownMenuSeparator className="mx-3 my-1" />
     )}
     {projects.map((p) => (
-      <DropdownItem
+      <CustomDropdownItem
         key={p.id}
         label={p.icon ? `${p.icon} ${p.name}` : p.name}
         dot={p.color}
@@ -254,7 +261,7 @@ export function TransactionFilters({
         label={activeAccount?.name ?? 'Cuenta'}
         isActive={!!filters.accountId}
         isOpen={openDropdown === 'account'}
-        onToggle={() => toggle('account')}
+        onToggle={(open) => setOpenDropdown(open ? 'account' : null)}
         onClear={() => { onAccountChange(null); setOpenDropdown(null) }}
       >
         <div className="py-1">
@@ -264,7 +271,7 @@ export function TransactionFilters({
             </p>
           ) : (
             accounts.map((acc) => (
-              <DropdownItem
+              <CustomDropdownItem
                 key={acc.id}
                 label={acc.name}
                 isSelected={filters.accountId === acc.id}
@@ -283,7 +290,7 @@ export function TransactionFilters({
         label={activeCategory?.name ?? 'Categoría'}
         isActive={!!filters.categoryId}
         isOpen={openDropdown === 'category'}
-        onToggle={() => toggle('category')}
+        onToggle={(open) => setOpenDropdown(open ? 'category' : null)}
         onClear={() => { onCategoryChange(null); setOpenDropdown(null) }}
       >
         <div className="py-1 max-h-[240px] overflow-y-auto">
@@ -293,7 +300,7 @@ export function TransactionFilters({
             </p>
           ) : (
             visibleCategories.map((cat) => (
-              <DropdownItem
+              <CustomDropdownItem
                 key={cat.id}
                 label={cat.name}
                 dot={cat.color ?? '#9ca3af'}
@@ -313,9 +320,9 @@ export function TransactionFilters({
         label={filters.tag ?? 'Tag'}
         isActive={!!filters.tag}
         isOpen={openDropdown === 'tag'}
-        onToggle={() => toggle('tag')}
+        onToggle={(open) => setOpenDropdown(open ? 'tag' : null)}
         onClear={() => { onTagChange(null); setOpenDropdown(null) }}
-        align="right"
+        align="end"
       >
         <div className="py-1 max-h-[200px] overflow-y-auto">
           {availableTags.length === 0 ? (
@@ -324,7 +331,7 @@ export function TransactionFilters({
             </p>
           ) : (
             availableTags.map((tag) => (
-              <DropdownItem
+              <CustomDropdownItem
                 key={tag}
                 label={tag}
                 isSelected={filters.tag === tag}

@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 
-interface StatCardProps {
+interface StatItemProps {
   label:    string
   value:    number
   currency: string
@@ -12,40 +12,39 @@ interface StatCardProps {
   color?:   string
 }
 
-function StatCard({ label, value, currency, trend, inverse, color }: StatCardProps) {
+function StatItem({ label, value, currency, trend, inverse, color }: StatItemProps) {
   const isPositive = inverse ? (trend ?? 0) < 0 : (trend ?? 0) > 0
   const isNeutral  = trend === 0 || trend === undefined
 
   return (
-    <div
-      className="bg-white rounded-2xl px-5 py-4 flex flex-col gap-2"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-    >
-      <p className="text-[12px] font-medium text-gray-400">{label}</p>
-      <p className={cn(
-        'text-xl font-semibold tracking-tight',
-        color ?? 'text-gray-900'
-      )}>
-        {formatCurrency(Math.abs(value), currency)}
-      </p>
-      {trend !== undefined && (
-        <div className={cn(
-          'flex items-center gap-1 text-[11px] font-medium',
-          isNeutral   ? 'text-gray-400' :
-          isPositive  ? 'text-emerald-600' :
-                        'text-rose-500'
+    <div className="flex flex-col gap-1.5">
+      <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest">{label}</p>
+      <div className="flex items-end gap-3">
+        <p className={cn(
+          'text-2xl font-bold tracking-tight tabular-nums',
+          color ?? 'text-foreground'
         )}>
-          {isNeutral
-            ? <Minus className="w-3 h-3" />
-            : isPositive
-              ? <TrendingUp   className="w-3 h-3" />
-              : <TrendingDown className="w-3 h-3" />
-          }
-          <span>
-            {isNeutral ? 'Sin cambio' : `${(trend ?? 0) > 0 ? '+' : ''}${(trend ?? 0).toFixed(1)}% vs mes anterior`}
-          </span>
-        </div>
-      )}
+          {formatCurrency(Math.abs(value), currency)}
+        </p>
+        {trend !== undefined && (
+          <div className={cn(
+            'flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider mb-1',
+            isNeutral   ? 'text-muted-foreground/40' :
+            isPositive  ? 'text-emerald-500' :
+                          'text-rose-500'
+          )}>
+            {isNeutral
+              ? <Minus className="w-3 h-3" />
+              : isPositive
+                ? <TrendingUp   className="w-3 h-3" />
+                : <TrendingDown className="w-3 h-3" />
+            }
+            <span>
+              {isNeutral ? 'Sin cambio' : `${(trend ?? 0) > 0 ? '+' : ''}${(trend ?? 0).toFixed(1)}%`}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -68,45 +67,58 @@ export function DashboardHeader({
   netWorthPositive,
 }: DashboardHeaderProps) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Saludo */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">
           {greeting} 👋
         </h1>
-        <p className="text-[13px] text-gray-400 mt-0.5 capitalize">
+        <p className="text-[13px] font-medium text-muted-foreground mt-1 capitalize">
           {currentMonthLabel}
         </p>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
-          label="Patrimonio neto"
-          value={netWorth}
-          currency="BOB"
-          color={netWorthPositive ? 'text-emerald-600' : 'text-rose-500'}
-        />
-        <StatCard
-          label="Ingresos del mes"
-          value={monthlyStats.income}
-          currency="BOB"
-          trend={trends.income}
-        />
-        <StatCard
-          label="Gastos del mes"
-          value={monthlyStats.expense}
-          currency="BOB"
-          trend={trends.expense}
-          inverse
-        />
-        <StatCard
-          label="Balance neto"
-          value={monthlyStats.net}
-          currency="BOB"
-          trend={trends.net}
-          color={monthlyStats.net >= 0 ? 'text-emerald-600' : 'text-rose-500'}
-        />
+      {/* Stats Panel */}
+      <div
+        className="bg-card rounded-3xl p-6 border border-border/40"
+        style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}
+      >
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 divide-x-0 divide-y lg:divide-y-0 lg:divide-x divide-border/40">
+          <div className="pt-4 lg:pt-0 first:pt-0">
+            <StatItem
+              label="Patrimonio neto"
+              value={netWorth}
+              currency="BOB"
+              color={netWorthPositive ? 'text-emerald-500' : 'text-rose-500'}
+            />
+          </div>
+          <div className="pt-4 lg:pt-0 lg:pl-8">
+            <StatItem
+              label="Ingresos del mes"
+              value={monthlyStats.income}
+              currency="BOB"
+              trend={trends.income}
+            />
+          </div>
+          <div className="pt-4 lg:pt-0 lg:pl-8">
+            <StatItem
+              label="Gastos del mes"
+              value={monthlyStats.expense}
+              currency="BOB"
+              trend={trends.expense}
+              inverse
+            />
+          </div>
+          <div className="pt-4 lg:pt-0 lg:pl-8">
+            <StatItem
+              label="Balance neto"
+              value={monthlyStats.net}
+              currency="BOB"
+              trend={trends.net}
+              color={monthlyStats.net >= 0 ? 'text-emerald-500' : 'text-rose-500'}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

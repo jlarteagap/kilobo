@@ -139,9 +139,8 @@ export default function TransactionsPage() {
           </div>
         ) : (
           <>
-            {/* Summary Cards — con sparkline */}
             <SummaryCards
-              transactions={metricsTransactions}
+              transactions={transactions}
               period={filters.period}
               projects={projects}
             />

@@ -8,7 +8,7 @@ import { useTransactions }    from '@/features/transactions/hooks/useTransaction
 import { useDebts }           from '@/features/debts/hooks/useDebts'
 import { useBudgetProgress }  from '@/features/budgets/hooks/useBudgets'
 import { useAccountsDashboard } from '@/features/accounts/hooks/useAccountsDashboard'
-import { filterByPeriod }     from '@/utils/date.utils'
+import { filterByPeriod, getDaysInPeriod }     from '@/utils/date.utils'
 
 
 export function useDashboard() {
@@ -60,6 +60,72 @@ export function useDashboard() {
 
     return { income, expense, net: income - expense }
   }, [transactions, prevPeriod])
+
+  // ── Comparativa Financiera Acumulada Diaria ──────────────────────────────
+  const financialComparisonData = useMemo(() => {
+    const currentDays = getDaysInPeriod(currentPeriod)
+    const previousDays = getDaysInPeriod(prevPeriod)
+    
+    // Acumulados por día mes actual
+    let currentExpenseCumulative = 0
+    let currentIncomeCumulative = 0
+    const currentData = currentDays.map((dateStr) => {
+      const dayTransactions = monthlyTransactions.filter(t => t.date.startsWith(dateStr))
+      
+      const dayExpense = dayTransactions
+        .filter(t => t.type === 'EXPENSE')
+        .reduce((sum, t) => sum + t.amount, 0)
+      currentExpenseCumulative += dayExpense
+
+      const dayIncome = dayTransactions
+        .filter(t => t.type === 'INCOME')
+        .reduce((sum, t) => sum + t.amount, 0)
+      currentIncomeCumulative += dayIncome
+
+      return { expense: currentExpenseCumulative, income: currentIncomeCumulative }
+    })
+
+    // Transacciones del mes anterior
+    const prevMonthlyTransactions = filterByPeriod(transactions, prevPeriod)
+      .filter((t) => t.status === 'COMPLETED')
+
+    // Acumulados por día mes anterior
+    let previousExpenseCumulative = 0
+    let previousIncomeCumulative = 0
+    const previousData = previousDays.map((dateStr) => {
+      const dayTransactions = prevMonthlyTransactions.filter(t => t.date.startsWith(dateStr))
+      
+      const dayExpense = dayTransactions
+        .filter(t => t.type === 'EXPENSE')
+        .reduce((sum, t) => sum + t.amount, 0)
+      previousExpenseCumulative += dayExpense
+
+      const dayIncome = dayTransactions
+        .filter(t => t.type === 'INCOME')
+        .reduce((sum, t) => sum + t.amount, 0)
+      previousIncomeCumulative += dayIncome
+
+      return { expense: previousExpenseCumulative, income: previousIncomeCumulative }
+    })
+
+    // Asegurarse de que ambos arreglos tengan la misma longitud para la gráfica (max 31 días)
+    const maxDays = Math.max(currentDays.length, previousDays.length)
+    const chartData = []
+
+    for (let i = 0; i < maxDays; i++) {
+      // Tomamos el día (1 al 31)
+      const dayLabel = i + 1
+      chartData.push({
+        day: dayLabel,
+        currentExpense: i < currentData.length ? currentData[i].expense : null,
+        currentIncome: i < currentData.length ? currentData[i].income : null,
+        previousExpense: i < previousData.length ? previousData[i].expense : previousData[previousData.length - 1].expense,
+        previousIncome: i < previousData.length ? previousData[i].income : previousData[previousData.length - 1].income,
+      })
+    }
+
+    return chartData
+  }, [monthlyTransactions, transactions, currentPeriod, prevPeriod])
 
   // ── Tendencias ─────────────────────────────────────────────────────────────
   const calcTrend = (current: number, previous: number) => {
@@ -136,6 +202,7 @@ export function useDashboard() {
     // Transacciones
     recentTransactions,
     monthlyTransactions,
+    financialComparisonData,
 
     // Deudas
     activeDebts,

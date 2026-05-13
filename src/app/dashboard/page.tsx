@@ -9,7 +9,7 @@ import { DashboardDebts }              from "@/features/dashboard/components/Das
 import { DashboardBudgets }            from "@/features/dashboard/components/DashboardBudgets"
 import { DashboardRecentTransactions } from "@/features/dashboard/components/DashboardRecentTransactions"
 import { AssetsSection }               from "@/features/dashboard/AssetsSection"
-import { IncomeExpenseChart }          from "@/features/transactions/components/analytics/IncomeExpenseChart"
+import { FinancialComparisonChart }       from "@/features/dashboard/components/FinancialComparisonChart"
 import { DashboardSkeleton }           from "@/features/dashboard/components/skeletons/DashboardSkeleton"
 
 import { useDashboard }          from "@/features/dashboard/hooks/useDashboard"
@@ -38,6 +38,7 @@ export default function DashboardPage() {
     topBudgets,
     greeting,
     currentMonthLabel,
+    financialComparisonData,
   } = useDashboard()
 
   const { data: categories = [] } = useCategories()
@@ -56,7 +57,7 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col gap-4 md:gap-8 container mx-auto max-w-7xl py-4 md:py-8 px-4">
+      <div className="flex flex-col gap-6 md:gap-8 container mx-auto max-w-7xl py-6 md:py-8 px-4 sm:px-6">
 
         {/* ── Header + Stats ── */}
         <DashboardHeader
@@ -70,24 +71,24 @@ export default function DashboardPage() {
 
 
         {/* ── Fila 1: Patrimonio (1/3) + Cashflow (2/3) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="md:col-span-1 lg:col-span-1">
             <AssetsSection groups={accountsDashboard.currencyGroups} />
           </div>
-          <div className="lg:col-span-2">
+          <div className="md:col-span-1 lg:col-span-2">
             <CashflowSection />
           </div>
         </div>
 
-        {/* ── Fila 2: Ingresos vs Gastos (2/3) + Deudas (1/3) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <IncomeExpenseChart
-              key={`dashboard-chart-${metrics.chartData.length}`}
-              data={metrics.chartData}
+        {/* ── Fila 2: Comparativa Financiera (2/3) + Deudas (1/3) ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="md:col-span-1 lg:col-span-2">
+            <FinancialComparisonChart
+              key={`dashboard-chart-${financialComparisonData.length}`}
+              data={financialComparisonData}
             />
           </div>
-          <div className="lg:col-span-1">
+          <div className="md:col-span-1 lg:col-span-1">
             <DashboardDebts
               activeDebts={activeDebts}
               pendingGiven={debtSummary.pendingGiven}
@@ -97,11 +98,11 @@ export default function DashboardPage() {
         </div>
 <InsightsWidget />
         {/* ── Fila 3: Presupuestos (1/3) + Últimas transacciones (2/3) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="md:col-span-1 lg:col-span-1">
             <DashboardBudgets topBudgets={topBudgets} />
           </div>
-          <div className="lg:col-span-2">
+          <div className="md:col-span-1 lg:col-span-2">
             <DashboardRecentTransactions transactions={recentTransactions} />
           </div>
         </div>

@@ -206,7 +206,7 @@ function TransactionRow({
       </td>
 
       {/* ── Cuenta ── */}
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 hidden md:table-cell">
         <span className="text-[13px] text-gray-600">
           {getAccountName(tx.account_id, accounts)}
         </span>
@@ -229,20 +229,20 @@ function TransactionRow({
 
       {/* ── Acciones ── */}
       <td className="px-4 py-3">
-        <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        <div className="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
           <button
             onClick={() => onEdit(tx)}
             title="Editar"
-            className="p-1.5 rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-all duration-150"
+            className="p-2 rounded-xl text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-all duration-150"
           >
-            <Pencil className="w-3.5 h-3.5" />
+            <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(tx)}
             title="Eliminar"
-            className="p-1.5 rounded-lg text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-all duration-150"
+            className="p-2 rounded-xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-all duration-150"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </td>
@@ -307,8 +307,8 @@ export function TransactionList({
                   className={cn(
                     'px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider',
                     h === 'Monto' && 'text-right',
-                    (h === 'Etiqueta' || h === 'Tipo') && 'hidden sm:table-cell',
-                    h === 'Proyecto' && 'hidden md:table-cell',
+                    (h === 'Tags' || h === 'Tipo') && 'hidden sm:table-cell',
+                    h === 'Cuenta' && 'hidden md:table-cell',
                   )}
                 >
                   {h}

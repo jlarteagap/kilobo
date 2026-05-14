@@ -89,14 +89,14 @@ const axisProps = {
 // ─── Leyenda ──────────────────────────────────────────────────────────────────
 function ChartLegend() {
   return (
-    <div className="flex items-center gap-4 mt-3">
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
       {[
         { color: INCOME_COLOR,  label: 'Ingresos' },
         { color: EXPENSE_COLOR, label: 'Gastos'   },
       ].map(({ color, label }) => (
         <div key={label} className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-          <span className="text-[12px] text-gray-400">{label}</span>
+          <span className="text-[12px] text-gray-400 font-medium">{label}</span>
         </div>
       ))}
     </div>
@@ -131,19 +131,19 @@ export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
       style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
     >
       {/* ── Header ── */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+        <div className="w-full sm:w-auto">
           <h3 className="text-sm font-semibold text-gray-700">Ingresos vs Gastos</h3>
           <p className="text-[11px] text-gray-400 mt-0.5">Evolución del período</p>
         </div>
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+        <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-full sm:w-auto">
           {CHART_TYPES.map((type) => (
             <button
               key={type.value}
               type="button"
               onClick={() => setChartType(type.value)}
               className={cn(
-                'px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200',
+                'flex-1 sm:flex-none px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200',
                 chartType === type.value
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-400 hover:text-gray-600'

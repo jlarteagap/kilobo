@@ -19,7 +19,7 @@ function StatItem({ label, value, currency, trend, inverse, color }: StatItemPro
   return (
     <div className="flex flex-col gap-1.5">
       <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest">{label}</p>
-      <div className="flex items-end gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-end gap-0.5 lg:gap-3">
         <p className={cn(
           'text-2xl font-bold tracking-tight tabular-nums',
           color ?? 'text-foreground'
@@ -28,7 +28,7 @@ function StatItem({ label, value, currency, trend, inverse, color }: StatItemPro
         </p>
         {trend !== undefined && (
           <div className={cn(
-            'flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider mb-1',
+            'flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider lg:mb-1',
             isNeutral   ? 'text-muted-foreground/40' :
             isPositive  ? 'text-emerald-500' :
                           'text-rose-500'
@@ -84,7 +84,7 @@ export function DashboardHeader({
         style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}
       >
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 divide-x-0 divide-y lg:divide-y-0 lg:divide-x divide-border/40">
-          <div className="pt-4 lg:pt-0 first:pt-0">
+          <div className="pt-4 lg:pt-0 sm:first:pt-8 lg:first:pt-0">
             <StatItem
               label="Patrimonio neto"
               value={netWorth}

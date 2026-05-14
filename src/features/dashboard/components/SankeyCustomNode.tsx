@@ -48,7 +48,7 @@ export function SankeyCustomNode({
     '#60a5fa'
 
   // Truncar labels largos en pantallas pequeñas
-  const maxChars = containerWidth < 400 ? 8 : containerWidth < 600 ? 12 : 20
+  const maxChars = containerWidth < 380 ? 6 : containerWidth < 500 ? 10 : 20
   const name     = payload?.name ?? ''
   const label    = name.length > maxChars
     ? name.slice(0, maxChars) + '…'
@@ -62,18 +62,18 @@ export function SankeyCustomNode({
         width={width}
         height={height}
         fill={fill}
-        fillOpacity={1}
-        radius={4}
+        fillOpacity={0.9}
+        radius={2}
       />
       <text
-        x={isRight ? x - 8 : x + width + 8}
+        x={isRight ? x - 6 : x + width + 6}
         y={y + height / 2}
         textAnchor={isRight ? 'end' : 'start'}
         dominantBaseline="middle"
         fill="#6b7280"
         fontSize={fontSize}
-        fontWeight={500}
-        fontFamily="inherit"
+        className="font-medium tracking-tight"
+        style={{ pointerEvents: 'none' }}
       >
         {label}
       </text>

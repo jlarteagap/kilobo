@@ -198,7 +198,13 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
   const isCustomRange = value.type === 'CUSTOM_RANGE'
 
   return (
-    <div ref={containerRef} className="flex items-center gap-1 flex-wrap">
+    <div 
+      ref={containerRef} 
+      className={cn(
+        "flex items-center gap-2 overflow-x-auto pb-4 -mb-4 px-0.5 no-scrollbar",
+        "md:flex-wrap md:overflow-visible md:pb-0 md:mb-0 md:px-0"
+      )}
+    >
 
       {/* ── Tabs principales ── */}
       <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">

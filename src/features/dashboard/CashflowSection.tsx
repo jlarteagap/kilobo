@@ -112,10 +112,10 @@ function CashflowSankey({ width = 0, height = 0, sankeyData }: CashflowSankeyPro
   const isSmall  = width < 400
   const isMedium = width < 600
 
-  const marginRight = isSmall ? 80 : isMedium ? 110 : 130
-  const marginLeft  = isSmall ? 80 : 100
-  const nodePadding = isSmall ? 20 : 40
-  const fontSize    = isSmall ? 9  : 11
+  const marginRight = isSmall ? 70 : isMedium ? 100 : 130
+  const marginLeft  = isSmall ? 70 : 100
+  const nodePadding = isSmall ? 16 : 40
+  const fontSize    = isSmall ? 8.5 : 11
 
   return (
     <Sankey
@@ -128,7 +128,7 @@ function CashflowSankey({ width = 0, height = 0, sankeyData }: CashflowSankeyPro
         left:   marginLeft,
         right:  marginRight,
         top:    10,
-        bottom: 10,
+        bottom: 20,
       }}
       link={{ stroke: '#e5e7eb', strokeOpacity: 0.6 }}
       node={
@@ -171,14 +171,16 @@ export function CashflowSection() {
       style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}
     >
       {/* ── Header + PeriodSelector ── */}
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div>
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
+        <div className="w-full md:w-auto">
           <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">Flujo de caja</h3>
           <p className="text-[11px] text-muted-foreground/60 mt-1 capitalize">
             {getPeriodLabel(period)}
           </p>
         </div>
-        <PeriodSelector value={period} onChange={setPeriod} />
+        <div className="w-full md:w-auto overflow-hidden">
+          <PeriodSelector value={period} onChange={setPeriod} />
+        </div>
       </div>
 
       {/* ── Contenido ── */}
@@ -186,14 +188,16 @@ export function CashflowSection() {
         <CashflowEmpty period={period} />
       ) : (
         <>
-          <div className="h-[500px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <CashflowSankey sankeyData={sankeyData} />
-            </ResponsiveContainer>
+          <div className="overflow-x-auto no-scrollbar -mx-6 px-6">
+            <div className="h-[400px] md:h-[500px] w-full min-w-[600px] md:min-w-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <CashflowSankey sankeyData={sankeyData} />
+              </ResponsiveContainer>
+            </div>
           </div>
 
           {/* ── Leyenda ── */}
-          <div className="flex items-center gap-6 mt-6 pt-6 border-t border-border/40">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:gap-x-6 mt-6 pt-6 border-t border-border/40">
             {[
               { color: 'var(--growth)', label: 'Ingresos' },
               { color: 'var(--debt)',   label: 'Gastos'   },

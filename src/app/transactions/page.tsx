@@ -84,8 +84,8 @@ export default function TransactionsPage() {
       <div className="container mx-auto py-8 px-4 max-w-7xl">
 
         {/* ── Header ── */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
+          <div className="w-full lg:w-auto">
             <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
               Transacciones
             </h1>
@@ -99,15 +99,17 @@ export default function TransactionsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-3 w-full lg:w-auto overflow-hidden">
             {/* Period Selector */}
-            <PeriodSelector
-              value={filters.period}
-              onChange={(period) => {
-                setPeriod(period)
-                resetSecondaryFilters()  // ← limpiar filtros al cambiar período
-              }}
-            />
+            <div className="flex-1 lg:flex-none min-w-0">
+              <PeriodSelector
+                value={filters.period}
+                onChange={(period) => {
+                  setPeriod(period)
+                  resetSecondaryFilters()  // ← limpiar filtros al cambiar período
+                }}
+              />
+            </div>
 
             {/* Nueva transacción */}
             <Dialog open={open} onOpenChange={setOpen}>
@@ -175,7 +177,7 @@ export default function TransactionsPage() {
           <div className="px-4 py-3 border-b border-gray-100 space-y-3">
 
             {/* Fila 1: título + stats rápidas */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-sm font-semibold text-gray-700">
                   Movimientos
@@ -187,8 +189,8 @@ export default function TransactionsPage() {
 
               {/* Stats rápidas del filtrado */}
               {filtered.length > 0 && (
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
+                <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 w-full sm:w-auto">
+                  <div className="text-right sm:text-left md:text-right">
                     <p className="text-[11px] text-gray-400">Ingresos</p>
                     <p className="text-[13px] font-semibold text-emerald-600">
                       {formatCurrency(stats.income, 'BOB')}

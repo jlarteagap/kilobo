@@ -1,16 +1,18 @@
 // features/transactions/TransactionForm.tsx
 "use client"
 
-import { useForm, useWatch, type Resolver } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2 } from "lucide-react"
+import { useForm, useWatch } from "react-hook-form"
+import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import { cn } from "@/lib/utils"
+import { SubmitButton } from "@/components/ui/submit-button"
+import { AccountBalanceHint } from "@/components/ui/account-balance-hint"
+import { SegmentedControl } from "@/components/ui/segmented-control"
+import { ChipSelector } from "@/components/ui/chip-selector"
 
 import { useCategories } from "@/features/categories/hooks/useCategories"
 import { useAccounts } from "@/features/accounts/hooks/useAccounts"
 import { useCreateTransaction } from "@/features/transactions/hooks/useTransactions"
 
-import {formatCurrency } from '@/features/accounts/utils/account-display.utils'
 import {
   createTransactionSchema,
   CreateTransactionInput,
@@ -28,7 +30,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -39,57 +40,7 @@ import {
 import { useProjects } from '@/features/projects/hooks/useProjects'
 
 import { TRANSACTION_TYPE_LABELS } from "./utils/transaction-display.utils"
-import type { Category } from "@/types/category"
-import type { Account } from "@/types/account"
-import type { Project } from '@/types/project'
-// ─── Helper ───────────────────────────────────────────────────────────────────
-function getTagsForCategory(categoryId: string | null | undefined, categories: Category[]): string[] {
-  if (!categoryId) return []
-  return categories.find((c) => c.id === categoryId)?.tags ?? []
-}
-function getSubtypesForProject(projectId: string | null | undefined, projects: Project[]): string[] {
-  if (!projectId) return []
-  return projects.find((p) => p.id === projectId)?.subtypes ?? []
-}
-
-function AccountBalanceHint({
-  accountId,
-  amount,
-  type,
-  accounts,
-}: {
-  accountId: string | undefined
-  amount:    number
-  type:      string
-  accounts:  Account[]
-}) {
-  if (!accountId) return null
-
-  const account     = accounts.find((a) => a.id === accountId)
-  if (!account) return null
-
-  const showBalance = type === 'EXPENSE'
-  const isOverdraft = showBalance && amount > account.balance
-
-  return (
-    <div className={cn(
-      'flex items-center justify-between px-3 py-2 rounded-xl text-[12px] transition-all duration-200',
-      isOverdraft
-        ? 'bg-rose-50 text-rose-500'
-        : 'bg-gray-50 text-gray-400'
-    )}>
-      <span>Balance disponible</span>
-      <span className={cn('font-semibold', isOverdraft && 'text-rose-600')}>
-        {formatCurrency(account.balance, account.currency)}
-        {isOverdraft ? (
-          <span className="ml-1.5 font-normal">
-            · insuficiente
-          </span>
-        ) : null}
-      </span>
-    </div>
-  )
-}
+import { getTagsForCategory, getSubtypesForProject } from "./utils/transaction-form.utils"
 // ─── Componente ───────────────────────────────────────────────────────────────
 export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const { data: categories = [] } = useCategories()
@@ -98,7 +49,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const createTransaction         = useCreateTransaction()
 
   const form = useForm<CreateTransactionInput>({
-    resolver: zodResolver(createTransactionSchema) as unknown as Resolver<CreateTransactionInput>, // Bypass structural mismatch with explicit Resolver cast
+    resolver: createZodResolver(createTransactionSchema),
     defaultValues: {
       type:         'EXPENSE',
       date:         new Date().toISOString().split('T')[0],
@@ -170,24 +121,12 @@ const onSubmit = async (data: CreateTransactionInput) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-        {/* ── Tipo — segmented control estilo Apple ── */}
-        <div className="flex gap-1.5 p-1 bg-gray-100 rounded-xl">
-          {TRANSACTION_TYPES.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => handleTypeChange(t)}
-              className={cn(
-                'flex-1 py-2 text-xs font-medium rounded-lg transition-all duration-200',
-                type === t
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600'
-              )}
-            >
-              {TRANSACTION_TYPE_LABELS[t]}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          value={type}
+          onChange={handleTypeChange}
+          options={TRANSACTION_TYPES.map((t) => ({ value: t, label: TRANSACTION_TYPE_LABELS[t] }))}
+          fullWidth
+        />
 
         {/* ── Fila 1: Monto + Fecha ── */}
         <div className="grid grid-cols-2 gap-4">
@@ -274,7 +213,6 @@ const onSubmit = async (data: CreateTransactionInput) => {
   )}
 />
 
-{/* ── Subtype — chips dinámicos según proyecto (igual que los tags) ── */}
 {projectId && availableSubtypes.length > 0 ? (
   <FormField
     control={form.control}
@@ -286,35 +224,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
           <span className="text-gray-400 font-normal ml-1">(opcional)</span>
         </FormLabel>
         <FormControl>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => form.setValue('subtype', undefined)}
-              className={cn(
-                'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
-                !field.value
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-              )}
-            >
-              Ninguno
-            </button>
-            {availableSubtypes.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => form.setValue('subtype', s)}
-                className={cn(
-                  'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
-                  field.value === s
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                )}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+          <ChipSelector items={availableSubtypes} value={field.value as string | null | undefined} onChange={(v) => form.setValue('subtype', v ?? undefined)} clearLabel="Ninguno" />
         </FormControl>
         <FormMessage className="text-[12px]" />
       </FormItem>
@@ -420,7 +330,6 @@ const onSubmit = async (data: CreateTransactionInput) => {
   )}
         </div>
 
-        {/* ── Tags — chips dinámicos según categoría ── */}
         {showTags ? (
           <FormField
             control={form.control}
@@ -432,35 +341,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
                   <span className="text-gray-400 font-normal ml-1">(opcional)</span>
                 </FormLabel>
                 <FormControl>
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => form.setValue('tag', undefined)}
-                      className={cn(
-                        'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
-                        !field.value
-                          ? 'bg-gray-900 text-white'
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                      )}
-                    >
-                      Ninguna
-                    </button>
-                    {availableTags.map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => form.setValue('tag', tag)}
-                        className={cn(
-                          'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
-                          field.value === tag
-                            ? 'bg-gray-900 text-white'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        )}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
+                  <ChipSelector items={availableTags} value={field.value as string | null | undefined} onChange={(v) => form.setValue('tag', v)} clearLabel="Ninguna" />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
               </FormItem>
@@ -468,12 +349,14 @@ const onSubmit = async (data: CreateTransactionInput) => {
           />
         ) : null}
 
-        <AccountBalanceHint
-          accountId={accountId}
-          amount={amount}
-          type={type}
-          accounts={accounts}
-        />
+        {type === 'EXPENSE' && (
+          <AccountBalanceHint
+            accountId={accountId}
+            amount={amount}
+            accounts={accounts}
+            showBalance
+          />
+        )}
 
         {/* ── Nota ── */}
         <FormField
@@ -518,17 +401,9 @@ const onSubmit = async (data: CreateTransactionInput) => {
           />
         ) : null}
 
-        {/* ── Submit ── */}
-        <Button
-          type="submit"
-          disabled={createTransaction.isPending}
-          className="w-full rounded-xl bg-gray-900 hover:bg-gray-800 text-white gap-2 shadow-sm hover:shadow-md transition-all duration-200"
-        >
-          {createTransaction.isPending
-            ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
-            : 'Guardar Transacción'
-          }
-        </Button>
+        <SubmitButton isPending={createTransaction.isPending}>
+          Guardar Transacción
+        </SubmitButton>
       </form>
     </Form>
   )

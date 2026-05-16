@@ -4,6 +4,8 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { EmptyState } from "@/components/ui/empty-state"
+import { SegmentedControl } from "@/components/ui/segmented-control"
 
 import {
   Dialog,
@@ -53,8 +55,7 @@ function DebtsGridSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-2xl p-5 space-y-4"
-          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+          className="bg-white rounded-2xl p-5 space-y-4 shadow-card"
         >
           <div className="flex items-center gap-2.5">
             <Skeleton className="w-9 h-9 rounded-xl" />
@@ -98,8 +99,7 @@ function DebtsSummary() {
       {items.map(({ label, value, color, bg, emoji }) => (
         <div
           key={label}
-          className="bg-white rounded-2xl px-4 py-3.5 flex items-center gap-3"
-          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+          className="bg-white rounded-2xl px-4 py-3.5 flex items-center gap-3 shadow-card"
         >
           <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center text-base', bg)}>
             {emoji}
@@ -185,25 +185,12 @@ export function DebtsList() {
       {/* ── Summary ── */}
       {!isLoading && debts.length > 0 && <DebtsSummary />}
 
-      {/* ── Filter tabs ── */}
       {!isLoading && debts.length > 0 && (
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
-          {FILTER_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => setActiveFilter(tab.value)}
-              className={cn(
-                'px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200',
-                activeFilter === tab.value
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600'
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          value={activeFilter}
+          onChange={setActiveFilter}
+          options={FILTER_TABS}
+        />
       )}
 
       {/* ── Grid ── */}

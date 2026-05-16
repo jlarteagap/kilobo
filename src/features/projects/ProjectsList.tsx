@@ -33,6 +33,7 @@ import {
 } from "./hooks/useProjects"
 import type { Project, CreateProjectData } from "@/types/project"
 import { cn } from "@/lib/utils"
+import { EmptyState } from "@/components/ui/empty-state"
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
 function ProjectsGridSkeleton() {

@@ -1,10 +1,10 @@
 // features/debts/components/DebtPaymentForm.tsx
 "use client"
 
-import { useForm, useWatch, type Resolver } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2 } from "lucide-react"
+import { useForm, useWatch } from "react-hook-form"
+import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import { cn } from "@/lib/utils"
+import { SubmitButton } from "@/components/ui/submit-button"
 
 import { useAccounts } from "@/features/accounts/hooks/useAccounts"
 import { useRegisterPayment } from "@/features/debts/hooks/useDebts"
@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -94,7 +93,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
   const pending = debt.amount - debt.paid_amount
 
   const form = useForm<CreateDebtPaymentInput>({
-    resolver: zodResolver(createDebtPaymentSchema) as unknown as Resolver<CreateDebtPaymentInput>,
+    resolver: createZodResolver(createDebtPaymentSchema),
     defaultValues: {
       amount:     pending,  // ← por defecto el total pendiente
       account_id: debt.account_id,  // ← por defecto la cuenta original
@@ -268,17 +267,12 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
           )}
         />
 
-        {/* ── Submit ── */}
-        <Button
-          type="submit"
-          disabled={registerPayment.isPending || isOverAmount}
-          className="w-full rounded-xl bg-gray-900 hover:bg-gray-800 text-white gap-2 shadow-sm hover:shadow-md transition-all duration-200"
+        <SubmitButton
+          isPending={registerPayment.isPending}
+          disabled={isOverAmount}
         >
-          {registerPayment.isPending
-            ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
-            : `Registrar pago de ${formatCurrency(amount || 0, debt.currency)}`
-          }
-        </Button>
+          {`Registrar pago de ${formatCurrency(amount || 0, debt.currency)}`}
+        </SubmitButton>
       </form>
     </Form>
   )

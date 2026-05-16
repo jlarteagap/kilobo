@@ -16,8 +16,7 @@ export function AssetsSection({ groups }: AssetsSectionProps) {
   if (groups.length === 0) {
     return (
       <div
-        className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center gap-2 min-h-[200px]"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+        className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center gap-2 min-h-[200px] shadow-card"
       >
         <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-xl">
           🏦

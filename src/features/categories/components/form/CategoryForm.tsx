@@ -3,8 +3,8 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { SubmitButton } from '@/components/ui/submit-button'
 
 import {
   Form,
@@ -15,7 +15,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
 import { createCategorySchema, updateCategorySchema } from '@/lib/validations/category.schema'
@@ -150,16 +149,9 @@ function CreateCategoryForm({ onSuccess }: Omit<CreateModeProps, 'mode'>) {
           )}
         />
 
-        <Button
-          type="submit"
-          disabled={createCategory.isPending}
-          className="w-full rounded-xl"
-        >
-          {createCategory.isPending
-            ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Creando…</>
-            : 'Crear Categoría'
-          }
-        </Button>
+        <SubmitButton isPending={createCategory.isPending} pendingText="Creando…">
+          Crear Categoría
+        </SubmitButton>
       </form>
     </Form>
   )
@@ -270,16 +262,9 @@ function EditCategoryForm({ category, lockedTags = [], onSuccess }: Omit<EditMod
           )}
         />
 
-        <Button
-          type="submit"
-          disabled={updateCategory.isPending}
-          className="w-full rounded-xl"
-        >
-          {updateCategory.isPending
-            ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Guardando…</>
-            : 'Guardar cambios'
-          }
-        </Button>
+        <SubmitButton isPending={updateCategory.isPending}>
+          Guardar cambios
+        </SubmitButton>
       </form>
     </Form>
   )

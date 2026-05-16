@@ -1,51 +1,36 @@
 // features/transactions/components/analytics/CategoryOverview.tsx
 "use client"
 
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
-import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import type { CategoryData } from "@/types/transaction"
+import { ChartTooltipContainer } from "@/components/ui/chart-tooltip"
 import type { Transaction }  from "@/types/transaction"
 import type { Project }      from "@/types/project"
+import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import {
+  buildProjectSlices,
+  buildMixedSlices,
+  buildDetailSlices,
+  type SliceItem,
+} from "@/features/transactions/utils/category-overview.utils"
 
-// ─── Paleta para categorías personales ───────────────────────────────────────
-const CATEGORY_COLORS = [
-  '#B3D9FF', '#B3F0D9', '#FFD9B3', '#D9B3FF',
-  '#FFB3B3', '#FFFAB3', '#B3FFD9', '#E0E0E0',
-]
-
-// ─── Tipos internos ───────────────────────────────────────────────────────────
-interface SliceItem {
-  name:       string
-  value:      number
-  color:      string
-  icon?:      string
-  isProject:  boolean
-  itemId?:    string
-}
-
-// ─── Tooltip ─────────────────────────────────────────────────────────────────
 interface CustomTooltipProps {
   active?: boolean
-  payload?: Array<{
-    payload: SliceItem
-  }>
+  payload?: Array<{ payload: SliceItem }>
 }
 
 function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
   const item: SliceItem = payload[0].payload
   return (
-    <div
-      className="bg-white px-3 py-2 rounded-xl text-sm"
-      style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)', border: '1px solid #f3f4f6' }}
-    >
-      <div className="flex items-center gap-1.5 mb-0.5">
+    <ChartTooltipContainer active={active} payload={payload}>
+      <div className="flex items-center gap-1.5">
         {item.icon && <span style={{ fontSize: 13 }}>{item.icon}</span>}
         <p className="font-medium text-gray-700">{item.name}</p>
       </div>
       <p className="text-gray-500 text-[12px]">{formatCurrency(item.value, 'BOB')}</p>
-    </div>
+    </ChartTooltipContainer>
   )
 }
 
@@ -97,104 +82,11 @@ export function CategoryOverview({
 
   const isProjectMode = !!projectId && projectId !== '__personal__'
 
-  // ── Modo proyecto activo: subtipos del proyecto seleccionado ─────────────
-  const projectSlices = useMemo((): SliceItem[] => {
-    if (!projectId || projectId === '__personal__') return []
+  const projectSlices = buildProjectSlices(projects, transactions, projectId)
 
-    const project = projects.find((p) => p.id === projectId)
-    const color   = project?.color ?? '#6b7280'
+  const mixedSlices = buildMixedSlices(projects, data, transactions, projectId)
 
-    const expenses = transactions.filter(
-      (t) => t.type === 'EXPENSE' && t.project_id === projectId
-    )
-    if (expenses.length === 0) return []
-
-    const bySubtype = new Map<string, number>()
-    expenses.forEach((t) => {
-      const key = t.subtype ?? 'Sin subtipo'
-      bySubtype.set(key, (bySubtype.get(key) ?? 0) + t.amount)
-    })
-
-    // Generar tonos del color del proyecto para cada subtipo
-    const entries = Array.from(bySubtype.entries()).sort((a, b) => b[1] - a[1])
-    return entries.map(([name, value], i) => ({
-      name,
-      value,
-      // Variaciones de opacidad del color del proyecto
-      color:     i === 0 ? color : color + Math.floor(255 * (1 - i * 0.15)).toString(16).padStart(2, '0'),
-      isProject: true,
-    }))
-  }, [transactions, projectId, projects])
-
-  // ── Modo sin filtro: categorías personales + una slice por proyecto ───────
-  const mixedSlices = useMemo((): SliceItem[] => {
-    if (projectId && projectId !== '__personal__') return []
-
-    const result: SliceItem[] = []
-
-    // 1. Categorías personales (transacciones sin project_id)
-    // Usar data del hook (ya viene calculada y con nombres de categoría)
-    data.forEach((cat, i) => {
-      if (cat.value > 0) {
-        result.push({
-          name:      cat.name,
-          value:     cat.value,
-          color:     cat.color || CATEGORY_COLORS[i % CATEGORY_COLORS.length],
-          isProject: false,
-          itemId:    cat.categoryId,
-        })
-      }
-    })
-
-    // 2. Una slice por proyecto — suma de todos sus gastos
-    projects.forEach((project) => {
-      const total = transactions
-        .filter((t) => t.type === 'EXPENSE' && t.project_id === project.id)
-        .reduce((s, t) => s + t.amount, 0)
-
-      if (total > 0) {
-        result.push({
-          name:      project.name,
-          value:     total,
-          color:     project.color,
-          icon:      project.icon ?? undefined,
-          isProject: true,
-          itemId:    project.id,
-        })
-      }
-    })
-
-    // Ordenar por valor descendente
-    return result.sort((a, b) => b.value - a.value)
-  }, [transactions, projects, data, projectId])
-
-  // ── Modo drill-down activo: tags/subtipos del item seleccionado ─────────────
-  const detailSlices = useMemo((): SliceItem[] => {
-    if (!selectedItem || isProjectMode) return []
-
-    const expenses = transactions.filter(
-      (t) => t.type === 'EXPENSE' && (
-        selectedItem.isProject ? t.project_id === selectedItem.id : (t.category_id === selectedItem.id && !t.project_id)
-      )
-    )
-    if (expenses.length === 0) return []
-
-    const bySubItem = new Map<string, number>()
-    expenses.forEach((t) => {
-      const key = (selectedItem.isProject ? t.subtype : t.tag) ?? (selectedItem.isProject ? 'Sin subtipo' : 'Sin tag')
-      bySubItem.set(key, (bySubItem.get(key) ?? 0) + t.amount)
-    })
-
-    const color = selectedItem.color || '#6b7280'
-    const entries = Array.from(bySubItem.entries()).sort((a, b) => b[1] - a[1])
-    return entries.map(([name, value], i) => ({
-      name,
-      value,
-      color:     i === 0 ? color : color + Math.floor(255 * (1 - i * 0.15)).toString(16).padStart(2, '0'),
-      isProject: selectedItem.isProject,
-      itemId:    selectedItem.id,
-    }))
-  }, [transactions, selectedItem, isProjectMode])
+  const detailSlices = buildDetailSlices(selectedItem, transactions, isProjectMode)
 
   // ── Seleccionar modo ──────────────────────────────────────────────────────
   const items         = isProjectMode ? projectSlices : selectedItem ? detailSlices : mixedSlices
@@ -204,8 +96,7 @@ export function CategoryOverview({
   if (items.length === 0) {
     return (
       <div
-        className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center h-[400px] gap-2"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+        className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center h-[400px] gap-2 shadow-card"
       >
         <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-xl">
           {isProjectMode ? (project?.icon ?? '📁') : '🥧'}
@@ -225,8 +116,7 @@ export function CategoryOverview({
 
   return (
     <div
-      className="bg-white rounded-2xl p-5"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
+      className="bg-white rounded-2xl p-5 shadow-card-hover"
     >
       {/* ── Header ── */}
       <div className="mb-4">

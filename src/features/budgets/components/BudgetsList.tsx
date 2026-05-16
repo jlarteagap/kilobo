@@ -4,6 +4,7 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { EmptyState } from "@/components/ui/empty-state"
 
 import {
   Dialog,
@@ -53,8 +54,7 @@ function BudgetsGridSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-2xl p-5 space-y-4"
-          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+          className="bg-white rounded-2xl p-5 space-y-4 shadow-card"
         >
           <div className="flex items-center gap-2.5">
             <Skeleton className="w-9 h-9 rounded-xl" />
@@ -202,18 +202,11 @@ export function BudgetsList() {
                 Error al cargar los presupuestos. Intenta nuevamente.
               </div>
             ) : filtered.length === 0 ? (
-              <div className="text-center py-16">
-                <p className="text-4xl mb-3">📋</p>
-                <p className="text-gray-400 text-sm">
-                  {activeFilter === 'ARCHIVED'
-                    ? 'No hay presupuestos archivados.'
-                    : 'No hay presupuestos en esta categoría.'
-                  }
-                </p>
-                <p className="text-gray-300 text-[13px] mt-1">
-                  Usa el botón de arriba para crear uno.
-                </p>
-              </div>
+              <EmptyState
+                icon="📋"
+                title={activeFilter === 'ARCHIVED' ? 'No hay presupuestos archivados.' : 'No hay presupuestos en esta categoría.'}
+                subtitle="Usa el botón de arriba para crear uno."
+              />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filtered.map((p) => (

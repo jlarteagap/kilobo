@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { X, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { SegmentedControl } from "@/components/ui/segmented-control"
 import { useCreateCategory } from "../hooks/useCategories"
 
 // ─── Paleta de colores estilo Apple ──────────────────────────────────────────
@@ -97,25 +98,17 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-      {/* ── Selector de tipo (solo para categorías raíz) ── */}
       {!parentId ? (
-        <div className="flex gap-1.5 p-1 bg-gray-100 rounded-xl">
-          {(['EXPENSE', 'INCOME'] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => form.setValue('type', t)}
-              className={cn(
-                'flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200',
-                selectedType === t
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600'
-              )}
-            >
-              {t === 'EXPENSE' ? 'Gasto' : 'Ingreso'}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          value={selectedType}
+          onChange={(value) => form.setValue('type', value)}
+          options={[
+            { value: 'EXPENSE', label: 'Gasto' },
+            { value: 'INCOME', label: 'Ingreso' },
+          ]}
+          fullWidth
+          className="[&>button]:text-sm"
+        />
       ) : (
         <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-xl">
           <span className="text-[13px] text-gray-500">

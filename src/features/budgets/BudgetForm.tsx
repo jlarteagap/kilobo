@@ -1,9 +1,10 @@
 "use client"
 import { useState } from "react"
-import { useForm, useWatch, type Resolver } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2 } from "lucide-react"
+import { useForm, useWatch } from "react-hook-form"
+import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import { cn } from "@/lib/utils"
+import { SubmitButton } from "@/components/ui/submit-button"
+import { SegmentedControl } from "@/components/ui/segmented-control"
 
 import { useCategories } from "@/features/categories/hooks/useCategories"
 import { useProjects }   from "@/features/projects/hooks/useProjects"      // ← NUEVO
@@ -21,7 +22,6 @@ import {
   FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form"
 import { Input }  from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import {
   Select, SelectContent,
   SelectItem, SelectTrigger, SelectValue,
@@ -47,9 +47,9 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
   const initialMode = initialData?.project_id ? 'project' : 'personal'
 
   const form = useForm<CreateBudgetInput>({
-    resolver: zodResolver(
+    resolver: createZodResolver(
       isEdit ? updateBudgetSchema : createBudgetSchemaWithRefinement
-    ) as unknown as Resolver<CreateBudgetInput>, // Cast intentional to bypass structural mismatch between complex Zod schema and RHF Resolver signature
+    ),
     defaultValues: {
       name:          initialData?.name          ?? '',
       type:          initialData?.type          ?? 'INCOME_SOURCE',
@@ -283,28 +283,17 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
           />
         )}
 
-        {/* ── Toggle Personal / Proyecto ── */}
         <div>
-          <p className="text-[13px] font-medium text-gray-600 mb-2">
-            Vincular a
-          </p>
-          <div className="flex gap-1.5 p-1 bg-gray-100 rounded-xl">
-            {(['personal', 'project'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                className={cn(
-                  'flex-1 py-2 text-xs font-medium rounded-lg transition-all duration-200',
-                  mode === m
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-400 hover:text-gray-600'
-                )}
-              >
-                {m === 'personal' ? 'Categorías personales' : 'Proyecto'}
-              </button>
-            ))}
-          </div>
+          <p className="text-[13px] font-medium text-gray-600 mb-2">Vincular a</p>
+          <SegmentedControl
+            value={mode}
+            onChange={setMode}
+            options={[
+              { value: 'personal', label: 'Categorías personales' },
+              { value: 'project', label: 'Proyecto' },
+            ]}
+            fullWidth
+          />
         </div>
 
         {/* ── Modo Personal: categorías ── */}
@@ -455,17 +444,9 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
           </div>
         )}
 
-        {/* ── Submit ── */}
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="w-full rounded-xl bg-gray-900 hover:bg-gray-800 text-white gap-2 shadow-sm hover:shadow-md transition-all duration-200"
-        >
-          {isPending
-            ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</>
-            : isEdit ? 'Guardar cambios' : 'Crear presupuesto'
-          }
-        </Button>
+        <SubmitButton isPending={isPending}>
+          {isEdit ? 'Guardar cambios' : 'Crear presupuesto'}
+        </SubmitButton>
       </form>
     </Form>
   )

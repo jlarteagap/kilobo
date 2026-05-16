@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { BUDGET_TYPES, BUDGET_STATUS_CONFIG } from "@/types/budget"
 import type { BudgetProgress } from "@/types/budget"
+import { ProgressBar } from "@/components/ui/progress-bar"
+import type { ProgressVariant } from "@/components/ui/progress-bar"
 
 interface BudgetCardProps {
   progress:  BudgetProgress
@@ -14,40 +16,11 @@ interface BudgetCardProps {
   onDelete:  (progress: BudgetProgress) => void
 }
 
-// ─── Barra de progreso ────────────────────────────────────────────────────────
-function ProgressBar({
-  percent,
-  status,
-}: {
-  percent: number
-  status:  BudgetProgress['status']
-}) {
-  const barColor =
-    status === 'COMPLETED' ? 'bg-emerald-400' :
-    status === 'OVERDUE'   ? 'bg-rose-400'    :
-    status === 'AT_RISK'   ? 'bg-orange-400'  :
-    'bg-gray-900'
-
-  return (
-    <div className="space-y-1.5">
-      <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className={cn('h-full rounded-full transition-all duration-700', barColor)}
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] text-gray-400">
-          {percent.toFixed(0)}% completado
-        </span>
-        {percent > 100 && (
-          <span className="text-[11px] text-emerald-500 font-medium">
-            +{(percent - 100).toFixed(0)}% extra
-          </span>
-        )}
-      </div>
-    </div>
-  )
+const statusToVariant: Record<BudgetProgress['status'], ProgressVariant> = {
+  COMPLETED: 'success',
+  OVERDUE:   'danger',
+  AT_RISK:   'warning',
+  ON_TRACK:  'default',
 }
 
 // ─── Badge de días ────────────────────────────────────────────────────────────
@@ -99,10 +72,9 @@ export function BudgetCard({
   return (
     <div
       className={cn(
-        'bg-white rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 group',
+        'bg-white rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 group shadow-card-hover',
         isActive ? 'hover:shadow-md' : 'opacity-60'
       )}
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
     >
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-2">
@@ -175,7 +147,13 @@ export function BudgetCard({
       </div>
 
       {/* ── Barra de progreso ── */}
-      <ProgressBar percent={percent} status={status} />
+      <ProgressBar
+        value={current_amount}
+        max={target_amount}
+        variant={statusToVariant[status]}
+        showLabel
+        showExtra
+      />
 
       {/* ── Footer: status + días ── */}
       <div className="flex items-center justify-between pt-1 border-t border-gray-50">

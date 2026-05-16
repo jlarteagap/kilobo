@@ -1,10 +1,11 @@
 "use client"
 
-import { useForm, useWatch, type SubmitHandler, type Resolver } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm, useWatch, type SubmitHandler } from "react-hook-form"
+import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import { z } from "zod"
-import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { SubmitButton } from "@/components/ui/submit-button"
+import { ChipSelector } from "@/components/ui/chip-selector"
 
 import {
   Form, FormControl, FormField,
@@ -13,7 +14,6 @@ import {
 import { Input }     from "@/components/ui/input"
 import { Textarea }  from "@/components/ui/textarea"
 import { Checkbox }  from "@/components/ui/checkbox"
-import { Button }    from "@/components/ui/button"
 import { Badge }     from "@/components/ui/badge"
 import {
   Select, SelectContent,
@@ -25,32 +25,20 @@ import { EditableTransactionFields } from "@/features/transactions/hooks/useTran
 import { useUpdateTransaction }      from "@/features/transactions/hooks/useTransactions"
 import type { Transaction } from "@/types/transaction"
 import type { Category }    from "@/types/category"
-import type { Project }     from "@/types/project"                   // ← NUEVO
+import { getTagsForCategory, getSubtypesForProject } from "./utils/transaction-form.utils"
 
-// ─── Schema — agregar project_id y subtype ────────────────────────────────────
+// ─── Schema ────────────────────────────────────────────────────────────────────
 const editTransactionSchema = z.object({
   category_id:  z.string().optional(),
   tag:          z.string().optional(),
-  subtype:      z.string().nullable().optional(),   // ← NUEVO
-  project_id:   z.string().nullable().optional(),   // ← NUEVO
+  subtype:      z.string().nullable().optional(),
+  project_id:   z.string().nullable().optional(),
   description:  z.string().optional(),
   date:         z.string().min(1, 'Selecciona una fecha'),
   is_recurring: z.boolean().optional(),
 })
 
 type EditFormValues = z.infer<typeof editTransactionSchema>
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function getTagsForCategory(categoryId: string | undefined, categories: Category[]): string[] {
-  if (!categoryId) return []
-  return categories.find((c) => c.id === categoryId)?.tags ?? []
-}
-
-// ← NUEVO
-function getSubtypesForProject(projectId: string | null | undefined, projects: Project[]): string[] {
-  if (!projectId) return []
-  return projects.find((p) => p.id === projectId)?.subtypes ?? []
-}
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 export function TransactionEditForm({
@@ -68,7 +56,7 @@ export function TransactionEditForm({
   const { data: projects = [] } = useProjects()          // ← NUEVO
 
   const form = useForm<EditFormValues>({
-    resolver: zodResolver(editTransactionSchema) as unknown as Resolver<EditFormValues>,
+    resolver: createZodResolver(editTransactionSchema),
     defaultValues: {
       category_id:  transaction.category_id ?? undefined,
       tag:          transaction.tag         ?? undefined,
@@ -84,9 +72,9 @@ export function TransactionEditForm({
   const projectId       = useWatch({ control: form.control, name: 'project_id' })        // ← NUEVO
   const availableTags   = getTagsForCategory(categoryId, categories)
   const availableSubtypes = getSubtypesForProject(projectId, projects)  // ← NUEVO
-const hasProject   = !!projectId && projectId !== 'none'
-const showCategory = transaction.type !== 'TRANSFER' && transaction.type !== 'SAVING' && !hasProject
-const showTags     = showCategory && availableTags.length > 0
+  const hasProject   = !!projectId && projectId !== 'none'
+  const showCategory = transaction.type !== 'TRANSFER' && transaction.type !== 'SAVING' && !hasProject
+  const showTags     = showCategory && availableTags.length > 0
 
   const handleCategoryChange = (value: string) => {
     form.setValue('category_id', value)
@@ -189,7 +177,6 @@ const showTags     = showCategory && availableTags.length > 0
           )}
         />
 
-        {/* ── Subtype — chips según proyecto ── */}    {/* ← NUEVO BLOQUE */}
         {projectId && availableSubtypes.length > 0 ? (
           <FormField<EditFormValues>
             control={form.control}
@@ -201,35 +188,7 @@ const showTags     = showCategory && availableTags.length > 0
                   <span className="text-gray-400 font-normal ml-1">(opcional)</span>
                 </FormLabel>
                 <FormControl>
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => form.setValue('subtype', undefined)}
-                      className={cn(
-                        'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
-                        !field.value
-                          ? 'bg-gray-900 text-white'
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                      )}
-                    >
-                      Ninguno
-                    </button>
-                    {availableSubtypes.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => form.setValue('subtype', s)}
-                        className={cn(
-                          'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
-                          field.value === s
-                            ? 'bg-gray-900 text-white'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        )}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
+                  <ChipSelector items={availableSubtypes} value={field.value as string | null | undefined} onChange={(v) => form.setValue('subtype', v ?? undefined)} clearLabel="Ninguno" />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
               </FormItem>
@@ -267,7 +226,6 @@ const showTags     = showCategory && availableTags.length > 0
           />
         ) : null}
 
-        {/* ── Tags ── */}
         {showTags ? (
           <FormField<EditFormValues>
             control={form.control}
@@ -279,35 +237,7 @@ const showTags     = showCategory && availableTags.length > 0
                   <span className="text-gray-400 font-normal ml-1">(opcional)</span>
                 </FormLabel>
                 <FormControl>
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => form.setValue('tag', undefined)}
-                      className={cn(
-                        'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
-                        !field.value
-                          ? 'bg-gray-900 text-white'
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                      )}
-                    >
-                      Ninguna
-                    </button>
-                    {availableTags.map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => form.setValue('tag', tag)}
-                        className={cn(
-                          'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150',
-                          field.value === tag
-                            ? 'bg-gray-900 text-white'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        )}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
+                  <ChipSelector items={availableTags} value={field.value as string | null | undefined} onChange={(v) => form.setValue('tag', v ?? undefined)} clearLabel="Ninguna" />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
               </FormItem>
@@ -359,17 +289,9 @@ const showTags     = showCategory && availableTags.length > 0
           />
         ) : null}
 
-        {/* ── Submit ── */}
-        <Button
-          type="submit"
-          disabled={updateTransaction.isPending}
-          className="w-full rounded-xl bg-gray-900 hover:bg-gray-800 text-white gap-2 shadow-sm hover:shadow-md transition-all duration-200"
-        >
-          {updateTransaction.isPending
-            ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
-            : 'Guardar cambios'
-          }
-        </Button>
+        <SubmitButton isPending={updateTransaction.isPending}>
+          Guardar cambios
+        </SubmitButton>
       </form>
     </Form>
   )

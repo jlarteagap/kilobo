@@ -30,10 +30,9 @@ export function DebtCard({ debt, onPay, onCancel, onDelete }: DebtCardProps) {
   return (
     <div
       className={cn(
-        'bg-white rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 group',
+        'bg-white rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 group shadow-card-hover',
         isActive ? 'hover:shadow-md' : 'opacity-70'
       )}
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
     >
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-2">

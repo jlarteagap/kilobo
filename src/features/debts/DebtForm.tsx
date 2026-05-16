@@ -1,10 +1,10 @@
 // features/debts/DebtForm.tsx
 "use client"
 
-import { useForm, useWatch, type Resolver } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2 } from "lucide-react"
+import { useForm, useWatch } from "react-hook-form"
+import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import { cn } from "@/lib/utils"
+import { SubmitButton } from "@/components/ui/submit-button"
 
 import { useAccounts } from "@/features/accounts/hooks/useAccounts"
 import { useCreateDebt } from "@/features/debts/hooks/useDebts"
@@ -13,6 +13,7 @@ import {
   CreateDebtInput,
 } from "@/lib/validations/debt.schema"
 import { CURRENCY_TYPES } from "@/types/account"
+import { AccountBalanceHint } from "@/components/ui/account-balance-hint"
 
 import {
   Form,
@@ -24,7 +25,6 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -47,45 +47,13 @@ const DEBT_TYPE_CONFIG = {
   },
 } as const
 
-// ─── Balance hint ─────────────────────────────────────────────────────────────
-function AccountBalanceHint({
-  accountId,
-  amount,
-  type,
-  accounts,
-}: {
-  accountId: string | undefined
-  amount:    number
-  type:      'GIVEN' | 'RECEIVED'
-  accounts:  { id: string; name: string; balance: number; currency: string }[]
-}) {
-  if (!accountId) return null
-  const account = accounts.find((a) => a.id === accountId)
-  if (!account) return null
-
-  const isOverdraft = type === 'GIVEN' && amount > account.balance
-
-  return (
-    <div className={cn(
-      'flex items-center justify-between px-3 py-2 rounded-xl text-[12px] transition-all duration-200',
-      isOverdraft ? 'bg-rose-50 text-rose-500' : 'bg-gray-50 text-gray-400'
-    )}>
-      <span>Balance disponible</span>
-      <span className={cn('font-semibold', isOverdraft && 'text-rose-600')}>
-        {account.balance} {account.currency}
-        {isOverdraft ? <span className="ml-1.5 font-normal">· insuficiente</span> : null}
-      </span>
-    </div>
-  )
-}
-
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
   const { data: accounts = [] } = useAccounts()
   const createDebt              = useCreateDebt()
 
   const form = useForm<CreateDebtInput>({
-    resolver: zodResolver(createDebtSchema) as unknown as Resolver<CreateDebtInput>,
+    resolver: createZodResolver(createDebtSchema),
     defaultValues: {
       type:         'GIVEN',
       contact_name: '',
@@ -258,13 +226,14 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
           )}
         />
 
-        {/* ── Balance hint ── */}
-        <AccountBalanceHint
-          accountId={accountId}
-          amount={amount}
-          type={type}
-          accounts={accounts}
-        />
+        {type === 'GIVEN' && (
+          <AccountBalanceHint
+            accountId={accountId}
+            amount={amount}
+            accounts={accounts}
+            showBalance
+          />
+        )}
 
         {/* ── Descripción ── */}
         <FormField<CreateDebtInput>
@@ -290,17 +259,9 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
           )}
         />
 
-        {/* ── Submit ── */}
-        <Button
-          type="submit"
-          disabled={createDebt.isPending}
-          className="w-full rounded-xl bg-gray-900 hover:bg-gray-800 text-white gap-2 shadow-sm hover:shadow-md transition-all duration-200"
-        >
-          {createDebt.isPending
-            ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
-            : 'Registrar deuda'
-          }
-        </Button>
+        <SubmitButton isPending={createDebt.isPending}>
+          Registrar deuda
+        </SubmitButton>
       </form>
     </Form>
   )

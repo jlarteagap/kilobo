@@ -18,8 +18,7 @@ export function DashboardDebts({
 }: DashboardDebtsProps) {
   return (
     <div
-      className="bg-white rounded-2xl p-5 flex flex-col gap-4"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      className="bg-white rounded-2xl p-5 flex flex-col gap-4 shadow-card"
     >
       {/* Header */}
       <div className="flex items-center justify-between">

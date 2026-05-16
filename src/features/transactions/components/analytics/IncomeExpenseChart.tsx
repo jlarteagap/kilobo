@@ -6,8 +6,8 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import { cn } from "@/lib/utils"
-import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import type { ChartDataPoint } from "@/types/transaction"
+import { ChartTooltipContainer, ChartTooltipRow } from "@/components/ui/chart-tooltip"
 
 type ChartType = 'area' | 'bar' | 'line'
 
@@ -20,41 +20,20 @@ const CHART_TYPES: { value: ChartType; label: string }[] = [
 const INCOME_COLOR  = '#34d399'
 const EXPENSE_COLOR = '#fb7185'
 
-// ─── Tooltip ──────────────────────────────────────────────────────────────────
-interface CustomTooltipProps {
+interface TooltipPayloadProps {
   active?: boolean
-  payload?: Array<{
-    name:     string
-    value:    number
-    color:    string
-    dataKey?: string | number
-  }>
+  payload?: Array<{ name: string; value: number; color: string; dataKey?: string | number }>
   label?: string
 }
 
-function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
-  if (!active || !payload?.length) return null
-
+function CustomTooltip({ active, payload, label }: TooltipPayloadProps) {
   return (
-    <div
-      className="bg-white px-3 py-2.5 rounded-xl text-sm min-w-[160px]"
-      style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)', border: '1px solid #f3f4f6' }}
-    >
-      <p className="text-[11px] font-semibold text-gray-400 mb-1.5 capitalize">
-        {label}
-      </p>
-      {payload.map((entry) => (
-        <div key={entry.dataKey} className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className="text-[12px] text-gray-500">{entry.name}</span>
-          </div>
-          <span className="text-[12px] font-semibold text-gray-700">
-            {formatCurrency(entry.value, 'BOB')}
-          </span>
-        </div>
+    <ChartTooltipContainer active={active} payload={payload}>
+      <p className="text-[11px] font-semibold text-gray-400 mb-1.5 capitalize">{label}</p>
+      {payload?.map((entry) => (
+        <ChartTooltipRow key={entry.dataKey} color={entry.color} label={entry.name} value={entry.value} />
       ))}
-    </div>
+    </ChartTooltipContainer>
   )
 }
 
@@ -127,8 +106,7 @@ export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
 
   return (
     <div
-      className="bg-white rounded-2xl p-5"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
+      className="bg-white rounded-2xl p-5 shadow-card-hover"
     >
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">

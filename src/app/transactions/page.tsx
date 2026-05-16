@@ -170,8 +170,7 @@ export default function TransactionsPage() {
 
         {/* ── Lista de transacciones ── */}
         <div
-          className="bg-white rounded-2xl overflow-hidden"
-          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+          className="bg-white rounded-2xl overflow-hidden shadow-card"
         >
           {/* Header de la tabla */}
           <div className="px-4 py-3 border-b border-gray-100 space-y-3">

@@ -1,10 +1,11 @@
 // features/projects/ProjectForm.tsx
 "use client"
 
-import { useForm, useWatch, type Resolver } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2, X } from "lucide-react"
+import { useForm, useWatch } from "react-hook-form"
+import { createZodResolver } from "@/lib/validations/rhf-resolver"
+import { X } from "lucide-react"
 import { useState } from "react"
+import { SubmitButton } from "@/components/ui/submit-button"
 import { cn } from "@/lib/utils"
 
 import {
@@ -48,7 +49,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
   const [subtypeInput, setSubtypeInput] = useState('')
 
   const form = useForm<CreateProjectInput>({
-    resolver: zodResolver(createProjectSchema) as Resolver<CreateProjectInput>,
+    resolver: createZodResolver(createProjectSchema),
     defaultValues: {
       name:        initialData?.name        ?? '',
       description: initialData?.description ?? '',
@@ -279,16 +280,9 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
           >
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="flex-1 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white shadow-sm hover:shadow-md transition-all duration-200"
-          >
-            {isPending
-              ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Guardando…</>
-              : isEdit ? 'Guardar cambios' : 'Crear proyecto'
-            }
-          </Button>
+          <SubmitButton isPending={isPending} className="flex-1 bg-neutral-900 hover:bg-neutral-800">
+            {isEdit ? 'Guardar cambios' : 'Crear proyecto'}
+          </SubmitButton>
         </div>
       </form>
     </Form>

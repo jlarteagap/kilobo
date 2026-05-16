@@ -2,8 +2,7 @@
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts"
-import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
-import { cn } from "@/lib/utils"
+import { ChartTooltipContainer, ChartTooltipRow } from "@/components/ui/chart-tooltip"
 
 const CURRENT_EXPENSE_COLOR  = '#f43f5e' // rose-500
 const PREVIOUS_EXPENSE_COLOR = '#fda4af' // rose-300
@@ -40,10 +39,7 @@ const getLabelName = (key: string) => {
 }
 
 function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
-  if (!active || !payload?.length) return null
-
-  // Sort payload to show Income first, then Expense, and Current before Previous
-  const sortedPayload = [...payload].sort((a, b) => {
+  const sortedPayload = [...(payload || [])].sort((a, b) => {
     const aKey = a.dataKey as string
     const bKey = b.dataKey as string
     if (aKey.includes('Income') && bKey.includes('Expense')) return -1
@@ -54,27 +50,20 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   })
 
   return (
-    <div
-      className="bg-white px-3 py-2.5 rounded-xl text-sm min-w-[200px]"
-      style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)', border: '1px solid #f3f4f6' }}
-    >
+    <ChartTooltipContainer active={active} payload={payload}>
       <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest mb-3">
         Día {label}
       </p>
       {sortedPayload.map((entry) => (
-        <div key={entry.dataKey} className="flex items-center justify-between gap-4 mb-2 last:mb-0">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className={cn("text-[12px] font-medium text-muted-foreground", entry.dataKey?.toString().includes('previous') && "opacity-70")}>
-              {getLabelName(entry.dataKey as string)}
-            </span>
-          </div>
-          <span className={cn("text-[12px] font-bold text-foreground", entry.dataKey?.toString().includes('previous') && "text-muted-foreground")}>
-            {formatCurrency(entry.value, 'BOB')}
-          </span>
-        </div>
+        <ChartTooltipRow
+          key={entry.dataKey}
+          color={entry.color}
+          label={getLabelName(entry.dataKey as string)}
+          value={entry.value}
+          muted={entry.dataKey?.toString().includes('previous')}
+        />
       ))}
-    </div>
+    </ChartTooltipContainer>
   )
 }
 

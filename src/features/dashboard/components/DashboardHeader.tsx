@@ -1,5 +1,5 @@
 // features/dashboard/components/DashboardHeader.tsx
-import { TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { TrendBadge } from "@/components/ui/trend-badge"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 
@@ -13,9 +13,6 @@ interface StatItemProps {
 }
 
 function StatItem({ label, value, currency, trend, inverse, color }: StatItemProps) {
-  const isPositive = inverse ? (trend ?? 0) < 0 : (trend ?? 0) > 0
-  const isNeutral  = trend === 0 || trend === undefined
-
   return (
     <div className="flex flex-col gap-1.5">
       <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest">{label}</p>
@@ -27,22 +24,12 @@ function StatItem({ label, value, currency, trend, inverse, color }: StatItemPro
           {formatCurrency(Math.abs(value), currency)}
         </p>
         {trend !== undefined && (
-          <div className={cn(
-            'flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider lg:mb-1',
-            isNeutral   ? 'text-muted-foreground/40' :
-            isPositive  ? 'text-emerald-500' :
-                          'text-rose-500'
-          )}>
-            {isNeutral
-              ? <Minus className="w-3 h-3" />
-              : isPositive
-                ? <TrendingUp   className="w-3 h-3" />
-                : <TrendingDown className="w-3 h-3" />
-            }
-            <span>
-              {isNeutral ? 'Sin cambio' : `${(trend ?? 0) > 0 ? '+' : ''}${(trend ?? 0).toFixed(1)}%`}
-            </span>
-          </div>
+          <TrendBadge
+            trend={trend}
+            inverse={inverse}
+            showComparison={false}
+            className="text-[10px] font-bold uppercase tracking-wider lg:mb-1"
+          />
         )}
       </div>
     </div>

@@ -2,8 +2,8 @@
 "use client"
 
 import { useMemo } from "react"
-import { TrendingUp, TrendingDown, Minus } from "lucide-react"
 import dynamic from "next/dynamic"
+import { TrendBadge } from "@/components/ui/trend-badge"
 
 const SparklineChart = dynamic(
   () => import("./SparklineChart").then(m => m.SparklineChart),
@@ -57,26 +57,7 @@ function calcTrend(current: number, previous: number): number {
   return ((current - previous) / Math.abs(previous)) * 100
 }
 
-// ─── TrendBadge (sin cambios) ─────────────────────────────────────────────────
-function TrendBadge({ trend, inverse = false }: { trend: number; inverse?: boolean }) {
-  const isPositive = inverse ? trend < 0 : trend > 0
-  const isNeutral  = trend === 0
-  if (isNeutral) {
-    return (
-      <div className="flex items-center gap-1 text-[11px] font-medium text-gray-400">
-        <Minus className="w-3 h-3" /><span>Sin cambio</span>
-      </div>
-    )
-  }
-  return (
-    <div className={cn('flex items-center gap-1 text-[11px] font-medium', isPositive ? 'text-emerald-600' : 'text-rose-500')}>
-      {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-      <span>{trend > 0 ? '+' : ''}{trend.toFixed(1)}% vs anterior</span>
-    </div>
-  )
-}
-
-// ─── SummaryCard principal (sin cambios) ──────────────────────────────────────
+// ─── SummaryCard principal ─────────────────────────────────────────────────────
 function SummaryCard({
   title, amount, currency, trend, sparkData, sparkColor, amountColor, inversetrend = false,
 }: {
@@ -85,8 +66,7 @@ function SummaryCard({
 }) {
   return (
     <div
-      className="bg-white rounded-2xl p-5 flex flex-col gap-3 overflow-hidden relative"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
+      className="bg-white rounded-2xl p-5 flex flex-col gap-3 overflow-hidden relative shadow-card-hover"
     >
       <div className="flex items-start justify-between">
         <p className="text-[13px] font-medium text-gray-500">{title}</p>

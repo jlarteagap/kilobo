@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, PiggyBank } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, PiggyBank, LucideIcon } from "lucide-react"
 import { TransactionType } from "@/types/transaction"
 import { Account } from "@/types/account"
 import { Category } from "@/types/category"
@@ -11,27 +11,24 @@ export const normalizeCurrency = (currency: string): string => {
   return currency === "BS" ? "BOB" : currency
 }
 
-// Color del monto según tipo de transacción
-export const getTransactionAmountColor = (type: TransactionType): string => {
-  switch (type) {
-    case "INCOME":   return "text-emerald-600"
-    case "EXPENSE":  return "text-rose-600"
-    case "TRANSFER": return "text-blue-600"
-    case "SAVING":   return "text-purple-600"
-    default:         return "text-gray-900"
-  }
+const transactionAmountColorMap: Record<TransactionType, string> = {
+  INCOME:   "text-emerald-600",
+  EXPENSE:  "text-rose-600",
+  TRANSFER: "text-blue-600",
+  SAVING:   "text-purple-600",
 }
 
-// Icono según tipo de transacción
-export const getTransactionIcon = (type: TransactionType) => {
-  switch (type) {
-    case "INCOME":   return ArrowDownLeft
-    case "EXPENSE":  return ArrowUpRight
-    case "TRANSFER": return ArrowRightLeft
-    case "SAVING":   return PiggyBank
-    default:         return null
-  }
+export const getTransactionAmountColor = (type: TransactionType): string =>
+  transactionAmountColorMap[type] ?? "text-gray-900"
+
+const transactionIconMap: Record<TransactionType, LucideIcon | null> = {
+  INCOME:   ArrowDownLeft,
+  EXPENSE:  ArrowUpRight,
+  TRANSFER: ArrowRightLeft,
+  SAVING:   PiggyBank,
 }
+
+export const getTransactionIcon = (type: TransactionType) => transactionIconMap[type]
 
 // Prefijo de signo según tipo
 export const getTransactionSign = (type: TransactionType): string => {

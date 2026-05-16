@@ -1,10 +1,10 @@
 // features/accounts/AccountForm.tsx
 "use client"
 
-import { useForm, type Resolver } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2 } from "lucide-react"
+import { useForm } from "react-hook-form"
+import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import { cn } from "@/lib/utils"
+import { SubmitButton } from "@/components/ui/submit-button"
 
 import { Account, ACCOUNT_TYPES, CURRENCY_TYPES } from "@/types/account"
 import { createAccountSchema, CreateAccountInput } from "@/lib/validations/account.schema"
@@ -39,7 +39,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
   const isEdit = !!initialData
 
   const form = useForm<CreateAccountInput>({
-    resolver: zodResolver(createAccountSchema) as Resolver<CreateAccountInput>,
+    resolver: createZodResolver(createAccountSchema),
     defaultValues: {
       name:     initialData?.name     ?? '',
       type:     initialData?.type     ?? 'BANK',
@@ -178,16 +178,9 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
           >
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="flex-1 rounded-xl bg-gray-900 hover:bg-gray-800 text-white shadow-sm hover:shadow-md transition-all duration-200"
-          >
-            {isPending
-              ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Guardando…</>
-              : isEdit ? 'Guardar cambios' : 'Crear cuenta'
-            }
-          </Button>
+          <SubmitButton isPending={isPending} className="flex-1">
+            {isEdit ? 'Guardar cambios' : 'Crear cuenta'}
+          </SubmitButton>
         </div>
       </form>
     </Form>

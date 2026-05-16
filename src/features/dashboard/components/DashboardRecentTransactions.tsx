@@ -17,8 +17,7 @@ export function DashboardRecentTransactions({
 }: DashboardRecentTransactionsProps) {
   return (
     <div
-      className="bg-white rounded-2xl overflow-hidden"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      className="bg-white rounded-2xl overflow-hidden shadow-card"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">

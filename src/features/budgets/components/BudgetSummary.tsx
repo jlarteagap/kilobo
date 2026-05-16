@@ -4,6 +4,8 @@
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { useBudgetSummary, useBudgetProgress } from "../hooks/useBudgets"
+import { ProgressBar } from "@/components/ui/progress-bar"
+import type { ProgressVariant } from "@/components/ui/progress-bar"
 
 export function BudgetSummary() {
   const summary  = useBudgetSummary()
@@ -14,14 +16,19 @@ export function BudgetSummary() {
     (p) => p.budget.type === 'FIXED_EXPENSE' && p.budget.due_day && p.budget.is_active
   )
 
+  const statusToVariant: Record<string, ProgressVariant> = {
+    COMPLETED: 'success',
+    OVERDUE:   'danger',
+    AT_RISK:   'warning',
+  }
+
   return (
     <div className="space-y-4">
 
       {/* ── Meta prioritaria ── */}
       {priorityBudget && (
         <div
-          className="bg-white rounded-2xl p-5"
-          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+          className="bg-white rounded-2xl p-5 shadow-card"
         >
           <div className="flex items-center gap-2 mb-4">
             <span className="text-base">🎯</span>
@@ -50,18 +57,12 @@ export function BudgetSummary() {
 
           {/* Barra grande */}
           <div className="space-y-2">
-            <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  'h-full rounded-full transition-all duration-700',
-                  priorityBudget.status === 'COMPLETED' ? 'bg-emerald-400' :
-                  priorityBudget.status === 'OVERDUE'   ? 'bg-rose-400'    :
-                  priorityBudget.status === 'AT_RISK'   ? 'bg-orange-400'  :
-                  'bg-gray-900'
-                )}
-                style={{ width: `${Math.min(priorityBudget.percent, 100)}%` }}
-              />
-            </div>
+            <ProgressBar
+              value={priorityBudget.current_amount}
+              max={priorityBudget.target_amount}
+              variant={statusToVariant[priorityBudget.status] ?? 'default'}
+              size="lg"
+            />
             <div className="flex items-center justify-between">
               <span className="text-[12px] text-gray-500">
                 {formatCurrency(priorityBudget.current_amount, priorityBudget.budget.currency)}
@@ -90,8 +91,7 @@ export function BudgetSummary() {
 
       {/* ── Resumen global ── */}
       <div
-        className="bg-white rounded-2xl overflow-hidden"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+        className="bg-white rounded-2xl overflow-hidden shadow-card"
       >
         <div className="px-5 py-4 border-b border-gray-50">
           <h3 className="text-sm font-semibold text-gray-700">Resumen del mes</h3>

@@ -14,6 +14,7 @@ import { useCashflowData } from "./hooks/useCashflowData"
 import type { SankeyData } from "./hooks/useCashflowData"
 import { PeriodSelector }  from "@/app/transactions/components/PeriodSelector"
 import { formatCurrency }  from "@/features/accounts/utils/account-display.utils"
+import { ChartTooltipContainer } from "@/components/ui/chart-tooltip"
 import { getPeriodLabel }  from "@/utils/date.utils"
 import { DEFAULT_PERIOD }  from "@/types/period"
 import type { Period }     from "@/types/period"
@@ -21,8 +22,7 @@ import type { Period }     from "@/types/period"
 function CashflowSkeleton() {
   return (
     <div
-      className="bg-white rounded-2xl p-5"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      className="bg-white rounded-2xl p-5 shadow-card"
     >
       <div className="mb-4">
         <Skeleton className="h-4 w-36 rounded-full" />
@@ -36,8 +36,7 @@ function CashflowSkeleton() {
 function CashflowEmpty({ period }: { period: Period }) {
   return (
     <div
-      className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center gap-2 min-h-[300px]"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center gap-2 min-h-[300px] shadow-card"
     >
       <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-xl">
         💸
@@ -71,14 +70,10 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
   const item = payload[0]?.payload
   if (!item?.name || !item?.value) return null
 
-  // Recharts sometimes nests the custom node properties in payload.payload
   const breakdownData = item.payload?.breakdown || item.breakdown
 
   return (
-    <div
-      className="bg-white px-3 py-2 rounded-xl text-sm min-w-[140px]"
-      style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)', border: '1px solid #f3f4f6' }}
-    >
+    <ChartTooltipContainer active={active} payload={payload}>
       <p className="text-[12px] font-medium text-gray-600">{item.name}</p>
       <p className="text-[13px] font-semibold text-gray-900 mb-1">
         {formatCurrency(item.value, 'BOB')}
@@ -96,7 +91,7 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
           ))}
         </div>
       )}
-    </div>
+    </ChartTooltipContainer>
   )
 }
 

@@ -5,16 +5,24 @@ import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { BUDGET_TYPES, BUDGET_STATUS_CONFIG } from "@/types/budget"
 import type { BudgetProgress } from "@/types/budget"
+import { ProgressBar } from "@/components/ui/progress-bar"
+import type { ProgressVariant } from "@/components/ui/progress-bar"
 
 interface DashboardBudgetsProps {
   topBudgets: BudgetProgress[]
 }
 
+const statusToVariant: Record<BudgetProgress['status'], ProgressVariant> = {
+  COMPLETED: 'success',
+  OVERDUE:   'danger',
+  AT_RISK:   'warning',
+  ON_TRACK:  'default',
+}
+
 export function DashboardBudgets({ topBudgets }: DashboardBudgetsProps) {
   return (
     <div
-      className="bg-white rounded-2xl p-5 flex flex-col gap-4"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      className="bg-white rounded-2xl p-5 flex flex-col gap-4 shadow-card"
     >
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -43,12 +51,6 @@ export function DashboardBudgets({ topBudgets }: DashboardBudgetsProps) {
             const typeConfig   = BUDGET_TYPES.find((t) => t.value === p.budget.type)!
             const statusConfig = BUDGET_STATUS_CONFIG[p.status]
 
-            const barColor =
-              p.status === 'COMPLETED' ? 'bg-emerald-400' :
-              p.status === 'OVERDUE'   ? 'bg-rose-400'    :
-              p.status === 'AT_RISK'   ? 'bg-orange-400'  :
-              'bg-gray-900'
-
             return (
               <div key={p.budget.id} className="space-y-2">
                 {/* Nombre + status */}
@@ -69,12 +71,11 @@ export function DashboardBudgets({ topBudgets }: DashboardBudgetsProps) {
                 </div>
 
                 {/* Barra */}
-                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={cn('h-full rounded-full transition-all duration-700', barColor)}
-                    style={{ width: `${Math.min(p.percent, 100)}%` }}
-                  />
-                </div>
+                <ProgressBar
+                  value={p.current_amount}
+                  max={p.target_amount}
+                  variant={statusToVariant[p.status]}
+                />
 
                 {/* Montos */}
                 <div className="flex items-center justify-between">

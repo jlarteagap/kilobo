@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       path: '/',
-      sameSite: 'lax',
+      sameSite: 'strict',
     })
 
     return NextResponse.json({ success: true }, { status: 200 })

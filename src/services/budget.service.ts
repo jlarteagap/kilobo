@@ -4,17 +4,17 @@ import type { Budget, CreateBudgetData, UpdateBudgetData } from '@/types/budget'
 
 export const budgetService = {
   // ── Obtener todos ─────────────────────────────────────────────────────────
-  async getBudgets(): Promise<Budget[]> {
-    return budgetRepository.findAll()
+  async getBudgets(userId: string): Promise<Budget[]> {
+    return budgetRepository.findAll(userId)
   },
 
   // ── Obtener solo activos ──────────────────────────────────────────────────
-  async getActiveBudgets() {
-    return budgetRepository.findActive()
+  async getActiveBudgets(userId: string) {
+    return budgetRepository.findActive(userId)
   },
 
   // ── Crear ─────────────────────────────────────────────────────────────────
-  async createBudget(data: CreateBudgetData) {
+  async createBudget(data: CreateBudgetData, userId: string) {
     // En modo proyecto no se requieren categorías — son mutuamente excluyentes
     if (!data.project_id && !data.category_ids?.length) {
       throw new Error('Selecciona al menos una categoría.')
@@ -24,12 +24,12 @@ export const budgetService = {
       throw new Error('Los gastos fijos requieren un día de vencimiento.')
     }
 
-    return budgetRepository.create(data)
+    return budgetRepository.create(data, userId)
   },
 
   // ── Actualizar ────────────────────────────────────────────────────────────
-  async updateBudget(id: string, data: UpdateBudgetData) {
-    const budget = await budgetRepository.findById(id)
+  async updateBudget(id: string, data: UpdateBudgetData, userId: string) {
+    const budget = await budgetRepository.findById(id, userId)
     if (!budget) throw new Error('Presupuesto no encontrado.')
 
     // Si cambia a FIXED_EXPENSE, validar due_day
@@ -44,16 +44,16 @@ export const budgetService = {
   },
 
   // ── Archivar ──────────────────────────────────────────────────────────────
-  async archiveBudget(id: string) {
-    const budget = await budgetRepository.findById(id)
+  async archiveBudget(id: string, userId: string) {
+    const budget = await budgetRepository.findById(id, userId)
     if (!budget) throw new Error('Presupuesto no encontrado.')
     if (!budget.is_active) throw new Error('El presupuesto ya está archivado.')
     return budgetRepository.archive(id)
   },
 
   // ── Eliminar ──────────────────────────────────────────────────────────────
-  async deleteBudget(id: string) {
-    const budget = await budgetRepository.findById(id)
+  async deleteBudget(id: string, userId: string) {
+    const budget = await budgetRepository.findById(id, userId)
     if (!budget) throw new Error('Presupuesto no encontrado.')
 
     // Solo se puede eliminar si está archivado

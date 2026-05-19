@@ -39,34 +39,38 @@ function mapBudget(id: string, data: FirebaseFirestore.DocumentData): Budget {
 
 export const budgetRepository = {
   // ── Obtener todos ─────────────────────────────────────────────────────────
-  async findAll(): Promise<Budget[]> {
+  async findAll(userId: string): Promise<Budget[]> {
     const snapshot = await budgetsCollection
+      .where('user_id', '==', userId)
       .orderBy('created_at', 'desc')
       .get()
     return snapshot.docs.map((doc) => mapBudget(doc.id, doc.data()))
   },
 
   // ── Obtener solo activos ──────────────────────────────────────────────────
-  async findActive(): Promise<Budget[]> {
+  async findActive(userId: string): Promise<Budget[]> {
     const snapshot = await budgetsCollection
       .where('is_active', '==', true)
+      .where('user_id', '==', userId)
       .orderBy('created_at', 'desc')
       .get()
     return snapshot.docs.map((doc) => mapBudget(doc.id, doc.data()))
   },
 
   // ── Obtener por id ────────────────────────────────────────────────────────
-  async findById(id: string): Promise<Budget | null> {
+  async findById(id: string, userId: string): Promise<Budget | null> {
     const doc = await budgetsCollection.doc(id).get()
     if (!doc.exists) return null
-    return mapBudget(doc.id, doc.data()!)
+    const data = doc.data()!
+    if (data.user_id !== userId) return null
+    return mapBudget(doc.id, data)
   },
 
   // ── Crear ─────────────────────────────────────────────────────────────────
-  async create(data: CreateBudgetData): Promise<Budget> {
+  async create(data: CreateBudgetData, userId: string): Promise<Budget> {
     const payload = {
       ...data,
-      user_id:    '',
+      user_id:    userId,
       created_at: Timestamp.now(),
       updated_at: Timestamp.now(),
     }

@@ -15,10 +15,11 @@ import { Badge }             from '@/components/ui/badge'
 import {
   RefreshCw, Sparkles, TrendingUp,
   AlertTriangle, Lightbulb, MessageSquare,
-  Layers, ChevronDown,
+  Layers, ChevronDown, BarChart,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import AppLayout from "@/components/layout/AppLayout"
+import { CategoryComparison } from '@/features/insights/components/CategoryComparison'
 import { useMemo, useState } from 'react'
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis,
@@ -38,6 +39,7 @@ function PageSkeleton() {
         <Skeleton className="h-64 rounded-2xl" />
         <Skeleton className="h-64 rounded-2xl" />
       </div>
+      <Skeleton className="h-80 w-full rounded-2xl" />
       <div className="space-y-4">
         <Skeleton className="h-32 rounded-2xl" />
         <Skeleton className="h-32 rounded-2xl" />
@@ -342,32 +344,17 @@ export default function InsightsPage() {
         </Section>
       </div>
 
-      {/* ── Category Pills ───────────────────────────────────────────────── */}
-      <div className="flex flex-wrap gap-2 px-1">
-        {trends.slice(0, 8).map(trend => (
-          <div
-            key={trend.category_id}
-            className="flex items-center gap-2 rounded-full border border-muted/60
-                       bg-muted/10 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium transition-colors hover:bg-muted/20"
-          >
-            {trend.category_color && (
-              <div
-                className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ backgroundColor: trend.category_color }}
-              />
-            )}
-            <span className="text-foreground/70">{trend.category_name}</span>
-            <span className={cn(
-              'font-bold',
-              trend.trend === 'up'   ? 'text-red-500'
-              : trend.trend === 'down' ? 'text-emerald-500'
-              : 'text-muted-foreground',
-            )}>
-              {trend.delta_pct > 0 ? '+' : ''}{trend.delta_pct}%
-            </span>
-          </div>
-        ))}
-      </div>
+
+
+      {/* ── Comparativa con el Mes Anterior ─────────────────────────────── */}
+      <Section
+        icon={<BarChart className="h-3.5 w-3.5" />}
+        title="Comparativa mensual"
+        description="Variación de tus gastos en cada categoría con respecto al mes anterior"
+        badge={`${trends.filter(t => t.monthly && t.monthly.length >= 2).length} categorías`}
+      >
+        <CategoryComparison trends={trends} />
+      </Section>
 
       {/* ── Anomaly Clusters ──────────────────────────────────────────────── */}
       {ai_insights?.anomaly_clusters && ai_insights.anomaly_clusters.length > 0 && (

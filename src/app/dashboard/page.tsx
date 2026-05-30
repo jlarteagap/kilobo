@@ -8,8 +8,10 @@ import { DashboardHeader }             from "@/features/dashboard/components/Das
 import { DashboardDebts }              from "@/features/dashboard/components/DashboardDebts"
 import { DashboardBudgets }            from "@/features/dashboard/components/DashboardBudgets"
 import { DashboardRecentTransactions } from "@/features/dashboard/components/DashboardRecentTransactions"
+import { DashboardSavingsGoals }       from "@/features/dashboard/components/DashboardSavingsGoals"
 import { AssetsSection }               from "@/features/dashboard/AssetsSection"
-import { FinancialComparisonChart }       from "@/features/dashboard/components/FinancialComparisonChart"
+import { FinancialComparisonChart }    from "@/features/dashboard/components/FinancialComparisonChart"
+import { BalanceProjection }           from "@/features/dashboard/components/BalanceProjection"
 import { DashboardSkeleton }           from "@/features/dashboard/components/skeletons/DashboardSkeleton"
 
 import { useDashboard }          from "@/features/dashboard/hooks/useDashboard"
@@ -70,43 +72,38 @@ export default function DashboardPage() {
         />
 
 
-        {/* ── Fila 1: Patrimonio (1/3) + Cashflow (2/3) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="md:col-span-1 lg:col-span-1">
-            <AssetsSection groups={accountsDashboard.currencyGroups} />
-          </div>
-          <div className="md:col-span-1 lg:col-span-2">
-            <CashflowSection />
-          </div>
-        </div>
+        {/* ── Flujo de caja ── */}
+        <CashflowSection />
 
-        {/* ── Fila 2: Comparativa Financiera (2/3) + Deudas (1/3) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="md:col-span-1 lg:col-span-2">
+        {/* ── Tendencia: Activos + Comparativa ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <AssetsSection groups={accountsDashboard.currencyGroups} />
+          <div className="md:col-span-2">
             <FinancialComparisonChart
               key={`dashboard-chart-${financialComparisonData.length}`}
               data={financialComparisonData}
             />
           </div>
-          <div className="md:col-span-1 lg:col-span-1">
-            <DashboardDebts
-              activeDebts={activeDebts}
-              pendingGiven={debtSummary.pendingGiven}
-              pendingReceived={debtSummary.pendingReceived}
-            />
-          </div>
-        </div>
-<InsightsWidget />
-        {/* ── Fila 3: Presupuestos (1/3) + Últimas transacciones (2/3) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="md:col-span-1 lg:col-span-1">
-            <DashboardBudgets topBudgets={topBudgets} />
-          </div>
-          <div className="md:col-span-1 lg:col-span-2">
-            <DashboardRecentTransactions transactions={recentTransactions} />
-          </div>
         </div>
 
+        {/* ── Obligaciones y metas: Deudas + Presupuestos + Ahorro ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <DashboardDebts
+            activeDebts={activeDebts}
+            pendingGiven={debtSummary.pendingGiven}
+            pendingReceived={debtSummary.pendingReceived}
+          />
+          <DashboardBudgets topBudgets={topBudgets} />
+          <DashboardSavingsGoals />
+        </div>
+
+        {/* ── Proyección de saldo ── */}
+        <BalanceProjection />
+
+        <InsightsWidget />
+
+        {/* ── Transacciones recientes ── */}
+        <DashboardRecentTransactions transactions={recentTransactions} />
       </div>
     </AppLayout>
   )

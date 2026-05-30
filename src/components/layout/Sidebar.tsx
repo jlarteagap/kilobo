@@ -16,6 +16,7 @@ import {
   Settings,
   LogOut,
   Sparkles,
+  PiggyBank,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -40,6 +41,7 @@ const navigation = [
   { name: "Presupuestos",     href: "/budgets",      icon: PieChart    },
   { name: "Categorías",       href: "/categories",   icon: LayoutGrid  },
   { name: "Insights",         href: "/insights",     icon: Sparkles    },
+  { name: "Metas de Ahorro",  href: "/ahorros",      icon: PiggyBank   },
 ]
 
 export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>) {

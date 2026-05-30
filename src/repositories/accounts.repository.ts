@@ -34,17 +34,17 @@ export const accountsRepository = {
   },
 
   async create(data: CreateAccountData, userId: string): Promise<Account> {
+    const now = Timestamp.now()
     const payload = {
       ...data,
       user_id: userId,
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
+      createdAt: now,
+      updatedAt: now,
     }
 
     const docRef = await accountsCollection.add(payload)
-    const created = await docRef.get()
 
-    return { id: docRef.id, ...(created.data() as Omit<Account, 'id'>) }
+    return { id: docRef.id, ...payload } as unknown as Account
   },
 
   async update(accountId: string, data: UpdateAccountData): Promise<Account> {
@@ -64,21 +64,19 @@ export const accountsRepository = {
   },
 
   async isUsedInTransactions(accountId: string, userId: string): Promise<boolean> {
-  const snapshot = await adminDb.collection('transactions')
-    .where('account_id', '==', accountId)
-    .where('user_id', '==', userId)
-    .limit(1)
-    .get()
+  const [snapshot, snapshotDest] = await Promise.all([
+    adminDb.collection('transactions')
+      .where('account_id', '==', accountId)
+      .where('user_id', '==', userId)
+      .limit(1)
+      .get(),
+    adminDb.collection('transactions')
+      .where('to_account_id', '==', accountId)
+      .where('user_id', '==', userId)
+      .limit(1)
+      .get(),
+  ])
 
-  if (!snapshot.empty) return true
-
-  // Verificar también como cuenta destino
-  const snapshotDest = await adminDb.collection('transactions')
-    .where('to_account_id', '==', accountId)
-    .where('user_id', '==', userId)
-    .limit(1)
-    .get()
-
-  return !snapshotDest.empty
+  return !snapshot.empty || !snapshotDest.empty
 },
 }

@@ -1,7 +1,7 @@
 // repositories/transaction.repository.ts
 import { adminDb } from '@/lib/firebase.admin'
 import { Transaction, CreateTransactionData } from '@/types/transaction'
-import { FieldValue, Timestamp } from 'firebase-admin/firestore'
+import { Timestamp } from 'firebase-admin/firestore'
 
 const transactionsCollection = adminDb.collection('transactions')
 
@@ -39,7 +39,7 @@ function toISOString(value: unknown): string {
 }
 
 // ─── Mapper: doc de Firestore → Transaction tipada ────────────────────────────
-function mapTransaction(id: string, data: FirebaseFirestore.DocumentData): Transaction {
+export function mapTransaction(id: string, data: FirebaseFirestore.DocumentData): Transaction {
   return {
     ...data,
     id,
@@ -50,6 +50,17 @@ function mapTransaction(id: string, data: FirebaseFirestore.DocumentData): Trans
       ? data.date.split('T')[0]   // por si acaso viene con hora
       : toISOString(data.date).split('T')[0],
   } as Transaction
+}
+
+function buildPayload(data: CreateTransactionData, userId: string) {
+  const now = Timestamp.now()
+  return {
+    ...data,
+    status:     data.status ?? 'COMPLETED',
+    user_id:    userId,
+    created_at: now,
+    updated_at: now,
+  }
 }
 
 export const transactionsRepository = {
@@ -72,17 +83,20 @@ export const transactionsRepository = {
   },
 
   async create(data: CreateTransactionData, userId: string): Promise<Transaction> {
-    const payload = {
-      ...data,
-      status:     data.status     ?? 'COMPLETED',
-      user_id:    userId,
-      created_at: FieldValue.serverTimestamp(),
-      updated_at: FieldValue.serverTimestamp(),
-    }
+    const payload = buildPayload(data, userId)
+    const docRef = await transactionsCollection.add(payload)
+    return mapTransaction(docRef.id, payload)
+  },
 
-    const docRef  = await transactionsCollection.add(payload)
-    const created = await docRef.get()
-    return mapTransaction(docRef.id, created.data()!)
+  createInBatch(
+    batch: FirebaseFirestore.WriteBatch,
+    data: CreateTransactionData,
+    userId: string
+  ): { ref: FirebaseFirestore.DocumentReference; payload: ReturnType<typeof buildPayload> } {
+    const payload = buildPayload(data, userId)
+    const ref = transactionsCollection.doc()
+    batch.set(ref, payload)
+    return { ref, payload }
   },
 
   async update(
@@ -93,7 +107,7 @@ export const transactionsRepository = {
 
     await docRef.update({
       ...data,
-      updated_at: FieldValue.serverTimestamp(),
+      updated_at: Timestamp.now(),
     })
 
     const updated = await docRef.get()

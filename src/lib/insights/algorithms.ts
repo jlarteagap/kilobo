@@ -186,11 +186,12 @@ export function detectAnomalies(
   transactions: Transaction[],
   monthsBack = 3,
   threshold = 20,           // % mínimo para considerar anomalía
+  trends?: CategoryTrend[],
 ): Anomaly[] {
-  const trends   = detectTrends(transactions, monthsBack)
+  const resolved = trends ?? detectTrends(transactions, monthsBack)
   const anomalies: Anomaly[] = []
 
-  trends.forEach(trend => {
+  resolved.forEach(trend => {
     if (Math.abs(trend.delta_pct) < threshold) return
     if (trend.current === 0) return
 
@@ -229,8 +230,9 @@ export function detectSavingOpportunities(
   transactions: Transaction[],
   monthsBack = 3,
   minMonthlyAmount = 20,    // ignorar categorías con gasto < $20/mes
+  trends?: CategoryTrend[],
 ): SavingOpportunity[] {
-  const trends = detectTrends(transactions, monthsBack)
+  const resolved = trends ?? detectTrends(transactions, monthsBack)
 
   // Categorías discrecionales típicas donde hay margen de ahorro
   const DISCRETIONARY_HINTS = [
@@ -244,7 +246,7 @@ export function detectSavingOpportunities(
 
   const opportunities: SavingOpportunity[] = []
 
-  trends.forEach(trend => {
+  resolved.forEach(trend => {
     if (trend.average < minMonthlyAmount) return
 
     const nameLC  = trend.category_name.toLowerCase()
@@ -276,6 +278,8 @@ export function detectSavingOpportunities(
 export function calculateHealthScore(
   transactions: Transaction[],
   monthsBack = 3,
+  trends?: CategoryTrend[],
+  anomalies?: Anomaly[],
 ): HealthScore {
   const periods  = getMonthsBack(monthsBack)
   const allTxs   = transactions.filter(tx => tx.status === 'COMPLETED')
@@ -298,9 +302,9 @@ export function calculateHealthScore(
   const stability  = Math.max(0, 100 - cv)  // cv alto = inestable
 
   // Budget adherence — penaliza por anomalías severas
-  const anomalies      = detectAnomalies(transactions, monthsBack)
-  const highAnomalies  = anomalies.filter(a => a.severity === 'high').length
-  const medAnomalies   = anomalies.filter(a => a.severity === 'medium').length
+  const resolvedAnomalies = anomalies ?? detectAnomalies(transactions, monthsBack, 20, trends)
+  const highAnomalies  = resolvedAnomalies.filter(a => a.severity === 'high').length
+  const medAnomalies   = resolvedAnomalies.filter(a => a.severity === 'medium').length
   const adherence      = Math.max(0, 100 - highAnomalies * 20 - medAnomalies * 10)
 
   // Score final ponderado
@@ -345,9 +349,9 @@ export function buildInsightsPayload(
     : 0
 
   const trends       = detectTrends(transactions, monthsBack)
-  const anomalies    = detectAnomalies(transactions, monthsBack)
-  const opportunities = detectSavingOpportunities(transactions, monthsBack)
-  const healthScore  = calculateHealthScore(transactions, monthsBack)
+  const anomalies    = detectAnomalies(transactions, monthsBack, 20, trends)
+  const opportunities = detectSavingOpportunities(transactions, monthsBack, 20, trends)
+  const healthScore  = calculateHealthScore(transactions, monthsBack, trends, anomalies)
 
   // Top 5 categorías por gasto
   const topCategories = trends.slice(0, 5).map(t => ({

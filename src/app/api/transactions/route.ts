@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
-    const transaction = await transactionService.createTransaction(parsed.data, userId)
+    const transaction = await transactionService.createWithBalance(parsed.data, userId)
     return NextResponse.json({ data: transaction }, { status: 201 })  // ← estandarizado
   } catch (error: unknown) {
     return handleError(error)

@@ -55,11 +55,11 @@ export const projectRepository = {
   },
 
   async create(data: CreateProjectData, userId: string): Promise<Project> {
-    const now = FieldValue.serverTimestamp()
+    const now = Timestamp.now()
     const ref = col.doc()
-    await ref.set({ ...data, user_id: userId, status: 'active', created_at: now, updated_at: now })
-    const created = await ref.get()
-    return mapProject(ref.id, created.data()!)
+    const payload = { ...data, user_id: userId, status: 'active' as const, created_at: now, updated_at: now }
+    await ref.set(payload)
+    return { ...payload, id: ref.id } as unknown as Project
   },
 
   async update(id: string, data: UpdateProjectData): Promise<Project> {

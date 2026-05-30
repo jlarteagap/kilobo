@@ -1,9 +1,9 @@
 // features/transactions/hooks/useTransactions.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAccounts, accountKeys } from '@/features/accounts/hooks/useAccounts'
+import { accountKeys } from '@/features/accounts/hooks/useAccounts'
 import type { Transaction } from '@/types/transaction'
 import { CreateTransactionInput } from '@/lib/validations/transaction.schema'
-import { balanceService } from '@/services/balance.service'
+
 import { toast } from 'sonner'
 
 async function authFetch(url: string, options?: RequestInit) {
@@ -39,19 +39,12 @@ export function useTransactions() {
 // ─── POST ─────────────────────────────────────────────────────────────────────
 export function useCreateTransaction() {
   const queryClient   = useQueryClient()
-  const { data: accounts = [] } = useAccounts()
 
   return useMutation({
     mutationFn: async (data: CreateTransactionInput) => {
-      const sourceAccount = accounts.find((a) => a.id === data.account_id)
-      const currency      = sourceAccount?.currency ?? 'BOB'
-      const transactionData = { ...data, currency }
-
-      await balanceService.applyBalanceForCreate(data, accounts)
-
       const res  = await authFetch('/api/transactions', {
         method: 'POST',
-        body:   JSON.stringify(transactionData),
+        body:   JSON.stringify(data),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al crear la transacción')
@@ -115,15 +108,12 @@ export function useUpdateTransaction() {
   })
 }
 
-// ─── DELETE — revierte balance según tipo ─────────────────────────────────────
+// ─── DELETE — revierte balance según tipo (server-side) ──────────────────────
 export function useDeleteTransaction() {
   const queryClient   = useQueryClient()
-  const { data: accounts = [] } = useAccounts()
 
   return useMutation({
     mutationFn: async (tx: Transaction) => {
-      await balanceService.revertBalanceForDelete(tx, accounts)
-
       const res  = await authFetch(`/api/transactions/${tx.id}`, { method: 'DELETE' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al eliminar la transacción')

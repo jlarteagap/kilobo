@@ -42,7 +42,7 @@ export async function DELETE(
     }
 
     const { id } = await params
-    await transactionService.deleteTransaction(id, userId)
+    await transactionService.deleteWithBalance(id, userId)
     return NextResponse.json({ success: true })
   } catch (error: unknown) {
     return handleError(error)

@@ -68,23 +68,24 @@ export const budgetRepository = {
 
   // ── Crear ─────────────────────────────────────────────────────────────────
   async create(data: CreateBudgetData, userId: string): Promise<Budget> {
+    const now = Timestamp.now()
     const payload = {
       ...data,
       user_id:    userId,
-      created_at: Timestamp.now(),
-      updated_at: Timestamp.now(),
+      created_at: now,
+      updated_at: now,
     }
-    const docRef  = await budgetsCollection.add(payload)
-    const created = await docRef.get()
-    return mapBudget(docRef.id, created.data()!)
+    const docRef = await budgetsCollection.add(payload)
+    return { ...payload, id: docRef.id } as unknown as Budget
   },
 
   // ── Actualizar ────────────────────────────────────────────────────────────
   async update(id: string, data: UpdateBudgetData): Promise<Budget> {
     const docRef = budgetsCollection.doc(id)
+    const now = Timestamp.now()
     await docRef.update({
       ...data,
-      updated_at: Timestamp.now(),
+      updated_at: now,
     })
     const updated = await docRef.get()
     return mapBudget(docRef.id, updated.data()!)
@@ -93,9 +94,10 @@ export const budgetRepository = {
   // ── Archivar (soft delete) ────────────────────────────────────────────────
   async archive(id: string): Promise<Budget> {
     const docRef = budgetsCollection.doc(id)
+    const now = Timestamp.now()
     await docRef.update({
       is_active:  false,
-      updated_at: Timestamp.now(),
+      updated_at: now,
     })
     const updated = await docRef.get()
     return mapBudget(docRef.id, updated.data()!)

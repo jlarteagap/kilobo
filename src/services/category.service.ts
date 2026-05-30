@@ -30,12 +30,14 @@ export const categoryService = {
       const currentTags = category.tags ?? []
       const removedTags = currentTags.filter((t) => !data.tags!.includes(t))
 
-      for (const tag of removedTags) {
-        const inUse = await categoriesRepository.isTagUsedInTransactions(categoryId, tag, userId)
-        if (inUse) {
-          throw new Error(`El tag "${tag}" está en uso en transacciones y no puede eliminarse.`)
-        }
-      }
+      await Promise.all(
+        removedTags.map(async (tag) => {
+          const inUse = await categoriesRepository.isTagUsedInTransactions(categoryId, tag, userId)
+          if (inUse) {
+            throw new Error(`El tag "${tag}" está en uso en transacciones y no puede eliminarse.`)
+          }
+        })
+      )
     }
 
     return categoriesRepository.update(categoryId, data)

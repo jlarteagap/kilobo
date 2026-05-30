@@ -64,17 +64,17 @@ export const debtRepository = {
 
   // ── Debts ──────────────────────────────────────────────────────────────────
   async create(data: CreateDebtData, userId: string): Promise<Debt> {
+    const now = Timestamp.now()
     const payload = {
       ...data,
       paid_amount: 0,
       status:      'ACTIVE',
       user_id:     userId,
-      created_at:  Timestamp.now(),
-      updated_at:  Timestamp.now(),
+      created_at:  now,
+      updated_at:  now,
     }
-    const docRef  = await debtsCollection.add(payload)
-    const created = await docRef.get()
-    return mapDebt(docRef.id, created.data()!)
+    const docRef = await debtsCollection.add(payload)
+    return { ...payload, id: docRef.id } as unknown as Debt
   },
 
   async update(id: string, data: Partial<Debt>): Promise<Debt> {
@@ -110,8 +110,7 @@ export const debtRepository = {
       debt_id:    debtId,
       created_at: Timestamp.now(),
     }
-    const docRef  = await paymentsCollection.add(payload)
-    const created = await docRef.get()
-    return mapPayment(docRef.id, created.data()!)
+    const docRef = await paymentsCollection.add(payload)
+    return { ...payload, id: docRef.id } as unknown as DebtPayment
   },
 }

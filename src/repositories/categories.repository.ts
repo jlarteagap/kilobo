@@ -68,17 +68,17 @@ export const categoriesRepository = {
       updatedAt: new Date().toISOString(),
     }
 
-    const docRef  = await categoriesCol.add(payload)
-    const created = await docRef.get()
-    return { id: docRef.id, ...(created.data() as Omit<Category, 'id'>) }
+    const docRef = await categoriesCol.add(payload)
+    return { id: docRef.id, ...payload } as Category
   },
 
   async update(categoryId: string, data: UpdateCategoryDTO): Promise<Category> {
+    const now = new Date().toISOString()
     const docRef = categoriesCol.doc(categoryId)
 
     await docRef.update({
       ...data,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now,
     })
 
     const updated = await docRef.get()

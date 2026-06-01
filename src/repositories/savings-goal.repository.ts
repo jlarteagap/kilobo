@@ -23,7 +23,7 @@ function mapSavingsGoal(id: string, data: FirebaseFirestore.DocumentData): Savin
     id,
     created_at: toISOString(data.created_at),
     updated_at: toISOString(data.updated_at),
-  } as SavingsGoal
+  } as unknown as SavingsGoal
 }
 
 export const savingsGoalRepository = {

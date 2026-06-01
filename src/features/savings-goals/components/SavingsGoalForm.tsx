@@ -1,7 +1,7 @@
 'use client'
 
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { createZodResolver } from '@/lib/validations/rhf-resolver'
 import { createSavingsGoalSchema, type CreateSavingsGoalInput } from '@/lib/validations/savings-goal.schema'
 import { SAVINGS_GOAL_ICONS, SAVINGS_GOAL_COLORS } from '@/types/savings-goal'
 import type { SavingsGoal } from '@/types/savings-goal'
@@ -30,11 +30,11 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
     watch,
     formState: { errors },
   } = useForm<CreateSavingsGoalInput>({
-    resolver: zodResolver(createSavingsGoalSchema),
+    resolver: createZodResolver<CreateSavingsGoalInput>(createSavingsGoalSchema),
     defaultValues: {
       name: goal?.name ?? '',
       target_amount: goal?.target_amount ?? undefined,
-      currency: goal?.currency ?? 'BOB',
+      currency: (goal?.currency as CreateSavingsGoalInput['currency']) ?? 'BOB',
       account_id: goal?.account_id ?? '',
       deadline: goal?.deadline ?? '',
       icon: goal?.icon ?? '🎯',

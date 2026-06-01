@@ -84,16 +84,15 @@ export function SavingsGoalsList() {
 
       {goals.length === 0 ? (
         <EmptyState
-          icon={<PiggyBank className="w-10 h-10" />}
+          icon="🎯"
           title="Sin metas de ahorro"
-          description="Crea tu primera meta para empezar a ahorrar con propósito."
-          action={
-            <Button onClick={() => setIsFormOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Crear primera meta
-            </Button>
-          }
-        />
+          subtitle="Crea tu primera meta para empezar a ahorrar con propósito."
+        >
+          <Button onClick={() => setIsFormOpen(true)} className="rounded-xl h-11 px-5 gap-2 mt-2">
+            <Plus className="w-4 h-4" />
+            Crear primera meta
+          </Button>
+        </EmptyState>
       ) : (
         <Tabs defaultValue="active">
           <TabsList className="mb-6">

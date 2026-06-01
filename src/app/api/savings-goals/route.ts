@@ -28,7 +28,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
-    const goal = await savingsGoalService.createGoal(parsed.data, userId)
+    const goal = await savingsGoalService.createGoal({
+      ...parsed.data,
+      deadline: parsed.data.deadline ?? null,
+    }, userId)
     return NextResponse.json({ data: goal }, { status: 201 })
   } catch (error: unknown) {
     return handleError(error, { 'limite': 422 })

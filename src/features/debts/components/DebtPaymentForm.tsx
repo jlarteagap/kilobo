@@ -13,6 +13,7 @@ import {
   CreateDebtPaymentInput,
 } from "@/lib/validations/debt.schema"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import { getLocalDateString } from "@/utils/date.utils"
 
 import {
   Form,
@@ -98,7 +99,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
       amount:     pending,  // ← por defecto el total pendiente
       account_id: debt.account_id,  // ← por defecto la cuenta original
       notes:      '',
-      date:       new Date().toISOString().split('T')[0],
+      date:       getLocalDateString(),
     },
   })
 

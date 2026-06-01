@@ -14,6 +14,7 @@ import {
 } from "@/lib/validations/debt.schema"
 import { CURRENCY_TYPES } from "@/types/account"
 import { AccountBalanceHint } from "@/components/ui/account-balance-hint"
+import { getLocalDateString } from "@/utils/date.utils"
 
 import {
   Form,
@@ -63,6 +64,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
       account_id:   '',
       description:  '',
       is_legacy:    false,
+      date:         getLocalDateString(),
     },
   })
 
@@ -229,6 +231,30 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                   ))}
                 </SelectContent>
               </Select>
+              <FormMessage className="text-[12px]" />
+            </FormItem>
+          )}
+        />
+
+        {/* ── Fecha ── */}
+        <FormField<CreateDebtInput>
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[13px] font-medium text-gray-600">
+                Fecha
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="date"
+                  value={(field.value as string) ?? ''}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                />
+              </FormControl>
               <FormMessage className="text-[12px]" />
             </FormItem>
           )}

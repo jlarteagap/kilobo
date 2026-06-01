@@ -15,17 +15,19 @@ export const insightKeys = {
 // ─── Fetchers ─────────────────────────────────────────────────────────────────
 
 async function fetchInsights(months: number): Promise<InsightsResult> {
-  const res = await fetch(`/api/insights?months=${months}`)
+  const tzOffset = new Date().getTimezoneOffset()
+  const res = await fetch(`/api/insights?months=${months}&tzOffset=${tzOffset}`)
   if (!res.ok) throw new Error('Failed to fetch insights')
   const json = await res.json()
   return json.data
 }
 
 async function refreshInsights(months: number): Promise<InsightsResult> {
+  const tzOffset = new Date().getTimezoneOffset()
   const res = await fetch('/api/insights', {
     method : 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body   : JSON.stringify({ months }),
+    body   : JSON.stringify({ months, tzOffset }),
   })
   if (!res.ok) throw new Error('Failed to refresh insights')
   const json = await res.json()

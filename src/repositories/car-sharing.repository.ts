@@ -68,7 +68,7 @@ export const carSharingRepository = {
       .sort((a, b) => (b.endDate || 0) - (a.endDate || 0))
   },
 
-  async addTrip(data: { userName: string, initialKm: number, finalKm: number }): Promise<void> {
+  async addTrip(data: { userName: string, initialKm: number, finalKm: number, clientDateStr?: string }): Promise<void> {
     const activeCycle = await this.getActiveCycle()
     
     let totalKm = 0
@@ -78,13 +78,18 @@ export const carSharingRepository = {
       totalKm = 1000 + data.finalKm - data.initialKm
     }
 
-    const now = new Date()
+    // Usar la fecha formateada del cliente si viene, sino formatear desde el servidor
+    const dateStr = data.clientDateStr || (() => {
+      const now = new Date()
+      return `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+    })()
+
     const trip: CarTrip = {
       userName: data.userName,
       initialKm: data.initialKm,
       finalKm: data.finalKm,
       totalKm,
-      date: `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
+      date: dateStr,
       createdAt: Date.now()
     }
 

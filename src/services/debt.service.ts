@@ -10,13 +10,13 @@ export const debtService = {
   },
 
   async createDebt(data: CreateDebtData, userId: string) {
-    const { is_legacy, ...debtData } = data
+    const { is_legacy, date: clientDate, ...debtData } = data
 
     // 1. Verificar que la cuenta existe
     const account = await accountsRepository.findById(debtData.account_id, userId)
     if (!account) throw new Error('Cuenta no encontrada o no autorizada.')
 
-    // 2. Crear la deuda (sin is_legacy en el payload de Firestore)
+    // 2. Crear la deuda (sin is_legacy ni date en el payload de Firestore)
     const debt = await debtRepository.create(debtData, userId)
 
     if (!is_legacy) {
@@ -28,13 +28,21 @@ export const debtService = {
         balance: account.balance + delta,
       })
 
-      // 4. Crear transacción
+      // 4. Crear transacción — usar fecha del cliente si viene, sino fecha local del servidor
+      const txDate = clientDate || (() => {
+        const d = new Date()
+        const y = d.getFullYear()
+        const m = String(d.getMonth() + 1).padStart(2, '0')
+        const dd = String(d.getDate()).padStart(2, '0')
+        return `${y}-${m}-${dd}`
+      })()
+
       await transactionService.createTransaction({
         account_id:  debtData.account_id,
         type:        debtData.type === 'GIVEN' ? 'EXPENSE' : 'INCOME',
         amount:      debtData.amount,
         currency:    debtData.currency,
-        date:        new Date().toISOString().split('T')[0],
+        date:        txDate,
         description: `Préstamo: ${debtData.contact_name}`,
         subtype:     'Préstamo',
         status:      'COMPLETED',

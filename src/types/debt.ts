@@ -28,6 +28,7 @@ export interface CreateDebtData {
   account_id:    string
   description?:  string | null
   is_legacy?:    boolean | null
+  date?:         string | null
 }
 
 export interface DebtPayment {

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { carSharingRepository, CarCycle } from '@/repositories/car-sharing.repository'
 
-export async function addTripAction(data: { userName: string; initialKm: number; finalKm: number }) {
+export async function addTripAction(data: { userName: string; initialKm: number; finalKm: number; clientDateStr?: string }) {
   await carSharingRepository.addTrip(data)
   revalidatePath('/gasolina')
 }

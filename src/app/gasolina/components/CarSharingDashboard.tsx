@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useTransition } from 'react'
+import React, { useState, useMemo, useTransition, useEffect } from 'react'
 import { CarCycle, CarTrip } from '@/repositories/car-sharing.repository'
 import { addTripAction, deleteTripAction, closeCycleAction, deleteCycleAction, resetAllAction, updateTripAction } from '../actions'
 import { Input } from '@/components/ui/input'
@@ -21,6 +21,9 @@ const DEFAULT_USERS = ['Melissa', 'Jorge']
 
 export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDashboardProps) {
   const [isPending, startTransition] = useTransition()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
   
   // Trip form state
   const [userName, setUserName] = useState<string>(DEFAULT_USERS[0])
@@ -62,7 +65,11 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
         await addTripAction({
           userName: finalUserName,
           initialKm: initKm,
-          finalKm: curKm
+          finalKm: curKm,
+          clientDateStr: (() => {
+            const now = new Date()
+            return `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+          })()
         })
         toast.success(lastTrip ? 'Viaje registrado' : 'Odómetro base registrado')
         setCurrentKm('')
@@ -477,8 +484,14 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
               {closedCycles.map(cycle => {
                 const payer = cycle.paidBy
                 const debt = cycle.debtSummary.find(d => d.name !== payer)
-                const startDate = new Date(cycle.startDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })
-                const endDate = cycle.endDate ? new Date(cycle.endDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '?'
+                const startDate = mounted
+                  ? new Date(cycle.startDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })
+                  : '...'
+                const endDate = !mounted
+                  ? '...'
+                  : cycle.endDate
+                    ? new Date(cycle.endDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })
+                    : '?'
 
                 return (
                   <div key={cycle.id} className="group relative p-6 rounded-3xl bg-white dark:bg-neutral-900/40 border border-neutral-100 dark:border-neutral-900 shadow-sm hover:shadow-md transition-all duration-300">

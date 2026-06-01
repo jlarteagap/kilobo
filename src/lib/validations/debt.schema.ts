@@ -12,6 +12,7 @@ export const createDebtSchema = z.object({
   account_id:   z.string().min(1, 'Selecciona una cuenta'),
   description:  z.string().optional(),
   is_legacy:    z.boolean().optional(),
+  date:         z.string().optional(),
 })
 
 export const createDebtPaymentSchema = z.object({

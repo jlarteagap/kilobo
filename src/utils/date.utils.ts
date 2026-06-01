@@ -15,6 +15,19 @@ export function parseLocalDate(dateStr: string): Date {
   return new Date(year, month - 1, day)
 }
 
+/**
+ * Devuelve la fecha local como cadena `YYYY-MM-DD`.
+ * Usa componentes locales (getFullYear/getMonth/getDate) en lugar de
+ * `toISOString()` que convierte a UTC y puede desfasar el día para
+ * zonas horarias negativas (América).
+ */
+export function getLocalDateString(date: Date = new Date()): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 // ─── Resolver período → rango de fechas concreto ──────────────────────────────
 export function resolvePeriod(period: Period): DateRange {
   const now = new Date()

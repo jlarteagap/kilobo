@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/select"
 import { useProjects } from '@/features/projects/hooks/useProjects'
 
+import { getLocalDateString } from "@/utils/date.utils"
 import { TRANSACTION_TYPE_LABELS } from "./utils/transaction-display.utils"
 import { getTagsForCategory, getSubtypesForProject } from "./utils/transaction-form.utils"
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -52,7 +53,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
     resolver: createZodResolver(createTransactionSchema),
     defaultValues: {
       type:         'EXPENSE',
-      date:         new Date().toISOString().split('T')[0],
+      date:         getLocalDateString(),
       is_recurring: false,
       amount:       0,
       account_id:   '',
@@ -101,7 +102,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
     onSuccess: () => {
       form.reset({
         type:         'EXPENSE',
-        date:         new Date().toISOString().split('T')[0],
+        date:         getLocalDateString(),
         is_recurring: false,
         amount:       0,
         tag:          null,

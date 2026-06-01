@@ -13,6 +13,7 @@ export interface Debt {
   account_id:    string         // cuenta que se movió al crear
   description?:  string | null
   status:        DebtStatus
+  is_legacy?:    boolean | null // deuda previa — no afecta balance ni crea transacción
   created_at:    string
   updated_at:    string
   // Join opcional
@@ -26,6 +27,7 @@ export interface CreateDebtData {
   currency:      string
   account_id:    string
   description?:  string | null
+  is_legacy?:    boolean | null
 }
 
 export interface DebtPayment {

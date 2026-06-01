@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Select,
   SelectContent,
@@ -61,6 +62,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
       currency:     'BOB',
       account_id:   '',
       description:  '',
+      is_legacy:    false,
     },
   })
 
@@ -137,7 +139,10 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
               <FormControl>
                 <Input
                   placeholder="Nombre de la persona"
-                  {...field}
+                  value={field.value as string}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
                   className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
                 />
               </FormControl>
@@ -161,7 +166,10 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                     type="number"
                     step="0.01"
                     placeholder="0.00"
-                    {...field}
+                    value={field.value as number}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
                     className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
                   />
                 </FormControl>
@@ -235,6 +243,34 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
           />
         )}
 
+        {/* ── Deuda previa ── */}
+        <FormField<CreateDebtInput>
+          control={form.control}
+          name="is_legacy"
+          render={({ field }) => (
+            <FormItem>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+                <FormControl>
+                  <Checkbox
+                    checked={!!field.value}
+                    onCheckedChange={(checked) => field.onChange(checked)}
+                    className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                  />
+                </FormControl>
+                <div className="space-y-0.5">
+                  <FormLabel className="text-[13px] font-medium text-gray-700 cursor-pointer">
+                    Es una deuda previa
+                  </FormLabel>
+                  <p className="text-[12px] text-gray-400 leading-relaxed">
+                    Registra una deuda que ya existía antes. No afectará el saldo de tu cuenta ni aparecerá en transacciones.
+                  </p>
+                </div>
+              </div>
+              <FormMessage className="text-[12px]" />
+            </FormItem>
+          )}
+        />
+
         {/* ── Descripción ── */}
         <FormField<CreateDebtInput>
           control={form.control}
@@ -249,8 +285,10 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                 <Textarea
                   rows={2}
                   placeholder="Motivo del préstamo…"
-                  {...field}
-                  value={field.value ?? ''}
+                  value={field.value as string}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
                   className="rounded-xl border-0 bg-gray-50 resize-none focus-visible:ring-gray-900/10"
                 />
               </FormControl>

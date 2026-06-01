@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, PiggyBank, LucideIcon } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, PiggyBank, Handshake, LucideIcon } from "lucide-react"
 import { TransactionType } from "@/types/transaction"
 import { Account } from "@/types/account"
 import { Category } from "@/types/category"
@@ -14,7 +14,7 @@ export const normalizeCurrency = (currency: string): string => {
 const transactionAmountColorMap: Record<TransactionType, string> = {
   INCOME:   "text-emerald-600",
   EXPENSE:  "text-rose-600",
-  TRANSFER: "text-blue-600",
+  TRANSFER: "text-amber-600",
   SAVING:   "text-purple-600",
 }
 
@@ -30,9 +30,18 @@ const transactionIconMap: Record<TransactionType, LucideIcon | null> = {
 
 export const getTransactionIcon = (type: TransactionType) => transactionIconMap[type]
 
+const subtypeIconMap: Record<string, LucideIcon> = {
+  'Préstamo':      Handshake,
+  'Pago de deuda': Handshake,
+}
+
+export const getSubtypeIcon = (subtype: string | null | undefined): LucideIcon | null =>
+  subtype ? (subtypeIconMap[subtype] ?? null) : null
+
 // Prefijo de signo según tipo
 export const getTransactionSign = (type: TransactionType): string => {
-  return ["EXPENSE", "SAVING"].includes(type) ? "-" : "+"
+  if (type === 'TRANSFER') return ''
+  return ['EXPENSE', 'SAVING'].includes(type) ? '-' : '+'
 }
 
 // Color de cuenta según tipo
@@ -74,6 +83,6 @@ export function formatTransactionDate(dateStr: string): string {
 export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
   EXPENSE:  "Gasto",
   INCOME:   "Ingreso",
-  TRANSFER: "Transfer",
+  TRANSFER: "Transferencia",
   SAVING:   "Ahorro",
 }

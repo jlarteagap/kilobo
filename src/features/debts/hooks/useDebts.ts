@@ -1,6 +1,7 @@
 // features/debts/hooks/useDebts.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { accountKeys } from '@/features/accounts/hooks/useAccounts'
+import { transactionKeys } from '@/features/transactions/hooks/useTransactions'
 import { toast } from 'sonner'
 import type { Debt, DebtSummary } from '@/types/debt'
 import type { CreateDebtInput, CreateDebtPaymentInput } from '@/lib/validations/debt.schema'
@@ -77,6 +78,7 @@ export function useCreateDebt() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: debtKeys.lists() })
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: transactionKeys.lists() })
     },
   })
 }
@@ -129,6 +131,7 @@ export function useRegisterPayment() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: debtKeys.lists() })
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: transactionKeys.lists() })
     },
   })
 }

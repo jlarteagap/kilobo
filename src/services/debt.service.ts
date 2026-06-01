@@ -1,6 +1,7 @@
 // services/debt.service.ts
 import { debtRepository } from '@/repositories/debt.repository'
 import { accountsRepository } from '@/repositories/accounts.repository'
+import { transactionService } from '@/services/transactions.service'
 import type { CreateDebtData, CreateDebtPaymentData } from '@/types/debt'
 
 export const debtService = {
@@ -9,20 +10,38 @@ export const debtService = {
   },
 
   async createDebt(data: CreateDebtData, userId: string) {
+    const { is_legacy, ...debtData } = data
+
     // 1. Verificar que la cuenta existe
-    const account = await accountsRepository.findById(data.account_id, userId)
+    const account = await accountsRepository.findById(debtData.account_id, userId)
     if (!account) throw new Error('Cuenta no encontrada o no autorizada.')
 
-    // 2. Mover balance según tipo
-    //    GIVEN    → presté dinero → resta de mi cuenta
-    //    RECEIVED → me prestaron  → suma a mi cuenta
-    const delta = data.type === 'GIVEN' ? -data.amount : +data.amount
-    await accountsRepository.update(data.account_id, {
-      balance: account.balance + delta,
-    })
+    // 2. Crear la deuda (sin is_legacy en el payload de Firestore)
+    const debt = await debtRepository.create(debtData, userId)
 
-    // 3. Crear la deuda
-    return debtRepository.create(data, userId)
+    if (!is_legacy) {
+      // 3. Mover balance según tipo
+      //    GIVEN    → presté dinero → resta de mi cuenta
+      //    RECEIVED → me prestaron  → suma a mi cuenta
+      const delta = debtData.type === 'GIVEN' ? -debtData.amount : +debtData.amount
+      await accountsRepository.update(debtData.account_id, {
+        balance: account.balance + delta,
+      })
+
+      // 4. Crear transacción
+      await transactionService.createTransaction({
+        account_id:  debtData.account_id,
+        type:        debtData.type === 'GIVEN' ? 'EXPENSE' : 'INCOME',
+        amount:      debtData.amount,
+        currency:    debtData.currency,
+        date:        new Date().toISOString().split('T')[0],
+        description: `Préstamo: ${debtData.contact_name}`,
+        subtype:     'Préstamo',
+        status:      'COMPLETED',
+      }, userId)
+    }
+
+    return debt
   },
 
   async registerPayment(debtId: string, data: CreateDebtPaymentData, userId: string) {
@@ -60,6 +79,18 @@ export const debtService = {
       paid_amount: newPaidAmount,
       status:      newStatus,
     })
+
+    // 7. Crear transacción del pago (siempre, legacy o no)
+    await transactionService.createTransaction({
+      account_id:  data.account_id,
+      type:        debt.type === 'GIVEN' ? 'INCOME' : 'EXPENSE',
+      amount:      data.amount,
+      currency:    debt.currency,
+      date:        data.date,
+      description: `Pago de deuda - ${debt.contact_name}`,
+      subtype:     'Pago de deuda',
+      status:      'COMPLETED',
+    }, userId)
 
     return payment
   },

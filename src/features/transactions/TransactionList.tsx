@@ -2,7 +2,8 @@
 "use client"
 
 import { Fragment, useState } from "react"
-import { Repeat, Trash2, Pencil } from "lucide-react"
+import type { ReactNode } from "react"
+import { Repeat, Trash2, Pencil, Handshake } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -33,6 +34,8 @@ import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import {
   getTransactionAmountColor,
   getTransactionSign,
+  getTransactionIcon,
+  getSubtypeIcon,
   getAccountName,
   getCategoryDisplay,
   formatTransactionDate,
@@ -87,6 +90,8 @@ function DateSeparator({ date }: { date: string }) {
 }
 
 // ─── Fila de transacción ──────────────────────────────────────────────────────
+const DEBT_SUBTYPES = new Set(['Préstamo', 'Pago de deuda'])
+
 function TransactionRow({
   tx,
   accounts,
@@ -105,17 +110,75 @@ function TransactionRow({
   const category     = getCategoryDisplay(tx.category_id, categories)
   const project      = projects.find((p) => p.id === tx.project_id)
   const categoryData = categories.find((c) => c.id === tx.category_id)
-  const accentColor  = categoryData?.color ?? '#E0E0E0'
   const amountColor  = getTransactionAmountColor(tx.type)
   const sign         = getTransactionSign(tx.type)
+
+  const isTransfer   = tx.type === 'TRANSFER'
+  const isDebt       = !isTransfer && !!tx.subtype && DEBT_SUBTYPES.has(tx.subtype)
 
   // ── Colores derivados del proyecto ────────────────────────────────────────
   const projectColor  = project?.color ?? null
   const rowBg         = projectColor ? `${projectColor}06` : 'transparent'
   const rowBorder     = projectColor ? `2px solid ${projectColor}` : '2px solid transparent'
-  const iconBg        = projectColor ? `${projectColor}25` : `${accentColor}40`
   const badgeBg       = projectColor ? `${projectColor}18` : 'transparent'
   const badgeBorder   = projectColor ? `0.5px solid ${projectColor}28` : 'none'
+
+  // ── Resolver icono y colores según tipo ────────────────────────────────────
+  const TypeIcon = (() => {
+    if (isDebt) return Handshake
+    if (isTransfer) return getTransactionIcon(tx.type)
+    if (project && project.icon) return null // project icon is emoji
+    return getSubtypeIcon(tx.subtype) ?? getTransactionIcon(tx.type) ?? null
+  })()
+
+  const iconBgStyle = (() => {
+    if (isDebt) return '#FFF7ED'
+    if (isTransfer) return '#FFFBEB'
+    if (projectColor) return `${projectColor}25`
+    if (categoryData?.color) return `${categoryData.color}40`
+    return '#F3F4F6'
+  })()
+
+  const title = (() => {
+    if (isTransfer) return 'Transferencia entre cuentas'
+    if (isDebt) return tx.description ?? (tx.subtype === 'Préstamo' ? 'Préstamo' : 'Pago de deuda')
+    if (project) return tx.subtype ?? 'Sin subtipo'
+    return category.name ?? 'Sin categoría'
+  })()
+
+  const secondaryLines: ReactNode[] = (() => {
+    if (isTransfer) {
+      const origin = getAccountName(tx.account_id, accounts)
+      const dest   = getAccountName(tx.to_account_id, accounts)
+      return [<span key="route" className="text-[11px] text-amber-500">{origin} → {dest}</span>]
+    }
+    if (isDebt) return []
+    const lines: React.ReactNode[] = []
+    if (project) {
+      lines.push(
+        <span
+          key="project"
+          className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+          style={{
+            color:           projectColor!,
+            backgroundColor: badgeBg,
+            border:          badgeBorder,
+          }}
+        >
+          {project.icon && <span className="mr-0.5">{project.icon}</span>}
+          {project.name}
+        </span>
+      )
+    }
+    if (tx.description) {
+      lines.push(
+        <span key="desc" className="text-[11px] text-gray-400 truncate max-w-[120px]">
+          {project ? `· ${tx.description}` : tx.description}
+        </span>
+      )
+    }
+    return lines
+  })()
 
   return (
     <tr
@@ -131,47 +194,37 @@ function TransactionRow({
           {/* Ícono */}
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
-            style={{ backgroundColor: iconBg }}
+            style={{ backgroundColor: iconBgStyle }}
           >
-            {project ? (project.icon ?? '📁') : (categoryData?.icon ?? '📁')}
+            {project && project.icon ? (
+              <span>{project.icon}</span>
+            ) : TypeIcon ? (
+              <TypeIcon className={cn(
+                'w-4 h-4',
+                isDebt     && 'text-orange-600',
+                isTransfer && 'text-amber-600',
+              )} />
+            ) : (
+              <span className="text-gray-400">📁</span>
+            )}
           </div>
 
           <div className="min-w-0">
-            {/* Línea principal — subtipo o categoría */}
-            <p className="text-sm font-medium text-gray-800 truncate">
-              {project
-                ? (tx.subtype ?? 'Sin subtipo')
-                : (category.name ?? (tx.type === 'TRANSFER' ? 'Transferencia' : 'Sin categoría'))
-              }
+            {/* Línea principal */}
+            <p className={cn(
+              'text-sm font-medium truncate',
+              isTransfer && 'text-amber-700',
+              !isTransfer && 'text-gray-800',
+            )}>
+              {title}
             </p>
 
-            {/* Línea secundaria — badge proyecto o descripción */}
-            <div className="flex items-center gap-1.5 mt-0.5">
-              {project ? (
-                <span
-                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
-                  style={{
-                    color:           projectColor!,
-                    backgroundColor: badgeBg,
-                    border:          badgeBorder,
-                  }}
-                >
-                  {project.icon && (
-                    <span className="mr-0.5">{project.icon}</span>
-                  )}
-                  {project.name}
-                </span>
-              ) : null}
-
-              {tx.description ? (
-                <p
-                  className="text-[11px] truncate max-w-[120px]"
-                  style={{ color: project ? projectColor! : '#9ca3af' }}
-                >
-                  {project ? `· ${tx.description}` : tx.description}
-                </p>
-              ) : null}
-            </div>
+            {/* Línea secundaria */}
+            {secondaryLines.length > 0 && (
+              <div className="flex items-center gap-1.5 mt-0.5">
+                {secondaryLines}
+              </div>
+            )}
           </div>
         </div>
       </td>
@@ -183,10 +236,9 @@ function TransactionRow({
             <span className="inline-flex items-center text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
               {tx.tag}
             </span>
-          ) : null}
-          {!tx.tag ? (
+          ) : (
             <span className="text-gray-200">—</span>
-          ) : null}
+          )}
         </div>
       </td>
       {/* ── Tipo ── */}
@@ -197,7 +249,7 @@ function TransactionRow({
             'text-[10px] font-medium rounded-full',
             tx.type === 'INCOME'   && 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
             tx.type === 'EXPENSE'  && 'bg-rose-100    text-rose-700    hover:bg-rose-100',
-            tx.type === 'TRANSFER' && 'bg-blue-100    text-blue-700    hover:bg-blue-100',
+            tx.type === 'TRANSFER' && 'bg-amber-100   text-amber-700   hover:bg-amber-100',
             tx.type === 'SAVING'   && 'bg-violet-100  text-violet-700  hover:bg-violet-100',
           )}
         >
@@ -208,9 +260,12 @@ function TransactionRow({
       {/* ── Cuenta ── */}
       <td className="px-4 py-3 hidden md:table-cell">
         <span className="text-[13px] text-gray-600">
-          {getAccountName(tx.account_id, accounts)}
+          {isTransfer && tx.to_account_id
+            ? getAccountName(tx.to_account_id, accounts)
+            : getAccountName(tx.account_id, accounts)
+          }
         </span>
-        {tx.to_account_id ? (
+        {!isTransfer && tx.to_account_id ? (
           <span className="text-[13px] text-gray-400">
             {' → '}{getAccountName(tx.to_account_id, accounts)}
           </span>

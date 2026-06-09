@@ -1,8 +1,8 @@
 // features/budgets/BudgetsList.tsx
 "use client"
 
-import { useState } from "react"
-import { Plus } from "lucide-react"
+import { useState, useMemo } from "react"
+import { Plus, Banknote } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { EmptyState } from "@/components/ui/empty-state"
 
@@ -34,7 +34,16 @@ import {
   useArchiveBudget,
   useDeleteBudget,
 } from "../hooks/useBudgets"
+import { MonthlyInstallmentsCard } from "@/features/credits/components/MonthlyInstallmentsCard"
+import { PayInstallmentsForm }     from "@/features/credits/components/PayInstallmentsForm"
+import { useCredits, creditKeys }  from "@/features/credits/hooks/useCredits"
+import { useQueries } from "@tanstack/react-query"
 import type { BudgetProgress } from "@/types/budget"
+import type { Credit, Installment } from "@/types/credit"
+
+function authFetch(url: string) {
+  return fetch(url, { headers: { 'Content-Type': 'application/json' } })
+}
 
 // ─── Filter tabs ──────────────────────────────────────────────────────────────
 type FilterTab = 'ALL' | 'INCOME_SOURCE' | 'FIXED_EXPENSE' | 'SAVINGS_GOAL' | 'ARCHIVED'
@@ -83,6 +92,7 @@ type DialogState =
   | { mode: 'closed'  }
   | { mode: 'create'  }
   | { mode: 'edit';   progress: BudgetProgress }
+  | { mode: 'pay-installment'; credit: Credit; installment: Installment }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function BudgetsList() {
@@ -92,10 +102,65 @@ export function BudgetsList() {
   const archiveBudget = useArchiveBudget()
   const deleteBudget  = useDeleteBudget()
 
-  const [dialog,         setDialog        ] = useState<DialogState>({ mode: 'closed' })
+  const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' })
   const [pendingArchive, setPendingArchive ] = useState<BudgetProgress | null>(null)
   const [pendingDelete,  setPendingDelete  ] = useState<BudgetProgress | null>(null)
   const [activeFilter,   setActiveFilter   ] = useState<FilterTab>('ALL')
+
+  // ── Créditos con cuotas del mes ──────────────────────────────────────────────
+  const { data: credits = [] } = useCredits()
+  const activeCredits = credits.filter(
+    (c) => c.status === 'ACTIVE' && c.total_installments > c.paid_installments
+  )
+
+  const detailQueries = useQueries({
+    queries: activeCredits.map((credit) => ({
+      queryKey: creditKeys.detail(credit.id),
+      queryFn: async (): Promise<{ credit: Credit; installments: Installment[] }> => {
+        const res  = await authFetch(`/api/credits/${credit.id}`)
+        const json = await res.json()
+        if (!res.ok) throw new Error(json.error ?? 'Error al obtener el crédito')
+        return json.data
+      },
+      staleTime: 1000 * 60 * 2,
+    })),
+  })
+
+  const installmentsByCredit = useMemo(() => {
+    const map: Record<string, Installment[]> = {}
+    detailQueries.forEach((q) => {
+      if (q.data) {
+        map[q.data.credit.id] = q.data.installments
+      }
+    })
+    return map
+  }, [detailQueries])
+
+  const payingCreditId = dialog.mode === 'pay-installment' ? dialog.credit.id : null
+  const payingQuery    = payingCreditId ? detailQueries.find((q) => q.data?.credit.id === payingCreditId) : null
+  const isPayLoading   = !!payingCreditId && (payingQuery?.isPending ?? true)
+
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
+
+  const creditsWithMonthData = useMemo(() => {
+    return activeCredits.filter((c) => {
+      const insts = installmentsByCredit[c.id] ?? []
+      return insts.some((i) => {
+        const d = new Date(i.due_date)
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear
+      })
+    })
+  }, [activeCredits, installmentsByCredit, currentMonth, currentYear])
+
+  const getPendingThisMonth = (creditId: string): Installment[] => {
+    const insts = installmentsByCredit[creditId] ?? []
+    return insts.filter((i) => {
+      const d = new Date(i.due_date)
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear
+    })
+  }
 
   // ── Filtrado ────────────────────────────────────────────────────────────────
   const filtered = progress.filter((p) => {
@@ -244,9 +309,39 @@ export function BudgetsList() {
         </div>
       )}
 
+      {/* ── Cuotas del mes ── */}
+      {creditsWithMonthData.length > 0 && (
+        <div className="border-t border-gray-100 pt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <Banknote className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700">Cuotas del mes</h3>
+              <p className="text-[11px] text-gray-400">Créditos institucionales con cuotas este período</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {creditsWithMonthData.map((credit) => {
+              const insts = installmentsByCredit[credit.id] ?? []
+              const pendingThisMonth = getPendingThisMonth(credit.id)
+              return (
+                <MonthlyInstallmentsCard
+                  key={credit.id}
+                  credit={credit}
+                  installments={insts}
+                  pendingThisMonth={pendingThisMonth}
+                  onPay={(c, inst) => setDialog({ mode: 'pay-installment', credit: c, installment: inst })}
+                />
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Dialog crear / editar ── */}
       <Dialog
-        open={isDialogOpen}
+        open={isDialogOpen && dialog.mode !== 'pay-installment'}
         onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
       >
         <DialogContent className="sm:max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
@@ -263,6 +358,39 @@ export function BudgetsList() {
               initialData={dialog.progress.budget}
               onSuccess={() => setDialog({ mode: 'closed' })}
             />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog pagar cuota de crédito ── */}
+      <Dialog
+        open={dialog.mode === 'pay-installment'}
+        onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
+      >
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              Pagar cuota
+              {dialog.mode === 'pay-installment' && (
+                <span className="text-gray-400 font-normal text-sm ml-1">
+                  · {dialog.installment.number}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          {dialog.mode === 'pay-installment' && (
+            isPayLoading ? (
+              <div className="space-y-3 p-4">
+                <Skeleton className="h-6 w-32 rounded-lg" />
+                <Skeleton className="h-48 w-full rounded-xl" />
+              </div>
+            ) : (
+              <PayInstallmentsForm
+                credit={dialog.credit}
+                installment={dialog.installment}
+                onSuccess={() => setDialog({ mode: 'closed' })}
+              />
+            )
           )}
         </DialogContent>
       </Dialog>

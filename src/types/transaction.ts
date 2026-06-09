@@ -37,6 +37,10 @@ export interface Transaction {
   project_id?: string | null    // null = gasto personal sin proyecto
   subtype?:    string | null    // "gasolina", "hosting", etc.
   project?: Project | null
+
+  // Referencia a cuota de crédito pagada con esta transacción
+  credit_id?:       string | null
+  installment_id?:  string | null
 }
 
 export interface CreateTransactionData {
@@ -55,6 +59,10 @@ export interface CreateTransactionData {
 
   project_id?: string | null
   subtype?:    string | null
+
+  // Referencia a cuota de crédito pagada con esta transacción
+  credit_id?:       string | null
+  installment_id?:  string | null
 }
 
 export type UpdateTransactionData = Partial<CreateTransactionData>

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import dynamic from "next/dynamic"
-import { Plus, ArrowRightLeft, Landmark, PieChart, Tag, CreditCard } from "lucide-react"
+import { Plus, ArrowRightLeft, Landmark, PieChart, Tag, CreditCard, Banknote } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -42,8 +42,12 @@ const DebtForm = dynamic(
   () => import("@/features/debts/DebtForm").then((mod) => mod.DebtForm),
   { ssr: false }
 )
+const CreditForm = dynamic(
+  () => import("@/features/credits/CreditForm").then((mod) => mod.CreditForm),
+  { ssr: false }
+)
 
-type ActionType = "TRANSACTION" | "ACCOUNT" | "BUDGET" | "CATEGORY" | "DEBT" | null
+type ActionType = "TRANSACTION" | "ACCOUNT" | "BUDGET" | "CATEGORY" | "DEBT" | "CREDIT" | null
 
 export function QuickActionMenu() {
   const [actionType, setActionType] = useState<ActionType>(null)
@@ -82,6 +86,10 @@ export function QuickActionMenu() {
             <CreditCard className="h-4 w-4" />
             <span>Deuda</span>
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setActionType("CREDIT")} className="gap-3 cursor-pointer py-2 rounded-lg transition-colors">
+            <Banknote className="h-4 w-4" />
+            <span>Crédito institucional</span>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -95,6 +103,7 @@ export function QuickActionMenu() {
                 {actionType === "BUDGET" && "Nuevo Presupuesto"}
                 {actionType === "CATEGORY" && "Nueva Categoría"}
                 {actionType === "DEBT" && "Registrar Deuda"}
+                {actionType === "CREDIT" && "Nuevo Crédito Institucional"}
               </DialogTitle>
               <DialogDescription className="text-sm">
                 {actionType === "TRANSACTION" && "Registra un ingreso, gasto o transferencia."}
@@ -102,6 +111,7 @@ export function QuickActionMenu() {
                 {actionType === "BUDGET" && "Define un nuevo límite o meta de gasto."}
                 {actionType === "CATEGORY" && "Organiza tus movimientos en una nueva categoría."}
                 {actionType === "DEBT" && "Registra préstamos realizados o recibidos."}
+                {actionType === "CREDIT" && "Registra un crédito bancario, vehicular, tarjeta, etc."}
               </DialogDescription>
             </DialogHeader>
             <div className="px-6 py-6 max-h-[70vh] overflow-y-auto">
@@ -115,6 +125,7 @@ export function QuickActionMenu() {
               {actionType === "BUDGET" && <BudgetForm onSuccess={handleClose} />}
               {actionType === "CATEGORY" && <CategoryForm onSuccess={handleClose} />}
               {actionType === "DEBT" && <DebtForm onSuccess={handleClose} />}
+              {actionType === "CREDIT" && <CreditForm onSuccess={handleClose} />}
             </div>
           </DialogContent>
         )}

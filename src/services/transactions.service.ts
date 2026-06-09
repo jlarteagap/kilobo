@@ -48,6 +48,10 @@ export const transactionService = {
     return transactionsRepository.update(transactionId, data)
   },
 
+  async getTransaction(transactionId: string, userId: string): Promise<Transaction | null> {
+    return transactionsRepository.findById(transactionId, userId)
+  },
+
   async deleteTransaction(transactionId: string, userId: string): Promise<void> {
     const transaction = await transactionsRepository.findById(transactionId, userId)
     if (!transaction) {

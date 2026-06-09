@@ -1,6 +1,7 @@
 // app/api/transactions/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { transactionService } from '@/services/transactions.service'
+import { creditsService } from '@/services/credits.service'
 import { updateTransactionSchema } from '@/lib/validations/transaction.schema'
 import { getUserId } from '@/lib/auth.server'
 
@@ -42,7 +43,30 @@ export async function DELETE(
     }
 
     const { id } = await params
+
+    // ── Verificar si la transacción está vinculada a una cuota de crédito ─────
+    const tx = await transactionService.getTransaction(id, userId)
+    const creditRef = tx?.credit_id && tx?.installment_id
+      ? { creditId: tx.credit_id, installmentId: tx.installment_id }
+      : null
+
+    // ── Eliminar transacción y revertir balance ──────────────────────────────
     await transactionService.deleteWithBalance(id, userId)
+
+    // ── Revertir la cuota si aplica ──────────────────────────────────────────
+    if (creditRef) {
+      try {
+        await creditsService.revertInstallmentPayment(
+          creditRef.creditId,
+          creditRef.installmentId,
+          userId,
+        )
+      } catch {
+        // Si falla la reversión, no bloquear — la transacción ya se eliminó
+        console.warn('No se pudo revertir la cuota vinculada a la transacción', id)
+      }
+    }
+
     return NextResponse.json({ success: true })
   } catch (error: unknown) {
     return handleError(error)

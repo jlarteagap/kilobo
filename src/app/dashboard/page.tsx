@@ -6,6 +6,7 @@ import dynamic   from "next/dynamic"
 
 import { DashboardHeader }             from "@/features/dashboard/components/DashboardHeader"
 import { DashboardDebts }              from "@/features/dashboard/components/DashboardDebts"
+import { DashboardCredits }            from "@/features/dashboard/components/DashboardCredits"
 import { DashboardBudgets }            from "@/features/dashboard/components/DashboardBudgets"
 import { DashboardRecentTransactions } from "@/features/dashboard/components/DashboardRecentTransactions"
 import { DashboardSavingsGoals }       from "@/features/dashboard/components/DashboardSavingsGoals"
@@ -17,6 +18,7 @@ import { DashboardSkeleton }           from "@/features/dashboard/components/ske
 import { useDashboard }          from "@/features/dashboard/hooks/useDashboard"
 import { useTransactionMetrics } from "@/features/transactions/hooks/useTransactionMetrics"
 import { useCategories }         from "@/features/categories/hooks/useCategories"
+import { useSavingsGoals }       from "@/features/savings-goals/hooks/useSavingsGoals"
 
 import { CashflowSectionSkeleton } from "@/features/dashboard/components/skeletons/CashflowSectionSkeleton"
 import { InsightsWidget } from "@/features/insights/components/InsightsWidget"
@@ -41,9 +43,12 @@ export default function DashboardPage() {
     greeting,
     currentMonthLabel,
     financialComparisonData,
+    activeCredits,
   } = useDashboard()
 
-  const { data: categories = [] } = useCategories()
+  const { data: categories     = [] } = useCategories()
+  const { data: savingsGoals   = [] } = useSavingsGoals()
+  const hasActiveSavings = savingsGoals.some((g) => g.is_active)
 
   const metrics = useTransactionMetrics(
     monthlyTransactions,
@@ -86,16 +91,35 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ── Obligaciones y metas: Deudas + Presupuestos + Ahorro ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <DashboardDebts
-            activeDebts={activeDebts}
-            pendingGiven={debtSummary.pendingGiven}
-            pendingReceived={debtSummary.pendingReceived}
-          />
-          <DashboardBudgets topBudgets={topBudgets} />
-          <DashboardSavingsGoals />
-        </div>
+        {/* ── Obligaciones y metas ── */}
+        {[activeCredits.length > 0, activeDebts.length > 0, topBudgets.length > 0, hasActiveSavings].some(Boolean) && (
+          <div className="flex flex-wrap gap-6">
+            {activeCredits.length > 0 && (
+              <div className="flex-1 min-w-[280px]">
+                <DashboardCredits activeCredits={activeCredits} />
+              </div>
+            )}
+            {activeDebts.length > 0 && (
+              <div className="flex-1 min-w-[280px]">
+                <DashboardDebts
+                  activeDebts={activeDebts}
+                  pendingGiven={debtSummary.pendingGiven}
+                  pendingReceived={debtSummary.pendingReceived}
+                />
+              </div>
+            )}
+            {topBudgets.length > 0 && (
+              <div className="flex-1 min-w-[280px]">
+                <DashboardBudgets topBudgets={topBudgets} />
+              </div>
+            )}
+            {hasActiveSavings && (
+              <div className="flex-1 min-w-[280px]">
+                <DashboardSavingsGoals />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Proyección de saldo ── */}
         <BalanceProjection />

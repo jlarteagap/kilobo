@@ -2,9 +2,8 @@
 "use client"
 
 import { useState } from "react"
-import { Plus } from "lucide-react"
+import { Plus, Banknote } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { EmptyState } from "@/components/ui/empty-state"
 import { SegmentedControl } from "@/components/ui/segmented-control"
 
 import {
@@ -29,6 +28,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { DebtCard }        from "./DebtCard"
 import { DebtForm }        from "../DebtForm"
 import { DebtPaymentForm } from "./DebtPaymentForm"
+import { CreditForm }      from "@/features/credits/CreditForm"
+import { CreditsList }     from "@/features/credits/components/CreditsList"
+import { useCredits }      from "@/features/credits/hooks/useCredits"
 import {
   useDebts,
   useDebtSummary,
@@ -118,13 +120,25 @@ function DebtsSummary() {
 
 // ─── Dialog state ─────────────────────────────────────────────────────────────
 type DialogState =
-  | { mode: 'closed'   }
-  | { mode: 'create'   }
+  | { mode: 'closed'        }
+  | { mode: 'create'        }
+  | { mode: 'create-credit' }
   | { mode: 'pay';    debt: Debt }
+
+// ─── Section label ─────────────────────────────────────────────────────────────
+function SectionLabel({ icon, label }: { icon: string; label: string }) {
+  return (
+    <h2 className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.12em] flex items-center gap-1.5">
+      <span>{icon}</span>
+      {label}
+    </h2>
+  )
+}
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function DebtsList() {
   const { data: debts = [], isLoading, isError } = useDebts()
+  const { data: creditsData = [], isLoading: creditsLoading } = useCredits()
 
   const cancelDebt = useCancelDebt()
   const deleteDebt = useDeleteDebt()
@@ -158,78 +172,159 @@ export function DebtsList() {
     })
   }
 
-  const isDialogOpen = dialog.mode !== 'closed'
+  const hasDebts = debts.length > 0
+  const hasCredits = creditsData.length > 0
+  const splitMode = hasDebts && hasCredits
 
   return (
     <div className="space-y-6">
-
       {/* ── Header ── */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-            Deudas y Préstamos
-          </h1>
-          <p className="text-[13px] text-gray-400 mt-0.5">
-            Seguimiento de lo que debes y lo que te deben
-          </p>
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+          Deudas y Préstamos
+        </h1>
+        <p className="text-[13px] text-gray-400 mt-0.5">
+          Seguimiento de lo que debes y lo que te deben
+        </p>
+        <div className="flex gap-2 mt-4">
+          <Button
+            onClick={() => setDialog({ mode: 'create' })}
+            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            <Plus className="w-4 h-4" />
+            Deuda
+          </Button>
+          <Button
+            onClick={() => setDialog({ mode: 'create-credit' })}
+            className="gap-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            <Banknote className="w-4 h-4" />
+            Nuevo Crédito
+          </Button>
         </div>
-        <Button
-          onClick={() => setDialog({ mode: 'create' })}
-          className="gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
-        >
-          <Plus className="w-4 h-4" />
-          Nueva Deuda
-        </Button>
       </div>
 
-      {/* ── Summary ── */}
-      {!isLoading && debts.length > 0 && <DebtsSummary />}
+      {/* ── Content ── */}
+      {splitMode ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Personal debts — 1/3 */}
+          <div className="space-y-4">
+            <SectionLabel icon="👤" label="Personas" />
+            {!isLoading && hasDebts && <DebtsSummary />}
+            {!isLoading && hasDebts && (
+              <SegmentedControl
+                value={activeFilter}
+                onChange={setActiveFilter}
+                options={FILTER_TABS}
+              />
+            )}
+            {isLoading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+                ))}
+              </div>
+            ) : isError ? (
+              <p className="text-rose-500 text-sm">Error al cargar las deudas.</p>
+            ) : filteredDebts.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-8">
+                {activeFilter === 'ALL'
+                  ? 'No hay deudas registradas.'
+                  : 'No hay deudas en esta categoría.'
+                }
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {filteredDebts.map((debt) => (
+                  <DebtCard
+                    key={debt.id}
+                    debt={debt}
+                    onPay={(d) => setDialog({ mode: 'pay', debt: d })}
+                    onCancel={(d) => setPendingCancel(d)}
+                    onDelete={(d) => setPendingDelete(d)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
 
-      {!isLoading && debts.length > 0 && (
-        <SegmentedControl
-          value={activeFilter}
-          onChange={setActiveFilter}
-          options={FILTER_TABS}
-        />
-      )}
-
-      {/* ── Grid ── */}
-      {isLoading ? (
-        <DebtsGridSkeleton />
-      ) : isError ? (
-        <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl">
-          Error al cargar las deudas. Intenta nuevamente.
+          {/* Credits — 2/3 */}
+          <div className="lg:col-span-2 space-y-4">
+            <SectionLabel icon="🏦" label="Instituciones" />
+            <CreditsList
+              credits={creditsData}
+              isLoading={creditsLoading}
+              compact
+            />
+          </div>
         </div>
-      ) : filteredDebts.length === 0 ? (
+      ) : hasDebts ? (
+        <>
+          {!isLoading && hasDebts && <DebtsSummary />}
+          {!isLoading && hasDebts && (
+            <SegmentedControl
+              value={activeFilter}
+              onChange={setActiveFilter}
+              options={FILTER_TABS}
+            />
+          )}
+          {isLoading ? (
+            <DebtsGridSkeleton />
+          ) : isError ? (
+            <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl">
+              Error al cargar las deudas. Intenta nuevamente.
+            </div>
+          ) : filteredDebts.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-4xl mb-3">🤝</p>
+              <p className="text-gray-400 text-sm">
+                {activeFilter === 'ALL'
+                  ? 'No hay deudas registradas.'
+                  : 'No hay deudas en esta categoría.'
+                }
+              </p>
+              <p className="text-gray-300 text-[13px] mt-1">
+                Usa los botones de arriba para registrar una.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredDebts.map((debt) => (
+                <DebtCard
+                  key={debt.id}
+                  debt={debt}
+                  onPay={(d) => setDialog({ mode: 'pay', debt: d })}
+                  onCancel={(d) => setPendingCancel(d)}
+                  onDelete={(d) => setPendingDelete(d)}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      ) : hasCredits ? (
+        <div className="space-y-4">
+          <SectionLabel icon="🏦" label="Instituciones" />
+          <CreditsList
+            credits={creditsData}
+            isLoading={creditsLoading}
+            compact
+          />
+        </div>
+      ) : (
         <div className="text-center py-16">
           <p className="text-4xl mb-3">🤝</p>
           <p className="text-gray-400 text-sm">
-            {activeFilter === 'ALL'
-              ? 'No hay deudas registradas.'
-              : 'No hay deudas en esta categoría.'
-            }
+            No hay deudas registradas.
           </p>
           <p className="text-gray-300 text-[13px] mt-1">
-            Usa el botón de arriba para registrar una.
+            Usa los botones de arriba para registrar una.
           </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredDebts.map((debt) => (
-            <DebtCard
-              key={debt.id}
-              debt={debt}
-              onPay={(d)    => setDialog({ mode: 'pay', debt: d })}
-              onCancel={(d) => setPendingCancel(d)}
-              onDelete={(d) => setPendingDelete(d)}
-            />
-          ))}
         </div>
       )}
 
-      {/* ── Dialog crear / pagar ── */}
+      {/* ── Dialog crear / pagar (personas) ── */}
       <Dialog
-        open={isDialogOpen}
+        open={dialog.mode === 'create' || dialog.mode === 'pay'}
         onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
       >
         <DialogContent className="sm:max-w-md rounded-2xl">
@@ -248,6 +343,21 @@ export function DebtsList() {
               onSuccess={() => setDialog({ mode: 'closed' })}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog crear (instituciones) ── */}
+      <Dialog
+        open={dialog.mode === 'create-credit'}
+        onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
+      >
+        <DialogContent className="sm:max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              Nuevo crédito institucional
+            </DialogTitle>
+          </DialogHeader>
+          <CreditForm onSuccess={() => setDialog({ mode: 'closed' })} />
         </DialogContent>
       </Dialog>
 

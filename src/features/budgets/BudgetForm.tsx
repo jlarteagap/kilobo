@@ -290,7 +290,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
             onChange={setMode}
             options={[
               { value: 'personal', label: 'Categorías personales' },
-              { value: 'project', label: 'Proyecto' },
+              { value: 'project', label: 'Actividad' },
             ]}
             fullWidth
           />
@@ -347,7 +347,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
           />
         )}
 
-        {/* ── Modo Proyecto: selector + subtipos ── */}
+        {/* ── Modo Actividad: selector + etiquetas ── */}
         {mode === 'project' && (
           <div className="space-y-4">
 
@@ -358,7 +358,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-[13px] font-medium text-gray-600">
-                    Proyecto
+                    Actividad
                   </FormLabel>
                   <Select
                     onValueChange={handleProjectChange}
@@ -366,12 +366,12 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                   >
                     <FormControl>
                       <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
-                        <SelectValue placeholder="Seleccionar proyecto" />
+                        <SelectValue placeholder="Seleccionar actividad" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="none">
-                        <span className="text-gray-400">Seleccionar proyecto</span>
+                        <span className="text-gray-400">Seleccionar actividad</span>
                       </SelectItem>
                       {projects.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
@@ -388,7 +388,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
               )}
             />
 
-            {/* Subtipos — aparecen solo si el proyecto tiene subtipos definidos */}
+            {/* Etiquetas — aparecen solo si la actividad tiene etiquetas definidas */}
             {selectedProject && selectedProject.subtypes.length > 0 && (
               <FormField<CreateBudgetInput>
                 control={form.control}
@@ -396,13 +396,13 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                 render={() => (
                   <FormItem>
                     <FormLabel className="text-[13px] font-medium text-gray-600">
-                      Subtipos
+                      Etiquetas
                       <span className="text-gray-400 font-normal ml-1">
-                        ({subtypes.length === 0 ? 'todos' : `${subtypes.length} seleccionados`})
+                        ({subtypes.length === 0 ? 'todas' : `${subtypes.length} seleccionadas`})
                       </span>
                     </FormLabel>
                     <p className="text-[11px] text-gray-400 -mt-1">
-                      Sin selección = aplica a todos los subtipos del proyecto
+                      Sin selección = aplica a todas las etiquetas de la actividad
                     </p>
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {selectedProject.subtypes.map((s) => {
@@ -434,10 +434,10 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
               />
             )}
 
-            {/* Proyecto sin subtipos definidos */}
+            {/* Actividad sin etiquetas definidas */}
             {selectedProject && selectedProject.subtypes.length === 0 && (
               <div className="py-3 px-4 bg-gray-50 rounded-xl text-[12px] text-gray-400">
-                Este proyecto no tiene subtipos definidos. El presupuesto
+                Esta actividad no tiene etiquetas definidas. El presupuesto
                 aplica a todos sus movimientos.
               </div>
             )}

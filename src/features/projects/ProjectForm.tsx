@@ -158,12 +158,12 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
           </div>
           <div>
             <p className="text-[13px] font-bold text-neutral-900 leading-tight">
-              {projectName || 'Nombre del proyecto'}
+              {projectName || 'Nombre de la actividad'}
             </p>
             <p className="text-[11px] text-neutral-400 mt-0.5">
               {currentSubtypes.length > 0
                 ? currentSubtypes.slice(0, 3).join(', ') + (currentSubtypes.length > 3 ? '…' : '')
-                : 'Sin subtipos aún'}
+                : 'Sin etiquetas aún'}
             </p>
           </div>
         </div>
@@ -212,14 +212,14 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
           )}
         />
 
-        {/* ── Subtipos ── */}
+        {/* ── Etiquetas ── */}
         <FormField<CreateProjectInput>
           control={form.control}
           name="subtypes"
           render={() => (
             <FormItem>
               <FormLabel className="text-[13px] font-medium text-neutral-600">
-                Subtipos
+                Etiquetas
                 <span className="text-neutral-400 font-normal ml-1">(opcional)</span>
               </FormLabel>
 
@@ -243,7 +243,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
                 </Button>
               </div>
 
-              {/* Chips de subtipos */}
+              {/* Chips de etiquetas */}
               {currentSubtypes.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {currentSubtypes.map((s) => (
@@ -281,7 +281,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
             Cancelar
           </Button>
           <SubmitButton isPending={isPending} className="flex-1 bg-neutral-900 hover:bg-neutral-800">
-            {isEdit ? 'Guardar cambios' : 'Crear proyecto'}
+            {isEdit ? 'Guardar cambios' : 'Crear actividad'}
           </SubmitButton>
         </div>
       </form>

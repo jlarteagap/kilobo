@@ -32,7 +32,7 @@ export function buildProjectSlices(
 
   const bySubtype = new Map<string, number>()
   expenses.forEach((t) => {
-    const key = t.subtype ?? 'Sin subtipo'
+    const key = t.subtype ?? 'Sin etiqueta'
     bySubtype.set(key, (bySubtype.get(key) ?? 0) + t.amount)
   })
 
@@ -103,7 +103,7 @@ export function buildDetailSlices(
 
   const bySubItem = new Map<string, number>()
   expenses.forEach((t) => {
-    const key = (selectedItem.isProject ? t.subtype : t.tag) ?? (selectedItem.isProject ? 'Sin subtipo' : 'Sin tag')
+    const key = (selectedItem.isProject ? t.subtype : t.tag) ?? (selectedItem.isProject ? 'Sin etiqueta' : 'Sin tag')
     bySubItem.set(key, (bySubItem.get(key) ?? 0) + t.amount)
   })
 

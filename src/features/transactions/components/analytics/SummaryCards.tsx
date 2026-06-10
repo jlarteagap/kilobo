@@ -117,11 +117,18 @@ function ProjectSummaryCard({
       }}
     >
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <span style={{ fontSize: 18 }}>{icon}</span>
-        <p className="text-[13px] font-semibold" style={{ color }}>
-          {name}
-        </p>
+      <div className="flex items-start gap-2">
+        <span style={{ fontSize: 18 }} className="mt-0.5">{icon}</span>
+        <div>
+          <p className="text-[13px] font-semibold" style={{ color }}>
+            {name}
+          </p>
+          {isPersonal && (
+            <p className="text-[11px] text-gray-400 font-medium mt-0.5">
+              Sin actividad asignada
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Ingresos + Gastos */}
@@ -229,7 +236,11 @@ export function SummaryCards({
     return stats && (stats.income > 0 || stats.expense > 0)
   })
 
-  const hasProjectCards = activeProjects.length > 0
+  // ── Personal (sin actividad) ────────────────────────────────────────────
+  const personalStats = projectStats.get(null)
+  const hasPersonal   = personalStats && (personalStats.income > 0 || personalStats.expense > 0)
+
+  const hasProjectCards = activeProjects.length > 0 || !!hasPersonal
 
   return (
     <div className="space-y-4 mb-6">
@@ -264,11 +275,21 @@ export function SummaryCards({
         />
       </div>
 
-      {/* ── Fila 2: cards por proyecto — solo si hay actividad ── */}
+      {/* ── Fila 2: cards por actividad / personal ── */}
       {hasProjectCards && (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
-          {/* Card por cada proyecto activo en el período */}
+          {/* Card Personal (sin actividad) — siempre primero */}
+          {hasPersonal && personalStats && (
+            <ProjectSummaryCard
+              project={null}
+              income={personalStats.income}
+              expenses={personalStats.expense}
+              currency={currency}
+            />
+          )}
+
+          {/* Card por cada actividad activa en el período */}
           {activeProjects.map((project) => {
             const stats = projectStats.get(project.id)!
             return (

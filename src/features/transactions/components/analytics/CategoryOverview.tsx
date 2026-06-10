@@ -102,11 +102,11 @@ export function CategoryOverview({
           {isProjectMode ? (project?.icon ?? '📁') : '🥧'}
         </div>
         <p className="text-[13px] text-gray-400">
-          {isProjectMode ? 'Sin gastos en este proyecto' : 'Sin datos de gastos'}
+          {isProjectMode ? 'Sin gastos en esta actividad' : 'Sin datos de gastos'}
         </p>
         <p className="text-[11px] text-gray-300">
           {isProjectMode
-            ? 'Registra gastos con subtipos para ver la distribución'
+            ? 'Registra gastos con etiquetas para ver la distribución'
             : 'Registra gastos para ver la distribución'
           }
         </p>
@@ -126,7 +126,7 @@ export function CategoryOverview({
 
         {isProjectMode && project ? (
           <div className="flex items-center gap-1.5 mt-1">
-            <p className="text-[11px] text-gray-400">Subtipos ·</p>
+            <p className="text-[11px] text-gray-400">Etiquetas ·</p>
             <span
               className="text-[10px] font-medium px-2 py-0.5 rounded-full"
               style={{

@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Pencil, Trash2 } from "lucide-react"
+import { Plus, Pencil, Trash2, Lightbulb } from "lucide-react"
 
 import {
   Dialog,
@@ -127,9 +127,9 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
     createProject.mutate(data, {
       onSuccess: () => {
         setDialog({ mode: 'closed' })
-        toast.success('Proyecto creado')
+        toast.success('Actividad creada')
       },
-      onError: () => toast.error('Error al crear el proyecto'),
+      onError: () => toast.error('Error al crear la actividad'),
     })
   }
 
@@ -138,9 +138,9 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
     updateProject.mutate({ id: dialog.project.id, data }, {
       onSuccess: () => {
         setDialog({ mode: 'closed' })
-        toast.success('Proyecto actualizado')
+        toast.success('Actividad actualizada')
       },
-      onError: () => toast.error('Error al actualizar el proyecto'),
+      onError: () => toast.error('Error al actualizar la actividad'),
     })
   }
 
@@ -148,11 +148,11 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
     if (!pendingDeleteId) return
     deleteProject.mutate(pendingDeleteId, {
       onSuccess: () => {
-        toast.success('Proyecto archivado')
+        toast.success('Actividad archivada')
         setPendingDeleteId(null)
       },
       onError: () => {
-        toast.error('Error al archivar el proyecto')
+        toast.error('Error al archivar la actividad')
         setPendingDeleteId(null)
       },
     })
@@ -171,11 +171,11 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
             "font-bold text-neutral-900 dark:text-neutral-100 tracking-tight",
             isSidebar ? "text-lg" : "text-2xl"
           )}>
-            Proyectos
+            Actividades
           </h2>
           {!isSidebar && (
             <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-              Unidades de negocio para rastrear rentabilidad.
+              Agrupa ingresos y gastos de un trabajo, negocio o pasatiempo.
             </p>
           )}
         </div>
@@ -188,7 +188,7 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
           )}
         >
           <Plus className={cn("mr-1.5", isSidebar ? "w-3.5 h-3.5" : "w-4 h-4")} />
-          {isSidebar ? "Nuevo" : "Nuevo Proyecto"}
+          {isSidebar ? "Nueva" : "Nueva Actividad"}
         </Button>
       </div>
 
@@ -197,7 +197,7 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
         <ProjectsGridSkeleton />
       ) : isError ? (
         <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-500 text-[13px] p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 font-medium">
-          Error al cargar los proyectos.
+          Error al cargar las actividades.
         </div>
       ) : projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/20">
@@ -205,10 +205,10 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
             📁
           </div>
           <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-            Sin proyectos
+            Sin actividades
           </h3>
           <p className="text-[11px] text-neutral-500 mt-1 max-w-[200px]">
-            Crea tu primer proyecto para separar actividades.
+            Crea tu primera actividad para agrupar ingresos y gastos.
           </p>
         </div>
       ) : (
@@ -233,9 +233,29 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
         <DialogContent className="sm:max-w-md rounded-[2.5rem] border-neutral-200/50 dark:border-neutral-800/50 p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight">
-              {dialog.mode === 'edit' ? 'Editar Proyecto' : 'Nuevo Proyecto'}
+              {dialog.mode === 'edit' ? 'Editar Actividad' : 'Nueva Actividad'}
             </DialogTitle>
           </DialogHeader>
+          {/* ── Onboarding — solo la primera vez ── */}
+          {dialog.mode === 'create' && projects.length === 0 && (
+            <div className="bg-amber-50 border border-amber-200/60 rounded-2xl p-4 space-y-2">
+              <div className="flex items-start gap-3">
+                <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1.5">
+                  <p className="text-[13px] font-semibold text-amber-800 leading-tight">
+                    ¿Para qué sirve una actividad?
+                  </p>
+                  <p className="text-[12px] text-amber-700 leading-relaxed">
+                    Agrupa los ingresos y gastos de un mismo trabajo, negocio o pasatiempo para saber si realmente es rentable.
+                  </p>
+                  <p className="text-[12px] text-amber-700/70 leading-relaxed">
+                    Por ejemplo: ventas en línea, clases particulares, construcción de muebles, alquiler de un departamento.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <ProjectForm
             initialData={dialog.mode === 'edit' ? dialog.project : undefined}
             onSubmit={dialog.mode === 'edit' ? handleUpdate : handleCreate}
@@ -253,10 +273,10 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
         <AlertDialogContent className="rounded-[2.5rem] border-neutral-200 dark:border-neutral-800 p-8">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-bold tracking-tight">
-              ¿Archivar proyecto?
+              ¿Archivar actividad?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-neutral-500 dark:text-neutral-400 text-[13px] font-medium leading-relaxed">
-              El proyecto dejará de aparecer en los selectores. Las transacciones asociadas conservan su historial intacto.
+              La actividad dejará de aparecer en los selectores. Las transacciones asociadas conservan su historial intacto.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-8 gap-3">

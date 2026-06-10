@@ -142,7 +142,7 @@ function TransactionRow({
   const title = (() => {
     if (isTransfer) return 'Transferencia entre cuentas'
     if (isDebt) return tx.description ?? (tx.subtype === 'Préstamo' ? 'Préstamo' : 'Pago de deuda')
-    if (project) return tx.subtype ?? 'Sin subtipo'
+    if (project) return tx.subtype ?? 'Sin etiqueta'
     return category.name ?? 'Sin categoría'
   })()
 
@@ -356,7 +356,7 @@ export function TransactionList({
           {/* ── Header ── */}
           <thead>
             <tr className="border-b border-gray-100">
-              {['Categoría / Subtipo', 'Tags', 'Tipo', 'Cuenta', 'Monto', ''].map((h) => (
+              {['Categoría / Etiqueta', 'Tags', 'Tipo', 'Cuenta', 'Monto', ''].map((h) => (
                 <th
                   key={h}
                   className={cn(

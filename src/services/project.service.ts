@@ -9,7 +9,7 @@ export const projectService = {
 
   async getById(id: string, userId: string): Promise<Project> {
     const project = await projectRepository.findById(id, userId)
-    if (!project) throw new Error('Proyecto no encontrado o no autorizado.')
+    if (!project) throw new Error('Actividad no encontrada o no autorizada.')
     return project
   },
 

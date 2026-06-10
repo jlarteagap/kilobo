@@ -146,7 +146,7 @@ export function TransactionEditForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-[13px] font-medium text-gray-600">
-                Proyecto
+                Actividad
                 <span className="text-gray-400 font-normal ml-1">(opcional)</span>
               </FormLabel>
               <Select
@@ -155,12 +155,12 @@ export function TransactionEditForm({
               >
                 <FormControl>
                   <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
-                    <SelectValue placeholder="Sin proyecto" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="none">
-                    <span className="text-gray-400">Sin proyecto</span>
+                    <SelectValue placeholder="Sin actividad" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">
+                      <span className="text-gray-400">Sin actividad</span>
                   </SelectItem>
                   {projects.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
@@ -184,7 +184,7 @@ export function TransactionEditForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-[13px] font-medium text-gray-600">
-                  Subtipo
+                  Etiqueta
                   <span className="text-gray-400 font-normal ml-1">(opcional)</span>
                 </FormLabel>
                 <FormControl>

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-06-10
+
+### Added
+- **Savings Goals**: Implemented a comprehensive savings goals feature including CRUD operations, UI components, and balance projection forecasting.
+- **Legacy Debts**: Added support for legacy debts and automated synchronization between debt creation/payments and transactions.
+- **Custom Dates Support**: Enabled custom date selection for debts, transactions, and car sharing trips.
+
+### Changed
+- **Activities & Labels**: Refactored the application to rename "Project" entities to "Activities" and "Subtypes" to "Labels" for better conceptual alignment.
+- **Dependencies & Routing**: Updated node modules dependencies and refined transaction route logic.
+
+### Fixed
+- **Hydration Mismatches**: Resolved React hydration mismatch errors related to custom date implementations.
+- **Savings Goals & UI**: Updated savings goal form validation, fixed repository type casting, and standardized empty state UI.
+
 ## [1.5.6] - 2026-05-30
 
 ### Added
@@ -108,7 +123,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.2] - 2026-03-11
 - Initial version found in this log.
 
-[Unreleased]: https://github.com/jlarteagap/kilobo/compare/v1.5.6...HEAD
+[Unreleased]: https://github.com/jlarteagap/kilobo/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/jlarteagap/kilobo/compare/v1.5.6...v1.6.0
 [1.5.6]: https://github.com/jlarteagap/kilobo/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/jlarteagap/kilobo/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/jlarteagap/kilobo/compare/v1.5.3...v1.5.4

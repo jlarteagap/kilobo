@@ -16,17 +16,17 @@ export const projectKeys = {
   detail:(id: string) => [...projectKeys.all, 'detail', id] as const,
 }
 
-// ─── GET todos los proyectos ──────────────────────────────────────────────────
+// ─── GET todas las actividades ────────────────────────────────────────────────
 export function useProjects() {
   return useQuery({
     queryKey: projectKeys.lists(),
     queryFn: async (): Promise<Project[]> => {
       const res  = await authFetch('/api/projects')
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error ?? 'Error al obtener proyectos')
+      if (!res.ok) throw new Error(json.error ?? 'Error al obtener actividades')
       return Array.isArray(json.data) ? json.data : []
     },
-    staleTime: 1000 * 60 * 10, // proyectos cambian poco
+    staleTime: 1000 * 60 * 10, // actividades cambian poco
   })
 }
 
@@ -38,7 +38,7 @@ export function useCreateProject() {
     mutationFn: async (data: CreateProjectData): Promise<Project> => {
       const res  = await authFetch('/api/projects', { method: 'POST', body: JSON.stringify(data) })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error ?? 'Error al crear proyecto')
+      if (!res.ok) throw new Error(json.error ?? 'Error al crear actividad')
       return json.data
     },
     onMutate: async (newProject) => {
@@ -61,7 +61,7 @@ export function useCreateProject() {
       if (ctx?.previous) qc.setQueryData(projectKeys.lists(), ctx.previous)
       toast.error(err.message)
     },
-    onSuccess: () => toast.success('Proyecto creado'),
+    onSuccess: () => toast.success('Actividad creada'),
     onSettled: () => qc.invalidateQueries({ queryKey: projectKeys.lists() }),
   })
 }
@@ -74,7 +74,7 @@ export function useUpdateProject() {
     mutationFn: async ({ id, data }: { id: string; data: UpdateProjectData }): Promise<Project> => {
       const res  = await authFetch(`/api/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error ?? 'Error al actualizar proyecto')
+      if (!res.ok) throw new Error(json.error ?? 'Error al actualizar actividad')
       return json.data
     },
     onMutate: async ({ id, data }) => {
@@ -89,7 +89,7 @@ export function useUpdateProject() {
       if (ctx?.previous) qc.setQueryData(projectKeys.lists(), ctx.previous)
       toast.error(err.message)
     },
-    onSuccess: () => toast.success('Proyecto actualizado'),
+    onSuccess: () => toast.success('Actividad actualizada'),
     onSettled: () => qc.invalidateQueries({ queryKey: projectKeys.lists() }),
   })
 }
@@ -102,7 +102,7 @@ export function useDeleteProject() {
     mutationFn: async (id: string): Promise<void> => {
       const res  = await authFetch(`/api/projects/${id}`, { method: 'DELETE' })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error ?? 'Error al eliminar proyecto')
+      if (!res.ok) throw new Error(json.error ?? 'Error al archivar actividad')
     },
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: projectKeys.lists() })
@@ -116,7 +116,7 @@ export function useDeleteProject() {
       if (ctx?.previous) qc.setQueryData(projectKeys.lists(), ctx.previous)
       toast.error(err.message)
     },
-    onSuccess: () => toast.success('Proyecto archivado'),
+    onSuccess: () => toast.success('Actividad archivada'),
     onSettled: () => qc.invalidateQueries({ queryKey: projectKeys.lists() }),
   })
 }

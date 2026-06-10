@@ -229,7 +229,7 @@ export function TransactionFilters({
   label={
     filters.projectId === '__personal__'
       ? 'Personal'
-      : (activeProject?.name ?? 'Proyecto')
+      : (activeProject?.name ?? 'Actividad')
   }
   isActive={!!filters.projectId}
   isOpen={openDropdown === 'project'}
@@ -238,7 +238,7 @@ export function TransactionFilters({
 >
   <div className="py-1">
     <CustomDropdownItem
-      label="Personal (sin proyecto)"
+      label="Personal (sin actividad)"
       isSelected={filters.projectId === '__personal__'}
       onClick={() => { onProjectChange('__personal__'); setOpenDropdown(null) }}
     />

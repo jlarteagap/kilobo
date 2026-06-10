@@ -63,7 +63,7 @@ export const createBudgetSchemaWithRefinement = createBudgetSchema.superRefine(
       ctx.addIssue({
         code:    z.ZodIssueCode.custom,
         path:    ['project_id'],
-        message: 'Selecciona un proyecto',
+        message: 'Selecciona una actividad',
       })
     }
   }

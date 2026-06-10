@@ -123,7 +123,7 @@ export function detectTrends(
 
     if (tx.project_id) {
       key = `project:${tx.project_id}`;
-      name = tx.project?.name ?? 'Proyecto';
+      name = tx.project?.name ?? 'Actividad';
       color = tx.project?.color ?? null;
       if (tx.subtype) {
         key += `::${tx.subtype}`;

@@ -183,7 +183,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
   render={({ field }) => (
     <FormItem>
       <FormLabel className="text-[13px] font-medium text-gray-600">
-        Proyecto
+        Actividad
         <span className="text-gray-400 font-normal ml-1">(opcional)</span>
       </FormLabel>
       <Select
@@ -192,12 +192,12 @@ const onSubmit = async (data: CreateTransactionInput) => {
       >
         <FormControl>
           <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
-            <SelectValue placeholder="Gasto personal" />
+            <SelectValue placeholder="Personal" />
           </SelectTrigger>
         </FormControl>
         <SelectContent>
           <SelectItem value="none">
-            <span className="text-gray-400">Sin proyecto</span>
+            <span className="text-gray-400">Sin actividad</span>
           </SelectItem>
           {projects.map((p) => (
             <SelectItem key={p.id} value={p.id}>
@@ -221,7 +221,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
     render={({ field }) => (
       <FormItem>
         <FormLabel className="text-[13px] font-medium text-gray-600">
-          Subtipo
+          Etiqueta
           <span className="text-gray-400 font-normal ml-1">(opcional)</span>
         </FormLabel>
         <FormControl>

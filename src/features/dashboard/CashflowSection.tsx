@@ -198,8 +198,8 @@ export function CashflowSection() {
               { color: 'var(--debt)',   label: 'Gastos'   },
               { color: 'var(--primary)', label: 'Cuentas'  },
               { color: 'var(--muted-foreground)', label: 'Balance' },
-              { color: '#8B5CF6',  label: 'Proyectos' },  // ← NUEVO
-              { color: '#F59E0B',  label: 'Subtipos'  },  // ← NUEVO
+              { color: '#8B5CF6',  label: 'Actividades' },  // ← NUEVO
+              { color: '#F59E0B',  label: 'Etiquetas'  },  // ← NUEVO
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />

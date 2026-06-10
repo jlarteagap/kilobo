@@ -14,7 +14,7 @@ export default function AccountsPage() {
             <AccountsList />
           </div>
 
-          {/* Columna Lateral: Proyectos */}
+          {/* Columna Lateral: Actividades */}
           <aside className="lg:col-span-4 space-y-8">
             <div className="sticky top-24">
               <ProjectsList isSidebar />

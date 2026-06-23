@@ -6,6 +6,7 @@ import { QueryProvider } from "@/providers/QueryProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { AuthProvider } from "@/hooks/useAuth";
+import { ExchangeRateProvider } from "@/providers/ExchangeRateProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,7 +42,9 @@ export default function RootLayout({
       >
         <AuthProvider>
           <QueryProvider>
-            <TooltipProvider>{children}</TooltipProvider>
+            <ExchangeRateProvider>
+              <TooltipProvider>{children}</TooltipProvider>
+            </ExchangeRateProvider>
           </QueryProvider>
         </AuthProvider>
         <Toaster />

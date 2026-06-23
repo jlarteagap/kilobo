@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-06-23
+
+### Added
+- **Live Exchange Rates API**: Added an API route (`/api/exchange-rate`) that fetches live USD/BOB Binance P2P exchange rates from `bo.dolarapi.com` with a fallback to 6.96 BOB and a 5-minute CDN cache.
+- **Exchange Rate Client Provider**: Implemented `ExchangeRateProvider` to initialize and periodically update (every 10 minutes) live exchange rates across the client application.
+- **Server-Side Live Rate Cache**: Integrated an active rate fetching check (`ensureLiveRate`) with a 5-minute TTL inside transaction service operations to minimize external network requests.
+
+### Changed
+- **Cross-Currency Balance Logic**: Enhanced Firestore batch operations (`createWithBalance` / `deleteWithBalance`) to compute and record `converted_amount` and `to_currency` when transferring/saving between accounts with mismatching currencies.
+- **Unified Multi-Currency Calculations**: Updated financial metrics hooks, budget tracking, debt calculations, transaction lists, projections, charts, and AI insights to perform real-time cross-currency conversions using live rates.
+
 ## [1.6.0] - 2026-06-10
 
 ### Added
@@ -123,7 +134,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.2] - 2026-03-11
 - Initial version found in this log.
 
-[Unreleased]: https://github.com/jlarteagap/kilobo/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/jlarteagap/kilobo/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/jlarteagap/kilobo/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jlarteagap/kilobo/compare/v1.5.6...v1.6.0
 [1.5.6]: https://github.com/jlarteagap/kilobo/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/jlarteagap/kilobo/compare/v1.5.4...v1.5.5

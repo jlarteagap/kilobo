@@ -1,13 +1,22 @@
-// Futura mejora: reemplazar por llamada a API de tipo de cambio
-export const EXCHANGE_RATES: Record<string, number> = {
-  USD: 6.96,
-  BOB: 1,
+// ─── Tipo de cambio en vivo ──────────────────────────────────────────────────
+// Se actualiza desde la API de dolarapi.com vía /api/exchange-rate
+// Valor por defecto mientras se carga — se sobreescribe con el rate real
+
+let _usdRate = 6.96 // fallback inicial
+
+export function setUSDRate(rate: number) {
+  _usdRate = rate
 }
 
-export const getExchangeRate = (currency: string): number => {
-  return EXCHANGE_RATES[currency] ?? 1
+export function getUSDRate(): number {
+  return _usdRate
 }
 
-export const convertToBOB = (amount: number, currency: string): number => {
+export function getExchangeRate(currency: string): number {
+  if (currency === 'BOB') return 1
+  return _usdRate
+}
+
+export function convertToBOB(amount: number, currency: string): number {
   return amount * getExchangeRate(currency)
 }

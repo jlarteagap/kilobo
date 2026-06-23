@@ -42,7 +42,7 @@ function detectRecurringPatterns(transactions: Transaction[]): RecurringPattern[
     const key = `${t.type}-${day}-${t.amount}-${t.description ?? ''}`
 
     if (!patterns.has(key)) {
-      patterns.set(key, { day_of_month: day, amount: t.amount, type: t.type as 'INCOME' | 'EXPENSE' })
+      patterns.set(key, { day_of_month: day, amount: convertToBOB(t.amount, t.currency), type: t.type as 'INCOME' | 'EXPENSE' })
     }
   }
 

@@ -2,10 +2,11 @@ import { useMemo } from 'react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
-import type { Transaction } from '@/types/transaction'
+import type { Transaction, ChartDataPoint } from '@/types/transaction'
 import type { Debt } from '@/types/debt'
 import type { BudgetProgress } from '@/types/budget'
-import { filterByPeriod, getDaysInPeriod } from '@/utils/date.utils'
+import { filterByPeriod, getDaysInPeriod, parseLocalDate } from '@/utils/date.utils'
+import { convertToBOB } from '@/lib/config/exchange-rates'
 
 interface FinancialMetricsInput {
   transactions: Transaction[]
@@ -30,10 +31,10 @@ export function useFinancialMetrics({
   const monthlyStats = useMemo(() => {
     const income  = monthlyTransactions
       .filter((t) => t.type === 'INCOME')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
     const expense = monthlyTransactions
       .filter((t) => t.type === 'EXPENSE')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
     return { income, expense, net: income - expense }
   }, [monthlyTransactions])
 
@@ -41,9 +42,9 @@ export function useFinancialMetrics({
     const prev = filterByPeriod(transactions, prevPeriod)
       .filter((t) => t.status === 'COMPLETED')
     const income  = prev.filter((t) => t.type === 'INCOME')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
     const expense = prev.filter((t) => t.type === 'EXPENSE')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
     return { income, expense, net: income - expense }
   }, [transactions, prevPeriod])
 
@@ -55,10 +56,10 @@ export function useFinancialMetrics({
       const dayTransactions = monthlyTransactions.filter(t => t.date.startsWith(dateStr))
       const dayExpense = dayTransactions
         .filter(t => t.type === 'EXPENSE')
-        .reduce((sum, t) => sum + t.amount, 0)
+        .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
       const dayIncome = dayTransactions
         .filter(t => t.type === 'INCOME')
-        .reduce((sum, t) => sum + t.amount, 0)
+        .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
       const prev = acc.length > 0 ? acc[acc.length - 1] : { expense: 0, income: 0 }
       acc.push({ expense: prev.expense + dayExpense, income: prev.income + dayIncome })
       return acc
@@ -71,10 +72,10 @@ export function useFinancialMetrics({
       const dayTransactions = prevMonthlyTransactions.filter(t => t.date.startsWith(dateStr))
       const dayExpense = dayTransactions
         .filter(t => t.type === 'EXPENSE')
-        .reduce((sum, t) => sum + t.amount, 0)
+        .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
       const dayIncome = dayTransactions
         .filter(t => t.type === 'INCOME')
-        .reduce((sum, t) => sum + t.amount, 0)
+        .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
       const prev = acc.length > 0 ? acc[acc.length - 1] : { expense: 0, income: 0 }
       acc.push({ expense: prev.expense + dayExpense, income: prev.income + dayIncome })
       return acc
@@ -93,6 +94,37 @@ export function useFinancialMetrics({
     }
     return chartData
   }, [monthlyTransactions, transactions, currentPeriod, prevPeriod])
+
+  // ── Chart data para IncomeExpenseChart (ingresos vs gastos por día) ──
+  const currentChartData = useMemo(() => {
+    const days = getDaysInPeriod(currentPeriod)
+    const dayMap = new Map<string, ChartDataPoint>()
+
+    days.forEach((dateStr) => {
+      const date = parseLocalDate(dateStr)
+      const label = format(date, 'd MMM', { locale: es })
+      dayMap.set(dateStr, { date: dateStr, income: 0, expense: 0, label })
+    })
+
+    monthlyTransactions.forEach((t) => {
+      const dateStr = format(parseLocalDate(t.date), 'yyyy-MM-dd')
+      const entry = dayMap.get(dateStr)
+      if (!entry) return
+      const amountInBOB = convertToBOB(t.amount, t.currency)
+      if (t.type === 'INCOME') {
+        entry.income += amountInBOB
+        entry.incomeByCurrency ??= {}
+        entry.incomeByCurrency[t.currency] = (entry.incomeByCurrency[t.currency] ?? 0) + t.amount
+      }
+      if (t.type === 'EXPENSE') {
+        entry.expense += amountInBOB
+        entry.expenseByCurrency ??= {}
+        entry.expenseByCurrency[t.currency] = (entry.expenseByCurrency[t.currency] ?? 0) + t.amount
+      }
+    })
+
+    return Array.from(dayMap.values())
+  }, [monthlyTransactions, currentPeriod])
 
   const trends = useMemo(() => {
     const calcTrend = (current: number, previous: number) => {
@@ -121,10 +153,10 @@ export function useFinancialMetrics({
   const debtSummary = useMemo(() => {
     const pendingGiven    = activeDebts
       .filter((d) => d.type === 'GIVEN')
-      .reduce((sum, d) => sum + (d.amount - d.paid_amount), 0)
+      .reduce((sum, d) => sum + convertToBOB(d.amount - d.paid_amount, d.currency), 0)
     const pendingReceived = activeDebts
       .filter((d) => d.type === 'RECEIVED')
-      .reduce((sum, d) => sum + (d.amount - d.paid_amount), 0)
+      .reduce((sum, d) => sum + convertToBOB(d.amount - d.paid_amount, d.currency), 0)
     return { pendingGiven, pendingReceived }
   }, [activeDebts])
 
@@ -154,6 +186,7 @@ export function useFinancialMetrics({
     monthlyStats,
     trends,
     financialComparisonData,
+    currentChartData,
     recentTransactions,
     activeDebts,
     debtSummary,

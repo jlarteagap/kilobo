@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { startOfDay, format } from 'date-fns'
 
 import { useTransactions } from '@/features/transactions/hooks/useTransactions'
+import { convertToBOB } from '@/lib/config/exchange-rates'
 
 import type { Budget, BudgetProgress, BudgetSummaryData } from '@/types/budget'
 import type { CreateBudgetInput, UpdateBudgetInput } from '@/lib/validations/budget.schema'
@@ -65,7 +66,7 @@ function calcProgress(
     return false
   })
 
-  const current_amount = linked.reduce((sum, t) => sum + t.amount, 0)
+  const current_amount = linked.reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
   const percent        = Math.min((current_amount / budget.target_amount) * 100, 100)
   const remaining      = budget.target_amount - current_amount
 

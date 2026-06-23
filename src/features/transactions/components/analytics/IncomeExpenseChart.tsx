@@ -20,19 +20,52 @@ const CHART_TYPES: { value: ChartType; label: string }[] = [
 const INCOME_COLOR  = '#34d399'
 const EXPENSE_COLOR = '#fb7185'
 
+function formatOriginal(value: number, currency: string): string {
+  return new Intl.NumberFormat('es-BO', {
+    style: 'currency',
+    currency: currency === 'USD' ? 'USD' : 'BOB',
+    minimumFractionDigits: 2,
+  }).format(value)
+}
+
 interface TooltipPayloadProps {
   active?: boolean
-  payload?: Array<{ name: string; value: number; color: string; dataKey?: string | number }>
+  payload?: Array<{
+    name: string
+    value: number
+    color: string
+    dataKey?: string | number
+    payload?: ChartDataPoint
+  }>
   label?: string
 }
 
 function CustomTooltip({ active, payload, label }: TooltipPayloadProps) {
+  if (!active || !payload?.length) return null
+
+  const dataPoint = payload[0]?.payload
+
   return (
     <ChartTooltipContainer active={active} payload={payload}>
       <p className="text-[11px] font-semibold text-gray-400 mb-1.5 capitalize">{label}</p>
-      {payload?.map((entry) => (
-        <ChartTooltipRow key={entry.dataKey} color={entry.color} label={entry.name} value={entry.value} />
-      ))}
+      {payload.map((entry) => {
+        const isIncome = entry.dataKey === 'income'
+        const breakdown = isIncome ? dataPoint?.incomeByCurrency : dataPoint?.expenseByCurrency
+        return (
+          <div key={entry.dataKey}>
+            <ChartTooltipRow color={entry.color} label={entry.name} value={entry.value} />
+            {breakdown && Object.keys(breakdown).length > 0 && (
+              <div className="flex flex-col gap-0.5 mt-0.5 mb-1.5">
+                {Object.entries(breakdown).map(([currency, amount]) => (
+                  <span key={currency} className="text-[10px] text-gray-400 ml-2">
+                    {formatOriginal(amount, currency)}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
     </ChartTooltipContainer>
   )
 }

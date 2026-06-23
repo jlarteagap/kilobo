@@ -16,6 +16,9 @@ export interface Transaction {
   type: TransactionType
   amount: number
   currency: string
+  // Para transferencias entre monedas — monto acreditado en la cuenta destino
+  converted_amount?: number
+  to_currency?: string
   date: string
   description: string | null
   status: TransactionStatus
@@ -56,6 +59,8 @@ export interface CreateTransactionData {
   currency?: string
   status?: TransactionStatus
   user_id?: string
+  converted_amount?: number    // para transferencias cross-currency
+  to_currency?: string         // moneda destino
 
   project_id?: string | null
   subtype?:    string | null
@@ -83,4 +88,6 @@ export interface ChartDataPoint {
   income: number
   expense: number
   label: string
+  incomeByCurrency?: Record<string, number>
+  expenseByCurrency?: Record<string, number>
 }

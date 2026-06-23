@@ -1,16 +1,16 @@
 import { Transaction } from "@/types/transaction"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import { convertToBOB } from "@/lib/config/exchange-rates"
 import { cn } from "@/lib/utils"
 
-// Añadir este componente antes del componente principal
 export function TransactionTotals({ transactions }: { transactions: Transaction[] }) {
   const totalIncome  = transactions
     .filter((t) => t.type === 'INCOME')
-    .reduce((sum, t) => sum + t.amount, 0)
+    .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
 
   const totalExpense = transactions
     .filter((t) => t.type === 'EXPENSE')
-    .reduce((sum, t) => sum + t.amount, 0)
+    .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
 
   const net = totalIncome - totalExpense
 

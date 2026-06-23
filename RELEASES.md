@@ -1,3 +1,35 @@
+# Release Notes v1.6.1
+**Released**: June 23, 2026
+
+## 🎉 ¡Novedades Destacadas!
+
+### 💵 Soporte Multi-Moneda y Conversión en Tiempo Real
+¡Kilo ahora habla múltiples monedas! Hemos implementado un sistema robusto para manejar cuentas y transacciones en dólares (USD) y bolivianos (BOB) con conversión automática.
+- **Tasas de Cambio en Vivo**: Integración con un proveedor en tiempo real para obtener el tipo de cambio oficial/P2P de Binance para USD en Bolivia.
+- **Actualización Automática**: El sistema refresca la tasa de cambio en vivo cada 10 minutos en el navegador y cuenta con caché en servidor para máxima velocidad y eficiencia.
+- **Transferencias entre Cuentas de Distinta Moneda**: Realiza traspasos o ahorros entre cuentas en USD y BOB; el sistema convertirá automáticamente los montos y guardará el registro exacto.
+- **Métricas y Gráficos Unificados**: Tu balance general, deudas, presupuestos y gráficos se unifican automáticamente a BOB usando las tasas de cambio del día para brindarte una visión financiera consolidada.
+
+---
+
+# Release Notes v1.6.0
+**Released**: June 10, 2026
+
+## 🎉 ¡Novedades Destacadas!
+
+### 🎯 Metas de Ahorro
+Hemos añadido un módulo completo para planificar tus ahorros a mediano y largo plazo.
+- **Seguimiento Visual**: Registra tus objetivos, visualiza tu progreso y calcula proyecciones automáticas para saber cuándo alcanzarás tu meta.
+- **Sincronización con Transacciones**: El dinero transferido a tus metas se registra y deduce correctamente de tus saldos.
+
+### 📅 Fechas Personalizadas
+Ahora puedes elegir la fecha y hora exacta al registrar deudas, transacciones y viajes compartidos, evitando la restricción de usar siempre la hora del servidor.
+
+### 🏷️ Actividades y Etiquetas (Renombramiento)
+Para hacer la aplicación más intuitiva, hemos renombrado el concepto de "Proyectos" a **Actividades** y los "Subtipos" a **Etiquetas** a lo largo de toda la plataforma.
+
+---
+
 # Release Notes v1.5.6
 **Released**: May 30, 2026
 

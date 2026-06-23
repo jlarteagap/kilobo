@@ -1,5 +1,6 @@
 import type { Transaction, CategoryData } from "@/types/transaction"
 import type { Project } from "@/types/project"
+import { convertToBOB } from '@/lib/config/exchange-rates'
 
 export interface SliceItem {
   name:       string
@@ -33,7 +34,7 @@ export function buildProjectSlices(
   const bySubtype = new Map<string, number>()
   expenses.forEach((t) => {
     const key = t.subtype ?? 'Sin etiqueta'
-    bySubtype.set(key, (bySubtype.get(key) ?? 0) + t.amount)
+    bySubtype.set(key, (bySubtype.get(key) ?? 0) + convertToBOB(t.amount, t.currency))
   })
 
   const entries = Array.from(bySubtype.entries()).sort((a, b) => b[1] - a[1])
@@ -70,7 +71,7 @@ export function buildMixedSlices(
   projects.forEach((project) => {
     const total = transactions
       .filter((t) => t.type === 'EXPENSE' && t.project_id === project.id)
-      .reduce((s, t) => s + t.amount, 0)
+      .reduce((s, t) => s + convertToBOB(t.amount, t.currency), 0)
 
     if (total > 0) {
       result.push({
@@ -104,7 +105,7 @@ export function buildDetailSlices(
   const bySubItem = new Map<string, number>()
   expenses.forEach((t) => {
     const key = (selectedItem.isProject ? t.subtype : t.tag) ?? (selectedItem.isProject ? 'Sin etiqueta' : 'Sin tag')
-    bySubItem.set(key, (bySubItem.get(key) ?? 0) + t.amount)
+    bySubItem.set(key, (bySubItem.get(key) ?? 0) + convertToBOB(t.amount, t.currency))
   })
 
   const color = selectedItem.color || '#6b7280'

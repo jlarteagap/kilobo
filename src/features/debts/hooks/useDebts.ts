@@ -4,6 +4,7 @@ import { accountKeys } from '@/features/accounts/hooks/useAccounts'
 import { transactionKeys } from '@/features/transactions/hooks/useTransactions'
 import { toast } from 'sonner'
 import type { Debt, DebtSummary } from '@/types/debt'
+import { convertToBOB } from '@/lib/config/exchange-rates'
 import type { CreateDebtInput, CreateDebtPaymentInput } from '@/lib/validations/debt.schema'
 
 async function authFetch(url: string, options?: RequestInit) {
@@ -43,19 +44,19 @@ export function useDebtSummary(): DebtSummary {
   return {
     totalGiven:      debts
       .filter((d) => d.type === 'GIVEN')
-      .reduce((sum, d) => sum + d.amount, 0),
+      .reduce((sum, d) => sum + convertToBOB(d.amount, d.currency), 0),
 
     totalReceived:   debts
       .filter((d) => d.type === 'RECEIVED')
-      .reduce((sum, d) => sum + d.amount, 0),
+      .reduce((sum, d) => sum + convertToBOB(d.amount, d.currency), 0),
 
     pendingGiven:    activeDebts
       .filter((d) => d.type === 'GIVEN')
-      .reduce((sum, d) => sum + (d.amount - d.paid_amount), 0),
+      .reduce((sum, d) => sum + convertToBOB(d.amount - d.paid_amount, d.currency), 0),
 
     pendingReceived: activeDebts
       .filter((d) => d.type === 'RECEIVED')
-      .reduce((sum, d) => sum + (d.amount - d.paid_amount), 0),
+      .reduce((sum, d) => sum + convertToBOB(d.amount - d.paid_amount, d.currency), 0),
   }
 }
 

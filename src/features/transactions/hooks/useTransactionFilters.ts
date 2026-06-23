@@ -1,6 +1,7 @@
 // features/transactions/hooks/useTransactionFilters.ts
 import { useState, useMemo } from 'react'
 import { filterByPeriod } from '@/utils/date.utils'
+import { convertToBOB } from '@/lib/config/exchange-rates'
 import { DEFAULT_PERIOD } from '@/types/period'
 import type { Period } from '@/types/period'
 import type { Transaction } from '@/types/transaction'
@@ -136,11 +137,11 @@ export function useTransactionFilters(transactions: Transaction[]) {
   const stats = useMemo(() => {
     const income  = filtered
       .filter((t) => t.type === 'INCOME')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
 
     const expense = filtered
       .filter((t) => t.type === 'EXPENSE')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
 
     return {
       total:   filtered.length,

@@ -3,6 +3,26 @@ import { accountsRepository } from '@/repositories/accounts.repository'
 import { balanceService } from '@/services/balance.service'
 import { adminDb } from '@/lib/firebase.admin'
 import { CreateTransactionData, Transaction } from "@/types/transaction"
+import { setUSDRate } from '@/lib/config/exchange-rates'
+
+// ─── Caché de tipo de cambio con time-to-live ──────────────────────────────
+let _lastFetched = 0
+const CACHE_TTL = 5 * 60 * 1000 // 5 min
+
+async function ensureLiveRate() {
+  if (Date.now() - _lastFetched < CACHE_TTL) return
+  try {
+    const res = await fetch('https://bo.dolarapi.com/v1/dolares/binance')
+    if (!res.ok) return
+    const data = await res.json()
+    if (data.venta && typeof data.venta === 'number') {
+      setUSDRate(data.venta)
+      _lastFetched = Date.now()
+    }
+  } catch {
+    // Silencio — se mantiene el rate actual
+  }
+}
 
 export const transactionService = {
   async getTransactions(userId: string): Promise<Transaction[]> {
@@ -14,6 +34,9 @@ export const transactionService = {
   },
 
   async createWithBalance(data: CreateTransactionData, userId: string): Promise<Transaction> {
+    // Asegurar tipo de cambio actualizado antes de operaciones con moneda
+    await ensureLiveRate()
+
     const accounts = await accountsRepository.findAll(userId)
 
     const sourceAccount = accounts.find((a) => a.id === data.account_id)

@@ -9,6 +9,7 @@ import {
   getDaysInPeriod,
   parseLocalDate,
 } from '@/utils/date.utils'
+import { convertToBOB } from '@/lib/config/exchange-rates'
 
 import type { Period }                              from '@/types/period'
 import type { Transaction, CategoryData, ChartDataPoint } from '@/types/transaction'
@@ -39,23 +40,23 @@ export function useTransactionMetrics(
     const previous   = filterByPeriod(transactions, prevPeriod)
       .filter((t) => t.status === 'COMPLETED')
 
-    // ── 3. Totales actuales ───────────────────────────────────────────────────
+    // ── 3. Totales actuales (convertidos a BOB) ──────────────────────────────
     const totalIncome = current
       .filter((t) => t.type === 'INCOME')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
 
     const totalExpense = current
       .filter((t) => t.type === 'EXPENSE')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
 
-    // ── 4. Totales anteriores ─────────────────────────────────────────────────
+    // ── 4. Totales anteriores (convertidos a BOB) ────────────────────────────
     const prevIncome = previous
       .filter((t) => t.type === 'INCOME')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
 
     const prevExpense = previous
       .filter((t) => t.type === 'EXPENSE')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
 
     // ── 5. Chart data — dayMap ────────────────────────────────────────────────
     const days   = getDaysInPeriod(period)
@@ -67,13 +68,22 @@ export function useTransactionMetrics(
       dayMap.set(dateStr, { date: dateStr, income: 0, expense: 0, label })
     })
 
-    // Acumular en dayMap — correcto
+    // Acumular en dayMap — montos convertidos a BOB + desglose por moneda
     current.forEach((t) => {
       const dateStr = format(parseLocalDate(t.date), 'yyyy-MM-dd')
       const entry   = dayMap.get(dateStr)
       if (!entry) return
-      if (t.type === 'INCOME')  entry.income  += t.amount
-      if (t.type === 'EXPENSE') entry.expense += t.amount
+      const amountBOB = convertToBOB(t.amount, t.currency)
+      if (t.type === 'INCOME') {
+        entry.income += amountBOB
+        entry.incomeByCurrency ??= {}
+        entry.incomeByCurrency[t.currency] = (entry.incomeByCurrency[t.currency] ?? 0) + t.amount
+      }
+      if (t.type === 'EXPENSE') {
+        entry.expense += amountBOB
+        entry.expenseByCurrency ??= {}
+        entry.expenseByCurrency[t.currency] = (entry.expenseByCurrency[t.currency] ?? 0) + t.amount
+      }
     })
 
     const chartData = Array.from(dayMap.values())
@@ -85,7 +95,7 @@ export function useTransactionMetrics(
       .filter((t) => t.type === 'EXPENSE' && t.category_id)
       .forEach((t) => {
         const existing = catMap.get(t.category_id!) ?? { income: 0, expense: 0 }
-        existing.expense += t.amount
+        existing.expense += convertToBOB(t.amount, t.currency)
         catMap.set(t.category_id!, existing)
       })
 

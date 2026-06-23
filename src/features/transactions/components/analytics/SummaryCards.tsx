@@ -12,7 +12,8 @@ const SparklineChart = dynamic(
 
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
-import { filterByPeriod, getPreviousPeriod, getDaysInPeriod, parseLocalDate } from "@/utils/date.utils"
+import { filterByPeriod, getDaysInPeriod, parseLocalDate } from "@/utils/date.utils"
+import { convertToBOB } from "@/lib/config/exchange-rates"
 import { format } from "date-fns"
 import type { Period } from "@/types/period"
 import type { Transaction } from "@/types/transaction"
@@ -35,8 +36,9 @@ function buildSparkline(
     const dateStr = format(parseLocalDate(t.date), 'yyyy-MM-dd')
     const entry   = byDay.get(dateStr)
     if (!entry) return
-    if (t.type === 'INCOME')  entry.income  += t.amount
-    if (t.type === 'EXPENSE') entry.expense += t.amount
+    const amountBOB = convertToBOB(t.amount, t.currency)
+    if (t.type === 'INCOME')  entry.income  += amountBOB
+    if (t.type === 'EXPENSE') entry.expense += amountBOB
   })
 
   let cumulative = 0
@@ -166,10 +168,16 @@ function ProjectSummaryCard({
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 interface SummaryCardsProps {
-  transactions: Transaction[]
-  period:       Period
-  projects:     Project[]      // ← NUEVO
-  currency?:    string
+  transactions:  Transaction[]
+  period:        Period
+  projects:      Project[]
+  currency?:     string
+  // Totales pre-calculados (con conversión a BOB) — evita duplicar lógica
+  totalIncome?:  number
+  totalExpense?: number
+  netBalance?:   number
+  prevIncome?:   number
+  prevExpense?:  number
 }
 
 export function SummaryCards({
@@ -177,24 +185,33 @@ export function SummaryCards({
   period,
   projects,
   currency = 'BOB',
+  totalIncome: propIncome,
+  totalExpense: propExpense,
+  netBalance: propNet,
+  prevIncome: propPrevIncome,
+  prevExpense: propPrevExpense,
 }: SummaryCardsProps) {
-  const prevPeriod = useMemo(() => getPreviousPeriod(period), [period])
-
-  // ── Totales del período actual ───────────────────────────────────────────────
+  // ── Totales: usar props si se pasan (ya convertidos a BOB), sino calcular ──
   const current = useMemo(() => {
+    if (propIncome !== undefined && propExpense !== undefined) {
+      return { income: propIncome, expense: propExpense, net: propNet ?? propIncome - propExpense }
+    }
     const filtered = filterByPeriod(transactions, period)
-    const income   = filtered.filter((t) => t.type === 'INCOME').reduce((s, t) => s + t.amount, 0)
-    const expense  = filtered.filter((t) => t.type === 'EXPENSE').reduce((s, t) => s + t.amount, 0)
+    const income   = filtered.filter((t) => t.type === 'INCOME').reduce((s, t) => s + convertToBOB(t.amount, t.currency), 0)
+    const expense  = filtered.filter((t) => t.type === 'EXPENSE').reduce((s, t) => s + convertToBOB(t.amount, t.currency), 0)
     return { income, expense, net: income - expense }
-  }, [transactions, period])
+  }, [transactions, period, propIncome, propExpense, propNet])
 
-  // ── Totales del período anterior ─────────────────────────────────────────────
   const previous = useMemo(() => {
+    if (propPrevIncome !== undefined && propPrevExpense !== undefined) {
+      return { income: propPrevIncome, expense: propPrevExpense, net: propPrevIncome - propPrevExpense }
+    }
+    const prevPeriod = { type: 'LAST_MONTH' as const }
     const filtered = filterByPeriod(transactions, prevPeriod)
-    const income   = filtered.filter((t) => t.type === 'INCOME').reduce((s, t) => s + t.amount, 0)
-    const expense  = filtered.filter((t) => t.type === 'EXPENSE').reduce((s, t) => s + t.amount, 0)
+    const income   = filtered.filter((t) => t.type === 'INCOME').reduce((s, t) => s + convertToBOB(t.amount, t.currency), 0)
+    const expense  = filtered.filter((t) => t.type === 'EXPENSE').reduce((s, t) => s + convertToBOB(t.amount, t.currency), 0)
     return { income, expense, net: income - expense }
-  }, [transactions, prevPeriod])
+  }, [transactions, propPrevIncome, propPrevExpense])
 
   // ── P&L por proyecto ─────────────────────────────────────────────────────────
   const projectStats = useMemo(() => {
@@ -208,10 +225,10 @@ export function SummaryCards({
 
     filtered.forEach((t) => {
       const key = t.project_id ?? null
-      // Si el proyecto fue archivado y no está en la lista, igual lo contamos como personal
       const entry = map.get(key) ?? map.get(null)!
-      if (t.type === 'INCOME')  entry.income  += t.amount
-      if (t.type === 'EXPENSE') entry.expense += t.amount
+      const amountBOB = convertToBOB(t.amount, t.currency)
+      if (t.type === 'INCOME')  entry.income  += amountBOB
+      if (t.type === 'EXPENSE') entry.expense += amountBOB
     })
 
     return map

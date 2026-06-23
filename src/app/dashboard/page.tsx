@@ -28,6 +28,11 @@ const CashflowSection = dynamic(
   { ssr: false, loading: () => <CashflowSectionSkeleton /> }
 )
 
+const IncomeExpenseChart = dynamic(
+  () => import("@/features/transactions/components/analytics/IncomeExpenseChart").then(m => m.IncomeExpenseChart),
+  { ssr: false }
+)
+
 export default function DashboardPage() {
   const {
     isLoading,
@@ -43,6 +48,7 @@ export default function DashboardPage() {
     greeting,
     currentMonthLabel,
     financialComparisonData,
+    currentChartData,
     activeCredits,
   } = useDashboard()
 
@@ -90,6 +96,11 @@ export default function DashboardPage() {
             />
           </div>
         </div>
+
+        {/* ── Ingresos vs Gastos (mes actual) ── */}
+        {currentChartData.length > 0 && (
+          <IncomeExpenseChart data={currentChartData} />
+        )}
 
         {/* ── Obligaciones y metas ── */}
         {[activeCredits.length > 0, activeDebts.length > 0, topBudgets.length > 0, hasActiveSavings].some(Boolean) && (

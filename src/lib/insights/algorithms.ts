@@ -1,6 +1,7 @@
 // lib/insights/algorithms.ts
 
 import { Transaction, TransactionType } from '@/types/transaction'
+import { convertToBOB } from '@/lib/config/exchange-rates'
 import {
   startOfMonth,
   endOfMonth,
@@ -99,7 +100,7 @@ function filterByPeriod(txs: Transaction[], start: Date, end: Date): Transaction
 }
 
 function sumAmount(txs: Transaction[]): number {
-  return txs.reduce((acc, tx) => acc + tx.amount, 0)
+  return txs.reduce((acc, tx) => acc + convertToBOB(tx.amount, tx.currency), 0)
 }
 
 // ─── 1. Trends por categoría ──────────────────────────────────────────────────

@@ -145,6 +145,11 @@ export default function TransactionsPage() {
               transactions={transactions}
               period={filters.period}
               projects={projects}
+              totalIncome={metrics.totalIncome}
+              totalExpense={metrics.totalExpense}
+              netBalance={metrics.netBalance}
+              prevIncome={metrics.prevIncome}
+              prevExpense={metrics.prevExpense}
             />
 
             {/* Charts */}

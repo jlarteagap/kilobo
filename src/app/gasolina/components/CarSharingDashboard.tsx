@@ -345,51 +345,49 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
                           {!isEditing && `+${trip.totalKm}`}
                         </TableCell>
                         <TableCell className="px-8 py-5 text-right">
-                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {isEditing ? (
-                              <>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  disabled={isPending}
-                                  className="size-8 rounded-lg hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
-                                  onClick={() => handleEditTripSave(trip.createdAt)}
-                                >
-                                  <Check className="size-3.5" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  disabled={isPending}
-                                  className="size-8 rounded-lg hover:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                                  onClick={() => setEditingTripId(null)}
-                                >
-                                  <X className="size-3.5" />
-                                </Button>
-                              </>
-                            ) : (
-                              <>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  disabled={isPending}
-                                  className="size-8 rounded-lg hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20"
-                                  onClick={() => handleEditTripStart(trip)}
-                                >
-                                  <Pencil className="size-3.5" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  disabled={isPending}
-                                  className="size-8 rounded-lg hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
-                                  onClick={() => handleDeleteTrip(trip.createdAt)}
-                                >
-                                  <Trash2 className="size-3.5" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
+                          {isEditing ? (
+                            <div className="flex items-center justify-end gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                disabled={isPending}
+                                className="size-8 rounded-lg hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                                onClick={() => handleEditTripSave(trip.createdAt)}
+                              >
+                                <Check className="size-3.5" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                disabled={isPending}
+                                className="size-8 rounded-lg hover:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                onClick={() => setEditingTripId(null)}
+                              >
+                                <X className="size-3.5" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-end gap-1 max-sm:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                disabled={isPending}
+                                className="size-8 rounded-lg hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                                onClick={() => handleEditTripStart(trip)}
+                              >
+                                <Pencil className="size-3.5" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                disabled={isPending}
+                                className="size-8 rounded-lg hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
+                                onClick={() => handleDeleteTrip(trip.createdAt)}
+                              >
+                                <Trash2 className="size-3.5" />
+                              </Button>
+                            </div>
+                          )}
                         </TableCell>
                       </TableRow>
                     )

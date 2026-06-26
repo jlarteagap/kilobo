@@ -414,13 +414,13 @@ export function TransactionList({
       {/* ── Sheet de edición ── */}
       <Sheet open={!!editingTx} onOpenChange={(open) => !open && setEditingTx(null)}>
         <SheetContent className="sm:max-w-md">
-          <SheetHeader>
+          <SheetHeader className="px-6 pt-6 pb-0">
             <SheetTitle className="text-lg font-semibold">
               Editar Transacción
             </SheetTitle>
           </SheetHeader>
           {editingTx ? (
-            <div className="mt-6">
+            <div className="px-6 pb-6 overflow-y-auto">
               <TransactionEditForm
                 transaction={editingTx}
                 categories={categories}

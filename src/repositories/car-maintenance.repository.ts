@@ -1,7 +1,7 @@
 import { adminDb } from '@/lib/firebase.admin'
 import { FieldValue } from 'firebase-admin/firestore'
 
-export type MaintenanceType = 'oil' | 'injectors' | 'wash'
+export type MaintenanceType = 'oil' | 'injectors'
 
 export interface CarMaintenanceLog {
   id: string

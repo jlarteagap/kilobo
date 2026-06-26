@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { CarMaintenanceLog, MaintenanceType } from '@/repositories/car-maintenance.repository'
-import { Droplets, Wrench, Sparkles, ChevronRight, AlertCircle, Settings2, X } from 'lucide-react'
+import { Droplets, Wrench, ChevronRight, AlertCircle, Settings2, X } from 'lucide-react'
 import { MaintenanceModal } from './MaintenanceModal'
 import { cn } from '@/lib/utils'
 import { setAbsoluteOdometerAction } from '../maintenance.actions'
@@ -21,8 +21,7 @@ const LIMITS = {
 
 const TYPE_NAMES = {
   oil: 'Cambio de Aceite',
-  injectors: 'Aditivos de Gasolina',
-  wash: 'Lavado de Auto'
+  injectors: 'Aditivos de Gasolina'
 }
 
 export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidgetsProps) {
@@ -80,7 +79,6 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
   // Calculate stats
   const latestOil = logs.find(l => l.type === 'oil')
   const latestInjectors = logs.find(l => l.type === 'injectors')
-  const latestWash = logs.find(l => l.type === 'wash')
 
   const getProgress = (latestLog: CarMaintenanceLog | undefined, limit: number) => {
     // If no log exists, we calculate based on the start of the odometer (0) 
@@ -107,14 +105,6 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
 
   const oilStats = getProgress(latestOil, LIMITS.oil)
   const injectorStats = getProgress(latestInjectors, LIMITS.injectors)
-
-  const getWashStats = () => {
-    if (!latestWash) return { days: '?', label: 'Nunca' }
-    const diffTime = Math.abs(Date.now() - latestWash.date)
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-    return { days: diffDays, label: `Hace ${diffDays} días` }
-  }
-  const washStats = getWashStats()
 
   const StatusCard = ({ 
     title, icon: Icon, type, 
@@ -255,7 +245,7 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-700 delay-150">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-4 duration-700 delay-150">
         <StatusCard 
           title="Cambio de Aceite" 
           icon={Droplets} 
@@ -273,13 +263,6 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
           subtitleText={injectorStats.remaining < 0 ? "km pasados" : "km restantes"}
           percentage={injectorStats.percentage}
           status={injectorStats.status}
-        />
-        <StatusCard 
-          title="Lavado de Auto" 
-          icon={Sparkles} 
-          type="wash"
-          remainingText={`${washStats.days}`}
-          subtitleText={washStats.label}
         />
       </div>
 

@@ -22,8 +22,7 @@ interface MaintenanceModalProps {
 
 const TYPE_NAMES = {
   oil: 'Cambio de Aceite',
-  injectors: 'Aditivo de Gasolina',
-  wash: 'Lavado de Auto'
+  injectors: 'Aditivo de Gasolina'
 }
 
 export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs }: MaintenanceModalProps) {

@@ -81,10 +81,10 @@ export default function TransactionsPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <div className="max-w-7xl mx-auto w-full space-y-6 lg:space-y-8">
 
         {/* ── Header ── */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="w-full lg:w-auto">
             <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
               Transacciones
@@ -100,18 +100,16 @@ export default function TransactionsPage() {
           </div>
 
           <div className="flex items-center gap-3 w-full lg:w-auto overflow-hidden">
-            {/* Period Selector */}
             <div className="flex-1 lg:flex-none min-w-0">
               <PeriodSelector
                 value={filters.period}
                 onChange={(period) => {
                   setPeriod(period)
-                  resetSecondaryFilters()  // ← limpiar filtros al cambiar período
+                  resetSecondaryFilters()
                 }}
               />
             </div>
 
-            {/* Nueva transacción */}
             <Dialog open={open} onOpenChange={setOpen}>
               <Button
                 onClick={() => setOpen(true)}
@@ -136,7 +134,7 @@ export default function TransactionsPage() {
         {isLoading ? (
           <TransactionsSkeleton />
         ) : isError ? (
-          <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl mb-8">
+          <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl">
             Error al cargar los datos. Intenta nuevamente.
           </div>
         ) : (
@@ -152,8 +150,7 @@ export default function TransactionsPage() {
               prevExpense={metrics.prevExpense}
             />
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <IncomeExpenseChart
                   key={`chart-${filters.period.type}`}
@@ -174,13 +171,8 @@ export default function TransactionsPage() {
         )}
 
         {/* ── Lista de transacciones ── */}
-        <div
-          className="bg-white rounded-2xl overflow-hidden shadow-card"
-        >
-          {/* Header de la tabla */}
-          <div className="px-4 py-3 border-b border-gray-100 space-y-3">
-
-            {/* Fila 1: título + stats rápidas */}
+        <div className="bg-white rounded-2xl overflow-hidden shadow-card">
+          <div className="px-4 md:px-6 py-4 border-b border-gray-100 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-sm font-semibold text-gray-700">
@@ -191,7 +183,6 @@ export default function TransactionsPage() {
                 </p>
               </div>
 
-              {/* Stats rápidas del filtrado */}
               {filtered.length > 0 && (
                 <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 w-full sm:w-auto">
                   <div className="text-right sm:text-left md:text-right">
@@ -219,7 +210,6 @@ export default function TransactionsPage() {
               )}
             </div>
 
-            {/* Fila 2: filtros */}
             <TransactionFilters
               filters={filters}
               accounts={accounts}
@@ -236,7 +226,6 @@ export default function TransactionsPage() {
             />
           </div>
 
-          {/* Lista */}
           <TransactionList
             transactions={filtered}
             accounts={accounts}

@@ -10,7 +10,7 @@ import type { Period }      from "@/types/period"
 
 type SankeyNode = {
   name:   string
-  type?:  "income" | "expense" | "account" | "balance" | "project" | "subtype"
+  type?:  "income" | "expense" | "account" | "balance" | "project" | "subtype" | "transfer"
   color?: string
   breakdown?: Record<string, number>
 }
@@ -19,6 +19,7 @@ type SankeyLink = {
   source: number
   target: number
   value:  number
+  stroke?: string
 }
 
 export type SankeyData = {
@@ -27,12 +28,13 @@ export type SankeyData = {
 }
 
 const NODE_COLORS: Record<string, string> = {
-  income:  '#10B981',
-  expense: '#EF4444',
-  account: '#3B82F6',
-  balance: '#6B7280',
-  project: '#8B5CF6',
-  subtype: '#F59E0B',
+  income:    '#10B981',
+  expense:   '#EF4444',
+  account:   '#3B82F6',
+  balance:   '#6B7280',
+  project:   '#8B5CF6',
+  subtype:   '#F59E0B',
+  transfer:  '#F97316',
 }
 
 function buildSankeyData(
@@ -79,7 +81,7 @@ function buildSankeyData(
     const amountBOB = convertToBOB(t.amount, t.currency)
     const acc       = accounts.find((a) => a.id === t.account_id)
     if (!acc || amountBOB <= 0) return
-    if (t.type === 'TRANSFER' || t.type === 'SAVING') return
+    if (t.type === 'SAVING') return
 
     const flow    = accountFlows.get(acc.id) ?? { in: 0, out: 0 }
     const accIdx  = getNodeIndex(`account::${acc.id}`, acc.name, 'account')
@@ -100,6 +102,27 @@ function buildSankeyData(
         const srcIdx = getNodeIndex(`income-cat::${cat.id}`, cat.name, 'income')
         upsertLink(srcIdx, accIdx, amountBOB)
       }
+
+    } else if (t.type === 'TRANSFER') {
+      const dst = t.to_account_id ? accounts.find((a) => a.id === t.to_account_id) : null
+      if (!dst) return
+
+      const transferAmount = t.converted_amount && t.to_currency
+        ? convertToBOB(t.converted_amount, t.to_currency)
+        : amountBOB
+      if (transferAmount <= 0) return
+
+      flow.out += transferAmount
+      accountFlows.set(acc.id, flow)
+
+      const transferNodeIdx = getNodeIndex('transfer::all', 'Transferencias', 'transfer')
+      const destLabel = `${dst.name}${t.to_currency && t.to_currency !== t.currency ? ` (${t.to_currency})` : ''}`
+
+      const transferNode = nodes[transferNodeIdx]
+      if (!transferNode.breakdown) transferNode.breakdown = {}
+      transferNode.breakdown[destLabel] = (transferNode.breakdown[destLabel] || 0) + transferAmount
+
+      links.push({ source: accIdx, target: transferNodeIdx, value: transferAmount, stroke: NODE_COLORS.transfer })
 
     } else if (t.type === 'EXPENSE') {
       flow.out += amountBOB

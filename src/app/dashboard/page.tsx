@@ -19,9 +19,19 @@ import { useDashboard }          from "@/features/dashboard/hooks/useDashboard"
 import { useTransactionMetrics } from "@/features/transactions/hooks/useTransactionMetrics"
 import { useCategories }         from "@/features/categories/hooks/useCategories"
 import { useSavingsGoals }       from "@/features/savings-goals/hooks/useSavingsGoals"
+import { useAccounts }           from "@/features/accounts/hooks/useAccounts"
 
 import { CashflowSectionSkeleton } from "@/features/dashboard/components/skeletons/CashflowSectionSkeleton"
 import { InsightsWidget } from "@/features/insights/components/InsightsWidget"
+import { useState } from "react"
+import { InvestmentsWidget } from "@/features/investments/InvestmentsList"
+import { CreateInvestmentForm } from "@/features/investments/CreateInvestmentForm"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 const CashflowSection = dynamic(
   () => import("@/features/dashboard/CashflowSection").then(m => m.CashflowSection),
@@ -50,11 +60,14 @@ export default function DashboardPage() {
     financialComparisonData,
     currentChartData,
     activeCredits,
+    investments,
   } = useDashboard()
 
   const { data: categories     = [] } = useCategories()
+  const { data: accounts       = [] } = useAccounts()
   const { data: savingsGoals   = [] } = useSavingsGoals()
   const hasActiveSavings = savingsGoals.some((g) => g.is_active)
+  const [showInvestDialog, setShowInvestDialog] = useState(false)
 
   const metrics = useTransactionMetrics(
     monthlyTransactions,
@@ -66,25 +79,33 @@ export default function DashboardPage() {
     return <AppLayout><DashboardSkeleton /></AppLayout>
   }
 
-  const netWorthRaw = accountsDashboard.netWorthRaw
+  const netWorthBOBOnly = accountsDashboard.netWorthBOBOnly
 
   return (
     <AppLayout>
       <div className="flex flex-col gap-6 md:gap-8 container mx-auto max-w-7xl py-6 md:py-8 px-4 sm:px-6">
 
-        {/* ── Header + Stats ── */}
+        {/* ── Header + Stats + Multi-currency ── */}
         <DashboardHeader
           greeting={greeting}
           currentMonthLabel={currentMonthLabel}
-          netWorth={netWorthRaw}
+          netWorth={netWorthBOBOnly}
           monthlyStats={monthlyStats}
           trends={trends}
-          netWorthPositive={accountsDashboard.netWorthPositive}
+          netWorthPositive={accountsDashboard.netWorthBOBOnlyPositive}
+          currencyBreakdown={accountsDashboard.currencyBreakdown}
+          totalInvestedFormatted={accountsDashboard.totalInvestedFormatted}
         />
-
 
         {/* ── Flujo de caja ── */}
         <CashflowSection />
+
+        {/* ── Inversiones widget ── */}
+        <InvestmentsWidget
+          investments={investments}
+          accounts={accounts}
+          onShowCreate={() => setShowInvestDialog(true)}
+        />
 
         {/* ── Tendencia: Activos + Comparativa ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -140,6 +161,22 @@ export default function DashboardPage() {
         {/* ── Transacciones recientes ── */}
         <DashboardRecentTransactions transactions={recentTransactions} />
       </div>
+
+      <Dialog open={showInvestDialog} onOpenChange={(open) => !open && setShowInvestDialog(false)}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-neutral-200/50 dark:border-neutral-800/50 p-8">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black tracking-tight">
+              Nueva Inversión
+            </DialogTitle>
+          </DialogHeader>
+          {showInvestDialog && (
+            <CreateInvestmentForm
+              onSuccess={() => setShowInvestDialog(false)}
+              onCancel={() => setShowInvestDialog(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   )
 }

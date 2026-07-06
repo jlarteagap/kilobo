@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2026-07-06
+
+### Added
+- **Módulo de Inversiones**: Implementación del modelo de datos, esquemas de validación Zod, tipos TypeScript y API endpoints (`/api/investments` y `/api/investments/[id]`) para registrar y administrar inversiones vinculadas a cuentas.
+- **Componentes de Interfaz de Inversiones**: Creación del listado de inversiones agrupado por cuentas (`InvestmentsList`), formularios de registro (`CreateInvestmentForm`, `InvestmentForm`) y un widget resumen en el Dashboard que consolida montos invertidos por tipo de moneda.
+- **Interactividad en Gráfico de Flujo de Caja (Sankey)**: Integración de `SankeySelectionContext` y componentes personalizados (`SankeyCustomNode`, `SankeyCustomLink`) que permiten resaltar nodos y enlaces seleccionados, atenuando el resto del diagrama para facilitar el análisis visual.
+- **Integración de Inversiones en Transacciones**: Opción de registrar transferencias o egresos como inversiones directamente desde el formulario de transacciones.
+
+### Changed
+- **Pestañas de Navegación en Cuentas**: Reestructuración de la página de cuentas (`/accounts`) para separar el listado tradicional de cuentas y el nuevo listado de inversiones mediante un selector de pestañas (Tabs).
+- **Desglose Multidivisa en Dashboard**: Actualización del encabezado del dashboard (`DashboardHeader`) y del hook `useAccountsDashboard` para mostrar el balance total segregado por moneda y destacar el monto acumulado de inversiones.
+- **Flujo de Transferencias en Sankey**: Inclusión de las transacciones de tipo `TRANSFER` dentro de la visualización de flujo de caja, canalizándolas a través de un nodo unificado de "Transferencias".
+- **Refactorización del Repositorio de Inversiones** (`investments.repository.ts`): Adición de helpers para operaciones en Firestore Write Batch (`createInBatch`, `updateInBatch`, `deleteInBatch`) que encapsulan el acceso directo a Firestore, mejorando el desacoplamiento y cumplimiento SOLID. Reemplazo de `Timestamp.now()` por `FieldValue.serverTimestamp()` en actualizaciones.
+- **Refactorización del Servicio de Inversiones** (`investments.service.ts`): Eliminación del acoplamiento directo a Firestore mediante el consumo de los helpers batch del repositorio. Toda la lógica transaccional (crear, actualizar, eliminar inversión junto con ajuste de saldo de cuenta) se ejecuta en un único Firestore Batch para garantizar atomicidad.
+- **CSS Helper para Colores de Cuenta** (`InvestmentsList.tsx`): Reemplazo de la manipulación frágil de strings de clases Tailwind por la función helper estática `getAccountColors()`, evitando el purging incorrecto de clases en producción.
+
+### Fixed
+- **Doble Débito en Inversiones Vinculadas a Transacciones**: Corregido el bug donde crear una inversión desde el formulario de transacciones descontaba el saldo dos veces (una por la transacción y otra por el servicio de inversiones). Ahora, si la inversión tiene un `transaction_id`, se omite la deducción de saldo.
+- **Relación Bidireccional Transacción↔Inversión**: Al crear una inversión vinculada a una transacción, el campo `investment_id` de la transacción se actualiza atómicamente en el mismo batch, completando la relación en Firestore y permitiendo que el listado de transacciones muestre el indicador visual de "Inversión".
+- **Bug de Renderizado en `TransactionList.tsx`**: Corregido el error "Cannot create components during render" causado por definir el componente `TypeIcon` como función de renderizado inline. Se reemplazó por renderizado dinámico del ícono de Lucide inyectado directamente.
+- **Diálogo de Edición de Inversiones**: Implementado el flujo completo de edición de inversiones (botón lápiz → diálogo con `InvestmentForm` → mutación `useUpdateInvestment` → cierre automático al éxito) que anteriormente no estaba conectado.
+
 ## [1.6.1] - 2026-06-23
 
 ### Added
@@ -134,7 +156,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.2] - 2026-03-11
 - Initial version found in this log.
 
-[Unreleased]: https://github.com/jlarteagap/kilobo/compare/v1.6.1...HEAD
+[Unreleased]: https://github.com/jlarteagap/kilobo/compare/v1.6.2...HEAD
+[1.6.2]: https://github.com/jlarteagap/kilobo/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/jlarteagap/kilobo/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jlarteagap/kilobo/compare/v1.5.6...v1.6.0
 [1.5.6]: https://github.com/jlarteagap/kilobo/compare/v1.5.5...v1.5.6
@@ -145,3 +168,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.5.0]: https://github.com/jlarteagap/kilobo/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/jlarteagap/kilobo/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/jlarteagap/kilobo/compare/v1.2.2...v1.3.0
+

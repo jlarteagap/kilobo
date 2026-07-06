@@ -44,6 +44,9 @@ export interface Transaction {
   // Referencia a cuota de crédito pagada con esta transacción
   credit_id?:       string | null
   installment_id?:  string | null
+
+  // Referencia a inversión vinculada
+  investment_id?:   string | null
 }
 
 export interface CreateTransactionData {
@@ -68,6 +71,9 @@ export interface CreateTransactionData {
   // Referencia a cuota de crédito pagada con esta transacción
   credit_id?:       string | null
   installment_id?:  string | null
+
+  // Referencia a inversión vinculada
+  investment_id?:   string | null
 }
 
 export type UpdateTransactionData = Partial<CreateTransactionData>

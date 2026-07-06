@@ -41,6 +41,7 @@ import {
   formatTransactionDate,
   normalizeCurrency,
   TRANSACTION_TYPE_LABELS,
+  INVESTMENT_COLORS,
 } from "@/features/transactions/utils/transaction-display.utils"
 
 import type { Transaction } from "@/types/transaction"
@@ -110,28 +111,30 @@ function TransactionRow({
   const category     = getCategoryDisplay(tx.category_id, categories)
   const project      = projects.find((p) => p.id === tx.project_id)
   const categoryData = categories.find((c) => c.id === tx.category_id)
-  const amountColor  = getTransactionAmountColor(tx.type)
-  const sign         = getTransactionSign(tx.type)
-
+  const isInvestment = !!tx.investment_id
   const isTransfer   = tx.type === 'TRANSFER'
+  const amountColor  = isInvestment ? 'text-indigo-600' : getTransactionAmountColor(tx.type)
+  const sign         = getTransactionSign(tx.type)
   const isDebt       = !isTransfer && !!tx.subtype && DEBT_SUBTYPES.has(tx.subtype)
 
   // ── Colores derivados del proyecto ────────────────────────────────────────
   const projectColor  = project?.color ?? null
-  const rowBg         = projectColor ? `${projectColor}06` : 'transparent'
-  const rowBorder     = projectColor ? `2px solid ${projectColor}` : '2px solid transparent'
+  const rowBg         = isInvestment ? '#EEF2FF' : (projectColor ? `${projectColor}06` : 'transparent')
+  const rowBorder     = isInvestment ? '2px solid #6366f1' : (projectColor ? `2px solid ${projectColor}` : '2px solid transparent')
   const badgeBg       = projectColor ? `${projectColor}18` : 'transparent'
   const badgeBorder   = projectColor ? `0.5px solid ${projectColor}28` : 'none'
 
   // ── Resolver icono y colores según tipo ────────────────────────────────────
-  const TypeIcon = (() => {
+  const typeIcon = (() => {
+    if (isInvestment) return INVESTMENT_COLORS.icon
     if (isDebt) return Handshake
     if (isTransfer) return getTransactionIcon(tx.type)
-    if (project && project.icon) return null // project icon is emoji
+    if (project && project.icon) return null
     return getSubtypeIcon(tx.subtype) ?? getTransactionIcon(tx.type) ?? null
   })()
 
   const iconBgStyle = (() => {
+    if (isInvestment) return '#EEF2FF'
     if (isDebt) return '#FFF7ED'
     if (isTransfer) return '#FFFBEB'
     if (projectColor) return `${projectColor}25`
@@ -140,6 +143,7 @@ function TransactionRow({
   })()
 
   const title = (() => {
+    if (isInvestment) return tx.description ?? 'Inversión'
     if (isTransfer) return 'Transferencia entre cuentas'
     if (isDebt) return tx.description ?? (tx.subtype === 'Préstamo' ? 'Préstamo' : 'Pago de deuda')
     if (project) return tx.subtype ?? 'Sin etiqueta'
@@ -147,6 +151,10 @@ function TransactionRow({
   })()
 
   const secondaryLines: ReactNode[] = (() => {
+    if (isInvestment) {
+      const accountName = getAccountName(tx.account_id, accounts)
+      return [<span key="acct" className="text-[11px] text-indigo-500">{accountName}</span>]
+    }
     if (isTransfer) {
       const origin = getAccountName(tx.account_id, accounts)
       const dest   = getAccountName(tx.to_account_id, accounts)
@@ -196,14 +204,20 @@ function TransactionRow({
             className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
             style={{ backgroundColor: iconBgStyle }}
           >
-            {project && project.icon ? (
+              {project && project.icon ? (
               <span>{project.icon}</span>
-            ) : TypeIcon ? (
-              <TypeIcon className={cn(
-                'w-4 h-4',
-                isDebt     && 'text-orange-600',
-                isTransfer && 'text-amber-600',
-              )} />
+            ) : typeIcon ? (
+              (() => {
+                const Icon = typeIcon
+                return (
+                  <Icon className={cn(
+                    'w-4 h-4',
+                    isInvestment && 'text-indigo-600',
+                    isDebt       && 'text-orange-600',
+                    isTransfer   && 'text-amber-600',
+                  )} />
+                )
+              })()
             ) : (
               <span className="text-gray-400">📁</span>
             )}
@@ -247,13 +261,14 @@ function TransactionRow({
           variant="secondary"
           className={cn(
             'text-[10px] font-medium rounded-full',
-            tx.type === 'INCOME'   && 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
-            tx.type === 'EXPENSE'  && 'bg-rose-100    text-rose-700    hover:bg-rose-100',
-            tx.type === 'TRANSFER' && 'bg-amber-100   text-amber-700   hover:bg-amber-100',
-            tx.type === 'SAVING'   && 'bg-violet-100  text-violet-700  hover:bg-violet-100',
+            isInvestment && 'bg-indigo-100 text-indigo-700 hover:bg-indigo-100',
+            !isInvestment && tx.type === 'INCOME'   && 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
+            !isInvestment && tx.type === 'EXPENSE'  && 'bg-rose-100    text-rose-700    hover:bg-rose-100',
+            !isInvestment && tx.type === 'TRANSFER' && 'bg-amber-100   text-amber-700   hover:bg-amber-100',
+            !isInvestment && tx.type === 'SAVING'   && 'bg-violet-100  text-violet-700  hover:bg-violet-100',
           )}
         >
-          {TRANSACTION_TYPE_LABELS[tx.type]}
+          {isInvestment ? 'Inversión' : TRANSACTION_TYPE_LABELS[tx.type]}
         </Badge>
       </td>
 

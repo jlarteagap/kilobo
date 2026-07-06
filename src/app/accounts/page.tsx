@@ -3,15 +3,54 @@
 import AppLayout from "@/components/layout/AppLayout"
 import { AccountsList } from "@/features/accounts/AccountsList"
 import { ProjectsList } from "@/features/projects/ProjectsList"
+import { InvestmentsList } from "@/features/investments/InvestmentsList"
+import { useAccounts } from "@/features/accounts/hooks/useAccounts"
+import { cn } from "@/lib/utils"
+import { useState } from "react"
+
+type Tab = "accounts" | "investments"
 
 export default function AccountsPage() {
+  const [tab, setTab] = useState<Tab>("accounts")
+  const { data: accounts = [] } = useAccounts()
+
   return (
     <AppLayout>
       <div className="max-w-[1400px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 py-8 px-4 md:px-6">
-          {/* Columna Principal: Cuentas */}
+          {/* Columna Principal */}
           <div className="lg:col-span-8 space-y-12">
-            <AccountsList />
+            {/* ── Tabs ── */}
+            <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-900 rounded-xl p-1 w-fit">
+              <button
+                onClick={() => setTab("accounts")}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-[12px] font-bold transition-all duration-200",
+                  tab === "accounts"
+                    ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm"
+                    : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                )}
+              >
+                Cuentas
+              </button>
+              <button
+                onClick={() => setTab("investments")}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-[12px] font-bold transition-all duration-200",
+                  tab === "investments"
+                    ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm"
+                    : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                )}
+              >
+                Inversiones
+              </button>
+            </div>
+
+            {tab === "accounts" ? (
+              <AccountsList />
+            ) : (
+              <InvestmentsList accounts={accounts} />
+            )}
           </div>
 
           {/* Columna Lateral: Actividades */}

@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, PiggyBank, Handshake, LucideIcon } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, PiggyBank, TrendingUp, Handshake, LucideIcon } from "lucide-react"
 import { TransactionType } from "@/types/transaction"
 import { Account } from "@/types/account"
 import { Category } from "@/types/category"
@@ -29,6 +29,13 @@ const transactionIconMap: Record<TransactionType, LucideIcon | null> = {
 }
 
 export const getTransactionIcon = (type: TransactionType) => transactionIconMap[type]
+
+export const INVESTMENT_COLORS = {
+  text: "text-indigo-600",
+  bg:   "bg-indigo-50",
+  badge: "bg-indigo-100 text-indigo-700",
+  icon: TrendingUp,
+}
 
 const subtypeIconMap: Record<string, LucideIcon> = {
   'Préstamo':      Handshake,

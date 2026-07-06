@@ -2,9 +2,8 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Pencil, Trash2, Landmark } from "lucide-react"
+import { Plus, Pencil, Trash2, Landmark, TrendingUp, ChevronDown, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { EmptyState } from "@/components/ui/empty-state"
 
 import {
   Dialog,
@@ -30,6 +29,7 @@ import { AccountForm } from "./AccountForm"
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from "./hooks/useAccounts"
 import { getAccountTypeDetails, formatCurrency } from "./utils/account-display.utils"
 import type { Account, CreateAccountData } from "@/types/account"
+import { useInvestments } from "@/features/investments/hooks/useInvestments"
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function AccountsGridSkeleton() {
@@ -52,67 +52,104 @@ function AccountsGridSkeleton() {
   )
 }
 
-// ─── Account Card ─────────────────────────────────────────────────────────────
 function AccountCard({
   account,
   onEdit,
   onDelete,
+  investments = [],
 }: {
-  account:  Account
-  onEdit:   (account: Account) => void
-  onDelete: (id: string) => void
+  account:        Account
+  onEdit:         (account: Account) => void
+  onDelete:       (id: string) => void
+  investments?:   Array<{ id: string; name: string; amount: number; currency: string }>
 }) {
   const { icon: Icon, color, bg, label } = getAccountTypeDetails(account.type)
+  const [expanded, setExpanded] = useState(false)
+  const accountInvestments = investments.filter((inv) => inv.id && inv.currency)
+  const hasInvestments = accountInvestments.length > 0
+  const totalInvested = accountInvestments.reduce((sum, inv) => sum + inv.amount, 0)
 
   return (
-    <div
-      className="group relative bg-white dark:bg-neutral-900/50 rounded-xl p-4 flex items-center gap-4 border border-neutral-200/60 dark:border-neutral-800/60 transition-all duration-200 hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-sm"
-    >
-      {/* Icono más compacto */}
-      <div className={cn(
-        'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-        bg.includes('emerald') ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30' : 
-        bg.includes('rose') ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/30' : 
-        bg.includes('blue') ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/30' :
-        bg.includes('purple') ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/30' :
-        bg.includes('orange') ? 'bg-orange-50 text-orange-600 dark:bg-orange-950/30' :
-        'bg-neutral-100 text-neutral-600 dark:bg-neutral-800'
-      )}>
-        <Icon className="w-5 h-5" />
+    <div className="group bg-white dark:bg-neutral-900/50 rounded-xl border border-neutral-200/60 dark:border-neutral-800/60 transition-all duration-200 hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-sm">
+      <div className="p-4 flex items-center gap-4">
+        <div className={cn(
+          'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors',
+          bg.includes('emerald') ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30' : 
+          bg.includes('rose') ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/30' : 
+          bg.includes('blue') ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/30' :
+          bg.includes('purple') ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/30' :
+          bg.includes('orange') ? 'bg-orange-50 text-orange-600 dark:bg-orange-950/30' :
+          'bg-neutral-100 text-neutral-600 dark:bg-neutral-800'
+        )}>
+          <Icon className="w-5 h-5" />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[14px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+            {account.name}
+          </h3>
+          <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+            {label}
+          </p>
+        </div>
+
+        <div className="text-right">
+          <p className="text-[15px] font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+            {formatCurrency(account.balance, account.currency)}
+          </p>
+          {hasInvestments && (
+            <p className="text-[10px] font-medium text-indigo-500 mt-0.5">
+              {formatCurrency(totalInvested, account.currency)} invertidos
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-0.5 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          {hasInvestments && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="p-1.5 rounded-md text-neutral-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+            >
+              {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+            </button>
+          )}
+          <button
+            onClick={() => onEdit(account)}
+            className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => onDelete(account.id)}
+            className="p-1.5 rounded-md text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
-      {/* Info Principal */}
-      <div className="flex-1 min-w-0">
-        <h3 className="text-[14px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-          {account.name}
-        </h3>
-        <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-          {label}
-        </p>
-      </div>
-
-      {/* Balance - alineación derecha */}
-      <div className="text-right">
-        <p className="text-[15px] font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-          {formatCurrency(account.balance, account.currency)}
-        </p>
-      </div>
-
-      {/* Acciones flotantes discretas */}
-      <div className="flex items-center gap-0.5 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          onClick={() => onEdit(account)}
-          className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-        >
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={() => onDelete(account.id)}
-          className="p-1.5 rounded-md text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
-      </div>
+      {/* Expanded investments */}
+      {expanded && hasInvestments && (
+        <div className="px-4 pb-4 pl-14 space-y-2">
+          <div className="h-px bg-neutral-100 dark:bg-neutral-800 mb-2" />
+          {accountInvestments.slice(0, 5).map((inv) => (
+            <div key={inv.id} className="flex items-center justify-between text-[12px]">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-3 h-3 text-indigo-400" />
+                <span className="text-neutral-700 dark:text-neutral-300">{inv.name}</span>
+              </div>
+              <span className="font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums">
+                {formatCurrency(inv.amount, inv.currency)}
+              </span>
+            </div>
+          ))}
+          {accountInvestments.length > 5 && (
+            <p className="text-[10px] text-neutral-400 text-center pt-1">
+              +{accountInvestments.length - 5} inversiones más
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -123,9 +160,9 @@ type DialogState =
   | { mode: 'create' }
   | { mode: 'edit'; account: Account }
 
-// ─── Componente principal ─────────────────────────────────────────────────────
 export function AccountsList() {
   const { data: accounts = [], isLoading, isError } = useAccounts()
+  const { data: investments = [] } = useInvestments()
 
   const createAccount = useCreateAccount()
   const updateAccount = useUpdateAccount()
@@ -235,6 +272,7 @@ export function AccountsList() {
             <AccountCard
               key={account.id}
               account={account}
+              investments={investments.filter((inv) => inv.account_id === account.id)}
               onEdit={(acc) => setDialog({ mode: 'edit', account: acc })}
               onDelete={setPendingDeleteId}
             />

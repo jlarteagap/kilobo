@@ -1,4 +1,3 @@
-// features/accounts/hooks/useAccountsDashboard.ts
 import { useMemo } from "react"
 import { Account, AccountType, AssetDetail, CurrencyGroup } from "@/types/account"
 import {
@@ -8,8 +7,8 @@ import {
 } from "@/features/accounts/utils/account-display.utils"
 import { Debt } from "@/types/debt"
 import { convertToBOB } from "@/lib/config/exchange-rates"
+import type { Investment } from "@/types/investment"
 
-// Mapa de colores hex por tipo — para AssetDetail
 const ASSET_HEX_COLORS: Record<string, string> = {
   'text-blue-500':    '#3b82f6',
   'text-purple-500':  '#a855f7',
@@ -19,7 +18,50 @@ const ASSET_HEX_COLORS: Record<string, string> = {
   'text-gray-500':    '#6b7280',
 }
 
-export function useAccountsDashboard(accounts: Account[], debts: Debt[] = []) {
+export interface CurrencyBreakdown {
+  currency: string
+  balance: number
+  formattedBalance: string
+  invested: number
+  formattedInvested: string
+}
+
+export function useAccountsDashboard(
+  accounts: Account[],
+  debts: Debt[] = [],
+  investments: Investment[] = []
+) {
+  // ── Multi-currency breakdown ──────────────────────────────────────────────
+  const currencies = useMemo(
+    () => Array.from(new Set(accounts.map((a) => a.currency))),
+    [accounts]
+  )
+
+  const investmentByCurrency = useMemo(() => {
+    return investments.reduce<Record<string, number>>((acc, inv) => {
+      acc[inv.currency] = (acc[inv.currency] ?? 0) + inv.amount
+      return acc
+    }, {})
+  }, [investments])
+
+  const currencyBreakdown: CurrencyBreakdown[] = useMemo(
+    () => currencies.map((currency) => {
+      const balance = accounts
+        .filter((a) => a.currency === currency)
+        .reduce((sum, a) => sum + a.balance, 0)
+      const invested = investmentByCurrency[currency] ?? 0
+      return {
+        currency,
+        balance,
+        formattedBalance: formatCurrency(balance, currency),
+        invested,
+        formattedInvested: formatCurrency(invested, currency),
+      }
+    }),
+    [currencies, accounts, investmentByCurrency]
+  )
+
+  const totalInvestedByCurrency = investmentByCurrency
 
   // ── Total activos en BOB ───────────────────────────────────────────────────
   const totalGlobalAssetsInBOB = useMemo(
@@ -41,6 +83,17 @@ export function useAccountsDashboard(accounts: Account[], debts: Debt[] = []) {
   const netWorthInBOB     = totalGlobalAssetsInBOB - totalGlobalLiabilitiesInBOB
   const netWorthPositive  = netWorthInBOB >= 0
 
+  // ── Net worth solo BOB (sin conversión de otras monedas) ───────────────────
+  const netWorthBOBOnly = useMemo(() => {
+    const bobBalance = accounts
+      .filter((a) => a.currency === 'BOB')
+      .reduce((sum, a) => sum + a.balance, 0)
+    const bobDebts = debts
+      .filter((d) => d.status === 'ACTIVE' && d.type === 'RECEIVED' && d.currency === 'BOB')
+      .reduce((acc, debt) => acc + (debt.amount - debt.paid_amount), 0)
+    return bobBalance - bobDebts
+  }, [accounts, debts])
+
   // ── Asset detail ───────────────────────────────────────────────────────────
   const assetsDetail: AssetDetail[] = useMemo(
     () => accounts.map((account) => {
@@ -49,7 +102,6 @@ export function useAccountsDashboard(accounts: Account[], debts: Debt[] = []) {
 
       const weight = `${((valueInBOB / totalGlobalAssetsInBOB) * 100).toFixed(1)}%`
 
-      // Color hex en lugar de clases Tailwind combinadas
       const hexColor = ASSET_HEX_COLORS[details.color] ?? '#6b7280'
 
       return {
@@ -59,7 +111,7 @@ export function useAccountsDashboard(accounts: Account[], debts: Debt[] = []) {
         weight,
         formattedValue: formatCurrency(account.balance, account.currency),
         icon:           details.icon,
-        color:          hexColor,  // ← hex puro, no clases Tailwind
+        color:          hexColor,
       }
     }),
     [accounts, totalGlobalAssetsInBOB]
@@ -67,13 +119,8 @@ export function useAccountsDashboard(accounts: Account[], debts: Debt[] = []) {
 
   // ── Currency groups ────────────────────────────────────────────────────────
   const currencyGroups: CurrencyGroup[] = useMemo(() => {
-    const currencies = Array.from(new Set(accounts.map((a) => a.currency)))
-
     return currencies.map((currency) => {
       const currencyAccounts = accounts.filter((a) => a.currency === currency)
-
-      const totalWealth = currencyAccounts.reduce((acc, account) => acc + account.balance, 0)
-
       const totalAssets = currencyAccounts.reduce((acc, account) => acc + account.balance, 0)
 
       const assetsByType = currencyAccounts.reduce(
@@ -95,7 +142,7 @@ export function useAccountsDashboard(accounts: Account[], debts: Debt[] = []) {
           return {
             name:    details.label,
             value:   item.value,
-            color:   ASSET_HEX_COLORS[details.color] ?? '#6b7280',  // ← hex
+            color:   ASSET_HEX_COLORS[details.color] ?? '#6b7280',
             percent: Math.round((item.value / totalAssets) * 100) || 0,
             currency,
           }
@@ -104,22 +151,32 @@ export function useAccountsDashboard(accounts: Account[], debts: Debt[] = []) {
 
       return {
         currency,
-        totalWealth,
-        formattedTotal: formatCurrency(totalWealth, currency),
+        totalWealth: totalAssets,
+        formattedTotal: formatCurrency(totalAssets, currency),
         assets,
       }
     })
-  }, [accounts])
+  }, [currencies, accounts])
+
+  const totalInvestedFormatted = Object.entries(totalInvestedByCurrency)
+    .map(([c, a]) => formatCurrency(a, c))
+    .join(' · ')
+
+  const netWorthBOBOnlyPositive = netWorthBOBOnly >= 0
 
   return {
     assetsDetail,
     currencyGroups,
-    // ← nuevos valores para AssetsTable
-    totalAssetsFormatted:      formatCurrency(totalGlobalAssetsInBOB,      'BOB'),
+    currencyBreakdown,
+    totalInvestedByCurrency,
+    totalInvestedFormatted,
+    totalAssetsFormatted:      formatCurrency(totalGlobalAssetsInBOB, 'BOB'),
     totalLiabilitiesFormatted: formatCurrency(totalGlobalLiabilitiesInBOB, 'BOB'),
-    netWorthFormatted:         formatCurrency(Math.abs(netWorthInBOB),     'BOB'),
+    netWorthFormatted:         formatCurrency(Math.abs(netWorthInBOB), 'BOB'),
     netWorthInBOB,
     netWorthRaw: netWorthInBOB,
     netWorthPositive,
+    netWorthBOBOnly,
+    netWorthBOBOnlyPositive,
   }
 }

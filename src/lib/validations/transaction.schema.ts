@@ -17,6 +17,8 @@ const transactionBaseSchema = z.object({
   currency:            z.string().optional(),
   project_id:          z.string().nullable().optional(),
   subtype:             z.string().max(40).nullable().optional(),
+  register_as_investment: z.boolean().optional(),
+  investment_name:     z.string().optional(),
 })
 
 export const createTransactionSchema = transactionBaseSchema.refine((data) => {

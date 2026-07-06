@@ -1,7 +1,7 @@
 // features/cashflow/CashflowSection.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { ResponsiveContainer, Sankey, Tooltip } from "recharts"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -10,6 +10,8 @@ import { useCategories }   from "@/features/categories/hooks/useCategories"
 import { useAccounts }     from "@/features/accounts/hooks/useAccounts"
 import { useProjects }     from "@/features/projects/hooks/useProjects"
 import { SankeyCustomNode } from "./components/SankeyCustomNode"
+import { SankeyCustomLink } from "./components/SankeyCustomLink"
+import { SankeySelectionProvider } from "./components/SankeySelectionContext"
 import { useCashflowData } from "./hooks/useCashflowData"
 import type { SankeyData } from "./hooks/useCashflowData"
 import { PeriodSelector }  from "@/app/transactions/components/PeriodSelector"
@@ -102,8 +104,9 @@ interface CashflowSankeyProps {
 }
 
 function CashflowSankey({ width = 0, height = 0, sankeyData }: CashflowSankeyProps) {
-  
-  // Ajustar márgenes según el ancho disponible
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
+  const chartRef = useRef<HTMLDivElement>(null)
+
   const isSmall  = width < 400
   const isMedium = width < 600
 
@@ -112,29 +115,57 @@ function CashflowSankey({ width = 0, height = 0, sankeyData }: CashflowSankeyPro
   const nodePadding = isSmall ? 16 : 40
   const fontSize    = isSmall ? 8.5 : 11
 
-  return (
-    <Sankey
-      width={width}
-      height={height}
-      data={sankeyData}
-      nodeWidth={8}
-      nodePadding={nodePadding}
-      margin={{
-        left:   marginLeft,
-        right:  marginRight,
-        top:    10,
-        bottom: 20,
-      }}
-      link={{ stroke: '#e5e7eb', strokeOpacity: 0.6 }}
-      node={
-        <SankeyCustomNode
-          containerWidth={width}
-          fontSize={fontSize}
-        />
+  useEffect(() => {
+    if (selectedIdx === null) return
+    const handler = (e: MouseEvent) => {
+      if (!chartRef.current?.contains(e.target as Node)) return
+      if (!(e.target as HTMLElement).closest('[data-sankey-node]')) {
+        setSelectedIdx(null)
       }
+    }
+    document.addEventListener('click', handler)
+    return () => document.removeEventListener('click', handler)
+  }, [selectedIdx])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedIdx(null)
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
+  return (
+    <SankeySelectionProvider
+      sankeyData={sankeyData}
+      selectedIdx={selectedIdx}
+      onSelect={setSelectedIdx}
     >
-      <Tooltip content={<CustomTooltip />} />
-    </Sankey>
+      <div ref={chartRef}>
+        <Sankey
+          width={width}
+          height={height}
+          data={sankeyData}
+          nodeWidth={8}
+          nodePadding={nodePadding}
+          margin={{
+            left:   marginLeft,
+            right:  marginRight,
+            top:    10,
+            bottom: 20,
+          }}
+          link={<SankeyCustomLink />}
+          node={
+            <SankeyCustomNode
+              containerWidth={width}
+              fontSize={fontSize}
+            />
+          }
+        >
+          <Tooltip content={<CustomTooltip />} />
+        </Sankey>
+      </div>
+    </SankeySelectionProvider>
   )
 }
 
@@ -198,8 +229,9 @@ export function CashflowSection() {
               { color: 'var(--debt)',   label: 'Gastos'   },
               { color: 'var(--primary)', label: 'Cuentas'  },
               { color: 'var(--muted-foreground)', label: 'Balance' },
-              { color: '#8B5CF6',  label: 'Actividades' },  // ← NUEVO
-              { color: '#F59E0B',  label: 'Etiquetas'  },  // ← NUEVO
+              { color: '#8B5CF6',  label: 'Actividades' },
+              { color: '#F59E0B',  label: 'Etiquetas'  },
+              { color: '#F97316',  label: 'Transferencias' },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />

@@ -38,16 +38,17 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useProjects } from '@/features/projects/hooks/useProjects'
+import { useCreateInvestment } from '@/features/investments/hooks/useInvestments'
 
 import { getLocalDateString } from "@/utils/date.utils"
 import { TRANSACTION_TYPE_LABELS } from "./utils/transaction-display.utils"
 import { getTagsForCategory, getSubtypesForProject } from "./utils/transaction-form.utils"
-// ─── Componente ───────────────────────────────────────────────────────────────
 export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const { data: categories = [] } = useCategories()
   const { data: accounts   = [] } = useAccounts()
   const { data: projects = [] } = useProjects()
   const createTransaction         = useCreateTransaction()
+  const createInvestment          = useCreateInvestment()
 
   const form = useForm<CreateTransactionInput>({
     resolver: createZodResolver(createTransactionSchema),
@@ -63,6 +64,8 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       project_id:   null,
       tag:          null,
       subtype:      null,
+      register_as_investment: false,
+      investment_name: '',
     },
   })
 
@@ -71,6 +74,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const projectId  = useWatch({ control: form.control, name: 'project_id' })
   const accountId  = useWatch({ control: form.control, name: 'account_id' })
   const amount     = useWatch({ control: form.control, name: 'amount' }) ?? 0
+  const registerAsInvestment = useWatch({ control: form.control, name: 'register_as_investment' })
   const availableSubtypes = getSubtypesForProject(projectId, projects)
 
   const availableTags = getTagsForCategory(categoryId, categories)
@@ -96,10 +100,26 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
     form.setValue('tag', null)          // ← undefined → null
   }
 
-  // TransactionForm.tsx — en onSubmit
 const onSubmit = async (data: CreateTransactionInput) => {
-  await createTransaction.mutateAsync(data, {
-    onSuccess: () => {
+  const { register_as_investment, investment_name, ...txData } = data
+
+  await createTransaction.mutateAsync(txData, {
+    onSuccess: async (transaction: { id: string; account_id: string; to_account_id?: string | null; amount: number }) => {
+      if (register_as_investment && investment_name) {
+        const investmentAccountId = txData.type === 'TRANSFER'
+          ? (txData.to_account_id ?? txData.account_id)
+          : txData.account_id
+
+        await createInvestment.mutateAsync({
+          account_id: investmentAccountId,
+          name: investment_name,
+          amount: txData.amount,
+          currency: txData.currency ?? '',
+          date: txData.date,
+          transaction_id: transaction.id,
+        })
+      }
+
       form.reset({
         type:         'EXPENSE',
         date:         getLocalDateString(),
@@ -112,6 +132,8 @@ const onSubmit = async (data: CreateTransactionInput) => {
         account_id:   '',
         to_account_id:undefined,
         description:  '',
+        register_as_investment: false,
+        investment_name: '',
       })
       onSuccess()
     },
@@ -357,6 +379,51 @@ const onSubmit = async (data: CreateTransactionInput) => {
             accounts={accounts}
             showBalance
           />
+        )}
+
+        {/* ── Registrar como inversión ── */}
+        {(type === 'TRANSFER' || type === 'EXPENSE') && (
+          <div className="space-y-3">
+            <FormField
+              control={form.control}
+              name="register_as_investment"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-2 space-y-0 px-1">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value ?? false}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="font-normal text-[13px] text-gray-600 cursor-pointer">
+                    Registrar como inversión
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
+            {registerAsInvestment && (
+              <FormField
+                control={form.control}
+                name="investment_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[13px] font-medium text-gray-600">
+                      Nombre de la inversión
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Ej: Compra BTC, Fondo indexado..."
+                        {...field}
+                        value={field.value ?? ''}
+                        className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-[12px]" />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
         )}
 
         {/* ── Nota ── */}

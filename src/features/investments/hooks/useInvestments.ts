@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Investment, CreateInvestmentData, UpdateInvestmentData } from '@/types/investment'
+import { Investment, CreateInvestmentData, UpdateInvestmentData, InvestmentTransaction } from '@/types/investment'
+import type { BuyInvestmentInput, SellInvestmentInput } from '@/lib/validations/investment.schema'
 import { accountKeys } from '@/features/accounts/hooks/useAccounts'
 import { toast } from 'sonner'
 
@@ -14,6 +15,7 @@ export const investmentKeys = {
   all:    ['investments'] as const,
   lists:  () => [...investmentKeys.all, 'list'] as const,
   detail: (id: string) => [...investmentKeys.all, 'detail', id] as const,
+  transactions: (investmentId: string) => [...investmentKeys.all, 'transactions', investmentId] as const,
 }
 
 export function useInvestments() {
@@ -26,6 +28,19 @@ export function useInvestments() {
       return Array.isArray(json.data) ? json.data : []
     },
     staleTime: 1000 * 60 * 5,
+  })
+}
+
+export function useInvestmentTransactions(investmentId: string) {
+  return useQuery({
+    queryKey: investmentKeys.transactions(investmentId),
+    queryFn: async (): Promise<InvestmentTransaction[]> => {
+      const res  = await authFetch(`/api/investments/${investmentId}/transactions`)
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Error al obtener transacciones')
+      return Array.isArray(json.data) ? json.data : []
+    },
+    enabled: !!investmentId,
   })
 }
 
@@ -42,8 +57,59 @@ export function useCreateInvestment() {
       if (!res.ok) throw new Error(json.error ?? 'Error al crear la inversión')
       return json.data
     },
-    onSuccess: () => {
-      toast.success('Inversión registrada')
+    onError: (error: Error) => {
+      toast.error(error.message)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: investmentKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
+    },
+  })
+}
+
+export function useBuyInvestment() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: BuyInvestmentInput) => {
+      const res  = await authFetch(`/api/investments/${data.investment_id}/transactions`, {
+        method: 'POST',
+        body:   JSON.stringify({ ...data, type: 'BUY' }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Error al registrar compra')
+      return json
+    },
+    onSuccess: (_data, variables) => {
+      toast.success('Compra registrada')
+      queryClient.invalidateQueries({ queryKey: investmentKeys.transactions(variables.investment_id) })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: investmentKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
+    },
+  })
+}
+
+export function useSellInvestment() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: SellInvestmentInput) => {
+      const res  = await authFetch(`/api/investments/${data.investment_id}/transactions`, {
+        method: 'POST',
+        body:   JSON.stringify({ ...data, type: 'SELL' }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Error al registrar venta')
+      return json
+    },
+    onSuccess: (_data, variables) => {
+      toast.success('Venta registrada')
+      queryClient.invalidateQueries({ queryKey: investmentKeys.transactions(variables.investment_id) })
     },
     onError: (error: Error) => {
       toast.error(error.message)
@@ -68,7 +134,6 @@ export function useUpdateInvestment() {
       if (!res.ok) throw new Error(json.error ?? 'Error al actualizar la inversión')
       return json.data
     },
-    onSuccess: () => toast.success('Inversión actualizada'),
     onError: (error: Error) => toast.error(error.message),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: investmentKeys.lists() })
@@ -100,7 +165,6 @@ export function useDeleteInvestment() {
       }
       toast.error(error.message)
     },
-    onSuccess: () => toast.success('Inversión eliminada'),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: investmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() })

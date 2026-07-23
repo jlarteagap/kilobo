@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { TrendingUp, Pencil, Trash2, Plus, Wallet, Landmark, Banknote, Bitcoin, PiggyBank } from "lucide-react"
+import { TrendingUp, Pencil, Trash2, Plus, Wallet, Landmark, Banknote, Bitcoin, PiggyBank, ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -23,9 +23,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 
-import { useInvestments, useDeleteInvestment, useUpdateInvestment } from "./hooks/useInvestments"
+import { useInvestments, useDeleteInvestment, useUpdateInvestment, useInvestmentTransactions, useBuyInvestment, useSellInvestment } from "./hooks/useInvestments"
 import { CreateInvestmentForm } from "./CreateInvestmentForm"
 import { InvestmentForm } from "./InvestmentForm"
+import { InvestmentTxForm } from "./InvestmentTxForm"
 import {
   INVESTMENT_ICON,
   INVESTMENT_COLOR,
@@ -35,7 +36,7 @@ import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { getAccountTypeDetails } from "@/features/accounts/utils/account-display.utils"
 
 import type { Account, AccountType } from "@/types/account"
-import type { Investment } from "@/types/investment"
+import type { Investment, InvestmentTxType, InvestmentTransaction } from "@/types/investment"
 
 function getAccountColors(colorClass: string) {
   if (colorClass.includes('blue')) return 'bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400'
@@ -72,6 +73,149 @@ function AccountCardSkeleton() {
   )
 }
 
+function TxHistory({ investment }: { investment: Investment }) {
+  const [open, setOpen] = useState(false)
+  const { data: transactions = [], isLoading } = useInvestmentTransactions(investment.id)
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-400 hover:text-indigo-500 transition-colors mt-1"
+      >
+        {open ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+        Historial ({isLoading ? '...' : transactions.length} operaciones)
+      </button>
+      {open && (
+        <div className="mt-2 space-y-1 pl-2 border-l-2 border-indigo-100 dark:border-indigo-950/30">
+          {isLoading ? (
+            <p className="text-[11px] text-neutral-400">Cargando...</p>
+          ) : transactions.length === 0 ? (
+            <p className="text-[11px] text-neutral-400">Sin operaciones registradas</p>
+          ) : (
+            transactions.map((tx) => (
+              <div key={tx.id} className="flex items-center justify-between py-1.5">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className={cn(
+                    'w-5 h-5 rounded flex items-center justify-center shrink-0',
+                    tx.type === 'BUY' ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
+                  )}>
+                    {tx.type === 'BUY' ? (
+                      <ArrowUpRight className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <ArrowDownRight className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                    )}
+                  </div>
+                  <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300">
+                    {tx.type === 'BUY' ? 'COMPRA' : 'VENTA'}
+                  </span>
+                  <span className="text-[11px] text-neutral-500">
+                    {tx.units} × {formatCurrency(tx.unit_price, tx.currency)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-[12px] font-semibold text-neutral-900 dark:text-neutral-100 tabular-nums">
+                    {formatCurrency(tx.total_amount, tx.currency)}
+                  </span>
+                  <span className="text-[10px] text-neutral-400">
+                    {formatInvestmentDate(tx.date)}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function InvestmentRow({
+  investment,
+  onEdit,
+  onDelete,
+  onBuy,
+  onSell,
+}: {
+  investment: Investment
+  onEdit: (inv: Investment) => void
+  onDelete: (id: string) => void
+  onBuy: (inv: Investment) => void
+  onSell: (inv: Investment) => void
+}) {
+  const hasUnits = investment.units != null && investment.unit_price != null
+
+  return (
+    <div className="group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-indigo-50/30 dark:hover:bg-indigo-950/10">
+      <div className={cn(
+        'w-7 h-7 rounded-lg flex items-center justify-center shrink-0',
+        INVESTMENT_COLOR.bg
+      )}>
+        <TrendingUp className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+          {investment.name}
+        </p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <p className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
+            {formatInvestmentDate(investment.date)}
+          </p>
+          {hasUnits && (
+            <>
+              <span className="text-[9px] text-neutral-300">·</span>
+              <p className="text-[10px] font-medium text-indigo-500 dark:text-indigo-400">
+                {investment.units} units @ {formatCurrency(investment.unit_price!, investment.currency)}/unit
+              </p>
+            </>
+          )}
+        </div>
+        {hasUnits && <TxHistory investment={investment} />}
+      </div>
+
+      <div className="text-right shrink-0">
+        <p className="text-[14px] font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
+          {formatCurrency(investment.amount, investment.currency)}
+        </p>
+      </div>
+
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {hasUnits && (
+          <>
+            <button
+              onClick={() => onBuy(investment)}
+              className="p-1.5 rounded-md text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+              title="Comprar"
+            >
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onSell(investment)}
+              className="p-1.5 rounded-md text-rose-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+              title="Vender"
+            >
+              <ArrowDownRight className="w-3.5 h-3.5" />
+            </button>
+          </>
+        )}
+        <button
+          onClick={() => onEdit(investment)}
+          className="p-1.5 rounded-md text-neutral-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={() => onDelete(investment.id)}
+          className="p-1.5 rounded-md text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function InvestmentsList({
   accounts,
   preselectedAccountId,
@@ -79,10 +223,13 @@ export function InvestmentsList({
   const { data: investments = [], isLoading, isError } = useInvestments()
   const deleteInvestment = useDeleteInvestment()
   const updateInvestment = useUpdateInvestment()
+  const buyInvestment = useBuyInvestment()
+  const sellInvestment = useSellInvestment()
 
   const [showCreate, setShowCreate] = useState(false)
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [txOperation, setTxOperation] = useState<{ investment: Investment; type: InvestmentTxType } | null>(null)
 
   const filtered = preselectedAccountId
     ? investments.filter((inv) => inv.account_id === preselectedAccountId)
@@ -195,9 +342,7 @@ export function InvestmentsList({
                     </p>
                   </div>
                   <Button
-                    onClick={() => {
-                      setShowCreate(true)
-                    }}
+                    onClick={() => setShowCreate(true)}
                     size="sm"
                     variant="outline"
                     className="h-7 text-[11px] rounded-lg border-neutral-200 dark:border-neutral-700"
@@ -210,47 +355,14 @@ export function InvestmentsList({
                 {/* Investments list */}
                 <div className="divide-y divide-neutral-100 dark:divide-neutral-800/30">
                   {accountInvestments.map((inv) => (
-                    <div
+                    <InvestmentRow
                       key={inv.id}
-                      className="group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-indigo-50/30 dark:hover:bg-indigo-950/10"
-                    >
-                      <div className={cn(
-                        'w-7 h-7 rounded-lg flex items-center justify-center shrink-0',
-                        INVESTMENT_COLOR.bg
-                      )}>
-                        <TrendingUp className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-                          {inv.name}
-                        </p>
-                        <p className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400 mt-0.5">
-                          {formatInvestmentDate(inv.date)}
-                        </p>
-                      </div>
-
-                      <div className="text-right shrink-0">
-                        <p className="text-[14px] font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
-                          {formatCurrency(inv.amount, inv.currency)}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-0.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => setEditingInvestment(inv)}
-                          className="p-1.5 rounded-md text-neutral-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => setPendingDeleteId(inv.id)}
-                          className="p-1.5 rounded-md text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
+                      investment={inv}
+                      onEdit={setEditingInvestment}
+                      onDelete={setPendingDeleteId}
+                      onBuy={(inv) => setTxOperation({ investment: inv, type: 'BUY' })}
+                      onSell={(inv) => setTxOperation({ investment: inv, type: 'SELL' })}
+                    />
                   ))}
                 </div>
               </div>
@@ -294,6 +406,30 @@ export function InvestmentsList({
               }}
               onCancel={() => setEditingInvestment(null)}
               isPending={updateInvestment.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!txOperation} onOpenChange={(open) => !open && setTxOperation(null)}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-neutral-200/50 dark:border-neutral-800/50 p-8">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black tracking-tight">
+              {txOperation?.type === 'BUY' ? 'Comprar' : 'Vender'} {txOperation?.investment.name}
+            </DialogTitle>
+          </DialogHeader>
+          {txOperation && (
+            <InvestmentTxForm
+              investment={txOperation.investment}
+              type={txOperation.type}
+              onSubmit={(data) => {
+                const mutate = txOperation.type === 'BUY' ? buyInvestment : sellInvestment
+                mutate.mutate(data as any, {
+                  onSuccess: () => setTxOperation(null),
+                })
+              }}
+              onCancel={() => setTxOperation(null)}
+              isPending={buyInvestment.isPending || sellInvestment.isPending}
             />
           )}
         </DialogContent>

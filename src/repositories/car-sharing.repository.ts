@@ -68,7 +68,7 @@ export const carSharingRepository = {
       .sort((a, b) => (b.endDate || 0) - (a.endDate || 0))
   },
 
-  async addTrip(data: { userName: string, initialKm: number, finalKm: number, clientDateStr?: string }): Promise<void> {
+  async addTrip(data: { userName: string, initialKm: number, finalKm: number, clientDateStr?: string }): Promise<number> {
     const activeCycle = await this.getActiveCycle()
     
     let totalKm = 0
@@ -84,13 +84,14 @@ export const carSharingRepository = {
       return `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
     })()
 
+    const createdAt = Date.now()
     const trip: CarTrip = {
       userName: data.userName,
       initialKm: data.initialKm,
       finalKm: data.finalKm,
       totalKm,
       date: dateStr,
-      createdAt: Date.now()
+      createdAt,
     }
 
     await CYCLES_COLLECTION.doc(activeCycle.id).update({
@@ -98,6 +99,8 @@ export const carSharingRepository = {
     })
     
     await carMaintenanceRepository.incrementAbsoluteOdometer(totalKm)
+
+    return createdAt
   },
 
   async deleteTrip(createdAt: number): Promise<void> {

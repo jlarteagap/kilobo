@@ -25,6 +25,7 @@ import { CashflowSectionSkeleton } from "@/features/dashboard/components/skeleto
 import { InsightsWidget } from "@/features/insights/components/InsightsWidget"
 import { useState } from "react"
 import { InvestmentsWidget } from "@/features/investments/InvestmentsList"
+import { DriverWidget } from "@/features/driver/components/DriverWidget"
 import { CreateInvestmentForm } from "@/features/investments/CreateInvestmentForm"
 import {
   Dialog,
@@ -99,6 +100,9 @@ export default function DashboardPage() {
 
         {/* ── Flujo de caja ── */}
         <CashflowSection />
+
+        {/* ── Widget Conductor ── */}
+        <DriverWidget />
 
         {/* ── Inversiones widget ── */}
         <InvestmentsWidget

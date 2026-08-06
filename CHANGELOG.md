@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-08-06
+
+### Added
+- **Módulo Conductor — Registro Manual de Turnos**: Reemplazo del flujo de "turno activo con timer" por un formulario único (`ShiftForm`) que registra turnos al final del día o días atrás. Permite elegir la fecha (con máximo hoy), ingresar horas trabajadas manualmente (paso 0.25), registrar odómetro de inicio/fin (odómetro de 3 dígitos con wrap), desglosar ingresos por app (Uber/Yango/InDrive) y método de pago (efectivo/tarjeta/QR), sumar bonos y comisiones, agregar gastos (peaje/gasolina/mantenimiento/varios) con su método de pago y notas. Soporta múltiples turnos por día.
+- **Widget Conductor en Dashboard**: Nuevo widget en el dashboard principal (`DriverWidget`) que resume el líquido de hoy, esta semana (con Bs/hora), este mes, el promedio por turno, los km de la semana y el último turno registrado, con acceso directo a `/conductor`. Incluye estados de carga (skeleton), error y vacío con CTA para registrar el primer turno.
+- **Desglose de Turno (Bottom Sheet)**: Componente `ShiftDetailSheet` que muestra el detalle completo de un turno (fecha con día de la semana, horas trabajadas, km, desglose por app/método, neto líquido y Bs/hora). Accesible desde el historial de turnos con acciones de editar y eliminar.
+- **Resumen de Dashboard en Conductor**: Mini-tarjetas "Hoy / Esta semana / Este mes" (`DashboardSummary`) en la página `/conductor`.
+- **Métricas de Analytics ampliadas**: Promedio por turno (`avgPerShift`), Bs/hora, tendencia diaria de líquido, desglose por app y bruto/líquido en `/conductor/analytics`.
+
+### Changed
+- **Modelo de datos del turno**: `DriverShift` ahora usa `date` (YYYY-MM-DD) y `hoursWorked` (input manual) como fuente de verdad; se eliminaron `status`, `startTime` y `endTime`. Los turnos se agrupan por día y el historial se ordena por `date desc`.
+- **API de turnos**: `POST /api/driver/shifts` crea turnos con el nuevo esquema `shiftSchema` (validación de fecha, horas 0.25–24 y km 0–999); `PATCH [id]` y `DELETE [id]` soportan edición/eliminación con reprocesamiento en cascada de transacciones y regresión del trip en Gasolina.
+- **Repositorio**: `normalizeShift` con defaults seguros y migración en lectura de turnos legacy (deriva `date` y `hoursWorked` desde `startTime`/`endTime`).
+- **Alias y formato**: Fechas y day-of-week se calculan en hora local de Bolivia (UTC-4) para evitar desfases.
+
+### Fixed
+- **Neto líquido sin persistir**: Los campos financieros calculados (`liquidEarnings`, `totalEarnings/Bonuses/Commissions/Expenses`, `grossEarnings`, `pendingAmount`, `generatedTransactionIds`, `gasolinaTripCreatedAt`, `totalKm`) quedaban guardados en `0` al crear un turno porque el repositorio los hardcodeaba. Ahora `create()` persiste los valores reales calculados por `processShiftTransactions`, lo que también habilita la eliminación/reprocesamiento en cascada correcta.
+- **Desfase de fecha por timezone**: `new Date("YYYY-MM-DD")` se interpretaba como medianoche UTC y en Bolivia (UTC-4) mostraba el día anterior en el historial, detalle y gráficos. Se reemplazó por parseo de fecha local (`parseLocalDate`) y conversión ISO→local (`isoToLocalDateStr`) en todos los componentes.
+- **Crasheos por datos nulos**: Turns legacy sin campos nuevos ya no rompen con "Cannot read properties of null (reading 'toFixed')"; se agregó sanitización con defaults en el repositorio y defensas `?? 0` en componentes de UI, analytics y summary.
+
 ## [1.6.2] - 2026-07-06
 
 ### Added

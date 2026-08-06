@@ -17,6 +17,7 @@ import {
   LogOut,
   Sparkles,
   PiggyBank,
+  CarTaxiFront,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -42,6 +43,7 @@ const navigation = [
   { name: "Categorías",       href: "/categories",   icon: LayoutGrid  },
   { name: "Insights",         href: "/insights",     icon: Sparkles    },
   { name: "Metas de Ahorro",  href: "/ahorros",      icon: PiggyBank   },
+  { name: "Conductor",        href: "/conductor",    icon: CarTaxiFront },
 ]
 
 export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>) {
@@ -107,11 +109,14 @@ export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
+              asChild
               className="h-10 px-3 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800/50"
               tooltip="Ajustes"
             >
-              <Settings className="size-5" />
-              <span className="font-medium">Ajustes</span>
+              <Link href="/conductor/settings">
+                <Settings className="size-5" />
+                <span className="font-medium">Ajustes</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

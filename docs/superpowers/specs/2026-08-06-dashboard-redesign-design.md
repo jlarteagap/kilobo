@@ -43,12 +43,13 @@ Reescribir las variables CSS. Objetivo: look "fintech/editorial", alto contraste
 - `--muted-foreground`: `oklch(0.68 0.01 220)`.
 - `--primary`: acento **índigo** `oklch(0.55 0.2 265)` con `--primary-foreground` blanco.
 - `--sidebar`: fondo levemente distinto del background para separación clara.
-- `--chart-*`: paleta de alto contraste sobre fondo oscuro (verde esmeralda, rosa/rojo, índigo, cian, ámbar).
+- `--chart-*`: paleta de alto contraste sobre fondo oscuro (verde esmeralda, rosa/rojo, índigo, cian, ámbar). Referencia: `--chart-1: oklch(0.75 0.15 150)` (esmeralda), `--chart-2: oklch(0.7 0.18 25)` (rosa), `--chart-3: oklch(0.7 0.2 265)` (índigo), `--chart-4: oklch(0.75 0.13 215)` (cian), `--chart-5: oklch(0.8 0.15 85)` (ámbar).
 - `--growth` / `--debt`: mantener semántica (esmeralda / rosa) con valores de contraste AA sobre oscuro.
 
 ### 2.2 Tema claro (toggle)
 - Mismo espíritu editorial pero en claro: parchment suave, tarjetas blancas, bordes definidos, números tabulares, acento índigo.
 - Contraste AA/AAA sobre fondos claros.
+- Valores de referencia (a fijar en planificación): `--background: oklch(0.985 0.005 80)`, `--card: oklch(1 0 0)`, `--foreground: oklch(0.22 0.01 220)`, `--border: oklch(0.9 0.01 220)`, `--muted-foreground: oklch(0.55 0.01 220)`, `--primary: oklch(0.55 0.2 265)` con `--primary-foreground: oklch(1 0 0)`.
 
 ### 2.3 Consistencia
 - Ninguna página puede usar valores de color hardcodeados (`bg-white`, `text-neutral-*`) que rompan en oscuro; ver sección 5.

@@ -74,19 +74,20 @@ Escala sage derivada (9 tonos): `#2A3A22` → `#3C5230` → `#4F6A35` → `#5F7D
 ### Móvil (< 768px) — Bottom nav
 - **Nuevo componente `BottomNav.tsx`**: barra fija inferior, 5 slots — Inicio · Cuentas · [+] central · Transacciones · Perfil.
 - Botón "+" central: círculo sage elevado (sobresale del borde), abre el `QuickActionMenu` existente (6 acciones).
-- Sidebar oculta por completo; header conserva título + avatar.
+- **Acceso al resto de secciones**: el hamburger del header abre el **drawer lateral completo** (reutiliza el sheet móvil integrado de shadcn `Sidebar`), que contiene los 9 destinos (Dashboard, Cuentas, Transacciones, Deudas, Presupuestos, Categorías, Insights, Metas, Conductor) + Ajustes + Cerrar sesión. Es decir: bottom nav = 4 accesos rápidos + "+", drawer = navegación completa. El item del dashboard se llama "Dashboard" en el drawer, y el header muestra "Dashboard" como título (nombres consistentes, ver manual §10).
+- **Slot "Perfil"**: abre un **popover contextual** con avatar, nombre, email, link a Ajustes y botón Cerrar sesión (no navega a una ruta, porque hoy no existe una página de perfil).
+- Sidebar oculta por completo; header conserva hamburguesa + título + avatar.
 - Contenido con padding bottom suficiente (`pb-20`) para no quedar tapado.
 
 ### Tablet (768-1023px)
-- Misma bottom nav que móvil.
-- Header simplificado: hamburguesa (para drawer) + título.
+- Igual que móvil: bottom nav + drawer vía hamburger + avatar en header (idéntico al móvil).
 
 ### Archivos afectados
 - `src/components/layout/Sidebar.tsx` → refactor a rail iconos.
 - `src/components/layout/Header.tsx` → título por página, botón Nuevo.
 - `src/components/layout/BottomNav.tsx` → **nuevo**.
 - `src/components/layout/AppLayout.tsx` → integra BottomNav, ajusta paddings.
-- Header muestra título de página actual (saludo "Bienvenido" solo en dashboard).
+- Header muestra el **título de la página actual** en todas las páginas, incluido el dashboard ("Dashboard"). El saludo "Bienvenido" se elimina del header global (ver manual §9).
 
 ## 3. Dashboard (Capa 3)
 
@@ -105,7 +106,7 @@ Header (título + botón "+")
 
 | Zona | Widget | Cambio |
 |---|---|---|
-| Header | `DashboardHeader` | Rediseño: stats compactas, selector mes/divisa, tabular-nums |
+| Header | `DashboardHeader` | Rediseño: label de sección + **selector de mes** en la fila de título (fuera del card), stats compactas con `tabular-nums`. **El `h1` de saludo ("Bienvenido, X") se elimina** (el header global ya muestra "Dashboard"). El selector de mes es un control nuevo (hoy `currentMonthLabel` es texto estático) — se ubica en la fila del label, **no dentro del card de stats**. Colores `text-emerald-500`/`text-rose-500` → `text-[#4F6A35]`/`text-[#B5543D]`, `text-indigo-500/600` del breakdown → tokens sage |
 | Sankey full | `CashflowSection` | Ancho completo, ~280px, card blanca |
 | Principal | `AssetsSection` + `FinancialComparisonChart` | Lado a lado en grid interno |
 | Principal | `IncomeExpenseChart` | Fila siguiente |
@@ -113,9 +114,9 @@ Header (título + botón "+")
 | Rail | `BalanceProjection` | Card sage destacada (`#5F7D42`) |
 | Rail | `DashboardCredits` + `DashboardDebts` + `DashboardBudgets` | Compactados en "Obligaciones" |
 | Rail | `DashboardSavingsGoals` | "Metas de ahorro" |
-| Rail | `DriverWidget` | Compacto al final del rail |
-| Rail | `InsightsWidget` | AI — va al rail derecho |
-| Rail | `InvestmentsWidget` | Inversiones — va al rail derecho |
+| Rail | `DriverWidget` | Compacto (4ª posición del rail) |
+| Rail | `InsightsWidget` | AI — 5ª posición del rail |
+| Rail | `InvestmentsWidget` | Inversiones — 6ª y última posición del rail |
 | — | `DashboardSkeleton` | Actualizar al nuevo layout |
 
 ### Móvil

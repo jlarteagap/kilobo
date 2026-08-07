@@ -22,6 +22,7 @@
 |---|---|---|
 | `--background` | `#DAFEB7` | Fondo de página |
 | `--card` | `#FFFFFF` | Superficies elevadas |
+| `--popover` | `#FFFFFF` | Menús, popovers, tooltips |
 | `--card-soft` | `#F2F9E3` | Insets, hover, fondos secundarios |
 | `--primary` | `#5F7D42` | Acciones primarias, links, activo, focus |
 | `--primary-foreground` | `#FFFFFF` | Texto sobre primario |
@@ -117,6 +118,9 @@
 ### Modales
 `rounded-[1.5rem]` — el único componente con radios simétricos.
 
+### QuickActionMenu ("+ Nuevo" / botón central)
+El menú de creación rápida (Transacción, Cuenta, Presupuesto, Categoría, Deuda, Crédito) es el mismo componente en desktop (píldora en header) y móvil (círculo central de la bottom nav). Reskin de sus estilos hardcodeados (`bg-emerald-600` → `bg-[#5F7D42]`, dropdown con tokens del manual).
+
 ### Tablas
 - Header: `text-xs uppercase tracking-[0.14em] text-[#837A75] font-semibold`
 - Filas: `border-b border-[#F0E9DA] hover:bg-[#F7FBF0]`
@@ -128,8 +132,8 @@
 
 ### Shell
 - **Desktop (≥1024px)**: rail de iconos (sidebar colapsada ~64px) + header sticky blanco/blur 64px.
-- **Móvil (<768px)**: bottom nav fija (Inicio · Cuentas · [+] · Transacciones · Perfil), sidebar oculta, contenido `pb-20`.
-- **Tablet (768-1023px)**: igual que móvil.
+- **Móvil (<768px)**: bottom nav fija (Inicio · Cuentas · [+] · Transacciones · Perfil), sidebar oculta, contenido `pb-20`. El hamburger abre el drawer lateral completo (sheet móvil de shadcn) con los 9 destinos + Ajustes + Cerrar sesión. El slot "Perfil" abre un popover con usuario, Ajustes y Cerrar sesión.
+- **Tablet (768-1023px)**: igual que móvil (bottom nav + drawer vía hamburger).
 
 ### Páginas de listado (cuentas, transacciones, deudas...)
 - Ancho máximo `max-w-7xl`, padding `px-4 sm:px-6`.
@@ -181,3 +185,22 @@ Antes de mergear cualquier feature, verificar:
 - ❌ Esqueletos gigantes de pantalla completa
 - ❌ Texto sage claro sobre blanco (ilegible)
 - ❌ "Bienvenido, X" como título de página (usar nombre de página)
+
+---
+
+## 10. Mapa ruta → título de header
+
+| Ruta | Título |
+|---|---|
+| `/dashboard` | Dashboard |
+| `/accounts` | Cuentas |
+| `/transactions` | Transacciones |
+| `/debts` | Deudas y Préstamos |
+| `/budgets` | Presupuestos |
+| `/categories` | Categorías |
+| `/insights` | Insights |
+| `/ahorros` | Metas de Ahorro |
+| `/conductor` | Conductor |
+| `/conductor/settings` | Ajustes |
+
+El nav de la sidebar usa estos mismos nombres (el item del dashboard se llama "Dashboard" tanto en drawer como en título).

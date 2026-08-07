@@ -54,12 +54,12 @@ export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>
   return (
     <ShadcnSidebar 
       collapsible="icon" 
-      className="border-r border-neutral-200/50 bg-white/70 backdrop-blur-xl dark:border-neutral-800/50 dark:bg-neutral-900/70"
+      className="border-r border-[#E5DED2] bg-white"
       {...props}
     >
-      <SidebarHeader className="h-16 flex flex-row items-center px-4 border-b border-neutral-200/50 dark:border-neutral-800/50">
-        <div className="flex items-center gap-3 font-semibold text-lg text-emerald-600">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-600/20">
+      <SidebarHeader className="h-16 flex flex-row items-center px-4 border-b border-[#E5DED2]">
+        <div className="flex items-center gap-3 font-semibold text-lg text-[#4F6A35]">
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#5F7D42] text-white shadow-sm ring-1 ring-[#5F7D42]/20">
             <Wallet className="size-5" />
           </div>
           <span className={cn(
@@ -84,18 +84,18 @@ export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>
                   className={cn(
                     "relative group h-10 px-3 transition-all duration-200 rounded-lg",
                     isActive 
-                      ? "bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-600/10 dark:bg-emerald-950/30 dark:text-emerald-400" 
-                      : "text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800/50"
+                      ? "bg-[#F2F9E3] text-[#4F6A35] shadow-sm ring-1 ring-[#5F7D42]/10" 
+                      : "text-[#837A75] hover:bg-[#F2F9E3]"
                   )}
                 >
                   <Link href={item.href}>
                     <item.icon className={cn(
                       "size-5 transition-transform duration-200 group-hover:scale-110",
-                      isActive ? "text-emerald-600" : ""
+                      isActive ? "text-[#4F6A35]" : ""
                     )} />
                     <span className="font-medium">{item.name}</span>
                     {isActive ? (
-                      <ChevronRight className="ml-auto size-4 text-emerald-600/50" />
+                      <ChevronRight className="ml-auto size-4 text-[#5F7D42]/50" />
                     ) : null}
                   </Link>
                 </SidebarMenuButton>
@@ -105,12 +105,12 @@ export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-neutral-200/50 dark:border-neutral-800/50">
+      <SidebarFooter className="p-4 border-t border-[#E5DED2]">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="h-10 px-3 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800/50"
+              className="h-10 px-3 rounded-lg text-[#837A75] hover:bg-[#F2F9E3]"
               tooltip="Ajustes"
             >
               <Link href="/conductor/settings">
@@ -121,25 +121,25 @@ export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              className="h-12 px-2 rounded-xl bg-neutral-100/50 hover:bg-neutral-100 dark:bg-neutral-800/30 dark:hover:bg-neutral-800/50"
+              className="h-12 px-2 rounded-xl bg-[#F2F9E3] hover:bg-[#F2F9E3]"
               tooltip="Perfil"
             >
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#F2F9E3] text-[#4F6A35] ring-1 ring-[#5F7D42]/10">
                 <User className="size-4" />
               </div>
               <div className={cn(
                 "flex flex-col gap-0.5 truncate transition-all duration-300",
                 state === "collapsed" ? "opacity-0 invisible w-0" : "opacity-100 visible ml-2"
               )}>
-                <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user?.displayName || "Usuario"}</span>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{user?.email || "Sin email"}</span>
+                <span className="text-sm font-semibold text-black">{user?.displayName || "Usuario"}</span>
+                <span className="text-xs text-[#837A75] truncate">{user?.email || "Sin email"}</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={signOut}
-              className="h-10 px-3 rounded-lg text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+              className="h-10 px-3 rounded-lg text-[#B5543D] hover:bg-[#FAEDE9]"
               tooltip="Cerrar sesión"
             >
               <LogOut className="size-5" />

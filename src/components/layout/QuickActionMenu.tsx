@@ -49,7 +49,12 @@ const CreditForm = dynamic(
 
 type ActionType = "TRANSACTION" | "ACCOUNT" | "BUDGET" | "CATEGORY" | "DEBT" | "CREDIT" | null
 
-export function QuickActionMenu() {
+interface QuickActionMenuProps {
+  /** Custom trigger node (e.g. the central "+" of the bottom nav). Defaults to the header pill button. */
+  trigger?: React.ReactNode
+}
+
+export function QuickActionMenu({ trigger }: QuickActionMenuProps) {
   const [actionType, setActionType] = useState<ActionType>(null)
   
   const handleClose = () => setActionType(null)
@@ -58,15 +63,17 @@ export function QuickActionMenu() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 shadow-sm rounded-full transition-all duration-200 active:scale-95">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Nuevo</span>
-          </Button>
+          {trigger ?? (
+            <Button className="h-9 px-4 bg-[#5F7D42] hover:bg-[#4F6A35] text-white gap-2 shadow-sm rounded-full transition-all duration-200 active:scale-95">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Nuevo</span>
+            </Button>
+          )}
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 rounded-xl border-neutral-200/50 shadow-lg dark:border-neutral-800/50">
-          <DropdownMenuLabel className="font-medium text-neutral-500">Crear rápido</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-56 rounded-xl border-[#E5DED2] shadow-lg">
+          <DropdownMenuLabel className="font-medium text-[#837A75]">Crear rápido</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setActionType("TRANSACTION")} className="gap-3 cursor-pointer py-2 rounded-lg focus:bg-emerald-50 focus:text-emerald-900 dark:focus:bg-emerald-900/30 dark:focus:text-emerald-100 transition-colors">
+          <DropdownMenuItem onClick={() => setActionType("TRANSACTION")} className="gap-3 cursor-pointer py-2 rounded-lg focus:bg-[#F2F9E3] focus:text-[#4F6A35] transition-colors">
             <ArrowRightLeft className="h-4 w-4" />
             <span>Transacción</span>
           </DropdownMenuItem>
@@ -95,8 +102,8 @@ export function QuickActionMenu() {
 
       <Dialog open={actionType !== null} onOpenChange={(open) => { if (!open) handleClose() }}>
         {actionType && (
-          <DialogContent className="sm:max-w-[425px] rounded-2xl p-0 overflow-hidden border-neutral-200/50 shadow-xl dark:border-neutral-800/50 gap-0">
-            <DialogHeader className="px-6 pt-6 pb-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
+          <DialogContent className="sm:max-w-[425px] rounded-[1.5rem] p-0 overflow-hidden border-[#E5DED2] shadow-xl gap-0">
+            <DialogHeader className="px-6 pt-6 pb-4 border-b border-[#E5DED2] bg-[#F2F9E3]/50">
               <DialogTitle className="text-xl font-semibold">
                 {actionType === "TRANSACTION" && "Nueva Transacción"}
                 {actionType === "ACCOUNT" && "Nueva Cuenta"}

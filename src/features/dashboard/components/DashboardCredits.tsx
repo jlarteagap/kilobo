@@ -19,18 +19,18 @@ export function DashboardCredits({
   const currency     = activeCredits[0]?.currency ?? 'BOB'
 
   return (
-    <div className="bg-white rounded-2xl p-5 flex flex-col gap-4 shadow-card">
+    <div className="bg-white card-organic p-5 flex flex-col gap-4 border border-[#E5DED2]">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-gray-700">Créditos activos</h3>
-          <p className="text-[11px] text-gray-400 mt-0.5">
+          <h3 className="text-xs font-bold text-black uppercase tracking-[0.14em]">Créditos activos</h3>
+          <p className="text-[11px] text-[#837A75] mt-0.5">
             {activeCredits.length} crédito{activeCredits.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Link
           href="/debts"
-          className="flex items-center gap-1 text-[12px] text-gray-400 hover:text-gray-600 transition-colors"
+          className="flex items-center gap-1 text-[12px] text-[#837A75] hover:text-[#4F6A35] transition-colors"
         >
           Ver todos
           <ArrowRight className="w-3 h-3" />
@@ -39,15 +39,15 @@ export function DashboardCredits({
 
       {/* Resumen */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-emerald-50 rounded-xl px-3 py-2.5">
-          <p className="text-[11px] text-emerald-400 mb-0.5">Balance total</p>
-          <p className="text-sm font-semibold text-emerald-600">
+        <div className="bg-[#F2F9E3] rounded-xl px-3 py-2.5">
+          <p className="text-[11px] text-[#4F6A35]/70 mb-0.5">Balance total</p>
+          <p className="text-sm font-semibold text-[#4F6A35]">
             {formatCurrency(totalBalance, currency)}
           </p>
         </div>
-        <div className="bg-amber-50 rounded-xl px-3 py-2.5">
-          <p className="text-[11px] text-amber-400 mb-0.5">Cuotas pend.</p>
-          <p className="text-sm font-semibold text-amber-600">
+        <div className="bg-[#B5543D]/10 rounded-xl px-3 py-2.5">
+          <p className="text-[11px] text-[#B5543D]/70 mb-0.5">Cuotas pend.</p>
+          <p className="text-sm font-semibold text-[#B5543D]">
             {totalPending}
           </p>
         </div>
@@ -57,7 +57,7 @@ export function DashboardCredits({
       {activeCredits.length === 0 ? (
         <div className="text-center py-4">
           <p className="text-2xl mb-1">🏦</p>
-          <p className="text-[12px] text-gray-400">Sin créditos activos</p>
+          <p className="text-[12px] text-[#837A75]">Sin créditos activos</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -74,10 +74,10 @@ export function DashboardCredits({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-[12px] font-medium text-gray-700 truncate">
+                    <p className="text-[12px] font-medium text-black truncate">
                       {credit.institution}
                     </p>
-                    <p className="text-[12px] font-semibold text-gray-900 flex-shrink-0 ml-2">
+                    <p className="text-[12px] font-semibold text-black tabular-nums flex-shrink-0 ml-2">
                       {formatCurrency(credit.current_balance, credit.currency)}
                     </p>
                   </div>
@@ -92,7 +92,7 @@ export function DashboardCredits({
             )
           })}
           {activeCredits.length > 4 && (
-            <p className="text-[11px] text-gray-300 text-center pt-1">
+            <p className="text-[11px] text-[#837A75]/60 text-center pt-1">
               +{activeCredits.length - 4} más
             </p>
           )}

@@ -71,7 +71,7 @@ function ScoreRing({ score, grade }: { score: number; grade: string }) {
 
 function WidgetSkeleton() {
   return (
-    <Card className="border border-border/50 bg-card/50 backdrop-blur-sm">
+    <Card className="border border-[#E5DED2] bg-white card-organic">
       <CardHeader className="pb-3">
         <Skeleton className="h-4 w-32" />
       </CardHeader>
@@ -100,7 +100,7 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
 
   if (isError || !data) {
     return (
-      <Card className="border border-border/50 bg-card/50">
+      <Card className="border border-[#E5DED2] bg-white card-organic">
         <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
           <AlertTriangle className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
@@ -129,13 +129,13 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
     : 'Recién generado'
 
   return (
-    <Card className="border border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-md transition-shadow duration-300">
+    <Card className="border border-[#E5DED2] bg-white card-organic hover:shadow-md transition-shadow duration-300">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           {/* Title */}
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" />
-            <span className="text-sm font-semibold tracking-tight">
+            <Sparkles className="h-4 w-4 text-[#5F7D42]" />
+            <span className="text-xs font-bold text-black uppercase tracking-[0.14em]">
               Análisis financiero
             </span>
           </div>

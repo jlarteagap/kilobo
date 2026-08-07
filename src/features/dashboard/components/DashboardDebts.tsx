@@ -17,20 +17,18 @@ export function DashboardDebts({
   pendingReceived,
 }: DashboardDebtsProps) {
   return (
-    <div
-      className="bg-white rounded-2xl p-5 flex flex-col gap-4 shadow-card"
-    >
+    <div className="bg-white card-organic p-5 flex flex-col gap-4 border border-[#E5DED2]">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-gray-700">Deudas activas</h3>
-          <p className="text-[11px] text-gray-400 mt-0.5">
+          <h3 className="text-xs font-bold text-black uppercase tracking-[0.14em]">Deudas activas</h3>
+          <p className="text-[11px] text-[#837A75] mt-0.5">
             {activeDebts.length} pendiente{activeDebts.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Link
           href="/debts"
-          className="flex items-center gap-1 text-[12px] text-gray-400 hover:text-gray-600 transition-colors"
+          className="flex items-center gap-1 text-[12px] text-[#837A75] hover:text-[#4F6A35] transition-colors"
         >
           Ver todas
           <ArrowRight className="w-3 h-3" />
@@ -39,15 +37,15 @@ export function DashboardDebts({
 
       {/* Resumen por cobrar / por pagar */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-orange-50 rounded-xl px-3 py-2.5">
-          <p className="text-[11px] text-orange-400 mb-0.5">Por cobrar</p>
-          <p className="text-sm font-semibold text-orange-600">
+        <div className="bg-[#F2F9E3] rounded-xl px-3 py-2.5">
+          <p className="text-[11px] text-[#4F6A35]/70 mb-0.5">Por cobrar</p>
+          <p className="text-sm font-semibold text-[#4F6A35]">
             {formatCurrency(pendingGiven, 'BOB')}
           </p>
         </div>
-        <div className="bg-blue-50 rounded-xl px-3 py-2.5">
-          <p className="text-[11px] text-blue-400 mb-0.5">Por pagar</p>
-          <p className="text-sm font-semibold text-blue-600">
+        <div className="bg-[#B5543D]/10 rounded-xl px-3 py-2.5">
+          <p className="text-[11px] text-[#B5543D]/70 mb-0.5">Por pagar</p>
+          <p className="text-sm font-semibold text-[#B5543D]">
             {formatCurrency(pendingReceived, 'BOB')}
           </p>
         </div>
@@ -57,7 +55,7 @@ export function DashboardDebts({
       {activeDebts.length === 0 ? (
         <div className="text-center py-4">
           <p className="text-2xl mb-1">🤝</p>
-          <p className="text-[12px] text-gray-400">Sin deudas activas</p>
+          <p className="text-[12px] text-[#837A75]">Sin deudas activas</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -70,22 +68,22 @@ export function DashboardDebts({
               <div key={debt.id} className="flex items-center gap-3">
                 <div className={cn(
                   'w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0',
-                  isGiven ? 'bg-orange-50' : 'bg-blue-50'
+                  isGiven ? 'bg-[#F2F9E3]' : 'bg-[#B5543D]/10'
                 )}>
                   {isGiven ? '💸' : '🤝'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-[12px] font-medium text-gray-700 truncate">
+                    <p className="text-[12px] font-medium text-black truncate">
                       {debt.contact_name}
                     </p>
-                    <p className="text-[12px] font-semibold text-gray-900 flex-shrink-0 ml-2">
+                    <p className="text-[12px] font-semibold text-black tabular-nums flex-shrink-0 ml-2">
                       {formatCurrency(pending, debt.currency)}
                     </p>
                   </div>
-                  <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-1 w-full bg-[#E5DED2] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gray-900 rounded-full transition-all duration-500"
+                      className="h-full bg-[#4F6A35] rounded-full transition-all duration-500"
                       style={{ width: `${percent}%` }}
                     />
                   </div>
@@ -94,7 +92,7 @@ export function DashboardDebts({
             )
           })}
           {activeDebts.length > 4 && (
-            <p className="text-[11px] text-gray-300 text-center pt-1">
+            <p className="text-[11px] text-[#837A75]/60 text-center pt-1">
               +{activeDebts.length - 4} más
             </p>
           )}

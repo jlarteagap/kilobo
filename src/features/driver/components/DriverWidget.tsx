@@ -31,7 +31,7 @@ function localDateStr(d: Date): string {
 
 function WidgetSkeleton() {
   return (
-    <Card className="border border-border/50 bg-card/50 backdrop-blur-sm">
+    <Card className="border border-[#E5DED2] bg-white card-organic">
       <CardHeader className="pb-3">
         <Skeleton className="h-4 w-32" />
       </CardHeader>
@@ -63,9 +63,9 @@ function Stat({
   tone?: 'emerald' | 'blue' | 'neutral'
 }) {
   const tones = {
-    emerald: 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-900/50',
-    blue: 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-900/50',
-    neutral: 'bg-neutral-50 dark:bg-neutral-900/40 text-neutral-700 dark:text-neutral-300 border-neutral-100 dark:border-neutral-800',
+    emerald: 'bg-[#F2F9E3] text-[#4F6A35] border-[#C8D9A9]',
+    blue: 'bg-[#B5543D]/10 text-[#B5543D] border-[#D9A487]',
+    neutral: 'bg-[#F2F9E3]/50 text-[#3C5230] border-[#E5DED2]',
   }
 
   return (
@@ -130,9 +130,9 @@ export function DriverWidget() {
 
   if (isError || !shifts) {
     return (
-      <Card className="border border-border/50 bg-card/50">
+      <Card className="border border-[#E5DED2] bg-white card-organic">
         <CardContent className="py-6 text-center">
-          <p className="text-sm text-muted-foreground">No se pudieron cargar los turnos</p>
+          <p className="text-sm text-[#837A75]">No se pudieron cargar los turnos</p>
           <Button variant="ghost" size="sm" className="mt-2" asChild>
             <Link href="/conductor">Ir a Conductor</Link>
           </Button>
@@ -147,19 +147,19 @@ export function DriverWidget() {
     : null
 
   return (
-    <Card className="border border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-md transition-shadow duration-300">
+    <Card className="border border-[#E5DED2] bg-white card-organic hover:shadow-md transition-shadow duration-300">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CarTaxiFront className="h-4 w-4 text-emerald-500" />
-            <span className="text-sm font-semibold tracking-tight">Conductor</span>
-            <span className="text-[10px] text-muted-foreground hidden sm:block">
+            <CarTaxiFront className="h-4 w-4 text-[#5F7D42]" />
+            <span className="text-xs font-bold text-black uppercase tracking-[0.14em]">Conductor</span>
+            <span className="text-[10px] text-[#837A75] hidden sm:block">
               {shifts.length > 0 ? `${shifts.length} turno${shifts.length !== 1 ? 's' : ''} registrados` : 'Sin turnos aún'}
             </span>
           </div>
           <Link
             href="/conductor"
-            className="flex items-center gap-0.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-0.5 text-[11px] font-medium text-[#837A75] hover:text-[#4F6A35] transition-colors"
           >
             Ver turnos
             <ChevronRight className="h-3.5 w-3.5" />
@@ -169,9 +169,9 @@ export function DriverWidget() {
 
       <CardContent className="space-y-3">
         {shifts.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border/70 px-4 py-6 flex flex-col items-center gap-3 text-center">
-            <CarTaxiFront className="h-8 w-8 text-muted-foreground/50" />
-            <p className="text-xs text-muted-foreground">
+          <div className="rounded-xl border border-dashed border-[#E5DED2] px-4 py-6 flex flex-col items-center gap-3 text-center">
+            <CarTaxiFront className="h-8 w-8 text-[#837A75]/50" />
+            <p className="text-xs text-[#837A75]">
               Registra tus turnos de conductor para ver aquí tus ingresos por día, semana y mes.
             </p>
             <Button size="sm" className="h-8 text-xs" asChild>
@@ -202,24 +202,24 @@ export function DriverWidget() {
               />
             </div>
 
-            <div className="rounded-xl border border-border/50 bg-muted/30 px-3 py-2.5 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground min-w-0">
+            <div className="rounded-xl border border-[#E5DED2] bg-[#F2F9E3]/50 px-3 py-2.5 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-[11px] text-[#837A75] min-w-0">
                 <Clock className="h-3.5 w-3.5 shrink-0" />
                 {lastShiftLabel ? (
-                  <span className="truncate">Último turno: <span className="font-medium text-foreground">{lastShiftLabel}</span></span>
+                  <span className="truncate">Último turno: <span className="font-medium text-black">{lastShiftLabel}</span></span>
                 ) : (
                   <span className="truncate">Sin turnos registrados</span>
                 )}
               </div>
               <div className="flex items-center gap-3 shrink-0">
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <span className="text-[11px] text-[#837A75] flex items-center gap-1">
                   <DollarSign className="h-3 w-3" />
-                  <span className="font-semibold text-foreground tabular-nums">{formatBs(avgPerShift)}</span>
+                  <span className="font-semibold text-black tabular-nums">{formatBs(avgPerShift)}</span>
                   <span className="hidden sm:inline">prom/turno</span>
                 </span>
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <span className="text-[11px] text-[#837A75] flex items-center gap-1">
                   <Route className="h-3 w-3" />
-                  <span className="font-semibold text-foreground tabular-nums">{weekKm}</span>
+                  <span className="font-semibold text-black tabular-nums">{weekKm}</span>
                   <span className="hidden sm:inline">km semana</span>
                 </span>
               </div>

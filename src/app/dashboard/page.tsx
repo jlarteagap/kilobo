@@ -16,11 +16,8 @@ import { BalanceProjection }           from "@/features/dashboard/components/Bal
 import { DashboardSkeleton }           from "@/features/dashboard/components/skeletons/DashboardSkeleton"
 
 import { useDashboard }          from "@/features/dashboard/hooks/useDashboard"
-import { useTransactionMetrics } from "@/features/transactions/hooks/useTransactionMetrics"
-import { useCategories }         from "@/features/categories/hooks/useCategories"
 import { useSavingsGoals }       from "@/features/savings-goals/hooks/useSavingsGoals"
 import { useAccounts }           from "@/features/accounts/hooks/useAccounts"
-
 import { CashflowSectionSkeleton } from "@/features/dashboard/components/skeletons/CashflowSectionSkeleton"
 import { InsightsWidget } from "@/features/insights/components/InsightsWidget"
 import { useState } from "react"
@@ -50,13 +47,10 @@ export default function DashboardPage() {
     accountsDashboard,
     monthlyStats,
     trends,
-    currentPeriod,
     recentTransactions,
-    monthlyTransactions,
     activeDebts,
     debtSummary,
     topBudgets,
-    greeting,
     currentMonthLabel,
     financialComparisonData,
     currentChartData,
@@ -64,23 +58,15 @@ export default function DashboardPage() {
     investments,
   } = useDashboard()
 
-  const { data: categories     = [] } = useCategories()
-  const { data: accounts       = [] } = useAccounts()
-  const { data: savingsGoals   = [] } = useSavingsGoals()
-  const hasActiveSavings = savingsGoals.some((g) => g.is_active)
+  const { data: savingsGoals = [] } = useSavingsGoals()
+  const { data: accounts = [] } = useAccounts()
   const [showInvestDialog, setShowInvestDialog] = useState(false)
-
-  const metrics = useTransactionMetrics(
-    monthlyTransactions,
-    categories,
-    currentPeriod
-  )
 
   if (isLoading) {
     return <AppLayout><DashboardSkeleton /></AppLayout>
   }
 
-  const netWorthBOBOnly = accountsDashboard.netWorthBOBOnly
+  const hasActiveSavings = savingsGoals.some((g) => g.is_active)
 
   return (
     <AppLayout>
@@ -88,9 +74,8 @@ export default function DashboardPage() {
 
         {/* ── Header + Stats + Multi-currency ── */}
         <DashboardHeader
-          greeting={greeting}
           currentMonthLabel={currentMonthLabel}
-          netWorth={netWorthBOBOnly}
+          netWorth={accountsDashboard.netWorthBOBOnly}
           monthlyStats={monthlyStats}
           trends={trends}
           netWorthPositive={accountsDashboard.netWorthBOBOnlyPositive}
@@ -98,76 +83,73 @@ export default function DashboardPage() {
           totalInvestedFormatted={accountsDashboard.totalInvestedFormatted}
         />
 
-        {/* ── Flujo de caja ── */}
+        {/* ── Flujo de caja (Sankey full-width) ── */}
         <CashflowSection />
 
-        {/* ── Widget Conductor ── */}
-        <DriverWidget />
+        {/* ── Grid 2 col: principal + rail ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
 
-        {/* ── Inversiones widget ── */}
-        <InvestmentsWidget
-          investments={investments}
-          accounts={accounts}
-          onShowCreate={() => setShowInvestDialog(true)}
-        />
-
-        {/* ── Tendencia: Activos + Comparativa ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <AssetsSection groups={accountsDashboard.currencyGroups} />
-          <div className="md:col-span-2">
-            <FinancialComparisonChart
-              key={`dashboard-chart-${financialComparisonData.length}`}
-              data={financialComparisonData}
-            />
-          </div>
-        </div>
-
-        {/* ── Ingresos vs Gastos (mes actual) ── */}
-        {currentChartData.length > 0 && (
-          <IncomeExpenseChart data={currentChartData} />
-        )}
-
-        {/* ── Obligaciones y metas ── */}
-        {[activeCredits.length > 0, activeDebts.length > 0, topBudgets.length > 0, hasActiveSavings].some(Boolean) && (
-          <div className="flex flex-wrap gap-6">
-            {activeCredits.length > 0 && (
-              <div className="flex-1 min-w-[280px]">
-                <DashboardCredits activeCredits={activeCredits} />
+          {/* Columna principal (2/3) */}
+          <div className="lg:col-span-2 flex flex-col gap-6 md:gap-8">
+            {/* Tendencia: Activos + Comparativa */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              <AssetsSection groups={accountsDashboard.currencyGroups} />
+              <div className="md:col-span-2">
+                <FinancialComparisonChart
+                  key={`dashboard-chart-${financialComparisonData.length}`}
+                  data={financialComparisonData}
+                />
               </div>
+            </div>
+
+            {/* Ingresos vs Gastos (mes actual) */}
+            {currentChartData.length > 0 && (
+              <IncomeExpenseChart data={currentChartData} />
             )}
-            {activeDebts.length > 0 && (
-              <div className="flex-1 min-w-[280px]">
+
+            {/* Transacciones recientes */}
+            <DashboardRecentTransactions transactions={recentTransactions} />
+          </div>
+
+          {/* Rail derecho (1/3) */}
+          <aside className="flex flex-col gap-6 md:gap-8 lg:sticky lg:top-24 lg:self-start">
+            {/* 1. Proyección de saldo (card sage destacada) */}
+            <BalanceProjection />
+
+            {/* 2. Obligaciones (Credits+Debts+Budgets compactos) */}
+            <div className="flex flex-col gap-4">
+              {activeCredits.length > 0 && <DashboardCredits activeCredits={activeCredits} />}
+              {activeDebts.length > 0 && (
                 <DashboardDebts
                   activeDebts={activeDebts}
                   pendingGiven={debtSummary.pendingGiven}
                   pendingReceived={debtSummary.pendingReceived}
                 />
-              </div>
-            )}
-            {topBudgets.length > 0 && (
-              <div className="flex-1 min-w-[280px]">
-                <DashboardBudgets topBudgets={topBudgets} />
-              </div>
-            )}
-            {hasActiveSavings && (
-              <div className="flex-1 min-w-[280px]">
-                <DashboardSavingsGoals />
-              </div>
-            )}
-          </div>
-        )}
+              )}
+              {topBudgets.length > 0 && <DashboardBudgets topBudgets={topBudgets} />}
+            </div>
 
-        {/* ── Proyección de saldo ── */}
-        <BalanceProjection />
+            {/* 3. Metas de ahorro */}
+            {hasActiveSavings && <DashboardSavingsGoals />}
 
-        <InsightsWidget />
+            {/* 4. Conductor (compacto) */}
+            <DriverWidget />
 
-        {/* ── Transacciones recientes ── */}
-        <DashboardRecentTransactions transactions={recentTransactions} />
+            {/* 5. Insights (AI) */}
+            <InsightsWidget />
+
+            {/* 6. Inversiones */}
+            <InvestmentsWidget
+              investments={investments}
+              accounts={accounts}
+              onShowCreate={() => setShowInvestDialog(true)}
+            />
+          </aside>
+        </div>
       </div>
 
       <Dialog open={showInvestDialog} onOpenChange={(open) => !open && setShowInvestDialog(false)}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-neutral-200/50 dark:border-neutral-800/50 p-8">
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-[#E5DED2] p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight">
               Nueva Inversión

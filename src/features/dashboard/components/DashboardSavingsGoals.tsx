@@ -21,14 +21,14 @@ export function DashboardSavingsGoals() {
   if (activeGoals.length === 0) return null
 
   return (
-    <div className="bg-card rounded-3xl p-6 border border-border/40"
-      style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}>
+    <div className="bg-white card-organic p-5 border border-[#E5DED2]"
+      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
       <Link href="/ahorros" className="flex items-center justify-between mb-5 group">
         <div>
-          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">Metas de Ahorro</h3>
-          <p className="text-[11px] text-muted-foreground/60 mt-1">Seguimiento de tus alcancías</p>
+          <h3 className="text-xs font-bold text-black uppercase tracking-[0.14em]">Metas de Ahorro</h3>
+          <p className="text-[11px] text-[#837A75] mt-1">Seguimiento de tus alcancías</p>
         </div>
-        <span className="text-[10px] font-bold text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="text-[10px] font-bold text-[#5F7D42] opacity-0 group-hover:opacity-100 transition-opacity">
           Ver todas →
         </span>
       </Link>
@@ -45,9 +45,9 @@ export function DashboardSavingsGoals() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-base">{goal.icon}</span>
-                  <span className="text-[13px] font-medium text-foreground truncate">{goal.name}</span>
+                  <span className="text-[13px] font-medium text-black truncate">{goal.name}</span>
                 </div>
-                <span className="text-[12px] font-semibold text-foreground tabular-nums shrink-0 ml-2">
+                <span className="text-[12px] font-semibold text-black tabular-nums shrink-0 ml-2">
                   {formatCurrency(goal.current_amount, goal.currency)}
                 </span>
               </div>
@@ -58,11 +58,11 @@ export function DashboardSavingsGoals() {
                 size="sm"
               />
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-muted-foreground/60">
+                <span className="text-[10px] text-[#837A75]/70">
                   {percent.toFixed(0)}% · Meta: {formatCurrency(goal.target_amount, goal.currency)}
                 </span>
                 {goal.auto_save_percentage > 0 && (
-                  <span className="text-[10px] text-muted-foreground/40">
+                  <span className="text-[10px] text-[#837A75]/50">
                     Auto {goal.auto_save_percentage}%
                   </span>
                 )}

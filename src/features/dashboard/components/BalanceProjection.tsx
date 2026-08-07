@@ -13,12 +13,12 @@ import type { ProjectedDay } from '@/lib/forecast/projection'
 
 function ProjectionSkeleton() {
   return (
-    <div className="bg-card rounded-3xl p-6 border border-border/40">
+    <div className="bg-[#5F7D42] card-organic p-6 border border-[#5F7D42]">
       <div className="mb-6">
-        <Skeleton className="h-4 w-36 rounded-full" />
-        <Skeleton className="h-3 w-48 rounded-full mt-1.5" />
+        <Skeleton className="h-4 w-36 rounded-full bg-white/20" />
+        <Skeleton className="h-3 w-48 rounded-full bg-white/20 mt-1.5" />
       </div>
-      <Skeleton className="h-[200px] w-full rounded-xl" />
+      <Skeleton className="h-[200px] w-full rounded-xl bg-white/20" />
     </div>
   )
 }
@@ -33,12 +33,12 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
   return (
     <ChartTooltipContainer active={active} payload={payload}>
-      <p className="text-[11px] text-muted-foreground mb-1">{formattedDate}</p>
+      <p className="text-[11px] text-[#837A75] mb-1">{formattedDate}</p>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-[12px] text-gray-500">Saldo proyectado</span>
+        <span className="text-[12px] text-[#837A75]">Saldo proyectado</span>
         <span className={cn(
           'text-[12px] font-semibold',
-          value.value >= 0 ? 'text-emerald-600' : 'text-rose-600'
+          value.value >= 0 ? 'text-[#4F6A35]' : 'text-[#B5543D]'
         )}>
           {formatCurrency(value.value, 'BOB')}
         </span>
@@ -73,39 +73,36 @@ export function BalanceProjection() {
   const { yMin, yMax, splitIndex, hasNegativeZone, startNegativeIndex } = computeChartLayout(days, first_negative_date)
 
   return (
-    <div className="bg-card rounded-3xl p-6 border border-border/40"
-      style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}>
+    <div className="bg-[#5F7D42] card-organic p-6 text-white"
+      style={{ boxShadow: '0 4px 20px -6px rgba(47,62,32,0.35), 0 1px 3px rgba(0,0,0,0.1)' }}>
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-4 h-4 text-muted-foreground" />
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">Proyección de Saldo</h3>
+            <TrendingUp className="w-4 h-4 text-[#F2F9E3]" />
+            <h3 className="text-xs font-bold text-[#F2F9E3] uppercase tracking-[0.14em]">Proyección de Saldo</h3>
           </div>
-          <p className="text-[11px] text-muted-foreground/60">
+          <p className="text-[11px] text-[#F2F9E3]/70">
             Basado en tu saldo actual, ingresos y gastos recurrentes
           </p>
         </div>
         <div className="flex items-center gap-3">
           <span className={cn(
-            'text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md',
-            confidence === 'high' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30' :
-            confidence === 'medium' ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/30' :
-            'bg-gray-50 text-gray-500 dark:bg-gray-900/30'
+            'text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-white/15 text-white',
           )}>
             {confidence === 'high' ? 'Alta confianza' : confidence === 'medium' ? 'Confianza media' : 'Estimación'}
           </span>
-          <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
+          <span className="text-2xl font-bold tracking-tight text-white tabular-nums">
             {formatCurrency(today.balance, 'BOB')}
           </span>
         </div>
       </div>
 
       {first_negative_date && (
-        <div className="mb-4 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+        <div className="mb-4 p-4 rounded-2xl bg-[#B5543D]/30 border border-[#B5543D]/50 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-[#F2F9E3] shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-rose-700 dark:text-rose-300">Saldo negativo proyectado</p>
-            <p className="text-[12px] text-rose-600/80 dark:text-rose-400/80 mt-0.5">
+            <p className="text-sm font-semibold text-white">Saldo negativo proyectado</p>
+            <p className="text-[12px] text-[#F2F9E3]/80 mt-0.5">
               Se proyecta que tu saldo llegue a negativo el {format(parseISO(first_negative_date), "d 'de' MMM", { locale: es })}.
               {confidence !== 'low' && ' Revisa tus gastos recurrentes para ajustar la proyección.'}
             </p>
@@ -118,15 +115,15 @@ export function BalanceProjection() {
           <AreaChart data={days} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.15} />
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                <stop offset="0%" stopColor="#F2F9E3" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="#F2F9E3" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#F2F9E3" strokeOpacity={0.15} />
             <XAxis
               dataKey="date"
               tickFormatter={(val) => format(parseISO(val), 'd', { locale: es })}
-              tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+              tick={{ fontSize: 10, fill: '#F2F9E3' }}
               axisLine={false}
               tickLine={false}
               dy={6}
@@ -142,27 +139,27 @@ export function BalanceProjection() {
               <ReferenceArea
                 x1={days[startNegativeIndex].date}
                 x2={days[days.length - 1].date}
-                fill="#ef4444"
-                fillOpacity={0.04}
+                fill="#B5543D"
+                fillOpacity={0.25}
               />
             )}
 
             {/* Zero line */}
-            <ReferenceLine y={0} stroke="#ef4444" strokeOpacity={0.3} strokeDasharray="4 4" />
+            <ReferenceLine y={0} stroke="#B5543D" strokeOpacity={0.5} strokeDasharray="4 4" />
 
             {/* Split line between actual and estimated */}
             {splitIndex > 0 && splitIndex < days.length && (
               <ReferenceLine
                 x={days[splitIndex].date}
-                stroke="hsl(var(--muted-foreground))"
-                strokeOpacity={0.2}
+                stroke="#F2F9E3"
+                strokeOpacity={0.3}
                 strokeDasharray="2 2"
                 label={{
                   value: 'Estimado',
                   position: 'top',
-                  fill: 'hsl(var(--muted-foreground))',
+                  fill: '#F2F9E3',
                   fontSize: 9,
-                  opacity: 0.5,
+                  opacity: 0.7,
                 }}
               />
             )}
@@ -170,33 +167,33 @@ export function BalanceProjection() {
             <Area
               type="monotone"
               dataKey="balance"
-              stroke="#10b981"
+              stroke="#F2F9E3"
               strokeWidth={2}
               fill="url(#balanceGradient)"
               dot={false}
-              activeDot={{ r: 4, strokeWidth: 0, fill: '#10b981' }}
+              activeDot={{ r: 4, strokeWidth: 0, fill: '#F2F9E3' }}
               animationDuration={1000}
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#F2F9E3]/20">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-[10px] text-muted-foreground">Real</span>
+            <div className="w-2 h-2 rounded-full bg-[#F2F9E3]" />
+            <span className="text-[10px] text-[#F2F9E3]/80">Real</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 opacity-40" />
-            <span className="text-[10px] text-muted-foreground">Proyectado</span>
+            <div className="w-2 h-2 rounded-full bg-[#F2F9E3] opacity-40" />
+            <span className="text-[10px] text-[#F2F9E3]/80">Proyectado</span>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-[10px] text-muted-foreground/60">Proyección a fin de mes</p>
+          <p className="text-[10px] text-[#F2F9E3]/70">Proyección a fin de mes</p>
           <p className={cn(
             'text-sm font-bold tabular-nums',
-            final_balance >= 0 ? 'text-emerald-600' : 'text-rose-600'
+            final_balance >= 0 ? 'text-white' : 'text-[#FFD9CC]'
           )}>
             {formatCurrency(final_balance, 'BOB')}
           </p>

@@ -483,19 +483,19 @@ export function InvestmentsWidget({
   if (investments.length === 0) {
     return (
       <div
-        className="bg-card rounded-3xl p-6 border border-border/40 cursor-pointer hover:border-indigo-200/50 transition-colors"
+        className="bg-white card-organic p-5 border border-[#E5DED2] cursor-pointer hover:border-[#5F7D42]/40 transition-colors"
         onClick={onShowCreate}
-        style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}
+        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center">
-            <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#F2F9E3] flex items-center justify-center">
+            <Icon className="w-4 h-4 text-[#5F7D42]" />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">
+            <h3 className="text-xs font-bold text-black uppercase tracking-[0.14em]">
               Inversiones
             </h3>
-            <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+            <p className="text-[11px] text-[#837A75] mt-0.5">
               Sin inversiones registradas
             </p>
           </div>
@@ -505,25 +505,24 @@ export function InvestmentsWidget({
   }
 
   return (
-    <div
-      className="bg-card rounded-3xl p-6 border border-border/40"
-      style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}
+    <div className="bg-white card-organic p-5 border border-[#E5DED2]"
+      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
     >
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center">
-            <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+          <div className="w-9 h-9 rounded-xl bg-[#F2F9E3] flex items-center justify-center">
+            <Icon className="w-4 h-4 text-[#5F7D42]" />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">
+            <h3 className="text-xs font-bold text-black uppercase tracking-[0.14em]">
               Inversiones
             </h3>
-            <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+            <p className="text-[11px] text-[#837A75] mt-0.5">
               {investments.length} registro{investments.length !== 1 ? 's' : ''}
             </p>
           </div>
         </div>
-        <span className="text-[10px] font-bold text-indigo-500 cursor-pointer hover:text-indigo-600 transition-colors">
+        <span className="text-[10px] font-bold text-[#5F7D42] cursor-pointer hover:text-[#4F6A35] transition-colors">
           Ver todas →
         </span>
       </div>
@@ -531,30 +530,30 @@ export function InvestmentsWidget({
       <div className="space-y-3 mb-4">
         {Object.entries(totalByCurrency).map(([currency, amount]) => (
           <div key={currency} className="flex items-center justify-between">
-            <span className="text-[12px] font-medium text-muted-foreground/60">
+            <span className="text-[12px] font-medium text-[#837A75]/70">
               Total invertido en {currency}
             </span>
-            <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
+            <span className="text-sm font-bold text-[#4F6A35] tabular-nums">
               {formatCurrency(amount, currency)}
             </span>
           </div>
         ))}
       </div>
 
-      <div className="divide-y divide-border/40">
+      <div className="divide-y divide-[#E5DED2]">
         {investments.slice(0, 5).map((inv) => {
           const account = accounts.find((a) => a.id === inv.account_id)
           return (
             <div key={inv.id} className="flex items-center justify-between py-2.5">
               <div className="min-w-0">
-                <p className="text-[13px] font-medium text-foreground truncate">
+                <p className="text-[13px] font-medium text-black truncate">
                   {inv.name}
                 </p>
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                <p className="text-[10px] text-[#837A75]/70 mt-0.5">
                   {account?.name ?? 'Cuenta eliminada'} · {formatInvestmentDate(inv.date)}
                 </p>
               </div>
-              <span className="text-[13px] font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums shrink-0 ml-3">
+              <span className="text-[13px] font-semibold text-[#4F6A35] tabular-nums shrink-0 ml-3">
                 {formatCurrency(inv.amount, inv.currency)}
               </span>
             </div>
@@ -563,7 +562,7 @@ export function InvestmentsWidget({
       </div>
 
       {investments.length > 5 && (
-        <p className="text-[10px] text-center text-muted-foreground/40 mt-3 font-medium">
+        <p className="text-[10px] text-center text-[#837A75]/50 mt-3 font-medium">
           +{investments.length - 5} inversiones más
         </p>
       )}

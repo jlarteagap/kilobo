@@ -5,18 +5,18 @@ import { useSankeySelection } from "./SankeySelectionContext"
 type SankeyNode = SankeyData['nodes'][number]
 
 const TYPE_COLORS: Record<string, string> = {
-  income:   '#34d399',
-  expense:  '#fb7185',
-  account:  '#60a5fa',
-  balance:  '#9ca3af',
-  project:  '#8B5CF6',
-  subtype:  '#F59E0B',
-  transfer: '#F97316',
+  income:   '#4F6A35',
+  expense:  '#B5543D',
+  account:  '#ACC18A',
+  balance:  '#837A75',
+  project:  '#7A9B57',
+  subtype:  '#D9A487',
+  transfer: '#C8D9A9',
 }
 
 const NODE_COLORS: Record<string, string> = {
-  'Ahorro/Excedente': '#34d399',
-  'Fondos Previos':   '#9ca3af',
+  'Ahorro/Excedente': '#5F7D42',
+  'Fondos Previos':   '#837A75',
 }
 
 interface SankeyNodeProps {
@@ -60,8 +60,8 @@ export function SankeyCustomNode({
 
   const nodeOpacity  = isSelected ? 1 : isDimmed ? 0.15 : 0.9
   const labelOpacity = isDimmed ? 0.2 : 0.8
-  const labelColor   = isDimmed ? '#d1d5db' : '#6b7280'
-  const strokeColor  = isSelected ? '#374151' : 'none'
+  const labelColor   = isDimmed ? '#E5DED2' : '#837A75'
+  const strokeColor  = isSelected ? '#3C5230' : 'none'
   const strokeW      = isSelected ? 2 : 0
 
   return (

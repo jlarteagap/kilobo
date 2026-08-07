@@ -154,6 +154,10 @@ Header (título + botón "+")
 
 Cada capa se valida con el usuario antes de pasar a la siguiente.
 
+## Manual de diseño
+
+Todo feature o componente futuro DEBE seguir el manual en [`docs/DESIGN-MANUAL.md`](../../DESIGN-MANUAL.md) — tokens, tipografía, formas, recetas de componentes, layout, estados y checklist de validación. Es de cumplimiento obligatorio para mantener la identidad Kilo Sage en iteraciones posteriores.
+
 ## Fuera de alcance (iteraciones posteriores)
 
 - Módulos restantes (cuentas, transacciones, deudas, presupuestos, categorías, insights, ahorros, conductor, inversiones): heredan el shell nuevo automáticamente; su piel Sage se aplica en iteraciones siguientes.

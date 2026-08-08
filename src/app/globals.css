@@ -114,8 +114,8 @@
   --destructive-foreground: #FFFFFF;
 
   /* Borders & Shadows */
-  --border: #E5DED2;
-  --input: #E5DED2;
+  --border: rgba(0,0,0,0.08);
+  --input: rgba(0,0,0,0.08);
   --ring: #5F7D42;
 
   /* Chart primitives (Sage categorical) */
@@ -138,7 +138,7 @@
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #F2F9E3;
   --sidebar-accent-foreground: #4F6A35;
-  --sidebar-border: #E5DED2;
+  --sidebar-border: rgba(0,0,0,0.08);
   --sidebar-ring: #5F7D42;
 }
 

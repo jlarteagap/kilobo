@@ -34,7 +34,8 @@ function CategoriesSkeleton() {
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-neutral-900 rounded-3xl overflow-hidden border border-neutral-200/50 dark:border-neutral-800/50"
+          className="bg-white rounded-[22px] overflow-hidden"
+          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
         >
           <Skeleton className="h-1 w-full" />
           <div className="p-5 flex items-center gap-4">
@@ -65,7 +66,8 @@ function CategoryCard({
 
   return (
     <div
-      className="group relative bg-white dark:bg-neutral-900 rounded-[2rem] overflow-hidden border border-neutral-200/50 dark:border-neutral-800/50 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1"
+      className="group relative bg-white rounded-[22px] overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] hover:-translate-y-1"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       {/* Subtle background glow */}
       <div 

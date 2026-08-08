@@ -269,22 +269,19 @@ export default function InsightsPage() {
             <div className="p-2 bg-violet-500/10 rounded-xl">
               <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-violet-500" />
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground/90">
-              Insights Financieros
-            </h1>
+            <p className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm md:text-base">
+              Período de {months} meses
+              <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+              <span className={cn(
+                "px-2 py-0.5 rounded-md text-xs font-medium",
+                from_cache ? "bg-muted/50 text-muted-foreground" : "bg-emerald-500/10 text-emerald-600"
+              )}>
+                {from_cache
+                  ? `Actualizado el ${new Date(generated_at).toLocaleDateString('es', { day: 'numeric', month: 'short' })}`
+                  : 'Recién generado'}
+              </span>
+            </p>
           </div>
-          <p className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm md:text-base">
-            Período de {months} meses
-            <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-            <span className={cn(
-              "px-2 py-0.5 rounded-md text-xs font-medium",
-              from_cache ? "bg-muted/50 text-muted-foreground" : "bg-emerald-500/10 text-emerald-600"
-            )}>
-              {from_cache
-                ? `Actualizado el ${new Date(generated_at).toLocaleDateString('es', { day: 'numeric', month: 'short' })}`
-                : 'Recién generado'}
-            </span>
-          </p>
         </div>
         <Button
           variant="outline"

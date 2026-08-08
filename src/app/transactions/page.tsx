@@ -86,13 +86,10 @@ export default function TransactionsPage() {
         {/* ── Header ── */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="w-full lg:w-auto">
-            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-              Transacciones
-            </h1>
-            <p className="text-[13px] text-gray-400 mt-0.5">
+            <p className="text-[13px] text-muted-foreground">
               {getPeriodLabel(filters.period)}
               {activeFilterCount > 0 && (
-                <span className="ml-2 text-gray-300">
+                <span className="ml-2 text-muted-foreground/60">
                   · {activeFilterCount} filtro{activeFilterCount !== 1 ? 's' : ''} activo{activeFilterCount !== 1 ? 's' : ''}
                 </span>
               )}

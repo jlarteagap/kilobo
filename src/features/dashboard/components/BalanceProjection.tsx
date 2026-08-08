@@ -33,9 +33,9 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
   return (
     <ChartTooltipContainer active={active} payload={payload}>
-      <p className="text-[11px] text-[#837A75] mb-1">{formattedDate}</p>
+      <p className="text-[11px] text-[#6E6E73] mb-1">{formattedDate}</p>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-[12px] text-[#837A75]">Saldo proyectado</span>
+        <span className="text-[12px] text-[#6E6E73]">Saldo proyectado</span>
         <span className={cn(
           'text-[12px] font-semibold',
           value.value >= 0 ? 'text-[#4F6A35]' : 'text-[#B5543D]'

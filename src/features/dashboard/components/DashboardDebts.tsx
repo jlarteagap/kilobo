@@ -83,7 +83,7 @@ export function DashboardDebts({
                       {formatCurrency(pending, debt.currency)}
                     </p>
                   </div>
-                  <div className="h-1 w-full bg-[#E5DED2] rounded-full overflow-hidden">
+                  <div className="h-1 w-full bg-[rgba(0,0,0,0.06)] rounded-full overflow-hidden">
                     <div
                       className="h-full bg-[#4F6A35] rounded-full transition-all duration-500"
                       style={{ width: `${percent}%` }}

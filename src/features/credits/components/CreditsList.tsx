@@ -44,7 +44,7 @@ function CreditsGridSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="bg-white rounded-2xl p-5 space-y-4 shadow-card">
+        <div key={i} className="bg-white rounded-[22px] p-5 space-y-4" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
           <div className="flex items-center gap-2.5">
             <Skeleton className="w-9 h-9 rounded-xl" />
             <div className="space-y-1.5">
@@ -74,7 +74,7 @@ function CreditsSummary({ credits }: { credits: Credit[] }) {
     {
       label: 'Créditos activos',
       value: `${active.length}`,
-      bg: 'bg-emerald-50',
+      bg: 'bg-[#F2F9E3]',
       emoji: '🏦',
     },
     {
@@ -86,7 +86,7 @@ function CreditsSummary({ credits }: { credits: Credit[] }) {
     {
       label: 'Saldo total',
       value: formatCurrency(totalBalance, currency),
-      bg: 'bg-gray-50',
+      bg: 'bg-[#F2F9E3]/40',
       emoji: '💰',
     },
   ]
@@ -96,14 +96,15 @@ function CreditsSummary({ credits }: { credits: Credit[] }) {
       {items.map(({ label, value, bg, emoji }) => (
         <div
           key={label}
-          className="bg-white rounded-2xl px-4 py-3.5 flex items-center gap-3 shadow-card"
+          className="bg-white rounded-[22px] px-4 py-3.5 flex items-center gap-3"
+          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
         >
           <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center text-base', bg)}>
             {emoji}
           </div>
           <div>
-            <p className="text-[11px] text-gray-400">{label}</p>
-            <p className="text-sm font-semibold text-gray-900">{value}</p>
+            <p className="text-[11px] text-[#6E6E73]">{label}</p>
+            <p className="text-sm font-semibold text-foreground">{value}</p>
           </div>
         </div>
       ))}
@@ -164,16 +165,16 @@ export function CreditsList({
       {!compact && (
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
+            <h2 className="text-xl font-semibold text-foreground tracking-tight">
               Deudas institucionales
             </h2>
-            <p className="text-[13px] text-gray-400 mt-0.5">
+            <p className="text-[13px] text-[#6E6E73] mt-0.5">
               Créditos bancarios, vehiculares, tarjetas y más
             </p>
           </div>
           <Button
             onClick={() => setDialog({ mode: 'create' })}
-            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+            className="gap-2 bg-[#4F6A35] hover:bg-[#3C5230] text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
           >
             <Plus className="w-4 h-4" />
             Nueva
@@ -186,7 +187,7 @@ export function CreditsList({
 
       {/* Filter tabs */}
       {!isLoading && credits.length > 0 && (
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
+        <div className="flex gap-1 p-1 bg-[#F2F9E3]/40 rounded-xl w-fit">
           {FILTER_TABS.map((tab) => (
             <button
               key={tab.value}
@@ -195,8 +196,8 @@ export function CreditsList({
               className={cn(
                 'text-xs font-medium rounded-lg transition-all duration-200 px-3 py-1.5',
                 activeFilter === tab.value
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600'
+                  ? 'bg-white text-foreground shadow-sm'
+                  : 'text-[#6E6E73] hover:text-[#6E6E73]'
               )}
             >
               {tab.label}
@@ -238,7 +239,7 @@ export function CreditsList({
         open={dialog.mode === 'create'}
         onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
       >
-        <DialogContent className="sm:max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md rounded-[22px] border-none max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
               Nuevo crédito institucional
@@ -255,7 +256,7 @@ export function CreditsList({
         open={dialog.mode === 'detail'}
         onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
       >
-        <DialogContent className="sm:max-w-3xl rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-3xl rounded-[22px] border-none max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
               {dialog.mode === 'detail' && dialog.credit.institution}
@@ -288,7 +289,7 @@ export function CreditsList({
         open={dialog.mode === 'pay'}
         onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
       >
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-[22px] border-none">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
               Pagar cuota
@@ -323,7 +324,7 @@ export function CreditsList({
         open={!!pendingCancel}
         onOpenChange={(open) => !open && setPendingCancel(null)}
       >
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-[22px] border-none">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Cancelar este crédito?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -355,7 +356,7 @@ export function CreditsList({
         open={!!pendingDelete}
         onOpenChange={(open) => !open && setPendingDelete(null)}
       >
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-[22px] border-none">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar este crédito?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -367,7 +368,7 @@ export function CreditsList({
             <AlertDialogCancel className="rounded-xl">Volver</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white"
+              className="rounded-xl bg-[#B5543D] hover:bg-[#B5543D]/90 text-white"
             >
               Eliminar
             </AlertDialogAction>

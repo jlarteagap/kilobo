@@ -248,8 +248,8 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
 
         {/* Top Tip */}
         {topTip && (
-          <div className="rounded-xl px-3 py-2.5 flex items-start gap-3 bg-emerald-500/8 border border-emerald-500/20">
-            <Lightbulb className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+          <div className="rounded-xl px-3 py-2.5 flex items-start gap-3 bg-[#F2F9E3] border border-[#C8D9A9]/40">
+            <Lightbulb className="h-4 w-4 mt-0.5 text-[#4F6A35] shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium">Tip de ahorro</p>
               <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">

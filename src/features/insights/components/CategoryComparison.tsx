@@ -155,7 +155,7 @@ export function CategoryComparison({ trends }: Props) {
               ) : (
                 <span className={cn(
                   "font-bold font-mono flex items-center gap-0.5",
-                  isUp ? "text-red-400" : "text-emerald-400"
+                  isUp ? "text-[#B5543D]" : "text-[#4F6A35]"
                 )}>
                   {isUp ? '+' : ''}{Math.round(deltaPct * 10) / 10}%
                 </span>
@@ -355,8 +355,8 @@ export function CategoryComparison({ trends }: Props) {
                         t.deltaVal === 0
                           ? "bg-muted/50 text-muted-foreground"
                           : isUp
-                          ? "bg-red-500/10 text-red-500"
-                          : "bg-emerald-500/10 text-emerald-500"
+                          ? "bg-[#FAEDE9] text-[#B5543D]"
+                          : "bg-[#F2F9E3] text-[#4F6A35]"
                       )}
                     >
                       {t.deltaVal === 0 ? (
@@ -400,7 +400,7 @@ export function CategoryComparison({ trends }: Props) {
                       <span className="text-muted-foreground/60 font-medium">Progreso Comparativo</span>
                       <span className={cn(
                         "font-semibold flex items-center gap-0.5",
-                        isUp ? "text-rose-500" : "text-emerald-500"
+                        isUp ? "text-[#B5543D]" : "text-[#4F6A35]"
                       )}>
                         {isUp ? `+${absDeltaPct}% incremento` : `-${absDeltaPct}% ahorro`}
                       </span>
@@ -442,9 +442,9 @@ export function CategoryComparison({ trends }: Props) {
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <div className={cn("w-2 h-2 rounded", isUp ? "bg-rose-500" : "bg-emerald-500")} />
+                        <div className={cn("w-2 h-2 rounded", isUp ? "bg-[#B5543D]" : "bg-[#4F6A35]")} />
                         <span className="text-muted-foreground/70">
-                          {currentMonthName.split(' ')[0]}: <span className={cn("font-bold font-mono", isUp ? "text-rose-500" : "text-emerald-500")}>{formatCurrency(t.currentVal)}</span>
+                          {currentMonthName.split(' ')[0]}: <span className={cn("font-bold font-mono", isUp ? "text-[#B5543D]" : "text-[#4F6A35]")}>{formatCurrency(t.currentVal)}</span>
                         </span>
                       </div>
                     </div>
@@ -456,11 +456,11 @@ export function CategoryComparison({ trends }: Props) {
                       "Mantuviste exactamente el mismo nivel de gasto."
                     ) : isUp ? (
                       <span>
-                        Gastaste <strong className="text-red-400 font-semibold tabular-nums">{formatCurrency(absDeltaVal)}</strong> más que el periodo anterior.
+                        Gastaste <strong className="text-[#B5543D] font-semibold tabular-nums">{formatCurrency(absDeltaVal)}</strong> más que el periodo anterior.
                       </span>
                     ) : (
                       <span>
-                        Ahorraste <strong className="text-emerald-400 font-semibold tabular-nums">{formatCurrency(absDeltaVal)}</strong> en esta categoría.
+                        Ahorraste <strong className="text-[#4F6A35] font-semibold tabular-nums">{formatCurrency(absDeltaVal)}</strong> en esta categoría.
                       </span>
                     )}
                   </div>

@@ -52,12 +52,12 @@ export function PayInstallmentsForm({
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
 
         {/* ── Resumen de la cuota ── */}
-        <div className="flex items-center gap-3 px-3 py-2.5 bg-gray-50 rounded-xl">
+        <div className="flex items-center gap-3 px-3 py-2.5 bg-[#F2F9E3]/40 rounded-xl">
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-gray-800 truncate">
+            <p className="text-[13px] font-semibold text-foreground truncate">
               {credit.institution}
             </p>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-[#6E6E73]">
               Cuota #{installment.number} · {formatCurrency(installment.total_amount, credit.currency)}
             </p>
           </div>
@@ -69,7 +69,7 @@ export function PayInstallmentsForm({
           name="amount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Monto a pagar
               </FormLabel>
               <FormControl>
@@ -78,7 +78,7 @@ export function PayInstallmentsForm({
                   step="0.01"
                   placeholder="0.00"
                   {...field}
-                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -92,7 +92,7 @@ export function PayInstallmentsForm({
           name="account_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Cuenta origen
               </FormLabel>
               <Select
@@ -100,7 +100,7 @@ export function PayInstallmentsForm({
                 value={field.value as string}
               >
                 <FormControl>
-                  <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                  <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                     <SelectValue placeholder="Seleccionar cuenta" />
                   </SelectTrigger>
                 </FormControl>
@@ -116,10 +116,10 @@ export function PayInstallmentsForm({
               {account && (
                 <div className={cn(
                   'flex items-center justify-between px-3 py-2 rounded-xl text-[12px] mt-2',
-                  isOverBalance ? 'bg-rose-50 text-rose-500' : 'bg-gray-50 text-gray-400'
+                  isOverBalance ? 'bg-[#FAEDE9] text-[#B5543D]' : 'bg-[#F2F9E3]/40 text-[#6E6E73]'
                 )}>
                   <span>Balance disponible</span>
-                  <span className={cn('font-semibold', isOverBalance && 'text-rose-600')}>
+                  <span className={cn('font-semibold', isOverBalance && 'text-[#B5543D]')}>
                     {formatCurrency(account.balance, account.currency)}
                     {isOverBalance && (
                       <span className="ml-1.5 font-normal">· insuficiente</span>

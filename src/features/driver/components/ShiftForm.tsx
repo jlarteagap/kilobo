@@ -165,21 +165,23 @@ export function ShiftForm({
   const isEditMode = !!initialData?.id
 
   return (
-    <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 bg-white dark:bg-neutral-900/50 p-4 sm:p-6 space-y-6">
+    <div className="rounded-[22px] bg-white dark:bg-neutral-900/50 p-4 sm:p-6 space-y-6"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-neutral-900 dark:bg-white flex items-center justify-center text-white dark:text-black">
+          <div className="size-10 rounded-xl bg-[#4F6A35] dark:bg-white flex items-center justify-center text-white dark:text-black">
             <Receipt className="size-5" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+            <h3 className="text-sm font-bold text-foreground dark:text-neutral-100 tracking-[-0.01em]">
               {isEditMode ? 'Editar Turno' : 'Registrar Turno'}
             </h3>
-            <p className="text-[11px] text-neutral-500">Registro manual — se genera al final del día</p>
+            <p className="text-[11px] text-[#6E6E73]">Registro manual — se genera al final del día</p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={onCancel} className="size-8 rounded-lg text-neutral-400">
+        <Button variant="ghost" size="icon" onClick={onCancel} className="size-8 rounded-lg text-[#6E6E73]">
           <X className="size-4" />
         </Button>
       </div>
@@ -188,18 +190,18 @@ export function ShiftForm({
         {/* ── Fecha + Horas ── */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Fecha</Label>
+            <Label className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Fecha</Label>
             <Input
               type="date"
               value={date}
               max={localDateStr(new Date())}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="h-12 bg-transparent border-t-0 border-x-0 border-b border-neutral-100 dark:border-neutral-900 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none text-sm font-medium"
+              className="h-12 bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-sm font-medium"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Horas trabajadas</Label>
+            <Label className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Horas trabajadas</Label>
             <Input
               type="number"
               step="0.25"
@@ -209,14 +211,14 @@ export function ShiftForm({
               onChange={(e) => setHoursWorked(e.target.value)}
               placeholder="Ej: 8"
               required
-              className="h-12 bg-transparent border-t-0 border-x-0 border-b border-neutral-100 dark:border-neutral-900 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none text-sm font-medium tabular-nums"
+              className="h-12 bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-sm font-medium tabular-nums"
             />
           </div>
         </div>
 
         {/* ── Odómetro ── */}
         <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">
+          <Label className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">
             Odómetro (últimos 3 dígitos)
           </Label>
           <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
@@ -231,11 +233,11 @@ export function ShiftForm({
                   if (val.length <= 3) setStartKm(val)
                 }}
                 placeholder="Inicio"
-                className="h-12 bg-transparent border-t-0 border-x-0 border-b border-neutral-100 dark:border-neutral-900 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none text-xl font-light tabular-nums text-center"
+                className="h-12 bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-xl font-light tabular-nums text-center"
               />
-              <p className="text-[9px] text-neutral-400 text-center mt-1 uppercase tracking-wider">Inicio</p>
+              <p className="text-[9px] text-[#6E6E73] text-center mt-1 uppercase tracking-wider">Inicio</p>
             </div>
-            <span className="text-neutral-300 text-lg pb-2">→</span>
+            <span className="text-[#6E6E73]/60 text-lg pb-2">→</span>
             <div>
               <Input
                 type="number"
@@ -247,13 +249,13 @@ export function ShiftForm({
                   if (val.length <= 3) setEndKm(val)
                 }}
                 placeholder="Fin"
-                className="h-12 bg-transparent border-t-0 border-x-0 border-b border-neutral-100 dark:border-neutral-900 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none text-xl font-light tabular-nums text-center"
+                className="h-12 bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-xl font-light tabular-nums text-center"
               />
-              <p className="text-[9px] text-neutral-400 text-center mt-1 uppercase tracking-wider">Fin</p>
+              <p className="text-[9px] text-[#6E6E73] text-center mt-1 uppercase tracking-wider">Fin</p>
             </div>
           </div>
           {kmPreview != null && (
-            <p className="text-[11px] text-emerald-600 font-semibold text-center">
+            <p className="text-[11px] text-[#4F6A35] font-semibold text-center">
               +{kmPreview} km recorridos
             </p>
           )}
@@ -261,10 +263,10 @@ export function ShiftForm({
 
         {/* ── Ingresos por app ── */}
         <div className="space-y-4">
-          <p className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Ingresos por app</p>
+          <p className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Ingresos por app</p>
 
           {/* Header de columnas */}
-          <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr] gap-2 text-[9px] uppercase tracking-wider text-neutral-400 font-bold px-1">
+          <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr] gap-2 text-[9px] uppercase tracking-wider text-[#6E6E73] font-bold px-1">
             <span>App</span>
             <span>Efectivo</span>
             <span>Tarjeta</span>
@@ -291,13 +293,13 @@ export function ShiftForm({
         {/* ── Gastos del turno ── */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Gastos del turno</p>
+            <p className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Gastos del turno</p>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={addExpense}
-              className="h-7 text-[10px] font-bold text-emerald-600 hover:text-emerald-700"
+              className="h-7 text-[10px] font-bold text-[#4F6A35] hover:text-[#3C5230]"
             >
               <Plus className="size-3 mr-1" />
               Agregar
@@ -305,7 +307,7 @@ export function ShiftForm({
           </div>
 
           {expenses.length === 0 && (
-            <p className="text-[11px] text-neutral-400 italic text-center py-4">Sin gastos registrados</p>
+            <p className="text-[11px] text-[#6E6E73] italic text-center py-4">Sin gastos registrados</p>
           )}
 
           <div className="space-y-2">
@@ -322,12 +324,12 @@ export function ShiftForm({
 
         {/* ── Notas ── */}
         <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Notas</Label>
+          <Label className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Notas</Label>
           <Input
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Lluvia, tráfico, eventos…"
-            className="h-12 bg-transparent border-t-0 border-x-0 border-b border-neutral-100 dark:border-neutral-900 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none"
+            className="h-12 bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none"
           />
         </div>
 
@@ -337,11 +339,11 @@ export function ShiftForm({
         {/* ── Acciones ── */}
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}
-            className="flex-1 h-12 rounded-xl border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">
+            className="flex-1 h-12 rounded-xl border-[rgba(0,0,0,0.06)] dark:border-neutral-800 text-[#6E6E73] dark:text-neutral-400 font-semibold">
             Cancelar
           </Button>
           <Button type="submit" disabled={isPending || (totals.gross === 0 && totals.totalExpenses === 0)}
-            className="flex-1 h-12 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-black font-semibold shadow-lg active:scale-[0.98] transition-all">
+            className="flex-1 h-12 rounded-xl bg-[#4F6A35] hover:bg-[#3C5230] dark:bg-white text-white dark:text-black font-semibold shadow-lg active:scale-[0.98] transition-all">
             {isPending ? (
               <span className="flex items-center gap-2">
                 <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -382,7 +384,7 @@ function AppRow({
 
   return (
     <div className={`grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr] gap-2 items-center rounded-xl border p-2.5 ${borderColors[app]} bg-white dark:bg-neutral-900/20`}>
-      <span className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300">{label}</span>
+      <span className="text-[11px] font-bold text-foreground dark:text-neutral-300">{label}</span>
       <CellInput value={earnings.CASH} onChange={(v) => onEarningsChange('CASH', v)} />
       <CellInput value={earnings.CARD} onChange={(v) => onEarningsChange('CARD', v)} />
       <CellInput value={earnings.QR} onChange={(v) => onEarningsChange('QR', v)} />
@@ -401,7 +403,7 @@ function CellInput({ value, onChange }: { value: number; onChange: (val: string)
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
       placeholder="0"
-      className="h-9 bg-transparent border-0 rounded-lg text-xs font-semibold tabular-nums text-center focus:ring-0 focus:bg-neutral-50 dark:focus:bg-neutral-800"
+      className="h-9 bg-transparent border-0 rounded-lg text-xs font-semibold tabular-nums text-center focus:ring-0 focus:bg-[#F2F9E3]/40 dark:focus:bg-neutral-800"
     />
   )
 }
@@ -419,7 +421,7 @@ function ExpenseRow({
       <select
         value={expense.type}
         onChange={(e) => onChange('type', e.target.value)}
-        className="h-10 rounded-lg bg-transparent border border-neutral-100 dark:border-neutral-800 text-xs font-medium px-2 focus:outline-none focus:border-emerald-500"
+        className="h-10 rounded-lg bg-transparent border border-[rgba(0,0,0,0.06)] dark:border-neutral-800 text-xs font-medium px-2 focus:outline-none focus:border-[#4F6A35]"
       >
         {EXPENSE_TYPES.map((t) => (
           <option key={t} value={t}>{EXPENSE_TYPE_LABELS[t]}</option>
@@ -432,19 +434,19 @@ function ExpenseRow({
         value={expense.amount || ''}
         onChange={(e) => onChange('amount', e.target.value)}
         placeholder="Monto"
-        className="h-10 bg-transparent border border-neutral-100 dark:border-neutral-800 rounded-lg text-xs font-semibold tabular-nums w-24 focus:ring-0"
+        className="h-10 bg-transparent border border-[rgba(0,0,0,0.06)] dark:border-neutral-800 rounded-lg text-xs font-semibold tabular-nums w-24 focus:ring-0"
       />
       <select
         value={expense.paymentMethod}
         onChange={(e) => onChange('paymentMethod', e.target.value)}
-        className="h-10 rounded-lg bg-transparent border border-neutral-100 dark:border-neutral-800 text-xs font-medium px-2 focus:outline-none focus:border-emerald-500"
+        className="h-10 rounded-lg bg-transparent border border-[rgba(0,0,0,0.06)] dark:border-neutral-800 text-xs font-medium px-2 focus:outline-none focus:border-[#4F6A35]"
       >
         {(['CASH', 'QR'] as PaymentMethod[]).map((m) => (
           <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m]}</option>
         ))}
       </select>
       <Button type="button" variant="ghost" size="icon" onClick={onRemove}
-        className="size-8 rounded-lg text-neutral-300 hover:text-red-500 shrink-0">
+        className="size-8 rounded-lg text-[#6E6E73]/60 hover:text-[#B5543D] shrink-0">
         <Trash2 className="size-3.5" />
       </Button>
     </div>
@@ -463,34 +465,34 @@ function SummaryCard({ totals, hoursWorked }: {
   if (totals.gross === 0 && totals.totalExpenses === 0) return null
 
   return (
-    <div className="rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-100 dark:border-neutral-800 p-4 space-y-2.5 text-[12px]">
-      <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-neutral-400 font-bold">
+    <div className="rounded-xl bg-[#F2F9E3]/40 dark:bg-neutral-900/40 border border-[rgba(0,0,0,0.06)] dark:border-neutral-800 p-4 space-y-2.5 text-[12px]">
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">
         <Receipt className="size-3" />
         Resumen
       </div>
 
       <div className="space-y-1">
-        <Row label="Efectivo" value={totals.totalCash} color="text-emerald-600" />
+        <Row label="Efectivo" value={totals.totalCash} color="text-[#4F6A35]" />
         <Row label="Tarjeta" value={totals.totalCard} color="text-blue-600" />
         <Row label="QR" value={totals.totalQr} color="text-purple-600" />
         <Row label="Bonos" value={totals.totalBonuses} color="text-amber-600" />
-        <div className="border-t border-neutral-200 dark:border-neutral-700 pt-1 mt-1">
-          <Row label="Total bruto" value={totals.gross} color="text-neutral-900 dark:text-neutral-100 font-bold" />
+        <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-neutral-700 pt-1 mt-1">
+          <Row label="Total bruto" value={totals.gross} color="text-foreground dark:text-neutral-100 font-bold" />
         </div>
-        <Row label="Pendiente en app (tarjeta + bonos)" value={-totals.pending} color="text-neutral-400" />
-        <Row label="Comisiones" value={-totals.totalCommissions} color="text-rose-400" />
-        <Row label="Gastos" value={-totals.totalExpenses} color="text-rose-400" />
+        <Row label="Pendiente en app (tarjeta + bonos)" value={-totals.pending} color="text-[#6E6E73]" />
+        <Row label="Comisiones" value={-totals.totalCommissions} color="text-[#B5543D]" />
+        <Row label="Gastos" value={-totals.totalExpenses} color="text-[#B5543D]" />
       </div>
 
-      <div className="border-t-2 border-neutral-300 dark:border-neutral-600 pt-2 flex justify-between items-center">
-        <span className="text-[11px] font-bold text-neutral-500 uppercase tracking-wide">Neto líquido</span>
-        <span className={`text-base font-bold tabular-nums ${totals.liquid >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+      <div className="border-t-2 border-[rgba(0,0,0,0.16)] dark:border-neutral-600 pt-2 flex justify-between items-center">
+        <span className="text-[11px] font-bold text-[#6E6E73] uppercase tracking-wide">Neto líquido</span>
+        <span className={`text-base font-bold tabular-nums ${totals.liquid >= 0 ? 'text-[#4F6A35]' : 'text-[#B5543D]'}`}>
           Bs {totals.liquid.toFixed(2)}
         </span>
       </div>
 
       {hoursWorked > 0 && (
-        <p className="text-[10px] text-neutral-400 text-right">
+        <p className="text-[10px] text-[#6E6E73] text-right">
           {totals.liquid / hoursWorked > 0
             ? `Bs ${(totals.liquid / hoursWorked).toFixed(2)}/hora`
             : `Bs 0.00/hora`}
@@ -504,7 +506,7 @@ function Row({ label, value, color }: { label: string; value: number; color: str
   if (value === 0) return null
   return (
     <div className="flex justify-between items-center">
-      <span className="text-neutral-500">{label}</span>
+      <span className="text-[#6E6E73]">{label}</span>
       <span className={`tabular-nums font-semibold ${color}`}>
         {value > 0 ? '+' : ''}{value.toFixed(2)}
       </span>

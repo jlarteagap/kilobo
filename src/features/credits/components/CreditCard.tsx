@@ -37,10 +37,10 @@ export function CreditCard({
   return (
     <div
       className={cn(
-        'bg-white rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 group shadow-card-hover',
-        'hover:shadow-md',
+        'bg-white rounded-[22px] p-5 flex flex-col gap-4 transition-all duration-200 group',
         isPaid && 'opacity-60'
       )}
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
@@ -51,15 +51,15 @@ export function CreditCard({
         >
           <div className={cn(
             'w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0',
-            isActive ? 'bg-emerald-50' : 'bg-gray-50'
+            isActive ? 'bg-[#F2F9E3]' : 'bg-[#F2F9E3]/40'
           )}>
             {typeConfig.emoji}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">
+            <p className="text-sm font-semibold text-foreground truncate">
               {credit.institution}
             </p>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-[#6E6E73]">
               {typeConfig.label}
             </p>
           </div>
@@ -77,10 +77,10 @@ export function CreditCard({
       {/* Amount */}
       <div className="flex items-end justify-between gap-2">
         <div>
-          <p className="text-[11px] text-gray-400 mb-0.5">
+          <p className="text-[11px] text-[#6E6E73] mb-0.5">
             {isActive ? 'Saldo actual' : 'Monto original'}
           </p>
-          <p className="text-xl font-semibold tracking-tight text-gray-900">
+          <p className="text-xl font-semibold tracking-tight text-foreground">
             {formatCurrency(
               isActive ? credit.current_balance : credit.original_amount,
               credit.currency
@@ -88,10 +88,10 @@ export function CreditCard({
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] text-gray-400 mb-0.5">
+          <p className="text-[11px] text-[#6E6E73] mb-0.5">
             {credit.paid_installments}/{credit.total_installments}
           </p>
-          <p className="text-sm font-medium text-gray-500">cuotas</p>
+          <p className="text-sm font-medium text-[#6E6E73]">cuotas</p>
         </div>
       </div>
 
@@ -107,25 +107,25 @@ export function CreditCard({
       {nextInstallment && isActive && (
         <div className={cn(
           'flex items-center justify-between px-3 py-2 rounded-xl text-[12px]',
-          isOverdue ? 'bg-rose-50' : 'bg-gray-50'
+          isOverdue ? 'bg-[#FAEDE9]' : 'bg-[#F2F9E3]/40'
         )}>
           <div className="flex items-center gap-1.5">
-            <span className={isOverdue ? 'text-rose-500' : 'text-gray-400'}>
+            <span className={isOverdue ? 'text-[#B5543D]' : 'text-[#6E6E73]'}>
               {isOverdue ? '🔴' : '📅'}
             </span>
             <span className={cn(
               'font-medium',
-              isOverdue ? 'text-rose-600' : 'text-gray-600'
+              isOverdue ? 'text-[#B5543D]' : 'text-foreground'
             )}>
               {isOverdue ? 'Vencida' : 'Próxima'}:
             </span>
-            <span className="text-gray-500">
+            <span className="text-[#6E6E73]">
               {new Date(nextInstallment.due_date).toLocaleDateString('es-ES', {
                 day: 'numeric', month: 'short'
               })}
             </span>
           </div>
-          <span className="font-semibold text-gray-900">
+          <span className="font-semibold text-foreground">
             {formatCurrency(nextInstallment.total_amount, credit.currency)}
           </span>
         </div>
@@ -133,7 +133,7 @@ export function CreditCard({
 
       {!isActive && (
         <div className="text-center py-1">
-          <span className="text-[12px] text-gray-400">
+          <span className="text-[12px] text-[#6E6E73]">
             {isPaid
               ? `Pagado el ${new Date(credit.updated_at).toLocaleDateString('es-ES')}`
               : 'Crédito cancelado'
@@ -143,7 +143,7 @@ export function CreditCard({
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-2 pt-1 border-t border-gray-50">
+      <div className="flex items-center gap-2 pt-1 border-t border-[rgba(0,0,0,0.06)]">
         {isActive && (
           <button
             type="button"
@@ -151,8 +151,8 @@ export function CreditCard({
             className={cn(
               'flex-1 py-2 rounded-xl text-xs font-semibold transition-all duration-200',
               isOverdue
-                ? 'bg-rose-500 hover:bg-rose-600 text-white'
-                : 'bg-gray-900 hover:bg-gray-800 text-white'
+                ? 'bg-[#B5543D] hover:bg-[#B5543D]/90 text-white'
+                : 'bg-[#4F6A35] hover:bg-[#3C5230] text-white'
             )}
           >
             {isOverdue ? 'Pagar vencida' : 'Pagar cuota'}
@@ -164,7 +164,7 @@ export function CreditCard({
             type="button"
             onClick={() => onCancel(credit)}
             title="Cancelar crédito"
-            className="p-2 rounded-xl text-gray-300 hover:text-orange-500 hover:bg-orange-50 transition-all duration-150"
+            className="p-2 rounded-xl text-[#6E6E73] hover:text-orange-500 hover:bg-orange-50 transition-all duration-150"
           >
             <XCircle className="w-4 h-4" />
           </button>
@@ -175,7 +175,7 @@ export function CreditCard({
             type="button"
             onClick={() => onDelete(credit)}
             title="Eliminar"
-            className="p-2 rounded-xl text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-all duration-150"
+            className="p-2 rounded-xl text-[#6E6E73] hover:text-[#B5543D] hover:bg-[#FAEDE9] transition-all duration-150"
           >
             <Trash2 className="w-4 h-4" />
           </button>

@@ -29,9 +29,10 @@ export function SavingsGoalCard({ goal, onEdit, onArchive, onDelete }: SavingsGo
   return (
     <div
       className={cn(
-        'bg-card rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 group border border-border/40 shadow-sm',
-        isActive && !isCompleted ? 'hover:shadow-md' : 'opacity-60'
+        'bg-white rounded-[22px] p-5 flex flex-col gap-4 transition-all duration-200 group',
+        isActive && !isCompleted ? '' : 'opacity-60'
       )}
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -45,7 +46,7 @@ export function SavingsGoalCard({ goal, onEdit, onArchive, onDelete }: SavingsGo
             {goal.deadline && (
               <p className={cn(
                 'text-[11px]',
-                isExpired ? 'text-rose-500' : 'text-muted-foreground'
+                isExpired ? 'text-[#B5543D]' : 'text-muted-foreground'
               )}>
                 {isExpired ? `${Math.abs(daysRemaining!)}d vencido` : `${daysRemaining}d restantes`}
               </p>
@@ -76,7 +77,7 @@ export function SavingsGoalCard({ goal, onEdit, onArchive, onDelete }: SavingsGo
             <button
               onClick={() => onDelete(goal)}
               title="Eliminar"
-              className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all duration-150"
+              className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-[#B5543D] hover:bg-[#FAEDE9] transition-all duration-150"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -109,7 +110,7 @@ export function SavingsGoalCard({ goal, onEdit, onArchive, onDelete }: SavingsGo
 
       <div className="flex items-center justify-between pt-1 border-t border-border/40">
         {isCompleted ? (
-          <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-full">
+          <span className="text-[11px] font-semibold text-[#4F6A35] bg-[#F2F9E3] px-2.5 py-1 rounded-full">
             🎉 Completada
           </span>
         ) : (

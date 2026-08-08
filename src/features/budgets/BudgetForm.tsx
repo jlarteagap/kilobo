@@ -137,7 +137,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Tipo
               </FormLabel>
               <FormControl>
@@ -154,21 +154,21 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                       className={cn(
                         'flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200',
                         field.value === value
-                          ? 'border-gray-900 bg-gray-900 text-white'
-                          : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200 hover:bg-white'
+                          ? 'border-[#4F6A35] bg-[#4F6A35] text-white'
+                          : 'border-[rgba(0,0,0,0.06)] bg-[#F2F9E3]/40 text-[#6E6E73] hover:border-[rgba(0,0,0,0.12)] hover:bg-white'
                       )}
                     >
                       <span className="text-xl flex-shrink-0">{emoji}</span>
                       <div>
                         <p className={cn(
                           'text-[13px] font-semibold',
-                          field.value === value ? 'text-white' : 'text-gray-700'
+                          field.value === value ? 'text-white' : 'text-foreground'
                         )}>
                           {label}
                         </p>
                         <p className={cn(
                           'text-[11px] leading-tight mt-0.5',
-                          field.value === value ? 'text-gray-300' : 'text-gray-400'
+                          field.value === value ? 'text-white/70' : 'text-[#6E6E73]'
                         )}>
                           {description}
                         </p>
@@ -188,7 +188,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Nombre
               </FormLabel>
               <FormControl>
@@ -196,7 +196,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                   placeholder="Ej: Alquiler del auto, Uber, Ahorro viaje…"
                   {...field}
                   value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ""}
-                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -211,7 +211,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
             name="target_amount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   {type === 'INCOME_SOURCE' ? 'Meta de ingreso' : 'Monto'}
                 </FormLabel>
                 <FormControl>
@@ -221,7 +221,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                     placeholder="0.00"
                     {...field}
                     value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ""}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -233,12 +233,12 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
             name="currency"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Moneda
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value as string}>
                   <FormControl>
-                    <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                    <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                       <SelectValue placeholder="Moneda" />
                     </SelectTrigger>
                   </FormControl>
@@ -261,9 +261,9 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
             name="due_day"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Día de vencimiento
-                  <span className="text-gray-400 font-normal ml-1">(día del mes)</span>
+                  <span className="text-[#6E6E73] font-normal ml-1">(día del mes)</span>
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -274,7 +274,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                     {...field}
                     value={(typeof field.value === 'string' || typeof field.value === 'number') ? field.value : ""}
                     onChange={(e) => field.onChange(e.target.value ? +e.target.value : null)}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -284,7 +284,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
         )}
 
         <div>
-          <p className="text-[13px] font-medium text-gray-600 mb-2">Vincular a</p>
+          <p className="text-[13px] font-medium text-foreground mb-2">Vincular a</p>
           <SegmentedControl
             value={mode}
             onChange={setMode}
@@ -303,14 +303,14 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
             name="category_ids"
             render={() => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Categorías vinculadas
-                  <span className="text-gray-400 font-normal ml-1">
+                  <span className="text-[#6E6E73] font-normal ml-1">
                     ({categoryIds.length} seleccionadas)
                   </span>
                 </FormLabel>
                 {relevantCategories.length === 0 ? (
-                  <div className="py-3 px-4 bg-gray-50 rounded-xl text-[12px] text-gray-400">
+                  <div className="py-3 px-4 bg-[#F2F9E3]/40 rounded-xl text-[12px] text-[#6E6E73]">
                     No hay categorías de tipo{' '}
                     {type === 'INCOME_SOURCE' ? 'ingreso' : 'gasto'}.
                   </div>
@@ -327,8 +327,8 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                             'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-medium',
                             'border transition-all duration-150',
                             isSelected
-                              ? 'border-gray-900 bg-gray-900 text-white'
-                              : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200'
+                              ? 'border-[#4F6A35] bg-[#4F6A35] text-white'
+                              : 'border-[rgba(0,0,0,0.06)] bg-[#F2F9E3]/40 text-[#6E6E73] hover:border-[rgba(0,0,0,0.12)]'
                           )}
                         >
                           <div
@@ -357,7 +357,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
               name="project_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-600">
+                  <FormLabel className="text-[13px] font-medium text-foreground">
                     Actividad
                   </FormLabel>
                   <Select
@@ -365,13 +365,13 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                     value={typeof field.value === 'string' ? field.value : "none"}
                   >
                     <FormControl>
-                      <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                      <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                         <SelectValue placeholder="Seleccionar actividad" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="none">
-                        <span className="text-gray-400">Seleccionar actividad</span>
+                        <span className="text-[#6E6E73]">Seleccionar actividad</span>
                       </SelectItem>
                       {projects.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
@@ -395,13 +395,13 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                 name="subtypes"
                 render={() => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-gray-600">
+                    <FormLabel className="text-[13px] font-medium text-foreground">
                       Etiquetas
-                      <span className="text-gray-400 font-normal ml-1">
+                      <span className="text-[#6E6E73] font-normal ml-1">
                         ({subtypes.length === 0 ? 'todas' : `${subtypes.length} seleccionadas`})
                       </span>
                     </FormLabel>
-                    <p className="text-[11px] text-gray-400 -mt-1">
+                    <p className="text-[11px] text-[#6E6E73] -mt-1">
                       Sin selección = aplica a todas las etiquetas de la actividad
                     </p>
                     <div className="flex flex-wrap gap-1.5 mt-1">
@@ -416,7 +416,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                               'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 border',
                               isSelected
                                 ? 'text-white border-transparent'
-                                : 'bg-gray-50 text-gray-500 border-gray-100 hover:border-gray-200'
+                                : 'bg-[#F2F9E3]/40 text-[#6E6E73] border-[rgba(0,0,0,0.06)] hover:border-[rgba(0,0,0,0.12)]'
                             )}
                             style={isSelected ? {
                               backgroundColor: selectedProject.color,
@@ -436,7 +436,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
 
             {/* Actividad sin etiquetas definidas */}
             {selectedProject && selectedProject.subtypes.length === 0 && (
-              <div className="py-3 px-4 bg-gray-50 rounded-xl text-[12px] text-gray-400">
+              <div className="py-3 px-4 bg-[#F2F9E3]/40 rounded-xl text-[12px] text-[#6E6E73]">
                 Esta actividad no tiene etiquetas definidas. El presupuesto
                 aplica a todos sus movimientos.
               </div>

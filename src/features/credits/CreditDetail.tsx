@@ -29,10 +29,10 @@ export function CreditDetail({
   const isPaidAll   = activeInsts.length === 0
 
   const summaryCards = [
-    { label: 'Original',  value: formatCurrency(credit.original_amount, credit.currency), color: 'text-gray-900' },
-    { label: 'Saldo',     value: formatCurrency(credit.current_balance, credit.currency), color: 'text-emerald-600' },
-    { label: 'Tasa',      value: `${credit.annual_interest_rate}% anual`, color: 'text-gray-600' },
-    { label: 'Plazo',     value: `${credit.total_installments} meses`, color: 'text-gray-600' },
+    { label: 'Original',  value: formatCurrency(credit.original_amount, credit.currency), color: 'text-foreground' },
+    { label: 'Saldo',     value: formatCurrency(credit.current_balance, credit.currency), color: 'text-[#4F6A35]' },
+    { label: 'Tasa',      value: `${credit.annual_interest_rate}% anual`, color: 'text-foreground' },
+    { label: 'Plazo',     value: `${credit.total_installments} meses`, color: 'text-foreground' },
   ]
 
   if (payMode) {
@@ -42,11 +42,11 @@ export function CreditDetail({
 
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100">
+        <div className="flex items-center gap-2.5 pb-3 border-b border-[rgba(0,0,0,0.06)]">
           <span className="text-xl">{typeConfig.emoji}</span>
           <div>
-            <p className="text-sm font-semibold text-gray-900">{credit.institution}</p>
-            <p className="text-[11px] text-gray-400">{typeConfig.label}</p>
+            <p className="text-sm font-semibold text-foreground">{credit.institution}</p>
+            <p className="text-[11px] text-[#6E6E73]">{typeConfig.label}</p>
           </div>
         </div>
 
@@ -64,19 +64,19 @@ export function CreditDetail({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-lg flex-shrink-0">
+      <div className="flex items-center gap-3 pb-4 border-b border-[rgba(0,0,0,0.06)]">
+        <div className="w-10 h-10 rounded-xl bg-[#F2F9E3] flex items-center justify-center text-lg flex-shrink-0">
           {typeConfig.emoji}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-base font-semibold text-gray-900">{credit.institution}</p>
-          <p className="text-[12px] text-gray-400">{typeConfig.label}</p>
+          <p className="text-base font-semibold text-foreground">{credit.institution}</p>
+          <p className="text-[12px] text-[#6E6E73]">{typeConfig.label}</p>
         </div>
         <span className={cn(
           'text-[12px] font-semibold px-3 py-1 rounded-full flex-shrink-0',
-          credit.status === 'ACTIVE' ? 'text-emerald-600 bg-emerald-50' :
-          credit.status === 'PAID' ? 'text-gray-500 bg-gray-100' :
-          'text-rose-600 bg-rose-50'
+          credit.status === 'ACTIVE' ? 'text-[#4F6A35] bg-[#F2F9E3]' :
+          credit.status === 'PAID' ? 'text-[#6E6E73] bg-[rgba(0,0,0,0.06)]' :
+          'text-[#B5543D] bg-[#FAEDE9]'
         )}>
           {credit.status === 'ACTIVE' ? 'Activo' : credit.status === 'PAID' ? 'Pagado' : 'Cancelado'}
         </span>
@@ -85,8 +85,8 @@ export function CreditDetail({
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {summaryCards.map(({ label, value, color }) => (
-          <div key={label} className="bg-gray-50 rounded-xl px-3 py-2.5">
-            <p className="text-[11px] text-gray-400 mb-0.5">{label}</p>
+          <div key={label} className="bg-[#F2F9E3]/40 rounded-xl px-3 py-2.5">
+            <p className="text-[11px] text-[#6E6E73] mb-0.5">{label}</p>
             <p className={cn('text-sm font-semibold', color)}>{value}</p>
           </div>
         ))}
@@ -94,23 +94,23 @@ export function CreditDetail({
 
       {/* Notes */}
       {credit.notes && (
-        <div className="bg-gray-50 rounded-xl px-4 py-3">
-          <p className="text-[11px] text-gray-400 mb-1">Notas</p>
-          <p className="text-[13px] text-gray-600">{credit.notes}</p>
+        <div className="bg-[#F2F9E3]/40 rounded-xl px-4 py-3">
+          <p className="text-[11px] text-[#6E6E73] mb-1">Notas</p>
+          <p className="text-[13px] text-foreground">{credit.notes}</p>
         </div>
       )}
 
       {/* Installments section */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-semibold text-gray-700">
+          <h4 className="text-sm font-bold text-foreground tracking-[-0.01em]">
             Cuotas ({credit.paid_installments}/{credit.total_installments} pagadas)
           </h4>
           {!isPaidAll && (
             <button
               type="button"
               onClick={() => setShowPayForm(!showPayForm)}
-              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+              className="text-xs font-semibold text-[#4F6A35] hover:text-[#4F6A35]/80 transition-colors"
             >
               {showPayForm ? 'Ver tabla' : 'Pagar cuotas'}
             </button>
@@ -129,7 +129,7 @@ export function CreditDetail({
                 onSuccess={onClose}
               />
             ) : (
-              <p className="text-[13px] text-gray-400 text-center py-4">
+              <p className="text-[13px] text-[#6E6E73] text-center py-4">
                 No hay cuotas pendientes
               </p>
             )

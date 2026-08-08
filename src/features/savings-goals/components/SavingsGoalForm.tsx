@@ -54,9 +54,9 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
           {...register('name')}
           placeholder="Ej: Viaje a Copacabana"
           disabled={isPending}
-          className="h-12 bg-transparent border-t-0 border-x-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none text-lg"
+          className="h-12 bg-transparent border-t-0 border-x-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-lg"
         />
-        {errors.name && <p className="text-xs text-rose-500">{errors.name.message}</p>}
+        {errors.name && <p className="text-xs text-[#B5543D]">{errors.name.message}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-6">
@@ -69,9 +69,9 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
             {...register('target_amount')}
             placeholder="5000"
             disabled={isPending}
-            className="h-12 bg-transparent border-t-0 border-x-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none text-xl font-light tabular-nums"
+            className="h-12 bg-transparent border-t-0 border-x-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-xl font-light tabular-nums"
           />
-          {errors.target_amount && <p className="text-xs text-rose-500">{errors.target_amount.message}</p>}
+          {errors.target_amount && <p className="text-xs text-[#B5543D]">{errors.target_amount.message}</p>}
         </div>
 
         <div className="space-y-2">
@@ -81,7 +81,7 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
             onValueChange={(v) => setValue('account_id', v)}
             disabled={isPending}
           >
-            <SelectTrigger className="h-12 bg-transparent border-t-0 border-x-0 border-b border-border rounded-none px-0 focus:ring-0 focus:border-emerald-500 transition-colors shadow-none">
+            <SelectTrigger className="h-12 bg-transparent border-t-0 border-x-0 border-b border-border rounded-none px-0 focus:ring-0 focus:border-[#4F6A35] transition-colors shadow-none">
               <SelectValue placeholder="Seleccionar cuenta" />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-border shadow-xl">
@@ -92,7 +92,7 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
               ))}
             </SelectContent>
           </Select>
-          {errors.account_id && <p className="text-xs text-rose-500">{errors.account_id.message}</p>}
+          {errors.account_id && <p className="text-xs text-[#B5543D]">{errors.account_id.message}</p>}
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
           type="date"
           {...register('deadline')}
           disabled={isPending}
-          className="h-12 bg-transparent border-t-0 border-x-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none"
+          className="h-12 bg-transparent border-t-0 border-x-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none"
         />
       </div>
 
@@ -117,7 +117,7 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
               className={cn(
                 'w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all duration-150 border',
                 selectedIcon === icon
-                  ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 scale-110'
+                  ? 'border-[#4F6A35] bg-[#F2F9E3] scale-110'
                   : 'border-border hover:border-muted-foreground/30'
               )}
             >
@@ -156,12 +156,12 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
           {...register('auto_save_percentage')}
           placeholder="10"
           disabled={isPending}
-          className="h-12 bg-transparent border-t-0 border-x-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none text-xl font-light tabular-nums"
+          className="h-12 bg-transparent border-t-0 border-x-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-xl font-light tabular-nums"
         />
         <p className="text-[10px] text-muted-foreground italic">
           Se apartará este porcentaje automáticamente al registrar un ingreso.
         </p>
-        {errors.auto_save_percentage && <p className="text-xs text-rose-500">{errors.auto_save_percentage.message}</p>}
+        {errors.auto_save_percentage && <p className="text-xs text-[#B5543D]">{errors.auto_save_percentage.message}</p>}
       </div>
 
       <Button

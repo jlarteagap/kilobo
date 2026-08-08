@@ -23,8 +23,8 @@ export function AmortizationChart({ installments, currency }: AmortizationChartP
   const maxBalance = Math.max(...data.map((d) => d.balance))
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-gray-100">
-      <h4 className="text-sm font-semibold text-gray-700 mb-4">
+    <div className="bg-white rounded-[22px] p-5" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+      <h4 className="text-sm font-bold text-foreground tracking-[-0.01em] mb-4">
         Amortización
       </h4>
 
@@ -72,7 +72,7 @@ export function AmortizationChart({ installments, currency }: AmortizationChartP
         </ResponsiveContainer>
       </div>
 
-      <div className="flex items-center justify-center gap-4 mt-3 text-[11px] text-gray-400">
+      <div className="flex items-center justify-center gap-4 mt-3 text-[11px] text-[#6E6E73]">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-0.5 rounded bg-emerald-500" />
           <span>Saldo deudor</span>

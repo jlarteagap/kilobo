@@ -63,7 +63,8 @@ function BudgetsGridSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-2xl p-5 space-y-4 shadow-card"
+          className="bg-white rounded-[22px] p-5 space-y-4"
+          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
         >
           <div className="flex items-center gap-2.5">
             <Skeleton className="w-9 h-9 rounded-xl" />
@@ -199,16 +200,16 @@ export function BudgetsList() {
       {/* ── Header ── */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+          <h1 className="text-2xl font-semibold text-foreground tracking-tight">
             Presupuestos
           </h1>
-          <p className="text-[13px] text-gray-400 mt-0.5">
+          <p className="text-[13px] text-[#6E6E73] mt-0.5">
             Metas, ingresos y gastos fijos del mes
           </p>
         </div>
         <Button
           onClick={() => setDialog({ mode: 'create' })}
-          className="gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+          className="gap-2 bg-[#4F6A35] hover:bg-[#3C5230] text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
         >
           <Plus className="w-4 h-4" />
           Nuevo
@@ -226,7 +227,7 @@ export function BudgetsList() {
           {/* Cards */}
           <div className="lg:col-span-2 space-y-4">
             {/* Filter tabs */}
-            <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
+            <div className="flex gap-1 p-1 bg-[#F2F9E3]/40 rounded-xl w-fit">
               {FILTER_TABS.map((tab) => {
                 const count = countByTab(tab.value)
                 if (count === 0 && tab.value !== 'ALL') return null
@@ -238,8 +239,8 @@ export function BudgetsList() {
                     className={cn(
                       'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200',
                       activeFilter === tab.value
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-400 hover:text-gray-600'
+                        ? 'bg-white text-foreground shadow-sm'
+                        : 'text-[#6E6E73] hover:text-[#6E6E73]'
                     )}
                   >
                     <span>{tab.emoji}</span>
@@ -248,8 +249,8 @@ export function BudgetsList() {
                       <span className={cn(
                         'text-[10px] font-bold px-1.5 py-0.5 rounded-full',
                         activeFilter === tab.value
-                          ? 'bg-gray-100 text-gray-600'
-                          : 'bg-gray-200 text-gray-400'
+                          ? 'bg-[rgba(0,0,0,0.06)] text-foreground'
+                          : 'bg-[rgba(0,0,0,0.06)] text-[#6E6E73]'
                       )}>
                         {count}
                       </span>
@@ -263,7 +264,7 @@ export function BudgetsList() {
             {isLoading ? (
               <BudgetsGridSkeleton />
             ) : isError ? (
-              <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl">
+              <div className="bg-[#FAEDE9] text-[#B5543D] text-sm p-4 rounded-xl">
                 Error al cargar los presupuestos. Intenta nuevamente.
               </div>
             ) : filtered.length === 0 ? (
@@ -293,15 +294,15 @@ export function BudgetsList() {
       {!isLoading && progress.length === 0 && (
         <div className="text-center py-20">
           <p className="text-5xl mb-4">📋</p>
-          <p className="text-gray-500 text-sm font-medium">
+          <p className="text-[#6E6E73] text-sm font-medium">
             No hay presupuestos creados
           </p>
-          <p className="text-gray-300 text-[13px] mt-1 mb-6">
+          <p className="text-[#6E6E73]/60 text-[13px] mt-1 mb-6">
             Crea tu primer presupuesto para hacer seguimiento de tus metas
           </p>
           <Button
             onClick={() => setDialog({ mode: 'create' })}
-            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl"
+            className="gap-2 bg-[#4F6A35] hover:bg-[#3C5230] text-white rounded-xl"
           >
             <Plus className="w-4 h-4" />
             Crear primer presupuesto
@@ -311,14 +312,14 @@ export function BudgetsList() {
 
       {/* ── Cuotas del mes ── */}
       {creditsWithMonthData.length > 0 && (
-        <div className="border-t border-gray-100 pt-6">
+        <div className="border-t border-[rgba(0,0,0,0.06)] pt-6">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <Banknote className="w-4 h-4 text-emerald-600" />
+            <div className="w-8 h-8 rounded-xl bg-[#F2F9E3] flex items-center justify-center">
+              <Banknote className="w-4 h-4 text-[#4F6A35]" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-700">Cuotas del mes</h3>
-              <p className="text-[11px] text-gray-400">Créditos institucionales con cuotas este período</p>
+              <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">Cuotas del mes</h3>
+              <p className="text-[11px] text-[#6E6E73]">Créditos institucionales con cuotas este período</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -344,7 +345,7 @@ export function BudgetsList() {
         open={isDialogOpen && dialog.mode !== 'pay-installment'}
         onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
       >
-        <DialogContent className="sm:max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md rounded-[22px] border-none max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
               {dialog.mode === 'edit' ? 'Editar presupuesto' : 'Nuevo presupuesto'}
@@ -367,12 +368,12 @@ export function BudgetsList() {
         open={dialog.mode === 'pay-installment'}
         onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
       >
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-[22px] border-none">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
               Pagar cuota
               {dialog.mode === 'pay-installment' && (
-                <span className="text-gray-400 font-normal text-sm ml-1">
+                <span className="text-[#6E6E73] font-normal text-sm ml-1">
                   · {dialog.installment.number}
                 </span>
               )}
@@ -400,7 +401,7 @@ export function BudgetsList() {
         open={!!pendingArchive}
         onOpenChange={(open) => !open && setPendingArchive(null)}
       >
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-[22px] border-none">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Archivar este presupuesto?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -427,7 +428,7 @@ export function BudgetsList() {
         open={!!pendingDelete}
         onOpenChange={(open) => !open && setPendingDelete(null)}
       >
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-[22px] border-none">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar este presupuesto?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -439,7 +440,7 @@ export function BudgetsList() {
             <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white"
+              className="rounded-xl bg-[#B5543D] hover:bg-[#B5543D]/90 text-white"
             >
               Eliminar
             </AlertDialogAction>

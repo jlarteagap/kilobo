@@ -67,7 +67,7 @@ export function AnomalyCard({ anomaly, aiExplanation, clusterName, clusterColor 
         <div className="space-y-1 text-right">
           <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest font-bold">Variación</p>
           <div className="flex items-center justify-end gap-1">
-            <span className={cn('text-sm font-bold tabular-nums', isUp ? 'text-red-500' : 'text-emerald-500')}>
+            <span className={cn('text-sm font-bold tabular-nums', isUp ? 'text-[#B5543D]' : 'text-[#4F6A35]')}>
               {isUp ? '+' : '-'}{absDelta}%
             </span>
           </div>

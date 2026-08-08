@@ -13,17 +13,17 @@ export default function AnalyticsPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white shadow-sm">
+            <div className="size-10 rounded-xl bg-[#4F6A35] flex items-center justify-center text-white shadow-sm">
               <BarChart3 className="size-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">Analytics</h1>
-              <p className="text-[11px] text-neutral-500 font-medium">Métricas de optimización</p>
+              <h1 className="text-xl font-bold text-foreground dark:text-neutral-100 tracking-tight">Analytics</h1>
+              <p className="text-[11px] text-[#6E6E73] font-medium">Métricas de optimización</p>
             </div>
           </div>
 
           <Link href="/conductor">
-            <Button variant="outline" className="h-9 px-4 rounded-lg text-xs font-bold border-neutral-200 dark:border-neutral-800">
+            <Button variant="outline" className="h-9 px-4 rounded-lg text-xs font-bold border-[rgba(0,0,0,0.06)] dark:border-neutral-800">
               <ArrowLeft className="size-3.5 mr-1.5" />
               Volver
             </Button>

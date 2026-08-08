@@ -90,9 +90,9 @@ function MiniCard({
   color: 'emerald' | 'blue' | 'neutral'
 }) {
   const colors = {
-    emerald: 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-900/50',
+    emerald: 'bg-[#F2F9E3] dark:bg-emerald-950/20 text-[#4F6A35] dark:text-emerald-300 border-[#C8D9A9] dark:border-emerald-900/50',
     blue: 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-900/50',
-    neutral: 'bg-neutral-50 dark:bg-neutral-900/40 text-neutral-700 dark:text-neutral-300 border-neutral-100 dark:border-neutral-800',
+    neutral: 'bg-[#F2F9E3]/50 dark:bg-neutral-900/40 text-[#3C5230] dark:text-neutral-300 border-[#E5DED2] dark:border-neutral-800',
   }
 
   return (

@@ -60,7 +60,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Tipo de cuenta
               </FormLabel>
               <FormControl>
@@ -77,8 +77,8 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
                           'flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl text-[11px] font-medium',
                           'border transition-all duration-200',
                           isSelected
-                            ? 'border-gray-900 bg-gray-900 text-white'
-                            : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200 hover:bg-white'
+                            ? 'border-[#4F6A35] bg-[#4F6A35] text-white'
+                            : 'border-[rgba(0,0,0,0.06)] bg-[#F2F9E3]/40 text-[#6E6E73] hover:border-[rgba(0,0,0,0.12)] hover:bg-[#F2F9E3]'
                         )}
                       >
                         <Icon className={cn('w-4 h-4', isSelected ? 'text-white' : color)} />
@@ -99,14 +99,14 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Nombre
               </FormLabel>
               <FormControl>
                 <Input
                   placeholder="Ej: Banco Nacional, Efectivo…"
                   {...field}
-                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -121,7 +121,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
             name="balance"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Saldo inicial
                 </FormLabel>
                 <FormControl>
@@ -131,7 +131,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
                     placeholder="0.00"
                     {...field}
                     onChange={(e) => field.onChange(+e.target.value)}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -144,12 +144,12 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
             name="currency"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Moneda
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value as string}>
                   <FormControl>
-                    <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                    <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                       <SelectValue placeholder="Moneda" />
                     </SelectTrigger>
                   </FormControl>

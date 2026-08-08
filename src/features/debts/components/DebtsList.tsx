@@ -57,7 +57,8 @@ function DebtsGridSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-2xl p-5 space-y-4 shadow-card"
+          className="bg-white rounded-[22px] p-5 space-y-4"
+          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
         >
           <div className="flex items-center gap-2.5">
             <Skeleton className="w-9 h-9 rounded-xl" />
@@ -83,14 +84,14 @@ function DebtsSummary() {
     {
       label:  'Por cobrar',
       value:  summary.pendingGiven,
-      color:  'text-gray-900',
+      color:  'text-foreground',
       bg:     'bg-orange-50',
       emoji:  '💸',
     },
     {
       label:  'Por pagar',
       value:  summary.pendingReceived,
-      color:  'text-rose-500',
+      color:  'text-[#B5543D]',
       bg:     'bg-blue-50',
       emoji:  '🤝',
     },
@@ -101,13 +102,14 @@ function DebtsSummary() {
       {items.map(({ label, value, color, bg, emoji }) => (
         <div
           key={label}
-          className="bg-white rounded-2xl px-4 py-3.5 flex items-center gap-3 shadow-card"
+          className="bg-white rounded-[22px] px-4 py-3.5 flex items-center gap-3"
+          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
         >
           <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center text-base', bg)}>
             {emoji}
           </div>
           <div>
-            <p className="text-[11px] text-gray-400">{label}</p>
+            <p className="text-[11px] text-[#6E6E73]">{label}</p>
             <p className={cn('text-sm font-semibold', color)}>
               {formatCurrency(value, 'BOB')}
             </p>
@@ -128,7 +130,7 @@ type DialogState =
 // ─── Section label ─────────────────────────────────────────────────────────────
 function SectionLabel({ icon, label }: { icon: string; label: string }) {
   return (
-    <h2 className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.12em] flex items-center gap-1.5">
+    <h2 className="text-[11px] font-semibold text-[#6E6E73] uppercase tracking-[0.12em] flex items-center gap-1.5">
       <span>{icon}</span>
       {label}
     </h2>
@@ -180,23 +182,23 @@ export function DebtsList() {
     <div className="space-y-6">
       {/* ── Header ── */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">
           Deudas y Préstamos
         </h1>
-        <p className="text-[13px] text-gray-400 mt-0.5">
+        <p className="text-[13px] text-[#6E6E73] mt-0.5">
           Seguimiento de lo que debes y lo que te deben
         </p>
         <div className="flex gap-2 mt-4">
           <Button
             onClick={() => setDialog({ mode: 'create' })}
-            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+            className="gap-2 bg-[#4F6A35] hover:bg-[#3C5230] text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
           >
             <Plus className="w-4 h-4" />
             Deuda
           </Button>
           <Button
             onClick={() => setDialog({ mode: 'create-credit' })}
-            className="gap-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+            className="gap-2 bg-white text-foreground border border-[rgba(0,0,0,0.06)] hover:bg-[#F2F9E3] rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
           >
             <Banknote className="w-4 h-4" />
             Nuevo Crédito
@@ -225,9 +227,9 @@ export function DebtsList() {
                 ))}
               </div>
             ) : isError ? (
-              <p className="text-rose-500 text-sm">Error al cargar las deudas.</p>
+              <p className="text-[#B5543D] text-sm">Error al cargar las deudas.</p>
             ) : filteredDebts.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-8">
+              <p className="text-[#6E6E73] text-sm text-center py-8">
                 {activeFilter === 'ALL'
                   ? 'No hay deudas registradas.'
                   : 'No hay deudas en esta categoría.'
@@ -271,19 +273,19 @@ export function DebtsList() {
           {isLoading ? (
             <DebtsGridSkeleton />
           ) : isError ? (
-            <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl">
+            <div className="bg-[#FAEDE9] text-[#B5543D] text-sm p-4 rounded-xl">
               Error al cargar las deudas. Intenta nuevamente.
             </div>
           ) : filteredDebts.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-4xl mb-3">🤝</p>
-              <p className="text-gray-400 text-sm">
+              <p className="text-[#6E6E73] text-sm">
                 {activeFilter === 'ALL'
                   ? 'No hay deudas registradas.'
                   : 'No hay deudas en esta categoría.'
                 }
               </p>
-              <p className="text-gray-300 text-[13px] mt-1">
+              <p className="text-[#6E6E73]/60 text-[13px] mt-1">
                 Usa los botones de arriba para registrar una.
               </p>
             </div>
@@ -313,10 +315,10 @@ export function DebtsList() {
       ) : (
         <div className="text-center py-16">
           <p className="text-4xl mb-3">🤝</p>
-          <p className="text-gray-400 text-sm">
+          <p className="text-[#6E6E73] text-sm">
             No hay deudas registradas.
           </p>
-          <p className="text-gray-300 text-[13px] mt-1">
+          <p className="text-[#6E6E73]/60 text-[13px] mt-1">
             Usa los botones de arriba para registrar una.
           </p>
         </div>
@@ -327,7 +329,7 @@ export function DebtsList() {
         open={dialog.mode === 'create' || dialog.mode === 'pay'}
         onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
       >
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-[22px] border-none">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
               {dialog.mode === 'pay' ? 'Registrar pago' : 'Nueva deuda'}
@@ -351,7 +353,7 @@ export function DebtsList() {
         open={dialog.mode === 'create-credit'}
         onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}
       >
-        <DialogContent className="sm:max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md rounded-[22px] border-none max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
               Nuevo crédito institucional
@@ -366,7 +368,7 @@ export function DebtsList() {
         open={!!pendingCancel}
         onOpenChange={(open) => !open && setPendingCancel(null)}
       >
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-[22px] border-none">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Cancelar esta deuda?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -399,7 +401,7 @@ export function DebtsList() {
         open={!!pendingDelete}
         onOpenChange={(open) => !open && setPendingDelete(null)}
       >
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-[22px] border-none">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar esta deuda?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -411,7 +413,7 @@ export function DebtsList() {
             <AlertDialogCancel className="rounded-xl">Volver</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white"
+              className="rounded-xl bg-[#B5543D] hover:bg-[#B5543D]/90 text-white"
             >
               Eliminar
             </AlertDialogAction>

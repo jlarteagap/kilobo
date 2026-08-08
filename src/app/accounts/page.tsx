@@ -21,14 +21,14 @@ export default function AccountsPage() {
           {/* Columna Principal */}
           <div className="lg:col-span-8 space-y-12">
             {/* ── Tabs ── */}
-            <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-900 rounded-xl p-1 w-fit">
+            <div className="flex items-center gap-1 bg-[#F2F9E3] rounded-xl p-1 w-fit">
               <button
                 onClick={() => setTab("accounts")}
                 className={cn(
                   "px-4 py-2 rounded-lg text-[12px] font-bold transition-all duration-200",
                   tab === "accounts"
-                    ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                    ? "bg-white text-foreground shadow-sm"
+                    : "text-[#6E6E73] hover:text-foreground"
                 )}
               >
                 Cuentas
@@ -38,8 +38,8 @@ export default function AccountsPage() {
                 className={cn(
                   "px-4 py-2 rounded-lg text-[12px] font-bold transition-all duration-200",
                   tab === "investments"
-                    ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                    ? "bg-white text-foreground shadow-sm"
+                    : "text-[#6E6E73] hover:text-foreground"
                 )}
               >
                 Inversiones

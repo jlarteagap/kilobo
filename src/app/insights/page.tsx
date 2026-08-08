@@ -157,7 +157,7 @@ function ProjectionSparkline({ data }: {
         </span>
         <span className={cn(
           'text-[10px] font-bold',
-          trend === 'up' ? 'text-red-400' : 'text-emerald-400',
+          trend === 'up' ? 'text-[#B5543D]' : 'text-[#4F6A35]',
         )}>
           {trend === 'up' ? '↑ Tendencia al alza' : '↓ Tendencia a la baja'}
         </span>
@@ -274,7 +274,7 @@ export default function InsightsPage() {
               <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
               <span className={cn(
                 "px-2 py-0.5 rounded-md text-xs font-medium",
-                from_cache ? "bg-muted/50 text-muted-foreground" : "bg-emerald-500/10 text-emerald-600"
+                from_cache ? "bg-muted/50 text-muted-foreground" : "bg-[#F2F9E3] text-[#4F6A35]"
               )}>
                 {from_cache
                   ? `Actualizado el ${new Date(generated_at).toLocaleDateString('es', { day: 'numeric', month: 'short' })}`
@@ -423,13 +423,13 @@ export default function InsightsPage() {
             ))}
 
             {/* Total potential saving pill */}
-            <div className="rounded-2xl bg-emerald-500/5 border border-emerald-500/10 p-4 sm:p-6 flex items-center justify-between mt-4 sm:mt-6">
+            <div className="rounded-2xl bg-[#F2F9E3] border border-[#C8D9A9]/40 p-4 sm:p-6 flex items-center justify-between mt-4 sm:mt-6">
               <div className="space-y-0.5">
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-600/70">Potencial Total</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-[#4F6A35]/70">Potencial Total</p>
                 <p className="text-sm text-muted-foreground">Ahorro mensual estimado</p>
               </div>
               <div className="text-right">
-                <p className="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums">
+                <p className="text-xl sm:text-2xl font-bold text-[#4F6A35] tabular-nums">
                   ${saving_opportunities
                     .reduce((acc, o) => acc + o.potential_saving, 0)
                     .toLocaleString()}
@@ -458,7 +458,7 @@ export default function InsightsPage() {
                     ${ai_insights.projection.next_month_estimate.toLocaleString()}
                   </p>
                 </div>
-                <Badge variant="outline" className="bg-emerald-500/5 text-emerald-600 border-emerald-500/10 self-start sm:self-auto">
+                <Badge variant="outline" className="bg-[#F2F9E3] text-[#4F6A35] border-[#C8D9A9]/40 self-start sm:self-auto">
                   {ai_insights.projection.confidence === 'high' ? 'Alta confianza'
                    : ai_insights.projection.confidence === 'medium' ? 'Confianza media'
                    : 'Estimación'}

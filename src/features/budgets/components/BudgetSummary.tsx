@@ -28,22 +28,23 @@ export function BudgetSummary() {
       {/* ── Meta prioritaria ── */}
       {priorityBudget && (
         <div
-          className="bg-white rounded-2xl p-5 shadow-card"
+          className="bg-white rounded-[22px] p-5"
+          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
         >
           <div className="flex items-center gap-2 mb-4">
             <span className="text-base">🎯</span>
             <div>
-              <p className="text-sm font-semibold text-gray-700">Meta prioritaria</p>
-              <p className="text-[11px] text-gray-400">{priorityBudget.budget.name}</p>
+              <p className="text-sm font-bold text-foreground tracking-[-0.01em]">Meta prioritaria</p>
+              <p className="text-[11px] text-[#6E6E73]">{priorityBudget.budget.name}</p>
             </div>
             {priorityBudget.days_until_due !== null && (
               <span className={cn(
                 'ml-auto text-[11px] font-medium px-2.5 py-1 rounded-full',
                 priorityBudget.days_until_due <= 0
-                  ? 'bg-rose-50 text-rose-500'
+                  ? 'bg-[#FAEDE9] text-[#B5543D]'
                   : priorityBudget.days_until_due <= 3
                     ? 'bg-orange-50 text-orange-500'
-                    : 'bg-gray-100 text-gray-400'
+                    : 'bg-[rgba(0,0,0,0.06)] text-[#6E6E73]'
               )}>
                 {priorityBudget.days_until_due <= 0
                   ? 'Vencido'
@@ -64,11 +65,11 @@ export function BudgetSummary() {
               size="lg"
             />
             <div className="flex items-center justify-between">
-              <span className="text-[12px] text-gray-500">
+              <span className="text-[12px] text-[#6E6E73]">
                 {formatCurrency(priorityBudget.current_amount, priorityBudget.budget.currency)}
                 {' '}acumulado
               </span>
-              <span className="text-[12px] font-semibold text-gray-700">
+              <span className="text-[12px] font-semibold text-foreground">
                 {formatCurrency(priorityBudget.target_amount, priorityBudget.budget.currency)}
               </span>
             </div>
@@ -78,7 +79,7 @@ export function BudgetSummary() {
           {priorityBudget.status !== 'COMPLETED' && (
             <p className={cn(
               'text-[12px] mt-2 font-medium',
-              priorityBudget.status === 'OVERDUE' ? 'text-rose-500' : 'text-gray-400'
+              priorityBudget.status === 'OVERDUE' ? 'text-[#B5543D]' : 'text-[#6E6E73]'
             )}>
               {priorityBudget.status === 'OVERDUE'
                 ? `⚠️ Faltan ${formatCurrency(priorityBudget.remaining, priorityBudget.budget.currency)} — vencido`
@@ -91,25 +92,26 @@ export function BudgetSummary() {
 
       {/* ── Resumen global ── */}
       <div
-        className="bg-white rounded-2xl overflow-hidden shadow-card"
+        className="bg-white rounded-[22px] overflow-hidden"
+        style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
       >
-        <div className="px-5 py-4 border-b border-gray-50">
-          <h3 className="text-sm font-semibold text-gray-700">Resumen del mes</h3>
-          <p className="text-[11px] text-gray-400 mt-0.5">
+        <div className="px-5 py-4 border-b border-[rgba(0,0,0,0.06)]">
+          <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">Resumen del mes</h3>
+          <p className="text-[11px] text-[#6E6E73] mt-0.5">
             {new Date().toLocaleString('es-BO', { month: 'long', year: 'numeric' })}
           </p>
         </div>
 
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-[rgba(0,0,0,0.06)]">
           {/* Ingresos */}
           <div className="flex items-center justify-between px-5 py-3.5">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-sm">
+              <div className="w-7 h-7 rounded-lg bg-[#F2F9E3] flex items-center justify-center text-sm">
                 💰
               </div>
-              <span className="text-[13px] text-gray-600">Total ingresos</span>
+              <span className="text-[13px] text-foreground">Total ingresos</span>
             </div>
-            <span className="text-[13px] font-semibold text-emerald-600">
+            <span className="text-[13px] font-semibold text-[#4F6A35]">
               {formatCurrency(summary.totalIncome, 'BOB')}
             </span>
           </div>
@@ -117,12 +119,12 @@ export function BudgetSummary() {
           {/* Gastos fijos */}
           <div className="flex items-center justify-between px-5 py-3.5">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center text-sm">
+              <div className="w-7 h-7 rounded-lg bg-[#FAEDE9] flex items-center justify-center text-sm">
                 📌
               </div>
-              <span className="text-[13px] text-gray-600">Gastos fijos</span>
+              <span className="text-[13px] text-foreground">Gastos fijos</span>
             </div>
-            <span className="text-[13px] font-semibold text-rose-500">
+            <span className="text-[13px] font-semibold text-[#B5543D]">
               -{formatCurrency(summary.totalFixedExpense, 'BOB')}
             </span>
           </div>
@@ -134,7 +136,7 @@ export function BudgetSummary() {
                 <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-sm">
                   🎯
                 </div>
-                <span className="text-[13px] text-gray-600">Metas de ahorro</span>
+                <span className="text-[13px] text-foreground">Metas de ahorro</span>
               </div>
               <span className="text-[13px] font-semibold text-blue-500">
                 -{formatCurrency(summary.totalSavingsGoal, 'BOB')}
@@ -145,22 +147,22 @@ export function BudgetSummary() {
           {/* Disponible */}
           <div className={cn(
             'flex items-center justify-between px-5 py-4',
-            summary.isDeficit ? 'bg-rose-50/60' : 'bg-emerald-50/40'
+            summary.isDeficit ? 'bg-[#FAEDE9]/60' : 'bg-[#F2F9E3]/40'
           )}>
             <div className="flex items-center gap-2.5">
               <div className={cn(
                 'w-7 h-7 rounded-lg flex items-center justify-center text-sm',
-                summary.isDeficit ? 'bg-rose-100' : 'bg-emerald-100'
+                summary.isDeficit ? 'bg-[#FAEDE9]' : 'bg-[#F2F9E3]'
               )}>
                 {summary.isDeficit ? '⚠️' : '✅'}
               </div>
-              <span className="text-[13px] font-semibold text-gray-700">
+              <span className="text-[13px] font-semibold text-foreground">
                 Disponible
               </span>
             </div>
             <span className={cn(
               'text-sm font-bold',
-              summary.isDeficit ? 'text-rose-500' : 'text-emerald-600'
+              summary.isDeficit ? 'text-[#B5543D]' : 'text-[#4F6A35]'
             )}>
               {summary.isDeficit ? '-' : ''}
               {formatCurrency(Math.abs(summary.available), 'BOB')}

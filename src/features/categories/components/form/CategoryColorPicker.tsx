@@ -10,7 +10,7 @@ interface CategoryColorPickerProps {
 export function CategoryColorPicker({ value, onChange }: CategoryColorPickerProps) {
   return (
     <div className="space-y-2">
-      <label className="text-[13px] font-medium text-gray-600">Color</label>
+      <label className="text-[13px] font-medium text-foreground">Color</label>
       <div className="flex gap-2 flex-wrap">
         {COLOR_PALETTE.map(({ value: color, label }) => (
           <button
@@ -22,7 +22,7 @@ export function CategoryColorPicker({ value, onChange }: CategoryColorPickerProp
               'w-7 h-7 rounded-full transition-all duration-200',
               'hover:scale-110 focus:outline-none',
               value === color
-                ? 'ring-2 ring-offset-2 ring-gray-400 scale-110'
+                ? 'ring-2 ring-offset-2 ring-[#4F6A35] scale-110'
                 : 'ring-1 ring-black/5'
             )}
             style={{ backgroundColor: color }}

@@ -34,10 +34,10 @@ function DueDayBadge({ days }: { days: number | null }) {
   return (
     <span className={cn(
       'text-[11px] font-medium px-2 py-0.5 rounded-full',
-      isPast    ? 'bg-rose-50 text-rose-500'     :
+      isPast    ? 'bg-[#FAEDE9] text-[#B5543D]'     :
       isToday   ? 'bg-orange-50 text-orange-500' :
       isUrgent  ? 'bg-orange-50 text-orange-500' :
-      'bg-gray-100 text-gray-400'
+      'bg-[rgba(0,0,0,0.06)] text-[#6E6E73]'
     )}>
       {isPast
         ? `Venció hace ${Math.abs(days)}d`
@@ -65,16 +65,17 @@ export function BudgetCard({
 
   // Colores de fondo por tipo
   const typeBg =
-    budget.type === 'INCOME_SOURCE' ? 'bg-emerald-50' :
-    budget.type === 'FIXED_EXPENSE' ? 'bg-rose-50'    :
+    budget.type === 'INCOME_SOURCE' ? 'bg-[#F2F9E3]' :
+    budget.type === 'FIXED_EXPENSE' ? 'bg-[#FAEDE9]'    :
     'bg-blue-50'
 
   return (
     <div
       className={cn(
-        'bg-white rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 group shadow-card-hover',
-        isActive ? 'hover:shadow-md' : 'opacity-60'
+        'bg-white rounded-[22px] p-5 flex flex-col gap-4 transition-all duration-200 group',
+        isActive ? '' : 'opacity-60'
       )}
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-2">
@@ -87,10 +88,10 @@ export function BudgetCard({
             {typeConfig.emoji}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">
+            <p className="text-sm font-semibold text-foreground truncate">
               {budget.name}
             </p>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-[#6E6E73]">
               {typeConfig.label}
             </p>
           </div>
@@ -103,14 +104,14 @@ export function BudgetCard({
               <button
                 onClick={() => onEdit(progress)}
                 title="Editar"
-                className="p-1.5 rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-all duration-150"
+                className="p-1.5 rounded-lg text-[#6E6E73] hover:text-blue-500 hover:bg-blue-50 transition-all duration-150"
               >
                 <Pencil className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => onArchive(progress)}
                 title="Archivar"
-                className="p-1.5 rounded-lg text-gray-300 hover:text-orange-500 hover:bg-orange-50 transition-all duration-150"
+                className="p-1.5 rounded-lg text-[#6E6E73] hover:text-orange-500 hover:bg-orange-50 transition-all duration-150"
               >
                 <Archive className="w-3.5 h-3.5" />
               </button>
@@ -120,7 +121,7 @@ export function BudgetCard({
             <button
               onClick={() => onDelete(progress)}
               title="Eliminar"
-              className="p-1.5 rounded-lg text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-all duration-150"
+              className="p-1.5 rounded-lg text-[#6E6E73] hover:text-[#B5543D] hover:bg-[#FAEDE9] transition-all duration-150"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -131,16 +132,16 @@ export function BudgetCard({
       {/* ── Montos ── */}
       <div className="flex items-end justify-between gap-2">
         <div>
-          <p className="text-[11px] text-gray-400 mb-0.5">
+          <p className="text-[11px] text-[#6E6E73] mb-0.5">
             {budget.type === 'INCOME_SOURCE' ? 'Ingresado' : 'Ejecutado'}
           </p>
-          <p className="text-xl font-semibold tracking-tight text-gray-900">
+          <p className="text-xl font-semibold tracking-tight text-foreground">
             {formatCurrency(current_amount, budget.currency)}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] text-gray-400 mb-0.5">Meta</p>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-[11px] text-[#6E6E73] mb-0.5">Meta</p>
+          <p className="text-sm font-medium text-[#6E6E73]">
             {formatCurrency(target_amount, budget.currency)}
           </p>
         </div>
@@ -156,7 +157,7 @@ export function BudgetCard({
       />
 
       {/* ── Footer: status + días ── */}
-      <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+      <div className="flex items-center justify-between pt-1 border-t border-[rgba(0,0,0,0.06)]">
         <span className={cn(
           'text-[11px] font-semibold px-2.5 py-1 rounded-full',
           statusConfig.color,
@@ -168,12 +169,12 @@ export function BudgetCard({
         <div className="flex items-center gap-2">
           {/* Faltante o excedente */}
           {!isCompleted && remaining > 0 && (
-            <span className="text-[11px] text-gray-400">
+            <span className="text-[11px] text-[#6E6E73]">
               Faltan {formatCurrency(remaining, budget.currency)}
             </span>
           )}
           {isCompleted && (
-            <span className="text-[11px] text-emerald-500 font-medium">
+            <span className="text-[11px] text-[#4F6A35] font-medium">
               ✓ Completado
             </span>
           )}

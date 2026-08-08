@@ -47,10 +47,10 @@ export function InstallmentsTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-100">
+    <div className="overflow-x-auto rounded-xl border border-[rgba(0,0,0,0.06)]">
       <table className="w-full text-[13px]">
         <thead>
-          <tr className="bg-gray-50 border-b border-gray-100">
+          <tr className="bg-[#F2F9E3]/40 border-b border-[rgba(0,0,0,0.06)]">
             <th className="w-10 px-3 py-3 text-left">
               <input
                 type="checkbox"
@@ -59,21 +59,21 @@ export function InstallmentsTable({
                   sorted.filter((i) => i.status !== 'PAID').every((i) => selectedIds.includes(i.id))
                 }
                 onChange={selectAll}
-                className="rounded border-gray-300 text-gray-900 focus:ring-gray-900/20 cursor-pointer"
+                className="rounded border-[rgba(0,0,0,0.16)] text-foreground focus:ring-[#5F7D42]/30 cursor-pointer"
               />
             </th>
             <th
-              className="px-3 py-3 text-left font-medium text-gray-400 cursor-pointer select-none"
+              className="px-3 py-3 text-left font-medium text-[#6E6E73] cursor-pointer select-none"
               onClick={() => setSortBy(sortBy === 'asc' ? 'desc' : 'asc')}
             >
               # {sortBy === 'asc' ? '↑' : '↓'}
             </th>
-            <th className="px-3 py-3 text-left font-medium text-gray-400">Vence</th>
-            <th className="px-3 py-3 text-right font-medium text-gray-400">Total</th>
-            <th className="px-3 py-3 text-right font-medium text-gray-400 hidden sm:table-cell">Capital</th>
-            <th className="px-3 py-3 text-right font-medium text-gray-400 hidden sm:table-cell">Interés</th>
-            <th className="px-3 py-3 text-right font-medium text-gray-400 hidden md:table-cell">Saldo</th>
-            <th className="px-3 py-3 text-center font-medium text-gray-400">Estado</th>
+            <th className="px-3 py-3 text-left font-medium text-[#6E6E73]">Vence</th>
+            <th className="px-3 py-3 text-right font-medium text-[#6E6E73]">Total</th>
+            <th className="px-3 py-3 text-right font-medium text-[#6E6E73] hidden sm:table-cell">Capital</th>
+            <th className="px-3 py-3 text-right font-medium text-[#6E6E73] hidden sm:table-cell">Interés</th>
+            <th className="px-3 py-3 text-right font-medium text-[#6E6E73] hidden md:table-cell">Saldo</th>
+            <th className="px-3 py-3 text-center font-medium text-[#6E6E73]">Estado</th>
           </tr>
         </thead>
         <tbody>
@@ -87,10 +87,10 @@ export function InstallmentsTable({
               <tr
                 key={inst.id}
                 className={cn(
-                  'border-b border-gray-50 transition-colors',
-                  isPaid ? 'text-gray-400' : 'hover:bg-gray-50/50',
-                  isOverdue && 'bg-rose-50/30',
-                  isSelected && 'bg-emerald-50/30'
+                  'border-b border-[rgba(0,0,0,0.06)] transition-colors',
+                  isPaid ? 'text-[#6E6E73]' : 'hover:bg-[#F2F9E3]/40',
+                  isOverdue && 'bg-[#FAEDE9]/30',
+                  isSelected && 'bg-[#F2F9E3]/30'
                 )}
               >
                 <td className="px-3 py-2.5">
@@ -100,32 +100,32 @@ export function InstallmentsTable({
                     disabled={isPaid}
                     onChange={() => toggleSelect(inst.id)}
                     className={cn(
-                      'rounded border-gray-300 text-gray-900 focus:ring-gray-900/20',
+                      'rounded border-[rgba(0,0,0,0.16)] text-foreground focus:ring-[#5F7D42]/30',
                       isPaid && 'opacity-30 cursor-not-allowed'
                     )}
                   />
                 </td>
-                <td className="px-3 py-2.5 font-semibold text-gray-900">
+                <td className="px-3 py-2.5 font-semibold text-foreground">
                   {inst.number}
                 </td>
-                <td className="px-3 py-2.5 text-gray-600">
+                <td className="px-3 py-2.5 text-foreground">
                   {new Date(inst.due_date).toLocaleDateString('es-ES', {
                     day: '2-digit', month: 'short', year: 'numeric'
                   })}
                 </td>
                 <td className={cn(
                   'px-3 py-2.5 text-right font-semibold',
-                  isPaid ? 'text-gray-400' : 'text-gray-900'
+                  isPaid ? 'text-[#6E6E73]' : 'text-foreground'
                 )}>
                   {formatCurrency(inst.total_amount, currency)}
                 </td>
-                <td className="px-3 py-2.5 text-right hidden sm:table-cell text-gray-600">
+                <td className="px-3 py-2.5 text-right hidden sm:table-cell text-foreground">
                   {formatCurrency(inst.principal, currency)}
                 </td>
-                <td className="px-3 py-2.5 text-right hidden sm:table-cell text-gray-600">
+                <td className="px-3 py-2.5 text-right hidden sm:table-cell text-foreground">
                   {formatCurrency(inst.interest, currency)}
                 </td>
-                <td className="px-3 py-2.5 text-right hidden md:table-cell text-gray-600">
+                <td className="px-3 py-2.5 text-right hidden md:table-cell text-foreground">
                   {formatCurrency(inst.remaining_balance, currency)}
                 </td>
                 <td className="px-3 py-2.5 text-center">

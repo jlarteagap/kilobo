@@ -38,7 +38,8 @@ function AccountsGridSkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-neutral-900/50 rounded-xl p-4 flex items-center gap-4 border border-neutral-200/60 dark:border-neutral-800/60"
+          className="bg-white dark:bg-neutral-900/50 rounded-[22px] p-4 flex items-center gap-4"
+          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
         >
           <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
           <div className="flex-1 space-y-2">
@@ -70,31 +71,33 @@ function AccountCard({
   const totalInvested = accountInvestments.reduce((sum, inv) => sum + inv.amount, 0)
 
   return (
-    <div className="group bg-white dark:bg-neutral-900/50 rounded-xl border border-neutral-200/60 dark:border-neutral-800/60 transition-all duration-200 hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-sm">
+    <div className="group bg-white dark:bg-neutral-900/50 rounded-[22px] transition-all duration-200"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+    >
       <div className="p-4 flex items-center gap-4">
         <div className={cn(
           'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-          bg.includes('emerald') ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30' : 
-          bg.includes('rose') ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/30' : 
+          bg.includes('emerald') ? 'bg-[#F2F9E3] text-[#4F6A35]' : 
+          bg.includes('rose') ? 'bg-[#FAEDE9] text-[#B5543D]' : 
           bg.includes('blue') ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/30' :
           bg.includes('purple') ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/30' :
           bg.includes('orange') ? 'bg-orange-50 text-orange-600 dark:bg-orange-950/30' :
-          'bg-neutral-100 text-neutral-600 dark:bg-neutral-800'
+          'bg-[rgba(0,0,0,0.06)] text-[#6E6E73]'
         )}>
           <Icon className="w-5 h-5" />
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-[14px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+          <h3 className="text-[14px] font-semibold text-foreground truncate">
             {account.name}
           </h3>
-          <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+          <p className="text-[11px] font-medium text-[#6E6E73]">
             {label}
           </p>
         </div>
 
         <div className="text-right">
-          <p className="text-[15px] font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+          <p className="text-[15px] font-bold tracking-tight text-foreground">
             {formatCurrency(account.balance, account.currency)}
           </p>
           {hasInvestments && (
@@ -108,20 +111,20 @@ function AccountCard({
           {hasInvestments && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="p-1.5 rounded-md text-neutral-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+              className="p-1.5 rounded-md text-[#6E6E73] hover:text-[#4F6A35] hover:bg-[#F2F9E3] transition-colors"
             >
               {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
             </button>
           )}
           <button
             onClick={() => onEdit(account)}
-            className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="p-1.5 rounded-md text-[#6E6E73] hover:text-foreground hover:bg-[#F2F9E3] transition-colors"
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDelete(account.id)}
-            className="p-1.5 rounded-md text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+            className="p-1.5 rounded-md text-[#6E6E73] hover:text-[#B5543D] hover:bg-[#FAEDE9] transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -131,12 +134,12 @@ function AccountCard({
       {/* Expanded investments */}
       {expanded && hasInvestments && (
         <div className="px-4 pb-4 pl-14 space-y-2">
-          <div className="h-px bg-neutral-100 dark:bg-neutral-800 mb-2" />
+          <div className="h-px bg-[rgba(0,0,0,0.06)] mb-2" />
           {accountInvestments.slice(0, 5).map((inv) => (
             <div key={inv.id} className="flex items-center justify-between text-[12px]">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-3 h-3 text-indigo-400" />
-                <span className="text-neutral-700 dark:text-neutral-300">{inv.name}</span>
+                <span className="text-foreground">{inv.name}</span>
               </div>
               <span className="font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums">
                 {formatCurrency(inv.amount, inv.currency)}
@@ -144,7 +147,7 @@ function AccountCard({
             </div>
           ))}
           {accountInvestments.length > 5 && (
-            <p className="text-[10px] text-neutral-400 text-center pt-1">
+            <p className="text-[10px] text-[#6E6E73] text-center pt-1">
               +{accountInvestments.length - 5} inversiones más
             </p>
           )}
@@ -217,17 +220,17 @@ export function AccountsList() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
             Cuentas
           </h1>
-          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+          <p className="text-xs font-medium text-[#6E6E73]">
             Resumen de tu liquidez y activos.
           </p>
         </div>
 
         <Button
           onClick={() => setDialog({ mode: 'create' })}
-          className="h-9 px-4 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg text-xs font-bold transition-all duration-200 active:scale-95 shadow-sm hover:opacity-90"
+          className="h-9 px-4 bg-[#4F6A35] hover:bg-[#3C5230] text-white rounded-lg text-xs font-bold transition-all duration-200 active:scale-95 shadow-sm hover:opacity-90"
         >
           <Plus className="w-4 h-4 mr-1.5" />
           Nueva Cuenta
@@ -236,16 +239,18 @@ export function AccountsList() {
 
       {/* ── Overview Card — Más sutil y elegante ── */}
       {!isLoading && accounts.length > 0 && (
-        <div className="relative overflow-hidden bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200/60 dark:border-neutral-800/60 rounded-2xl p-6">
+        <div className="relative overflow-hidden bg-white rounded-[22px] p-6"
+          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">Patrimonio Total</span>
-              <p className="text-2xl font-bold tracking-tight mt-1 text-neutral-900 dark:text-neutral-100">
+              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6E6E73]">Patrimonio Total</span>
+              <p className="text-2xl font-bold tracking-tight mt-1 text-foreground">
                 {formatCurrency(totalBalance, 'BOB')}
               </p>
             </div>
-            <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-              <Landmark className="w-6 h-6 text-emerald-600 dark:text-emerald-500" />
+            <div className="w-12 h-12 bg-[#F2F9E3] rounded-xl flex items-center justify-center">
+              <Landmark className="w-6 h-6 text-[#4F6A35]" />
             </div>
           </div>
         </div>
@@ -255,16 +260,18 @@ export function AccountsList() {
       {isLoading ? (
         <AccountsGridSkeleton />
       ) : isError ? (
-        <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-500 text-[13px] p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 font-medium">
+        <div className="bg-[#FAEDE9] text-[#B5543D] text-[13px] p-4 rounded-xl font-medium">
           Error al cargar tus cuentas.
         </div>
       ) : accounts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/20">
-          <div className="w-12 h-12 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex items-center justify-center mb-4">
-            <Plus className="w-5 h-5 text-neutral-300" />
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-[22px]"
+          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+        >
+          <div className="w-12 h-12 rounded-xl bg-[#F2F9E3] border border-[rgba(0,0,0,0.06)] flex items-center justify-center mb-4">
+            <Plus className="w-5 h-5 text-[#4F6A35]" />
           </div>
-          <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">Sin cuentas aún</h3>
-          <p className="text-[12px] text-neutral-500 mt-1 max-w-[240px]">Registra tu primera cuenta para empezar a rastrear tu patrimonio.</p>
+          <h3 className="text-sm font-bold text-foreground">Sin cuentas aún</h3>
+          <p className="text-[12px] text-[#6E6E73] mt-1 max-w-[240px]">Registra tu primera cuenta para empezar a rastrear tu patrimonio.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-12">
@@ -282,7 +289,7 @@ export function AccountsList() {
 
       {/* ── Modals ── */}
       <Dialog open={isDialogOpen} onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-neutral-200/50 dark:border-neutral-800/50 backdrop-blur-2xl p-8">
+        <DialogContent className="sm:max-w-md rounded-[22px] p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight">
               {dialog.mode === 'edit' ? 'Ajustar Cuenta' : 'Nueva Cuenta'}
@@ -301,18 +308,18 @@ export function AccountsList() {
         open={!!pendingDeleteId}
         onOpenChange={(open) => !open && setPendingDeleteId(null)}
       >
-        <AlertDialogContent className="rounded-[2.5rem] border-neutral-200 dark:border-neutral-800 p-8">
+        <AlertDialogContent className="rounded-[22px] p-8">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-bold tracking-tight">¿Eliminar cuenta?</AlertDialogTitle>
-            <AlertDialogDescription className="text-neutral-500 dark:text-neutral-400 text-[13px] font-medium leading-relaxed">
+            <AlertDialogDescription className="text-[#6E6E73] text-[13px] font-medium leading-relaxed">
               Esta acción es irreversible. Todas las transacciones asociadas perderán su origen, afectando la precisión de tus reportes históricos.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-8 gap-3">
-            <AlertDialogCancel className="rounded-2xl border-neutral-200/50 px-6 font-bold">Mantener</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-xl border-[rgba(0,0,0,0.08)] px-6 font-bold">Mantener</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="rounded-2xl bg-rose-600 hover:bg-rose-700 text-white px-6 font-bold"
+              className="rounded-xl bg-[#B5543D] hover:bg-[#B5543D]/90 text-white px-6 font-bold"
             >
               Eliminar Definitivamente
             </AlertDialogAction>

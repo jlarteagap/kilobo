@@ -15,7 +15,7 @@ interface Props {
 }
 
 const FEASIBILITY = {
-  alta : { label: 'Alta',  class: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/15' },
+  alta : { label: 'Alta',  class: 'bg-[#F2F9E3] text-[#4F6A35] border-[#C8D9A9]' },
   media: { label: 'Media', class: 'bg-amber-500/10 text-amber-600 border-amber-500/15' },
   baja : { label: 'Baja',  class: 'bg-muted/30 text-muted-foreground border-muted-foreground/10' },
 }
@@ -32,7 +32,7 @@ export function SavingsTipCard({ opportunity, aiTip, rank }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-600 ring-1 ring-emerald-500/10">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F2F9E3] text-[10px] font-bold text-[#4F6A35] ring-1 ring-[#C8D9A9]">
             {rank}
           </div>
           <div className="flex items-center gap-2">
@@ -52,16 +52,16 @@ export function SavingsTipCard({ opportunity, aiTip, rank }: Props) {
         </div>
 
         <div className="flex flex-col items-end">
-          <span className="text-sm font-bold text-emerald-600 tabular-nums">
+          <span className="text-sm font-bold text-[#4F6A35] tabular-nums">
             +${saving.toLocaleString()}
           </span>
-          <span className="text-[9px] uppercase tracking-widest font-bold text-emerald-600/50">Mensual</span>
+          <span className="text-[9px] uppercase tracking-widest font-bold text-[#4F6A35]/50">Mensual</span>
         </div>
       </div>
 
       {/* Tip */}
-      <div className="bg-emerald-500/[0.02] border border-emerald-500/5 rounded-xl p-4 flex items-start gap-3">
-        <Lightbulb className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+      <div className="bg-[#F2F9E3]/40 border border-[#C8D9A9]/30 rounded-xl p-4 flex items-start gap-3">
+        <Lightbulb className="h-4 w-4 text-[#4F6A35] mt-0.5 shrink-0" />
         <p className="text-xs text-muted-foreground/80 leading-relaxed font-medium">
           {tip}
         </p>
@@ -70,10 +70,10 @@ export function SavingsTipCard({ opportunity, aiTip, rank }: Props) {
       {/* Potential annual */}
       <div className="flex items-center justify-between pt-1">
         <div className="flex items-center gap-1.5">
-          <div className="h-1 w-1 rounded-full bg-emerald-500/30" />
+          <div className="h-1 w-1 rounded-full bg-[#4F6A35]/30" />
           <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground/40">Potencial anual</span>
         </div>
-        <span className="text-sm font-bold text-emerald-600/80 tabular-nums">
+        <span className="text-sm font-bold text-[#4F6A35]/80 tabular-nums">
           ${(saving * 12).toLocaleString()}
         </span>
       </div>

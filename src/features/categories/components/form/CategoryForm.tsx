@@ -75,14 +75,14 @@ function CreateCategoryForm({ onSuccess }: Omit<CreateModeProps, 'mode'>) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Nombre
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   placeholder="Ej: Alimentación, Transporte…"
-                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -96,15 +96,15 @@ function CreateCategoryForm({ onSuccess }: Omit<CreateModeProps, 'mode'>) {
           name="icon"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
-                Icono <span className="text-gray-400 font-normal">(emoji)</span>
+              <FormLabel className="text-[13px] font-medium text-foreground">
+                Icono <span className="text-[#6E6E73] font-normal">(emoji)</span>
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   value={field.value ?? ''}
                   placeholder="🍔"
-                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -118,7 +118,7 @@ function CreateCategoryForm({ onSuccess }: Omit<CreateModeProps, 'mode'>) {
           name="color"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Color
               </FormLabel>
               <FormControl>
@@ -187,14 +187,14 @@ function EditCategoryForm({ category, lockedTags = [], onSuccess }: Omit<EditMod
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Nombre
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   placeholder="Ej: Alimentación, Transporte…"
-                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -208,15 +208,15 @@ function EditCategoryForm({ category, lockedTags = [], onSuccess }: Omit<EditMod
           name="icon"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
-                Icono <span className="text-gray-400 font-normal">(emoji)</span>
+              <FormLabel className="text-[13px] font-medium text-foreground">
+                Icono <span className="text-[#6E6E73] font-normal">(emoji)</span>
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   value={field.value ?? ''}
                   placeholder="🍔"
-                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -230,7 +230,7 @@ function EditCategoryForm({ category, lockedTags = [], onSuccess }: Omit<EditMod
           name="color"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Color
               </FormLabel>
               <FormControl>

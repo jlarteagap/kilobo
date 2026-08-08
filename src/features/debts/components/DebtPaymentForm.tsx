@@ -41,20 +41,20 @@ function PaymentProgress({ debt }: { debt: Debt }) {
   const isComplete = percent >= 100
 
   return (
-    <div className="p-4 bg-gray-50 rounded-xl space-y-3">
+    <div className="p-4 bg-[#F2F9E3]/40 rounded-xl space-y-3">
       {/* Números */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[11px] text-gray-400">Pagado</p>
-          <p className="text-sm font-semibold text-gray-800">
+          <p className="text-[11px] text-[#6E6E73]">Pagado</p>
+          <p className="text-sm font-semibold text-foreground">
             {formatCurrency(debt.paid_amount, debt.currency)}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] text-gray-400">Pendiente</p>
+          <p className="text-[11px] text-[#6E6E73]">Pendiente</p>
           <p className={cn(
             'text-sm font-semibold',
-            isComplete ? 'text-emerald-600' : 'text-rose-500'
+            isComplete ? 'text-[#4F6A35]' : 'text-[#B5543D]'
           )}>
             {isComplete ? '¡Pagado!' : formatCurrency(pending, debt.currency)}
           </p>
@@ -62,18 +62,18 @@ function PaymentProgress({ debt }: { debt: Debt }) {
       </div>
 
       {/* Barra */}
-      <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+      <div className="h-2 w-full bg-[rgba(0,0,0,0.06)] rounded-full overflow-hidden">
         <div
           className={cn(
             'h-full rounded-full transition-all duration-500',
-            isComplete ? 'bg-emerald-400' : 'bg-gray-900'
+            isComplete ? 'bg-[#4F6A35]' : 'bg-[#4F6A35]'
           )}
           style={{ width: `${percent}%` }}
         />
       </div>
 
       {/* Porcentaje */}
-      <p className="text-[11px] text-gray-400 text-right">
+      <p className="text-[11px] text-[#6E6E73] text-right">
         {percent.toFixed(0)}% completado
         {' · '}Total: {formatCurrency(debt.amount, debt.currency)}
       </p>
@@ -131,16 +131,16 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
         {/* ── Resumen de la deuda ── */}
-        <div className="flex items-center gap-3 px-3 py-2.5 bg-gray-50 rounded-xl">
+        <div className="flex items-center gap-3 px-3 py-2.5 bg-[#F2F9E3]/40 rounded-xl">
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-gray-800 truncate">
+            <p className="text-[13px] font-semibold text-foreground truncate">
               {debt.contact_name}
             </p>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-[#6E6E73]">
               {debt.type === 'GIVEN' ? 'Te debe' : 'Le debes'}
             </p>
           </div>
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-sm font-semibold text-foreground">
             {formatCurrency(debt.amount, debt.currency)}
           </p>
         </div>
@@ -154,7 +154,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
           name="amount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Monto a pagar
               </FormLabel>
               <FormControl>
@@ -164,14 +164,14 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
                   placeholder="0.00"
                   {...field}
                   className={cn(
-                    'rounded-xl border-0 focus-visible:ring-gray-900/10',
-                    isOverAmount ? 'bg-rose-50' : 'bg-gray-50'
+                    'rounded-xl border-0 focus-visible:ring-[#5F7D42]/30',
+                    isOverAmount ? 'bg-[#FAEDE9]' : 'bg-[#F2F9E3]/40'
                   )}
                   value={typeof field.value === 'number' || typeof field.value === 'string' ? field.value : ''}
                 />
               </FormControl>
               {isOverAmount && (
-                <p className="text-[12px] text-rose-500 mt-1">
+                <p className="text-[12px] text-[#B5543D] mt-1">
                   El monto supera el pendiente de {formatCurrency(pending, debt.currency)}
                 </p>
               )}
@@ -186,14 +186,14 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
           name="date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Fecha del pago
               </FormLabel>
               <FormControl>
                 <Input
                   type="date"
                   {...field}
-                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -207,12 +207,12 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
           name="account_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 {debt.type === 'GIVEN' ? 'Cuenta destino' : 'Cuenta origen'}
               </FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value as string}>
                 <FormControl>
-                  <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                  <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                     <SelectValue placeholder="Seleccionar cuenta" />
                   </SelectTrigger>
                 </FormControl>
@@ -228,10 +228,10 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
               {debt.type === 'RECEIVED' && account && (
                 <div className={cn(
                   'flex items-center justify-between px-3 py-2 rounded-xl text-[12px] mt-2',
-                  isOverBalance ? 'bg-rose-50 text-rose-500' : 'bg-gray-50 text-gray-400'
+                  isOverBalance ? 'bg-[#FAEDE9] text-[#B5543D]' : 'bg-[#F2F9E3]/40 text-[#6E6E73]'
                 )}>
                   <span>Balance disponible</span>
-                  <span className={cn('font-semibold', isOverBalance && 'text-rose-600')}>
+                  <span className={cn('font-semibold', isOverBalance && 'text-[#B5543D]')}>
                     {formatCurrency(account.balance, account.currency)}
                     {isOverBalance && (
                       <span className="ml-1.5 font-normal">· insuficiente</span>
@@ -250,9 +250,9 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Notas
-                <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
               </FormLabel>
               <FormControl>
                 <Textarea
@@ -260,7 +260,7 @@ export function DebtPaymentForm({ debt, onSuccess }: DebtPaymentFormProps) {
                   placeholder="Ej: Pago parcial de febrero…"
                   {...field}
                   value={field.value ?? ''}
-                  className="rounded-xl border-0 bg-gray-50 resize-none focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 resize-none focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />

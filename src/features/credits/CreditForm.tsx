@@ -46,10 +46,10 @@ function StepIndicator({
               className={cn(
                 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300',
                 i === current
-                  ? 'bg-gray-900 text-white scale-110 shadow-md'
+                  ? 'bg-[#4F6A35] text-white scale-110 shadow-md'
                   : i < current
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-gray-100 text-gray-400'
+                    ? 'bg-[#F2F9E3] text-[#4F6A35]'
+                    : 'bg-[rgba(0,0,0,0.06)] text-[#6E6E73]'
               )}
             >
               {i < current ? '✓' : step.emoji}
@@ -58,10 +58,10 @@ function StepIndicator({
               className={cn(
                 'text-[10px] font-medium transition-colors duration-200',
                 i === current
-                  ? 'text-gray-900'
+                  ? 'text-foreground'
                   : i < current
-                    ? 'text-emerald-600'
-                    : 'text-gray-400'
+                    ? 'text-[#4F6A35]'
+                    : 'text-[#6E6E73]'
               )}
             >
               {step.title}
@@ -71,7 +71,7 @@ function StepIndicator({
             <div
               className={cn(
                 'w-10 h-0.5 mx-1.5 mt-[-1.25rem] rounded-full transition-colors duration-300',
-                i < current ? 'bg-emerald-200' : 'bg-gray-200'
+                i < current ? 'bg-[#4F6A35]' : 'bg-[rgba(0,0,0,0.06)]'
               )}
             />
           )}
@@ -152,7 +152,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-600">
+                  <FormLabel className="text-[13px] font-medium text-foreground">
                     Tipo de crédito
                   </FormLabel>
                   <FormControl>
@@ -165,21 +165,21 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                           className={cn(
                             'flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200',
                             field.value === value
-                              ? 'border-gray-900 bg-gray-900 text-white'
-                              : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200 hover:bg-white'
+                              ? 'border-[#4F6A35] bg-[#4F6A35] text-white'
+                              : 'border-[rgba(0,0,0,0.06)] bg-[#F2F9E3]/40 text-[#6E6E73] hover:border-[rgba(0,0,0,0.12)] hover:bg-white'
                           )}
                         >
                           <span className="text-xl flex-shrink-0">{emoji}</span>
                           <div>
                             <p className={cn(
                               'text-[13px] font-semibold',
-                              field.value === value ? 'text-white' : 'text-gray-700'
+                              field.value === value ? 'text-white' : 'text-foreground'
                             )}>
                               {label}
                             </p>
                             <p className={cn(
                               'text-[11px] leading-tight mt-0.5',
-                              field.value === value ? 'text-gray-300' : 'text-gray-400'
+                              field.value === value ? 'text-white/70' : 'text-[#6E6E73]'
                             )}>
                               {description}
                             </p>
@@ -198,7 +198,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
               name="institution"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-600">
+                  <FormLabel className="text-[13px] font-medium text-foreground">
                     Institución
                   </FormLabel>
                   <FormControl>
@@ -209,7 +209,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                       onBlur={field.onBlur}
                       ref={field.ref}
                       value={field.value as string}
-                      className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                      className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                     />
                   </FormControl>
                   <FormMessage className="text-[12px]" />
@@ -223,20 +223,20 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
         {currentStep === 1 && (
           <div className="space-y-5 pt-2">
             {/* Has history toggle */}
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-[#F2F9E3]/40">
               <Checkbox
                 checked={hasHistory}
                 onCheckedChange={(checked) => {
                   setHasHistory(!!checked)
                   form.setValue('has_history', !!checked)
                 }}
-                className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                className="mt-0.5 data-[state=checked]:bg-[#4F6A35] data-[state=checked]:border-[#4F6A35]"
               />
               <div className="space-y-0.5">
-                <FormLabel className="text-[13px] font-medium text-gray-700 cursor-pointer">
-                  Tiene historial previo
+                <FormLabel className="text-[13px] font-medium text-foreground cursor-pointer">
+                  Mantener en la lista principal
                 </FormLabel>
-                <p className="text-[12px] text-gray-400 leading-relaxed">
+                <p className="text-[12px] text-[#6E6E73] leading-relaxed">
                   El crédito ya tiene cuotas pagadas antes de registrarlo en Kilo.
                 </p>
               </div>
@@ -248,9 +248,9 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                 name="original_amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-gray-600">
+                    <FormLabel className="text-[13px] font-medium text-foreground">
                       Monto original
-                      {hasHistory && <span className="text-gray-400 font-normal ml-1">(ref.)</span>}
+                      {hasHistory && <span className="text-[#6E6E73] font-normal ml-1">(ref.)</span>}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -262,7 +262,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                         onBlur={field.onBlur}
                         ref={field.ref}
                         value={field.value ?? ''}
-                        className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                        className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                       />
                     </FormControl>
                     <FormMessage className="text-[12px]" />
@@ -275,12 +275,12 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                 name="currency"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-gray-600">
+                    <FormLabel className="text-[13px] font-medium text-foreground">
                       Moneda
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value as string}>
                       <FormControl>
-                        <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                        <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                           <SelectValue placeholder="Moneda" />
                         </SelectTrigger>
                       </FormControl>
@@ -305,7 +305,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                     name="paid_installments"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[13px] font-medium text-gray-600">
+                        <FormLabel className="text-[13px] font-medium text-foreground">
                           Cuotas pagadas
                         </FormLabel>
                         <FormControl>
@@ -315,7 +315,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                             placeholder="0"
                             {...field}
                             value={field.value || ''}
-                            className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                            className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                           />
                         </FormControl>
                         <FormMessage className="text-[12px]" />
@@ -328,7 +328,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                     name="total_installments"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[13px] font-medium text-gray-600">
+                        <FormLabel className="text-[13px] font-medium text-foreground">
                           Cuotas restantes
                         </FormLabel>
                         <FormControl>
@@ -342,7 +342,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                               const val = e.target.value ? +e.target.value : 0
                               field.onChange(val)
                             }}
-                            className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                            className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                           />
                         </FormControl>
                         <FormMessage className="text-[12px]" />
@@ -364,7 +364,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                 name="annual_interest_rate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-gray-600">
+                    <FormLabel className="text-[13px] font-medium text-foreground">
                       Tasa interés anual
                     </FormLabel>
                     <FormControl>
@@ -374,7 +374,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                         placeholder="Ej: 12.5"
                         {...field}
                         value={field.value || ''}
-                        className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                        className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                       />
                     </FormControl>
                     <FormMessage className="text-[12px]" />
@@ -388,7 +388,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                   name="total_installments"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-medium text-gray-600">
+                      <FormLabel className="text-[13px] font-medium text-foreground">
                         Plazo total (meses)
                       </FormLabel>
                       <FormControl>
@@ -398,7 +398,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                           placeholder="Ej: 60"
                           {...field}
                           value={field.value || ''}
-                          className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                          className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                         />
                       </FormControl>
                       <FormMessage className="text-[12px]" />
@@ -412,9 +412,9 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                 name="monthly_payment"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-gray-600">
+                    <FormLabel className="text-[13px] font-medium text-foreground">
                       Pago mensual
-                      <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                      <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -424,7 +424,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) => field.onChange(e.target.value ? +e.target.value : undefined)}
-                        className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                        className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                       />
                     </FormControl>
                     <FormMessage className="text-[12px]" />
@@ -440,7 +440,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                   name="start_date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-medium text-gray-600">
+                      <FormLabel className="text-[13px] font-medium text-foreground">
                         Fecha de inicio
                       </FormLabel>
                       <FormControl>
@@ -448,7 +448,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                           type="date"
                           {...field}
                           value={field.value as string}
-                          className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                          className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                         />
                       </FormControl>
                       <FormMessage className="text-[12px]" />
@@ -462,7 +462,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                 name="first_payment_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-gray-600">
+                    <FormLabel className="text-[13px] font-medium text-foreground">
                       {hasHistory ? 'Próxima cuota' : 'Fecha 1er pago'}
                     </FormLabel>
                     <FormControl>
@@ -470,7 +470,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                         type="date"
                         {...field}
                         value={field.value as string}
-                        className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                        className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                       />
                     </FormControl>
                     <FormMessage className="text-[12px]" />
@@ -485,9 +485,9 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-600">
+                  <FormLabel className="text-[13px] font-medium text-foreground">
                     Notas
-                    <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                    <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
@@ -495,7 +495,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
                       placeholder="Ej: Crédito para renovación de vehículo…"
                       {...field}
                       value={field.value ?? ''}
-                      className="rounded-xl border-0 bg-gray-50 resize-none focus-visible:ring-gray-900/10"
+                      className="rounded-xl border-0 bg-[#F2F9E3]/40 resize-none focus-visible:ring-[#5F7D42]/30"
                     />
                   </FormControl>
                   <FormMessage className="text-[12px]" />
@@ -512,7 +512,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
               type="button"
               variant="ghost"
               onClick={handleBack}
-              className="gap-1.5 text-gray-500 hover:text-gray-700 rounded-xl"
+              className="gap-1.5 text-[#6E6E73] hover:text-foreground rounded-xl"
             >
               <ArrowLeft className="w-4 h-4" />
               Atrás
@@ -529,7 +529,7 @@ export function CreditForm({ onSuccess }: CreditFormProps) {
             <Button
               type="button"
               onClick={handleNext}
-              className="gap-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+              className="gap-1.5 bg-[#4F6A35] hover:bg-[#3C5230] text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
             >
               Siguiente
               <ArrowRight className="w-4 h-4" />

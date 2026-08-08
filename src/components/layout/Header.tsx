@@ -36,13 +36,13 @@ export function Header() {
     .sort((a, b) => b[0].length - a[0].length)[0]?.[1] ?? "Dashboard"
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[#E5DED2] bg-white/80 px-4 md:px-6 backdrop-blur-xl">
-      <div className="flex items-center gap-4">
-        <SidebarTrigger className="-ml-1" />
-        <h1 className="text-lg font-semibold text-black">{title}</h1>
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[rgba(0,0,0,0.06)] bg-white/80 px-4 md:px-6 backdrop-blur-xl">
+      <div className="flex min-w-0 items-center gap-4">
+        <SidebarTrigger className="-ml-1 shrink-0" />
+        <h1 className="truncate text-[30px] font-extrabold tracking-tight text-foreground">{title}</h1>
       </div>
       
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-3">
         <QuickActionMenu />
         <Avatar className="size-8 ring-2 ring-[#F2F9E3]">
           <AvatarImage src={user?.photoURL || undefined} />

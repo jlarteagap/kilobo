@@ -70,8 +70,8 @@ export function QuickActionMenu({ trigger }: QuickActionMenuProps) {
             </Button>
           )}
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 rounded-xl border-[#E5DED2] shadow-lg">
-          <DropdownMenuLabel className="font-medium text-[#837A75]">Crear rápido</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-56 rounded-[22px] border-none shadow-lg">
+          <DropdownMenuLabel className="font-medium text-[#6E6E73]">Crear rápido</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setActionType("TRANSACTION")} className="gap-3 cursor-pointer py-2 rounded-lg focus:bg-[#F2F9E3] focus:text-[#4F6A35] transition-colors">
             <ArrowRightLeft className="h-4 w-4" />
@@ -102,8 +102,8 @@ export function QuickActionMenu({ trigger }: QuickActionMenuProps) {
 
       <Dialog open={actionType !== null} onOpenChange={(open) => { if (!open) handleClose() }}>
         {actionType && (
-          <DialogContent className="sm:max-w-[425px] rounded-[1.5rem] p-0 overflow-hidden border-[#E5DED2] shadow-xl gap-0">
-            <DialogHeader className="px-6 pt-6 pb-4 border-b border-[#E5DED2] bg-[#F2F9E3]/50">
+          <DialogContent className="sm:max-w-[425px] rounded-[22px] p-0 overflow-hidden border-none shadow-xl gap-0">
+            <DialogHeader className="px-6 pt-6 pb-4 border-b border-[rgba(0,0,0,0.06)] bg-[#F2F9E3]/50">
               <DialogTitle className="text-xl font-semibold">
                 {actionType === "TRANSACTION" && "Nueva Transacción"}
                 {actionType === "ACCOUNT" && "Nueva Cuenta"}

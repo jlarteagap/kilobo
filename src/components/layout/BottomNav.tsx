@@ -28,7 +28,7 @@ export function BottomNav() {
     : "U"
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-[#E5DED2] bg-white pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-[rgba(0,0,0,0.06)] bg-white pb-[env(safe-area-inset-bottom)]">
       <div className="grid grid-cols-5 items-center px-2 pt-1.5">
         {/* Slots 1-2 */}
         {NAV_ITEMS.map((item) => {
@@ -42,13 +42,13 @@ export function BottomNav() {
               <item.icon
                 className={cn(
                   "size-5 transition-colors",
-                  isActive ? "text-[#4F6A35]" : "text-[#837A75]"
+                  isActive ? "text-[#4F6A35]" : "text-[#6E6E73]"
                 )}
               />
               <span
                 className={cn(
                   "text-[10px] font-medium",
-                  isActive ? "text-[#4F6A35]" : "text-[#837A75]"
+                  isActive ? "text-[#4F6A35]" : "text-[#6E6E73]"
                 )}
               >
                 {item.name}
@@ -77,7 +77,7 @@ export function BottomNav() {
           href="/transactions"
           className={cn(
             "flex flex-col items-center gap-0.5 py-1.5",
-            pathname === "/transactions" ? "text-[#4F6A35]" : "text-[#837A75]"
+            pathname === "/transactions" ? "text-[#4F6A35]" : "text-[#6E6E73]"
           )}
         >
           <ArrowRightLeft className="size-5" />
@@ -89,7 +89,7 @@ export function BottomNav() {
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="flex flex-col items-center gap-0.5 py-1.5 text-[#837A75]"
+              className="flex flex-col items-center gap-0.5 py-1.5 text-[#6E6E73]"
             >
               <User className="size-5" />
               <span className="text-[10px] font-medium">Perfil</span>
@@ -99,7 +99,7 @@ export function BottomNav() {
             align="end"
             side="top"
             sideOffset={8}
-            className="w-64 rounded-[1.25rem] border-[#E5DED2] p-2"
+            className="w-64 rounded-[22px] border-none p-2 shadow-lg"
           >
             <div className="flex items-center gap-3 px-3 py-2">
               <Avatar className="size-10 ring-2 ring-[#F2F9E3]">
@@ -107,20 +107,20 @@ export function BottomNav() {
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-black">
+                <p className="truncate text-sm font-semibold text-foreground">
                   {user?.displayName || "Usuario"}
                 </p>
-                <p className="truncate text-xs text-[#837A75]">
+                <p className="truncate text-xs text-[#6E6E73]">
                   {user?.email || "Sin email"}
                 </p>
               </div>
             </div>
-            <div className="mt-1 flex flex-col gap-0.5 border-t border-[#E5DED2] pt-1.5">
+            <div className="mt-1 flex flex-col gap-0.5 border-t border-[rgba(0,0,0,0.06)] pt-1.5">
               <Link
                 href="/conductor/settings"
-                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-black hover:bg-[#F2F9E3]"
+                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-[#F2F9E3]"
               >
-                <Settings className="size-4 text-[#837A75]" />
+                <Settings className="size-4 text-[#6E6E73]" />
                 Ajustes
               </Link>
               <button

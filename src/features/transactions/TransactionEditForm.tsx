@@ -94,8 +94,8 @@ export function TransactionEditForm({
   }
 
   const typeColors = {
-    INCOME:   'bg-emerald-100 text-emerald-700',
-    EXPENSE:  'bg-rose-100    text-rose-700',
+    INCOME:   'bg-[#F2F9E3] text-[#4F6A35]',
+    EXPENSE:  'bg-[#FAEDE9] text-[#B5543D]',
     TRANSFER: 'bg-blue-100    text-blue-700',
     SAVING:   'bg-violet-100  text-violet-700',
   } as const
@@ -105,7 +105,7 @@ export function TransactionEditForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
         {/* ── Resumen ── */}
-        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
+        <div className="flex items-center gap-4 p-4 bg-[#F2F9E3]/40 rounded-2xl">
           <Badge
             variant="secondary"
             className={cn('text-[11px] rounded-full px-3 py-1', typeColors[transaction.type])}
@@ -113,11 +113,11 @@ export function TransactionEditForm({
             {TRANSACTION_TYPE_LABELS[transaction.type]}
           </Badge>
           <div className="ml-auto text-right">
-            <p className="text-lg font-semibold tabular-nums text-gray-900">
+            <p className="text-lg font-semibold tabular-nums text-foreground">
               {transaction.amount} {transaction.currency}
             </p>
             {transaction.description && (
-              <p className="text-[12px] text-gray-400 mt-0.5 truncate max-w-[180px]">
+              <p className="text-[12px] text-[#6E6E73] mt-0.5 truncate max-w-[180px]">
                 {transaction.description}
               </p>
             )}
@@ -127,11 +127,11 @@ export function TransactionEditForm({
         {/* ── Fecha y Actividad ── */}
         <div className="space-y-5">
           <div className="flex items-center gap-2">
-            <div className="h-px flex-1 bg-gray-100" />
-            <span className="text-[10px] uppercase tracking-widest font-semibold text-gray-400">
+            <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
+            <span className="text-[10px] uppercase tracking-widest font-semibold text-[#6E6E73]">
               Fecha y Actividad
             </span>
-            <div className="h-px flex-1 bg-gray-100" />
+            <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -140,13 +140,13 @@ export function TransactionEditForm({
               name="date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-600">Fecha</FormLabel>
+                  <FormLabel className="text-[13px] font-medium text-foreground">Fecha</FormLabel>
                   <FormControl>
                     <Input
                       type="date"
                       {...field}
                       value={field.value as string}
-                      className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                      className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                     />
                   </FormControl>
                   <FormMessage className="text-[12px]" />
@@ -159,22 +159,22 @@ export function TransactionEditForm({
               name="project_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-600">
+                  <FormLabel className="text-[13px] font-medium text-foreground">
                     Actividad
-                    <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                    <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
                   </FormLabel>
                   <Select
                     onValueChange={handleProjectChange}
                     value={(field.value as string) ?? 'none'}
                   >
                     <FormControl>
-                      <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                      <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                         <SelectValue placeholder="Sin actividad" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="none">
-                        <span className="text-gray-400">Sin actividad</span>
+                        <span className="text-[#6E6E73]">Sin actividad</span>
                       </SelectItem>
                       {projects.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
@@ -198,9 +198,9 @@ export function TransactionEditForm({
               name="subtype"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-gray-600">
+                  <FormLabel className="text-[13px] font-medium text-foreground">
                     Etiqueta
-                    <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                    <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
                   </FormLabel>
                   <FormControl>
                     <ChipSelector items={availableSubtypes} value={field.value as string | null | undefined} onChange={(v) => form.setValue('subtype', v ?? undefined)} clearLabel="Ninguno" />
@@ -216,11 +216,11 @@ export function TransactionEditForm({
         {showCategory || showTags ? (
           <div className="space-y-5">
             <div className="flex items-center gap-2">
-              <div className="h-px flex-1 bg-gray-100" />
-              <span className="text-[10px] uppercase tracking-widest font-semibold text-gray-400">
+              <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
+              <span className="text-[10px] uppercase tracking-widest font-semibold text-[#6E6E73]">
                 Clasificación
               </span>
-              <div className="h-px flex-1 bg-gray-100" />
+              <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
             </div>
 
             <div className={cn(showCategory && showTags ? 'grid grid-cols-2 gap-4' : 'space-y-4')}>
@@ -230,10 +230,10 @@ export function TransactionEditForm({
                   name="category_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-medium text-gray-600">Categoría</FormLabel>
+                      <FormLabel className="text-[13px] font-medium text-foreground">Categoría</FormLabel>
                       <Select onValueChange={handleCategoryChange} defaultValue={field.value as string}>
                         <FormControl>
-                          <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                          <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                             <SelectValue placeholder="Sin categoría" />
                           </SelectTrigger>
                         </FormControl>
@@ -259,9 +259,9 @@ export function TransactionEditForm({
                   name="tag"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-medium text-gray-600">
+                      <FormLabel className="text-[13px] font-medium text-foreground">
                         Etiqueta
-                        <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                        <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
                       </FormLabel>
                       <FormControl>
                         <ChipSelector items={availableTags} value={field.value as string | null | undefined} onChange={(v) => form.setValue('tag', v ?? undefined)} clearLabel="Ninguna" />
@@ -278,11 +278,11 @@ export function TransactionEditForm({
         {/* ── Detalles ── */}
         <div className="space-y-5">
           <div className="flex items-center gap-2">
-            <div className="h-px flex-1 bg-gray-100" />
-            <span className="text-[10px] uppercase tracking-widest font-semibold text-gray-400">
+            <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
+            <span className="text-[10px] uppercase tracking-widest font-semibold text-[#6E6E73]">
               Detalles
             </span>
-            <div className="h-px flex-1 bg-gray-100" />
+            <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
           </div>
 
           <FormField<EditFormValues>
@@ -290,16 +290,16 @@ export function TransactionEditForm({
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Nota
-                  <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                  <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     rows={2}
                     {...field}
                     value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ''}
-                    className="rounded-xl border-0 bg-gray-50 resize-none focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 resize-none focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -319,7 +319,7 @@ export function TransactionEditForm({
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <FormLabel className="font-normal text-[13px] text-gray-600 cursor-pointer">
+                  <FormLabel className="font-normal text-[13px] text-foreground cursor-pointer">
                     Esta transacción es recurrente
                   </FormLabel>
                 </FormItem>

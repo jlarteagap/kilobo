@@ -12,14 +12,14 @@ export const normalizeCurrency = (currency: string): string => {
 }
 
 const transactionAmountColorMap: Record<TransactionType, string> = {
-  INCOME:   "text-emerald-600",
-  EXPENSE:  "text-rose-600",
+  INCOME:   "text-[#4F6A35]",
+  EXPENSE:  "text-[#B5543D]",
   TRANSFER: "text-amber-600",
   SAVING:   "text-purple-600",
 }
 
 export const getTransactionAmountColor = (type: TransactionType): string =>
-  transactionAmountColorMap[type] ?? "text-gray-900"
+  transactionAmountColorMap[type] ?? "text-foreground"
 
 const transactionIconMap: Record<TransactionType, LucideIcon | null> = {
   INCOME:   ArrowDownLeft,

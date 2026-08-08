@@ -68,13 +68,14 @@ function SummaryCard({
 }) {
   return (
     <div
-      className="bg-white rounded-2xl p-5 flex flex-col gap-3 overflow-hidden relative shadow-card-hover"
+      className="bg-white rounded-[22px] p-5 flex flex-col gap-3 overflow-hidden relative"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       <div className="flex items-start justify-between">
-        <p className="text-[13px] font-medium text-gray-500">{title}</p>
+        <p className="text-[13px] font-medium text-[#6E6E73]">{title}</p>
       </div>
       <div>
-        <p className={cn('text-2xl font-semibold tracking-tight', amountColor ?? 'text-gray-900')}>
+        <p className={cn('text-2xl font-semibold tracking-tight', amountColor ?? 'text-foreground')}>
           {formatCurrency(Math.abs(amount), currency)}
         </p>
         <div className="mt-1">
@@ -126,7 +127,7 @@ function ProjectSummaryCard({
             {name}
           </p>
           {isPersonal && (
-            <p className="text-[11px] text-gray-400 font-medium mt-0.5">
+            <p className="text-[11px] text-[#6E6E73] font-medium mt-0.5">
               Sin actividad asignada
             </p>
           )}
@@ -136,14 +137,14 @@ function ProjectSummaryCard({
       {/* Ingresos + Gastos */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-gray-400">Ingresos</span>
-          <span className="text-[13px] font-medium text-emerald-600">
+          <span className="text-[12px] text-[#6E6E73]">Ingresos</span>
+          <span className="text-[13px] font-medium text-[#4F6A35]">
             {formatCurrency(income, currency)}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-gray-400">Gastos</span>
-          <span className="text-[13px] font-medium text-rose-500">
+          <span className="text-[12px] text-[#6E6E73]">Gastos</span>
+          <span className="text-[13px] font-medium text-[#B5543D]">
             {formatCurrency(expenses, currency)}
           </span>
         </div>
@@ -154,10 +155,10 @@ function ProjectSummaryCard({
         className="flex items-center justify-between pt-3 mt-auto"
         style={{ borderTop: `0.5px solid ${colorDivider}` }}
       >
-        <span className="text-[12px] text-gray-400">Neto</span>
+        <span className="text-[12px] text-[#6E6E73]">Neto</span>
         <span
           className="text-[15px] font-semibold"
-          style={{ color: net >= 0 ? '#16a34a' : '#e11d48' }}
+          style={{ color: net >= 0 ? '#4F6A35' : '#B5543D' }}
         >
           {net >= 0 ? '+' : ''}{formatCurrency(net, currency)}
         </span>
@@ -244,7 +245,7 @@ export function SummaryCards({
   const expenseTrend = calcTrend(current.expense, previous.expense)
   const netTrend     = calcTrend(current.net,     previous.net)
 
-  const netColor = current.net > 0 ? 'text-emerald-600' : current.net < 0 ? 'text-rose-500' : 'text-gray-900'
+  const netColor = current.net > 0 ? 'text-[#4F6A35]' : current.net < 0 ? 'text-[#B5543D]' : 'text-foreground'
 
   // ── Proyectos con actividad en el período ─────────────────────────────────
   // Solo mostrar cards de proyectos que tienen al menos una transacción
@@ -270,7 +271,7 @@ export function SummaryCards({
           currency={currency}
           trend={incomeTrend}
           sparkData={incomeSpark}
-          sparkColor="#34d399"
+          sparkColor="#4F6A35"
         />
         <SummaryCard
           title="Gastos"
@@ -278,7 +279,7 @@ export function SummaryCards({
           currency={currency}
           trend={expenseTrend}
           sparkData={expenseSpark}
-          sparkColor="#fb7185"
+          sparkColor="#B5543D"
           inversetrend
         />
         <SummaryCard
@@ -287,7 +288,7 @@ export function SummaryCards({
           currency={currency}
           trend={netTrend}
           sparkData={netSpark}
-          sparkColor={current.net >= 0 ? '#34d399' : '#fb7185'}
+          sparkColor={current.net >= 0 ? '#4F6A35' : '#B5543D'}
           amountColor={netColor}
         />
       </div>

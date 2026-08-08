@@ -4,7 +4,7 @@ function SummaryCardsSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="bg-white rounded-xl border border-gray-100 p-6 space-y-3">
+        <div key={i} className="bg-white rounded-[22px] p-6 space-y-3">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-8 w-36" />
           <Skeleton className="h-4 w-16" />
@@ -18,13 +18,13 @@ function ChartsSkeleton() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       {/* IncomeExpenseChart */}
-      <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-6 space-y-4">
+      <div className="lg:col-span-2 bg-white rounded-[22px] p-6 space-y-4">
         <Skeleton className="h-5 w-40" />
         <Skeleton className="h-64 w-full rounded-lg" />
       </div>
 
       {/* CategoryOverview */}
-      <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-4">
+      <div className="bg-white rounded-[22px] p-6 space-y-4">
         <Skeleton className="h-5 w-32" />
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -42,7 +42,7 @@ function ChartsSkeleton() {
 
 function TransactionListSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
+    <div className="bg-white rounded-[22px] p-4 space-y-3">
       <Skeleton className="h-5 w-32 mb-4" />
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="flex items-center gap-4 py-2">

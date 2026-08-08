@@ -82,7 +82,7 @@ function DateSeparator({ date }: { date: string }) {
   return (
     <tr>
       <td colSpan={6} className="px-4 pt-5 pb-1">
-        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+        <span className="text-[11px] font-semibold text-[#6E6E73] uppercase tracking-wider">
           {formatTransactionDate(date)}
         </span>
       </td>
@@ -180,7 +180,7 @@ function TransactionRow({
     }
     if (tx.description) {
       lines.push(
-        <span key="desc" className="text-[11px] text-gray-400 truncate max-w-[120px]">
+        <span key="desc" className="text-[11px] text-[#6E6E73] truncate max-w-[120px]">
           {project ? `· ${tx.description}` : tx.description}
         </span>
       )
@@ -219,7 +219,7 @@ function TransactionRow({
                 )
               })()
             ) : (
-              <span className="text-gray-400">📁</span>
+              <span className="text-[#6E6E73]">📁</span>
             )}
           </div>
 
@@ -228,7 +228,7 @@ function TransactionRow({
             <p className={cn(
               'text-sm font-medium truncate',
               isTransfer && 'text-amber-700',
-              !isTransfer && 'text-gray-800',
+              !isTransfer && 'text-foreground',
             )}>
               {title}
             </p>
@@ -247,11 +247,11 @@ function TransactionRow({
       <td className="px-4 py-3 hidden sm:table-cell">
         <div className="flex gap-2">
           {tx.tag ? (
-            <span className="inline-flex items-center text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+            <span className="inline-flex items-center text-[11px] text-[#6E6E73] bg-[#F2F9E3] px-2 py-0.5 rounded-full border border-[rgba(0,0,0,0.06)]">
               {tx.tag}
             </span>
           ) : (
-            <span className="text-gray-200">—</span>
+            <span className="text-[rgba(0,0,0,0.16)]">—</span>
           )}
         </div>
       </td>
@@ -262,8 +262,8 @@ function TransactionRow({
           className={cn(
             'text-[10px] font-medium rounded-full',
             isInvestment && 'bg-indigo-100 text-indigo-700 hover:bg-indigo-100',
-            !isInvestment && tx.type === 'INCOME'   && 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
-            !isInvestment && tx.type === 'EXPENSE'  && 'bg-rose-100    text-rose-700    hover:bg-rose-100',
+            !isInvestment && tx.type === 'INCOME'   && 'bg-[#F2F9E3] text-[#4F6A35] hover:bg-[#F2F9E3]',
+            !isInvestment && tx.type === 'EXPENSE'  && 'bg-[#FAEDE9] text-[#B5543D] hover:bg-[#FAEDE9]',
             !isInvestment && tx.type === 'TRANSFER' && 'bg-amber-100   text-amber-700   hover:bg-amber-100',
             !isInvestment && tx.type === 'SAVING'   && 'bg-violet-100  text-violet-700  hover:bg-violet-100',
           )}
@@ -274,14 +274,14 @@ function TransactionRow({
 
       {/* ── Cuenta ── */}
       <td className="px-4 py-3 hidden md:table-cell">
-        <span className="text-[13px] text-gray-600">
+        <span className="text-[13px] text-[#6E6E73]">
           {isTransfer && tx.to_account_id
             ? getAccountName(tx.to_account_id, accounts)
             : getAccountName(tx.account_id, accounts)
           }
         </span>
         {!isTransfer && tx.to_account_id ? (
-          <span className="text-[13px] text-gray-400">
+          <span className="text-[13px] text-[#6E6E73]/70">
             {' → '}{getAccountName(tx.to_account_id, accounts)}
           </span>
         ) : null}
@@ -291,7 +291,7 @@ function TransactionRow({
       <td className={cn('px-4 py-3 text-right font-semibold text-sm', amountColor)}>
         <div className="flex items-center justify-end gap-1">
           {tx.is_recurring ? (
-            <Repeat className="w-3 h-3 text-gray-400 flex-shrink-0" />
+            <Repeat className="w-3 h-3 text-[#6E6E73] flex-shrink-0" />
           ) : null}
           {sign}{formatCurrency(tx.amount, normalizeCurrency(tx.currency))}
         </div>
@@ -303,14 +303,14 @@ function TransactionRow({
           <button
             onClick={() => onEdit(tx)}
             title="Editar"
-            className="p-2 rounded-xl text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-all duration-150"
+            className="p-2 rounded-xl text-[#6E6E73] hover:text-[#4F6A35] hover:bg-[#F2F9E3] transition-all duration-150"
           >
             <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(tx)}
             title="Eliminar"
-            className="p-2 rounded-xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-all duration-150"
+            className="p-2 rounded-xl text-[#6E6E73] hover:text-[#B5543D] hover:bg-[#FAEDE9] transition-all duration-150"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -370,12 +370,12 @@ export function TransactionList({
 
           {/* ── Header ── */}
           <thead>
-            <tr className="border-b border-gray-100">
+            <tr className="border-b border-[rgba(0,0,0,0.06)]">
               {['Categoría / Etiqueta', 'Tags', 'Tipo', 'Cuenta', 'Monto', ''].map((h) => (
                 <th
                   key={h}
                   className={cn(
-                    'px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider',
+                    'px-4 py-3 text-[11px] font-semibold text-[#6E6E73] uppercase tracking-wider',
                     h === 'Monto' && 'text-right',
                     (h === 'Tags' || h === 'Tipo') && 'hidden sm:table-cell',
                     h === 'Cuenta' && 'hidden md:table-cell',
@@ -388,14 +388,14 @@ export function TransactionList({
           </thead>
 
           {/* ── Body ── */}
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-[rgba(0,0,0,0.06)]">
             {loading ? (
               <TransactionRowSkeleton />
             ) : transactions.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-16 text-center">
-                  <p className="text-gray-400 text-sm">No hay transacciones registradas.</p>
-                  <p className="text-gray-300 text-[13px] mt-1">
+                  <p className="text-[#6E6E73] text-sm">No hay transacciones registradas.</p>
+                  <p className="text-[#6E6E73]/60 text-[13px] mt-1">
                     Crea tu primera transacción con el botón de arriba.
                   </p>
                 </td>
@@ -452,7 +452,7 @@ export function TransactionList({
         open={!!pendingDelete}
         onOpenChange={(open) => !open && setPendingDelete(null)}
       >
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-[22px] border-none">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar esta transacción?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -464,7 +464,7 @@ export function TransactionList({
             <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white"
+              className="rounded-xl bg-[#B5543D] hover:bg-[#B5543D]/90 text-white"
             >
               Eliminar
             </AlertDialogAction>

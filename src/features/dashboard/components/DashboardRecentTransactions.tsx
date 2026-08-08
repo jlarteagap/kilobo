@@ -42,19 +42,19 @@ export function DashboardRecentTransactions({
       {transactions.length === 0 ? (
         <div className="text-center py-10">
           <p className="text-3xl mb-2">📝</p>
-          <p className="text-[13px] text-gray-400">Sin transacciones recientes</p>
+          <p className="text-[13px] text-[#6E6E73]">Sin transacciones recientes</p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-[rgba(0,0,0,0.06)]">
           {transactions.map((tx) => {
             const isIncome   = tx.type === 'INCOME'
             const isTransfer = tx.type === 'TRANSFER'
             const date       = parseLocalDate(tx.date)
 
             const amountColor =
-              isIncome   ? 'text-emerald-600' :
-              isTransfer ? 'text-blue-500'    :
-              'text-rose-500'
+              isIncome   ? 'text-[#4F6A35]' :
+              isTransfer ? 'text-[#6E6E73]' :
+              'text-[#B5543D]'
 
             const amountPrefix =
               isIncome   ? '+' :
@@ -64,19 +64,19 @@ export function DashboardRecentTransactions({
             return (
               <div
                 key={tx.id}
-                className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50/50 transition-colors"
+                className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#F2F9E3]/40 transition-colors"
               >
                 {/* Icono categoría */}
-                <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-sm flex-shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-[#F2F9E3] flex items-center justify-center text-sm flex-shrink-0">
                   {tx.category?.icon ?? '💳'}
                 </div>
 
                 {/* Descripción + categoría */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium text-gray-800 truncate">
+                  <p className="text-[13px] font-medium text-foreground truncate">
                     {tx.description ?? tx.category?.name ?? 'Sin descripción'}
                   </p>
-                  <p className="text-[11px] text-gray-400">
+                  <p className="text-[11px] text-[#6E6E73]">
                     {tx.category?.name ?? tx.type} ·{' '}
                     {format(date, "d MMM", { locale: es })}
                   </p>

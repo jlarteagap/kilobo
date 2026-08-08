@@ -110,7 +110,7 @@ export default function TransactionsPage() {
             <Dialog open={open} onOpenChange={setOpen}>
               <Button
                 onClick={() => setOpen(true)}
-                className="flex-shrink-0 gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all duration-200"
+                className="flex-shrink-0 gap-2 bg-[#4F6A35] hover:bg-[#3C5230] text-white rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <Plus className="w-4 h-4" />
                 Nueva
@@ -131,7 +131,7 @@ export default function TransactionsPage() {
         {isLoading ? (
           <TransactionsSkeleton />
         ) : isError ? (
-          <div className="bg-rose-50 text-rose-500 text-sm p-4 rounded-xl">
+          <div className="bg-[#FAEDE9] text-[#B5543D] text-sm p-4 rounded-xl">
             Error al cargar los datos. Intenta nuevamente.
           </div>
         ) : (
@@ -168,14 +168,14 @@ export default function TransactionsPage() {
         )}
 
         {/* ── Lista de transacciones ── */}
-        <div className="bg-white rounded-2xl overflow-hidden shadow-card">
-          <div className="px-4 md:px-6 py-4 border-b border-gray-100 space-y-4">
+        <div className="bg-white rounded-[22px] overflow-hidden" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+          <div className="px-4 md:px-6 py-4 border-b border-[rgba(0,0,0,0.06)] space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-sm font-semibold text-gray-700">
+                <h2 className="text-sm font-bold text-foreground tracking-[-0.01em]">
                   Movimientos
                 </h2>
-                <p className="text-[11px] text-gray-400 mt-0.5">
+                <p className="text-[11px] text-[#6E6E73] mt-0.5">
                   {filtered.length} transaccion{filtered.length !== 1 ? 'es' : ''}
                 </p>
               </div>
@@ -183,22 +183,22 @@ export default function TransactionsPage() {
               {filtered.length > 0 && (
                 <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 w-full sm:w-auto">
                   <div className="text-right sm:text-left md:text-right">
-                    <p className="text-[11px] text-gray-400">Ingresos</p>
-                    <p className="text-[13px] font-semibold text-emerald-600">
+                    <p className="text-[11px] text-[#6E6E73]">Ingresos</p>
+                    <p className="text-[13px] font-semibold text-[#4F6A35]">
                       {formatCurrency(stats.income, 'BOB')}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[11px] text-gray-400">Gastos</p>
-                    <p className="text-[13px] font-semibold text-rose-500">
+                    <p className="text-[11px] text-[#6E6E73]">Gastos</p>
+                    <p className="text-[13px] font-semibold text-[#B5543D]">
                       {formatCurrency(stats.expense, 'BOB')}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[11px] text-gray-400">Neto</p>
+                    <p className="text-[11px] text-[#6E6E73]">Neto</p>
                     <p className={cn(
                       'text-[13px] font-semibold',
-                      stats.net >= 0 ? 'text-gray-900' : 'text-rose-500'
+                      stats.net >= 0 ? 'text-foreground' : 'text-[#B5543D]'
                     )}>
                       {formatCurrency(stats.net, 'BOB')}
                     </p>

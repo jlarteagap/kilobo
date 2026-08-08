@@ -17,8 +17,8 @@ const CHART_TYPES: { value: ChartType; label: string }[] = [
   { value: 'line', label: 'Línea' },
 ]
 
-const INCOME_COLOR  = '#34d399'
-const EXPENSE_COLOR = '#fb7185'
+const INCOME_COLOR  = '#4F6A35'
+const EXPENSE_COLOR = '#B5543D'
 
 function formatOriginal(value: number, currency: string): string {
   return new Intl.NumberFormat('es-BO', {
@@ -47,7 +47,7 @@ function CustomTooltip({ active, payload, label }: TooltipPayloadProps) {
 
   return (
     <ChartTooltipContainer active={active} payload={payload}>
-      <p className="text-[11px] font-semibold text-gray-400 mb-1.5 capitalize">{label}</p>
+      <p className="text-[11px] font-semibold text-[#6E6E73] mb-1.5 capitalize">{label}</p>
       {payload.map((entry) => {
         const isIncome = entry.dataKey === 'income'
         const breakdown = isIncome ? dataPoint?.incomeByCurrency : dataPoint?.expenseByCurrency
@@ -57,7 +57,7 @@ function CustomTooltip({ active, payload, label }: TooltipPayloadProps) {
             {breakdown && Object.keys(breakdown).length > 0 && (
               <div className="flex flex-col gap-0.5 mt-0.5 mb-1.5">
                 {Object.entries(breakdown).map(([currency, amount]) => (
-                  <span key={currency} className="text-[10px] text-gray-400 ml-2">
+                  <span key={currency} className="text-[10px] text-[#6E6E73] ml-2">
                     {formatOriginal(amount, currency)}
                   </span>
                 ))}
@@ -108,7 +108,7 @@ function ChartLegend() {
       ].map(({ color, label }) => (
         <div key={label} className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-          <span className="text-[12px] text-gray-400 font-medium">{label}</span>
+          <span className="text-[12px] text-[#6E6E73] font-medium">{label}</span>
         </div>
       ))}
     </div>
@@ -119,11 +119,11 @@ function ChartLegend() {
 function EmptyChart() {
   return (
     <div className="h-[280px] flex flex-col items-center justify-center gap-2">
-      <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-xl">
+      <div className="w-10 h-10 rounded-2xl bg-[#F2F9E3] flex items-center justify-center text-xl">
         📈
       </div>
-      <p className="text-[13px] text-gray-400">Sin datos para el período</p>
-      <p className="text-[11px] text-gray-300">Registra transacciones para ver la gráfica</p>
+      <p className="text-[13px] text-[#6E6E73]">Sin datos para el período</p>
+      <p className="text-[11px] text-[#6E6E73]/60">Registra transacciones para ver la gráfica</p>
     </div>
   )
 }
@@ -139,15 +139,16 @@ export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
 
   return (
     <div
-      className="bg-white rounded-2xl p-5 shadow-card-hover"
+      className="bg-white rounded-[22px] p-5"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
         <div className="w-full sm:w-auto">
-          <h3 className="text-sm font-semibold text-gray-700">Ingresos vs Gastos</h3>
-          <p className="text-[11px] text-gray-400 mt-0.5">Evolución del período</p>
+          <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">Ingresos vs Gastos</h3>
+          <p className="text-[11px] text-[#6E6E73] mt-0.5">Evolución del período</p>
         </div>
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-full sm:w-auto">
+        <div className="flex gap-1 p-1 bg-[#F2F9E3] rounded-xl w-full sm:w-auto">
           {CHART_TYPES.map((type) => (
             <button
               key={type.value}
@@ -156,8 +157,8 @@ export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
               className={cn(
                 'flex-1 sm:flex-none px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200',
                 chartType === type.value
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600'
+                  ? 'bg-white text-foreground shadow-sm'
+                  : 'text-[#6E6E73] hover:text-foreground'
               )}
             >
               {type.label}

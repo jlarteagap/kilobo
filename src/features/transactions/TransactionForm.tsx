@@ -158,7 +158,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
             name="amount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Monto
                 </FormLabel>
                 <FormControl>
@@ -169,7 +169,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
                     {...field}
                     onChange={(e) => field.onChange(e.target.value === '' ? 0 : +e.target.value)}
                     value={typeof field.value === 'number' || typeof field.value === 'string' ? field.value : ''}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -182,7 +182,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
             name="date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Fecha
                 </FormLabel>
                 <FormControl>
@@ -190,7 +190,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
                     type="date"
                     {...field}
                     value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ''}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -204,22 +204,22 @@ const onSubmit = async (data: CreateTransactionInput) => {
   name="project_id"
   render={({ field }) => (
     <FormItem>
-      <FormLabel className="text-[13px] font-medium text-gray-600">
+      <FormLabel className="text-[13px] font-medium text-foreground">
         Actividad
-        <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+        <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
       </FormLabel>
       <Select
         onValueChange={handleProjectChange}
         value={field.value ?? 'none'}
       >
         <FormControl>
-          <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+          <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
             <SelectValue placeholder="Personal" />
           </SelectTrigger>
         </FormControl>
         <SelectContent>
           <SelectItem value="none">
-            <span className="text-gray-400">Sin actividad</span>
+            <span className="text-[#6E6E73]">Sin actividad</span>
           </SelectItem>
           {projects.map((p) => (
             <SelectItem key={p.id} value={p.id}>
@@ -242,9 +242,9 @@ const onSubmit = async (data: CreateTransactionInput) => {
     name="subtype"
     render={({ field }) => (
       <FormItem>
-        <FormLabel className="text-[13px] font-medium text-gray-600">
+        <FormLabel className="text-[13px] font-medium text-foreground">
           Etiqueta
-          <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+          <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
         </FormLabel>
         <FormControl>
           <ChipSelector items={availableSubtypes} value={field.value as string | null | undefined} onChange={(v) => form.setValue('subtype', v ?? undefined)} clearLabel="Ninguno" />
@@ -265,12 +265,12 @@ const onSubmit = async (data: CreateTransactionInput) => {
           name="account_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 {type === 'INCOME' ? 'Cuenta destino' : 'Cuenta origen'}
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value ?? ''}>
                 <FormControl>
-                  <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                  <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                     <SelectValue placeholder="Seleccionar cuenta" />
                   </SelectTrigger>
                 </FormControl>
@@ -295,12 +295,12 @@ const onSubmit = async (data: CreateTransactionInput) => {
       name="to_account_id"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-[13px] font-medium text-gray-600">
+          <FormLabel className="text-[13px] font-medium text-foreground">
             Cuenta destino
           </FormLabel>
           <Select onValueChange={field.onChange} value={field.value ?? ''}>
             <FormControl>
-              <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+              <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                 <SelectValue placeholder="Seleccionar cuenta" />
               </SelectTrigger>
             </FormControl>
@@ -324,7 +324,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
       name="category_id"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-[13px] font-medium text-gray-600">
+          <FormLabel className="text-[13px] font-medium text-foreground">
             Categoría
           </FormLabel>
           <Select
@@ -332,7 +332,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
             value={field.value ?? ''}      // ← nunca undefined
           >
             <FormControl>
-              <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+              <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                 <SelectValue placeholder="Sin categoría" />
               </SelectTrigger>
             </FormControl>
@@ -359,9 +359,9 @@ const onSubmit = async (data: CreateTransactionInput) => {
             name="tag"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Etiqueta
-                  <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                  <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <ChipSelector items={availableTags} value={field.value as string | null | undefined} onChange={(v) => form.setValue('tag', v)} clearLabel="Ninguna" />
@@ -395,7 +395,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <FormLabel className="font-normal text-[13px] text-gray-600 cursor-pointer">
+                  <FormLabel className="font-normal text-[13px] text-foreground cursor-pointer">
                     Registrar como inversión
                   </FormLabel>
                 </FormItem>
@@ -407,7 +407,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
                 name="investment_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-gray-600">
+                    <FormLabel className="text-[13px] font-medium text-foreground">
                       Nombre de la inversión
                     </FormLabel>
                     <FormControl>
@@ -415,7 +415,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
                         placeholder="Ej: Compra BTC, Fondo indexado..."
                         {...field}
                         value={field.value ?? ''}
-                        className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                        className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                       />
                     </FormControl>
                     <FormMessage className="text-[12px]" />
@@ -432,16 +432,16 @@ const onSubmit = async (data: CreateTransactionInput) => {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Nota
-                <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
               </FormLabel>
               <FormControl>
                 <Textarea
                   rows={2}
                   {...field}
                   value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ''}
-                  className="rounded-xl border-0 bg-gray-50 resize-none focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 resize-none focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -461,7 +461,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
-                <FormLabel className="font-normal text-[13px] text-gray-600 cursor-pointer">
+                <FormLabel className="font-normal text-[13px] text-foreground cursor-pointer">
                   Esta transacción es recurrente
                 </FormLabel>
               </FormItem>

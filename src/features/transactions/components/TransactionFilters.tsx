@@ -20,11 +20,11 @@ import type { Project } from '@/types/project'
 
 // ─── Tipos de transacción ─────────────────────────────────────────────────────
 const TYPE_OPTIONS: { value: TransactionTypeFilter; label: string; color: string }[] = [
-  { value: 'ALL',      label: 'Todos',         color: 'text-gray-600'    },
-  { value: 'INCOME',   label: 'Ingresos',      color: 'text-emerald-600' },
-  { value: 'EXPENSE',  label: 'Gastos',        color: 'text-rose-500'    },
-  { value: 'TRANSFER', label: 'Transferencias', color: 'text-blue-500'   },
-  { value: 'SAVING',   label: 'Ahorros',       color: 'text-violet-500'  },
+  { value: 'ALL',      label: 'Todos',         color: 'text-foreground' },
+  { value: 'INCOME',   label: 'Ingresos',      color: 'text-[#4F6A35]'  },
+  { value: 'EXPENSE',  label: 'Gastos',        color: 'text-[#B5543D]'  },
+  { value: 'TRANSFER', label: 'Transferencias', color: 'text-[#6E6E73]' },
+  { value: 'SAVING',   label: 'Ahorros',       color: 'text-violet-500' },
 ]
 
 // ─── Dropdown genérico ────────────────────────────────────────────────────────
@@ -53,8 +53,8 @@ function FilterDropdown({
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 whitespace-nowrap',
             isActive || isOpen
-              ? 'bg-gray-900 text-white border-gray-900'
-              : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200 hover:text-gray-700'
+              ? 'bg-[#4F6A35] text-white border-[#4F6A35]'
+              : 'bg-white text-[#6E6E73] border-[rgba(0,0,0,0.08)] hover:border-[rgba(0,0,0,0.16)] hover:text-foreground'
           )}
         >
           <span>{label}</span>
@@ -77,7 +77,7 @@ function FilterDropdown({
 
       <DropdownMenuContent
         align={align}
-        className="z-50 bg-white rounded-2xl min-w-[180px] p-0 shadow-lg border-gray-100"
+        className="z-50 bg-white rounded-[22px] min-w-[180px] p-0 shadow-lg border-none"
       >
         {children}
       </DropdownMenuContent>
@@ -109,8 +109,8 @@ function CustomDropdownItem({
       className={cn(
         'w-full flex items-center gap-2.5 text-left px-4 py-2.5 text-[13px] transition-colors duration-100 cursor-pointer outline-none rounded-none',
         isSelected
-          ? 'bg-gray-900 text-white font-medium focus:bg-gray-800 focus:text-white'
-          : 'text-gray-600 hover:bg-gray-50 focus:bg-gray-50'
+          ? 'bg-[#4F6A35] text-white font-medium focus:bg-[#4F6A35] focus:text-white'
+          : 'text-[#6E6E73] hover:bg-[#F2F9E3] focus:bg-[#F2F9E3]'
       )}
     >
       {dot && (
@@ -190,17 +190,17 @@ export function TransactionFilters({
     <div ref={containerRef} className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-2 -mb-2">
 
       {/* ── Icono filtros + badge ── */}
-      <div className="flex items-center gap-1.5 text-[12px] text-gray-400">
+      <div className="flex items-center gap-1.5 text-[12px] text-[#6E6E73]">
         <SlidersHorizontal className="w-3.5 h-3.5" />
         <span>Filtros</span>
         {activeFilterCount > 0 && (
-          <span className="bg-gray-900 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+          <span className="bg-[#4F6A35] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
             {activeFilterCount}
           </span>
         )}
       </div>
 
-      <div className="w-px h-4 bg-gray-200" />
+      <div className="w-px h-4 bg-[rgba(0,0,0,0.08)]" />
 
       {/* ── Dropdown Tipo ── */}
       <FilterDropdown
@@ -266,7 +266,7 @@ export function TransactionFilters({
       >
         <div className="py-1">
           {accounts.length === 0 ? (
-            <p className="px-4 py-3 text-[13px] text-gray-400">
+            <p className="px-4 py-3 text-[13px] text-[#6E6E73]">
               No hay cuentas disponibles
             </p>
           ) : (
@@ -295,7 +295,7 @@ export function TransactionFilters({
       >
         <div className="py-1 max-h-[240px] overflow-y-auto">
           {visibleCategories.length === 0 ? (
-            <p className="px-4 py-3 text-[13px] text-gray-400">
+            <p className="px-4 py-3 text-[13px] text-[#6E6E73]">
               Sin categorías en este período
             </p>
           ) : (
@@ -326,7 +326,7 @@ export function TransactionFilters({
       >
         <div className="py-1 max-h-[200px] overflow-y-auto">
           {availableTags.length === 0 ? (
-            <p className="px-4 py-3 text-[13px] text-gray-400">
+            <p className="px-4 py-3 text-[13px] text-[#6E6E73]">
               Sin tags en este período
             </p>
           ) : (
@@ -350,7 +350,7 @@ export function TransactionFilters({
         <button
           type="button"
           onClick={() => { onReset(); setOpenDropdown(null) }}
-          className="flex items-center gap-1 text-[12px] text-gray-400 hover:text-rose-500 transition-colors duration-150"
+          className="flex items-center gap-1 text-[12px] text-[#6E6E73] hover:text-[#B5543D] transition-colors duration-150"
         >
           <X className="w-3 h-3" />
           Limpiar

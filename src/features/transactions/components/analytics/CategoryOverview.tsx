@@ -27,9 +27,9 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
     <ChartTooltipContainer active={active} payload={payload}>
       <div className="flex items-center gap-1.5">
         {item.icon && <span style={{ fontSize: 13 }}>{item.icon}</span>}
-        <p className="font-medium text-gray-700">{item.name}</p>
+        <p className="font-medium text-foreground">{item.name}</p>
       </div>
-      <p className="text-gray-500 text-[12px]">{formatCurrency(item.value, 'BOB')}</p>
+      <p className="text-[#6E6E73] text-[12px]">{formatCurrency(item.value, 'BOB')}</p>
     </ChartTooltipContainer>
   )
 }
@@ -48,13 +48,13 @@ function CustomLegend({ items }: { items: SliceItem[] }) {
               className="w-2.5 h-2.5 rounded-full flex-shrink-0"
               style={{ backgroundColor: item.color }}
             />
-            <span className="text-[12px] text-gray-600 truncate flex-1 min-w-0">
+            <span className="text-[12px] text-[#6E6E73] truncate flex-1 min-w-0">
               {item.icon && (
                 <span className="mr-1" style={{ fontSize: 11 }}>{item.icon}</span>
               )}
               {item.name}
             </span>
-            <span className="text-[11px] font-medium text-gray-400 flex-shrink-0">
+            <span className="text-[11px] font-medium text-[#6E6E73] flex-shrink-0">
               {pct}%
             </span>
           </div>
@@ -96,15 +96,16 @@ export function CategoryOverview({
   if (items.length === 0) {
     return (
       <div
-        className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center h-[400px] gap-2 shadow-card"
+        className="bg-white rounded-[22px] p-5 flex flex-col items-center justify-center h-[400px] gap-2"
+        style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
       >
-        <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-xl">
+        <div className="w-10 h-10 rounded-2xl bg-[#F2F9E3] flex items-center justify-center text-xl">
           {isProjectMode ? (project?.icon ?? '📁') : '🥧'}
         </div>
-        <p className="text-[13px] text-gray-400">
+        <p className="text-[13px] text-[#6E6E73]">
           {isProjectMode ? 'Sin gastos en esta actividad' : 'Sin datos de gastos'}
         </p>
-        <p className="text-[11px] text-gray-300">
+        <p className="text-[11px] text-[#6E6E73]/60">
           {isProjectMode
             ? 'Registra gastos con etiquetas para ver la distribución'
             : 'Registra gastos para ver la distribución'
@@ -116,17 +117,18 @@ export function CategoryOverview({
 
   return (
     <div
-      className="bg-white rounded-2xl p-5 shadow-card-hover"
+      className="bg-white rounded-[22px] p-5"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       {/* ── Header ── */}
       <div className="mb-4">
-        <h3 className="text-sm font-semibold text-gray-700">
+        <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">
           Distribución de gastos
         </h3>
 
         {isProjectMode && project ? (
           <div className="flex items-center gap-1.5 mt-1">
-            <p className="text-[11px] text-gray-400">Etiquetas ·</p>
+            <p className="text-[11px] text-[#6E6E73]">Etiquetas ·</p>
             <span
               className="text-[10px] font-medium px-2 py-0.5 rounded-full"
               style={{
@@ -143,11 +145,11 @@ export function CategoryOverview({
           <div className="flex items-center gap-1.5 mt-1">
             <button 
               onClick={() => setSelectedItem(null)}
-              className="text-[11px] font-medium text-gray-500 hover:text-gray-800 flex items-center transition-colors"
+              className="text-[11px] font-medium text-[#6E6E73] hover:text-foreground flex items-center transition-colors"
             >
               <span className="mr-1">←</span> Volver
             </button>
-            <span className="text-[11px] text-gray-400">·</span>
+            <span className="text-[11px] text-[#6E6E73]">·</span>
             <span
               className="text-[10px] font-medium px-2 py-0.5 rounded-full"
               style={{
@@ -160,7 +162,7 @@ export function CategoryOverview({
             </span>
           </div>
         ) : (
-          <p className="text-[11px] text-gray-400 mt-0.5">
+          <p className="text-[11px] text-[#6E6E73] mt-0.5">
             {items.length} elemento{items.length !== 1 ? 's' : ''}
           </p>
         )}

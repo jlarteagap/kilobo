@@ -30,10 +30,10 @@ Tras comparación visual (mockups A/B en Visual Companion), el usuario eligió:
 | Ingresos / positivo | `#4F6A35` (se mantiene) |
 | Gastos / negativo | `#B5543D` (se mantiene) |
 | Labels secundarios | gris `#6E6E73` (Apple systemGray) en vez de `#837A75` |
-| Título de página | 30px / weight 800 / letter-spacing `-0.03em` |
+| Título de página | **no cambia en esta iteración** — lo renderiza el `Header.tsx` global (fuera de alcance); el objetivo 30px/800 es para la iteración del shell |
 | Valores numéricos | 22px / weight 800 / `tabular-nums` |
 | Card destacada (Proyección) | se mantiene sage `#5F7D42`, mismo radio 22px |
-| Chips/period pills | selección con fondo `#F2FBE0` |
+| Chips/period pills | el pill de selección del `PeriodSelector` **no se toca** (componente compartido con `/transactions`) — queda como está hasta la iteración de transacciones |
 | Sidebar/Header/BottomNav | **sin cambios** en esta iteración |
 
 ## 1. Tokens a actualizar (alcance global mínimo)
@@ -48,14 +48,16 @@ Para que el fondo y la tipografía cambien en todo lo que el dashboard usa:
 | `--muted-foreground` | `#837A75` | `#6E6E73` |
 | `--border` | `#E5DED2` | se mantiene para inputs/separadores (no para cards) |
 
-Nota: `card-organic` (radios asimétricos) deja de usarse en el dashboard; se conserva la utilidad en `globals.css` por si otras páginas la usan (no tocar su definición).
+Notas:
+- `card-organic` (radios asimétricos) deja de usarse en el dashboard; se conserva la utilidad en `globals.css` por si otras páginas la usan (no tocar su definición).
+- **Leak global aceptado y explícito:** al cambiar `--background`, `--font-sans` y `--muted-foreground`, las páginas fuera de alcance (transacciones, landing, login, etc.) heredan el nuevo fondo, la fuente Inter y el gris `#6E6E73` automáticamente — mismo patrón de la capa 1 del spec anterior. Es un adelanto consistente, no un reskin parcial: sus cards internas conservan sus propios estilos hasta su iteración.
 
 ## 2. Dashboard — cambios por zona
 
 ### Header (`DashboardHeader.tsx`)
 - Card de stats: `card-organic` + borde → `rounded-[22px]` sin borde, sombra suave, fondo blanco.
 - Título: label de mes en `#6E6E73` (11px, semibold, uppercase, tracking 0.04em).
-- Valores: `#1D1D1F` (o `--foreground` si se mantiene negro — decidir en implementación según el resto de textos del dashboard), 22px/800, `tabular-nums`.
+- Valores: `#1D1D1F` (o `--foreground` si se mantiene negro — **decisión de implementación: usar `--foreground`**; ambos resuelven a negro hoy, el token es la fuente de verdad), 22px/800, `tabular-nums`. (Nota: el tamaño baja de `text-2xl` 24px a 22px — es intencional, no typo.)
 - Trends: `#4F6A35` (positivo) / `#B5543D` (negativo) — sin cambio de semántica.
 - Breakdown multi-divisa: labels `#6E6E73`, valores negro/900.
 
@@ -64,11 +66,13 @@ Nota: `card-organic` (radios asimétricos) deja de usarse en el dashboard; se co
 - Header de sección: título 14px/700, subtítulo `#6E6E73` 11px.
 - Leyenda: labels `#6E6E73` con dots del mapeo sage existente (sin cambio de colores).
 - Altura sankey: mantener ~280-300px actual.
+- **`PeriodSelector` (importado dentro de esta card): NO se modifica** — es compartido con la página `/transactions`. Su estilo actual (pill con selección blanca sobre `bg-gray-100`) se mantiene en el dashboard hasta la iteración de transacciones.
 
 ### Grid 2 col (`page.tsx`)
 - Contenedores internos (Activos, Comparativa, Ingresos vs Gastos, Transacciones recientes, widgets del rail): todos a `rounded-[22px]`, sin borde, sombra suave.
 - Títulos de card: 14px/700 con letter-spacing `-0.01em` (en vez de los `text-xs uppercase tracking-[0.14em]` actuales).
 - Subtítulos: 11px `#6E6E73`.
+- **`IncomeExpenseChart`: NO se modifica internamente** — el componente trae su propia card (`bg-white rounded-2xl shadow-card-hover`) y se renderiza también en `/transactions`. Se deja tal cual en esta iteración; su reskin B2 llega con la iteración de transacciones. **Decisión por defecto: NO se envuelve** en el layout del dashboard — se acepta la ligera diferencia de radio/sombra hasta la iteración de transacciones (evita cualquier riesgo de regresión en `/transactions`).
 
 ### Rail derecho
 - `BalanceProjection`: **se mantiene** sage `#5F7D42`, radio `22px` (quitar `card-organic`), sombra sage suave. Textos blancos/`#F2F9E3` como ahora.
@@ -82,7 +86,8 @@ Nota: `card-organic` (radios asimétricos) deja de usarse en el dashboard; se co
 
 - Cargar Inter en `src/app/layout.tsx` (Google Fonts, pesos 400-800) → variable `--font-inter`.
 - `--font-sans: var(--font-inter)`.
-- Space Grotesk se retira del layout (o queda sin usar); el archivo sigue importándose solo si se decide — verificar que no queden referencias activas.
+- **Retirar Space Grotesk:** eliminar la importación de `next/font/google` de Space Grotesk y la variable `--font-grotesk` del layout (ya no se usa; `--font-sans` apunta a Inter). Verificar que no queden referencias activas a `--font-grotesk` en el código.
+- Nota: `--foreground` ya es `#000000` y `DashboardHeader` usa `text-black` — ambos resuelven a negro idéntico hoy, sin ambigüedad real.
 
 ## 4. Fuera de alcance (iteraciones posteriores)
 

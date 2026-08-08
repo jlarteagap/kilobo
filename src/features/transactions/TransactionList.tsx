@@ -139,7 +139,7 @@ function TransactionRow({
     if (isTransfer) return '#FFFBEB'
     if (projectColor) return `${projectColor}25`
     if (categoryData?.color) return `${categoryData.color}40`
-    return '#F3F4F6'
+    return '#F2F9E3'
   })()
 
   const title = (() => {

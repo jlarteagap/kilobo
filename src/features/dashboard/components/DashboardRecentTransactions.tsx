@@ -17,21 +17,22 @@ export function DashboardRecentTransactions({
 }: DashboardRecentTransactionsProps) {
   return (
     <div
-      className="bg-white rounded-2xl overflow-hidden shadow-card"
+      className="bg-white rounded-[22px] overflow-hidden"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(0,0,0,0.06)]">
         <div>
-          <h3 className="text-sm font-semibold text-gray-700">
+          <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">
             Últimas transacciones
           </h3>
-          <p className="text-[11px] text-gray-400 mt-0.5">
+          <p className="text-[11px] text-[#6E6E73] mt-0.5">
             Las 5 más recientes
           </p>
         </div>
         <Link
           href="/transactions"
-          className="flex items-center gap-1 text-[12px] text-gray-400 hover:text-gray-600 transition-colors"
+          className="flex items-center gap-1 text-[12px] text-[#6E6E73] hover:text-foreground transition-colors"
         >
           Ver todas
           <ArrowRight className="w-3 h-3" />

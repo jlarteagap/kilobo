@@ -483,19 +483,19 @@ export function InvestmentsWidget({
   if (investments.length === 0) {
     return (
       <div
-        className="bg-white card-organic p-5 border border-[#E5DED2] cursor-pointer hover:border-[#5F7D42]/40 transition-colors"
+        className="bg-white rounded-[22px] p-5 cursor-pointer hover:shadow-md transition-all"
         onClick={onShowCreate}
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
+        style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
       >
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-[#F2F9E3] flex items-center justify-center">
             <Icon className="w-4 h-4 text-[#5F7D42]" />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-black uppercase tracking-[0.14em]">
+            <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">
               Inversiones
             </h3>
-            <p className="text-[11px] text-[#837A75] mt-0.5">
+            <p className="text-[11px] text-[#6E6E73] mt-0.5">
               Sin inversiones registradas
             </p>
           </div>
@@ -505,8 +505,8 @@ export function InvestmentsWidget({
   }
 
   return (
-    <div className="bg-white card-organic p-5 border border-[#E5DED2]"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
+    <div className="bg-white rounded-[22px] p-5"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
@@ -514,10 +514,10 @@ export function InvestmentsWidget({
             <Icon className="w-4 h-4 text-[#5F7D42]" />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-black uppercase tracking-[0.14em]">
+            <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">
               Inversiones
             </h3>
-            <p className="text-[11px] text-[#837A75] mt-0.5">
+            <p className="text-[11px] text-[#6E6E73] mt-0.5">
               {investments.length} registro{investments.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -530,7 +530,7 @@ export function InvestmentsWidget({
       <div className="space-y-3 mb-4">
         {Object.entries(totalByCurrency).map(([currency, amount]) => (
           <div key={currency} className="flex items-center justify-between">
-            <span className="text-[12px] font-medium text-[#837A75]/70">
+            <span className="text-[12px] font-medium text-[#6E6E73]/70">
               Total invertido en {currency}
             </span>
             <span className="text-sm font-bold text-[#4F6A35] tabular-nums">
@@ -540,7 +540,7 @@ export function InvestmentsWidget({
         ))}
       </div>
 
-      <div className="divide-y divide-[#E5DED2]">
+      <div className="divide-y divide-[rgba(0,0,0,0.06)]">
         {investments.slice(0, 5).map((inv) => {
           const account = accounts.find((a) => a.id === inv.account_id)
           return (
@@ -549,7 +549,7 @@ export function InvestmentsWidget({
                 <p className="text-[13px] font-medium text-black truncate">
                   {inv.name}
                 </p>
-                <p className="text-[10px] text-[#837A75]/70 mt-0.5">
+                <p className="text-[10px] text-[#6E6E73]/70 mt-0.5">
                   {account?.name ?? 'Cuenta eliminada'} · {formatInvestmentDate(inv.date)}
                 </p>
               </div>
@@ -562,7 +562,7 @@ export function InvestmentsWidget({
       </div>
 
       {investments.length > 5 && (
-        <p className="text-[10px] text-center text-[#837A75]/50 mt-3 font-medium">
+        <p className="text-[10px] text-center text-[#6E6E73]/50 mt-3 font-medium">
           +{investments.length - 5} inversiones más
         </p>
       )}

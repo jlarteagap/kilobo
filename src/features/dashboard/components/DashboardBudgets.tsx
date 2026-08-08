@@ -21,16 +21,18 @@ const statusToVariant: Record<BudgetProgress['status'], ProgressVariant> = {
 
 export function DashboardBudgets({ topBudgets }: DashboardBudgetsProps) {
   return (
-    <div className="bg-white card-organic p-5 flex flex-col gap-4 border border-[#E5DED2]">
+    <div className="bg-white rounded-[22px] p-5 flex flex-col gap-4"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-bold text-black uppercase tracking-[0.14em]">Presupuestos</h3>
-          <p className="text-[11px] text-[#837A75] mt-0.5">Este mes</p>
+          <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">Presupuestos</h3>
+          <p className="text-[11px] text-[#6E6E73] mt-0.5">Este mes</p>
         </div>
         <Link
           href="/budgets"
-          className="flex items-center gap-1 text-[12px] text-[#837A75] hover:text-[#4F6A35] transition-colors"
+          className="flex items-center gap-1 text-[12px] text-[#6E6E73] hover:text-[#4F6A35] transition-colors"
         >
           Ver todos
           <ArrowRight className="w-3 h-3" />
@@ -41,7 +43,7 @@ export function DashboardBudgets({ topBudgets }: DashboardBudgetsProps) {
       {topBudgets.length === 0 ? (
         <div className="text-center py-4">
           <p className="text-2xl mb-1">📋</p>
-          <p className="text-[12px] text-[#837A75]">Sin presupuestos activos</p>
+          <p className="text-[12px] text-[#6E6E73]">Sin presupuestos activos</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -77,10 +79,10 @@ export function DashboardBudgets({ topBudgets }: DashboardBudgetsProps) {
 
                 {/* Montos */}
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] text-[#837A75]">
+                  <p className="text-[11px] text-[#6E6E73]">
                     {formatCurrency(p.current_amount, p.budget.currency)}
                   </p>
-                  <p className="text-[11px] text-[#837A75]">
+                  <p className="text-[11px] text-[#6E6E73]">
                     {p.percent.toFixed(0)}% de {formatCurrency(p.target_amount, p.budget.currency)}
                   </p>
                 </div>

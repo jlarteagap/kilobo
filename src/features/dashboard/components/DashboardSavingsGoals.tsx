@@ -21,12 +21,12 @@ export function DashboardSavingsGoals() {
   if (activeGoals.length === 0) return null
 
   return (
-    <div className="bg-white card-organic p-5 border border-[#E5DED2]"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+    <div className="bg-white rounded-[22px] p-5 border-none"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
       <Link href="/ahorros" className="flex items-center justify-between mb-5 group">
         <div>
-          <h3 className="text-xs font-bold text-black uppercase tracking-[0.14em]">Metas de Ahorro</h3>
-          <p className="text-[11px] text-[#837A75] mt-1">Seguimiento de tus alcancías</p>
+          <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">Metas de Ahorro</h3>
+          <p className="text-[11px] text-[#6E6E73] mt-1">Seguimiento de tus alcancías</p>
         </div>
         <span className="text-[10px] font-bold text-[#5F7D42] opacity-0 group-hover:opacity-100 transition-opacity">
           Ver todas →
@@ -58,11 +58,11 @@ export function DashboardSavingsGoals() {
                 size="sm"
               />
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-[#837A75]/70">
+                <span className="text-[10px] text-[#6E6E73]/70">
                   {percent.toFixed(0)}% · Meta: {formatCurrency(goal.target_amount, goal.currency)}
                 </span>
                 {goal.auto_save_percentage > 0 && (
-                  <span className="text-[10px] text-[#837A75]/50">
+                  <span className="text-[10px] text-[#6E6E73]/50">
                     Auto {goal.auto_save_percentage}%
                   </span>
                 )}

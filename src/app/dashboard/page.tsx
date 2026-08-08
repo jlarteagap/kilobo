@@ -149,7 +149,7 @@ export default function DashboardPage() {
       </div>
 
       <Dialog open={showInvestDialog} onOpenChange={(open) => !open && setShowInvestDialog(false)}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-[#E5DED2] p-8">
+        <DialogContent className="sm:max-w-md rounded-[22px] border-none p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight">
               Nueva Inversión

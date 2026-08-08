@@ -119,12 +119,12 @@ export function FinancialComparisonChart({ data }: FinancialComparisonChartProps
 
   return (
     <div
-      className="bg-card rounded-3xl p-6 border border-border/40"
-      style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}
+      className="bg-card rounded-[22px] p-6"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       {/* ── Header ── */}
       <div className="mb-6">
-        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">
+        <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">
           Comparativa Financiera
         </h3>
         <p className="text-[11px] text-muted-foreground/60 mt-1">

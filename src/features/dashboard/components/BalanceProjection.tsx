@@ -13,7 +13,7 @@ import type { ProjectedDay } from '@/lib/forecast/projection'
 
 function ProjectionSkeleton() {
   return (
-    <div className="bg-[#5F7D42] card-organic p-6 border border-[#5F7D42]">
+    <div className="bg-[#5F7D42] rounded-[22px] p-6 border border-[#5F7D42]">
       <div className="mb-6">
         <Skeleton className="h-4 w-36 rounded-full bg-white/20" />
         <Skeleton className="h-3 w-48 rounded-full bg-white/20 mt-1.5" />
@@ -73,7 +73,7 @@ export function BalanceProjection() {
   const { yMin, yMax, splitIndex, hasNegativeZone, startNegativeIndex } = computeChartLayout(days, first_negative_date)
 
   return (
-    <div className="bg-[#5F7D42] card-organic p-6 text-white"
+    <div className="bg-[#5F7D42] rounded-[22px] p-6 text-white"
       style={{ boxShadow: '0 4px 20px -6px rgba(47,62,32,0.35), 0 1px 3px rgba(0,0,0,0.1)' }}>
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
         <div>

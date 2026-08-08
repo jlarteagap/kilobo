@@ -23,7 +23,9 @@ import type { Period }     from "@/types/period"
 
 function CashflowSkeleton() {
   return (
-    <div className="bg-white card-organic border border-[#E5DED2] p-6">
+    <div className="bg-white rounded-[22px] p-6"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+    >
       <div className="mb-4">
         <Skeleton className="h-4 w-36 rounded-full" />
         <Skeleton className="h-3 w-20 rounded-full mt-1.5" />
@@ -35,14 +37,16 @@ function CashflowSkeleton() {
 
 function CashflowEmpty({ period }: { period: Period }) {
   return (
-    <div className="bg-white card-organic border border-[#E5DED2] p-6 flex flex-col items-center justify-center gap-2 min-h-[300px]">
+    <div className="bg-white rounded-[22px] p-6 flex flex-col items-center justify-center gap-2 min-h-[300px]"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+    >
       <div className="w-10 h-10 rounded-2xl bg-[#F2F9E3] flex items-center justify-center text-xl">
         💸
       </div>
-      <p className="text-[13px] text-[#837A75]">
+      <p className="text-[13px] text-[#6E6E73]">
         Sin transacciones en {getPeriodLabel(period)}
       </p>
-      <p className="text-[11px] text-[#837A75]/60">
+      <p className="text-[11px] text-[#6E6E73]/60">
         Registra ingresos y gastos para ver el flujo
       </p>
     </div>
@@ -72,19 +76,19 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 
   return (
     <ChartTooltipContainer active={active} payload={payload}>
-      <p className="text-[12px] font-medium text-[#837A75]">{item.name}</p>
-      <p className="text-[13px] font-semibold text-black mb-1">
+      <p className="text-[12px] font-medium text-[#6E6E73]">{item.name}</p>
+      <p className="text-[13px] font-semibold text-foreground mb-1">
         {formatCurrency(item.value, 'BOB')}
       </p>
 
       {breakdownData && Object.keys(breakdownData).length > 0 && (
-        <div className="mt-2 pt-2 border-t border-[#E5DED2] flex flex-col gap-1">
+        <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] flex flex-col gap-1">
           {Object.entries(breakdownData)
             .sort((a, b) => b[1] - a[1])
             .map(([key, val]) => (
             <div key={key} className="flex justify-between items-center gap-4 text-[11px]">
-              <span className="text-[#837A75] truncate max-w-[120px]">{key}</span>
-              <span className="text-black/80 font-medium">{formatCurrency(val, 'BOB')}</span>
+              <span className="text-[#6E6E73] truncate max-w-[120px]">{key}</span>
+              <span className="text-foreground/80 font-medium">{formatCurrency(val, 'BOB')}</span>
             </div>
           ))}
         </div>
@@ -188,14 +192,14 @@ export function CashflowSection() {
   if (isLoading) return <CashflowSkeleton />
 
   return (
-    <div className="bg-white card-organic border border-[#E5DED2] p-6"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
+    <div className="bg-white rounded-[22px] p-6"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       {/* ── Header + PeriodSelector ── */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-6">
         <div className="w-full md:w-auto">
-          <h3 className="text-xs font-bold text-[#3C5230] uppercase tracking-[0.14em]">Flujo de caja</h3>
-          <p className="text-[11px] text-[#837A75]/70 mt-1 capitalize">
+          <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">Flujo de caja</h3>
+          <p className="text-[11px] text-[#6E6E73] mt-1 capitalize">
             {getPeriodLabel(period)}
           </p>
         </div>
@@ -218,7 +222,7 @@ export function CashflowSection() {
           </div>
 
           {/* ── Leyenda ── */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:gap-x-6 mt-5 pt-5 border-t border-[#E5DED2]">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:gap-x-6 mt-5 pt-5 border-t border-[rgba(0,0,0,0.06)]">
             {[
               { color: '#4F6A35',  label: 'Ingresos'      },
               { color: '#B5543D',  label: 'Gastos'        },
@@ -230,7 +234,7 @@ export function CashflowSection() {
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-[10px] font-bold text-[#837A75]/70 uppercase tracking-[0.14em]">
+                <span className="text-[10px] font-semibold text-[#6E6E73] uppercase tracking-[0.04em]">
                   {label}
                 </span>
               </div>

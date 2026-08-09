@@ -58,11 +58,15 @@ Nueva paleta de 5 tonos (colores de **dato**, no semántica), saturados pero coh
 - `ASSET_HEX_COLORS` (`useAccountsDashboard.ts:12`) está keyed por la clase string exacta (`'text-blue-500': '#3b82f6'`) y se usa como `ASSET_HEX_COLORS[details.color] ?? '#6b7280'` (líneas 105, 145). Si las clases cambian a hex, el lookup falla y todo cae a gris.
 - `AccountsList.tsx:80-85` usa `bg.includes('emerald'|'rose'|'blue'|'purple'|'orange')` para elegir el estilo del icono. Con clases hex (`bg-[#4A6FA5]`) el `includes` deja de matchear.
 - **`InvestmentsList.tsx:336-344`** (`getAccountColors`): TERCER consumidor del mismo patrón — pasa `details.color` a una cadena `.includes('blue'|'purple'|'emerald'|'orange')`. Con hex, todos los iconos de cuenta del módulo inversiones caen al fallback gris. Debe actualizarse en el MISMO paso que el utils. La línea 44 (`emerald`) lleva el verde Apple `bg-emerald-50 text-emerald-600`.
+- **`AccountForm.tsx:69-84`**: CUARTO consumidor — desestructura `const { icon: Icon, color } = getAccountTypeDetails(value)` y aplica `color` como **clase Tailwind**: `<Icon className={cn('w-4 h-4', isSelected ? 'text-white' : color)} />`. Cuando `color` pase a ser hex (`#4A6FA5`), la clase es inválida → los iconos del type-picker pierden color silenciosamente. Debe usar el hex inline (`style={{ color }}`) o una variante de tono.
 
 **Solución**: reestructurar `accountTypeDetailsMap` para que `color`/`bg` sean **hex directos** (no clases): `BANK: { color: '#4A6FA5', bg: '#4A6FA5' }`. Luego:
 - `useAccountsDashboard.ts`: reemplazar `ASSET_HEX_COLORS` por lookup directo de `details.color` (o un `Record<AccountType, string>` derivado del utils). Eliminar el fallback `#6b7280` → `#837A75` (o el hex de OTHER).
 - `AccountsList.tsx`: reemplazar la cadena `bg.includes(...)` por uso directo del hex con alpha: `style={{ backgroundColor: \`${details.bg}${alpha}\` }}` + color de texto del hex, siguiendo el patrón ya usado en `TransactionList` (icono con `backgroundColor` inline + color del icono).
 - `InvestmentsList.tsx` (`getAccountColors`): mismo desacople — usar el hex del tipo de cuenta directamente (style inline con alpha) en lugar de la cadena `includes()`.
+- `AccountForm.tsx:73`: `<Icon className={...color} />` → `style={{ color }}` (hex directo), manteniendo `text-white` cuando está seleccionado.
+
+**Nota de validación de dirección**: `SavingsGoalCard.tsx:40` (`${goal.color}20`) y `AccountForm` ya asumen que `color` puede ser hex — confirma que la dirección hex-migración es segura y consistente con el patrón existente.
 
 Consumidores a actualizar: `AssetsTable`, `AssetBar`, `AssetLegend` (hex de `ASSET_HEX_COLORS`), iconos de `AccountsList`, `InvestmentsList.tsx:336` (`getAccountColors`), y `AssetsTable.tsx:268` (`totalColor="text-emerald-600"` → `text-[#4F6A35]`) y `AssetsTable.tsx:280` (`totalColor="text-rose-500"` → `text-[#B5543D]`).
 
@@ -73,8 +77,8 @@ Crear **`src/lib/config/chart-colors.ts`** (misma convención que `exchange-rate
 ```ts
 // Paleta Kilo de datos para charts (B2)
 export const CHART_COLORS = {
-  positive:     '#4F6A35',  // ingresos / serie 1 / positivo
-  negative:     '#B5543D',  // gastos / serie 2 / negativo
+  positive:     '#4F6A35',  // línea positiva principal (ingresos / serie actual)
+  negative:     '#B5543D',  // línea negativa principal (gastos / serie actual)
   muted:        '#6E6E73',  // ejes / labels / fallbacks gray
   grid:         'rgba(0,0,0,0.08)',
   series: [                 // series adicionales (comparativas) — incluye violeta insights
@@ -89,7 +93,16 @@ export const CHART_COLORS = {
 } as const
 ```
 
-**Regla de asignación de series** (evita ambigüedad): `TrendChart` usa `CHART_COLORS.series` en orden, `i % series.length` (el violeta `#8B5CF6` queda en slot 1 → primer trend). `CategoryComparison` y `FinancialComparisonChart` asignan serie 1 = `positive` para ingresos/actual, serie 2 = `negative` para gastos/anterior, y las restantes de `series` en orden. `CLUSTER_COLORS` de insights/page reemplaza sus 5 hex por `[series[0], series[1], series[2], series[3], series[4]]` (violeta primero, conservando identidad).
+**Regla de asignación de series** (evita ambigüedad): `TrendChart` usa `CHART_COLORS.series` en orden, `i % series.length` (el violeta `#8B5CF6` queda en slot 1 → primer trend). `CategoryComparison` reemplaza su `FALLBACK_COLORS` **completo** (6 entradas, líneas 36-43) por `CHART_COLORS.series` en orden. `CLUSTER_COLORS` de insights/page reemplaza sus 5 hex por `series` en orden (violeta primero). Para **`FinancialComparisonChart` (4 líneas)** el mapeo explícito es:
+
+| Línea | dataKey | Antes | Después |
+|---|---|---|---|
+| previousIncome | dashed, width 2 | `#10b981` | `#ACC18A` (series[2]) |
+| currentIncome | sólida, width 3 | `#10b981` | `#4F6A35` (positive) |
+| previousExpense | dashed, width 2 | `#f43f5e` | `#D9A487` (series[3]) |
+| currentExpense | sólida, width 3 | `#f43f5e` | `#B5543D` (negative) |
+
+(Las líneas actuales usan `positive`/`negative` sólidos; las anteriores usan tonos claros de la paleta con dasharray, preservando la semántica visual ya-Kilo de CashflowSection.)
 
 Reemplazos por archivo (lista completa del reviewer):
 
@@ -98,7 +111,7 @@ Reemplazos por archivo (lista completa del reviewer):
 | `FinancialComparisonChart.tsx` | `#10b981/#6ee7b7/#f43f5e/#fda4af` líneas de serie; `#9ca3af` en ticks (148,155) | `positive/negative` + `series`; `muted` |
 | `AmortizationChart.tsx` | `#10b981` (línea serie + **legend swatch `bg-emerald-500` línea 77**); `#9ca3af` ticks (43,48) | `positive`; `muted` |
 | `TrendChart.tsx` | `FALLBACK_COLORS` 6 hex (30-33): `#8b5cf6/#06b6d4/#f59e0b/#ec4899/#10b981/#f97316` | `CHART_COLORS.series` (7 entradas) |
-| `CategoryComparison.tsx` | `#10b981` (41); gradients `from-rose-500/80 to-red-500/90` (421) y `from-emerald-400/90 to-teal-500/90` (422); `bg-slate-400/*` (207, 412, 439) | `positive`/`negative`; gradients Kilo (`#4F6A35`/`#B5543D` con alpha preservando opacidad por sitio); `bg-[#6E6E73]/20-40` según opacidad original |
+| `CategoryComparison.tsx` | `FALLBACK_COLORS` completo (36-43: `#8b5cf6/#06b6d4/#f59e0b/#ec4899/#10b981/#f97316`); gradients `from-rose-500/80 to-red-500/90` (421) y `from-emerald-400/90 to-teal-500/90` (422); `bg-slate-400/*` (207, 412, 439) | `CHART_COLORS.series` en orden; gradients Kilo (`#4F6A35`/`#B5543D` con alpha preservando opacidad por sitio); `bg-[#6E6E73]/20-40` según opacidad original |
 | `IncomeExpenseChart.tsx` | ticks `#9ca3af` (80, 88) | `muted` |
 | `SummaryCards.tsx` | `isPersonal ? '#9ca3af'` (106) | `muted` |
 | `SavingsGoalForm.tsx` | default `#10b981` (41) | `positive` |
@@ -123,7 +136,7 @@ Se conservan por identidad: violeta insights (ahora en `series[0]`), indigo inve
 
 ## Verificación
 
-- `grep -rn "dark:" src` → 0 resultados
+- `grep -rn "dark:" src` (excluyendo `gasolina/` y `car-sharing/`, que están fuera de alcance) → 0 resultados
 - `grep` de residuos en archivos de alcance: `emerald-500`, `#10b981`, `#9ca3af`, `neutral-900` → 0 (la lista de §4 es exhaustiva para el alcance: landing, login, cuentas, inversiones, budgets, insights, savings-goals, transactions, dashboard, credits)
 - `npx tsc --noEmit` → 0 errores
 - `npm run build` → ✓ Compiled

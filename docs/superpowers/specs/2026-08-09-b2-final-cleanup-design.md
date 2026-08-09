@@ -1,7 +1,7 @@
 # Kilo B2 Final Cleanup — Landing pública, dark: inertes, paleta de cuentas y charts
 
 **Fecha:** 2026-08-09
-**Estado:** Aprobado por el usuario (decisión delegada: "escoge la versión que mejor se acomode con el proyecto"). Revisado por spec-reviewer (3 issues corregidos).
+**Estado:** Aprobado por el usuario (decisión delegada: "escoge la versión que mejor se acomode con el proyecto"). Revisado por spec-reviewer (5 iteraciones, aprobado).
 **Alcance:** Cierre final de la dirección visual B2 sobre 4 frentes: landing pública, clases `dark:` inertes, paleta de cuentas y colores de charts.
 
 ## Contexto
@@ -120,7 +120,7 @@ Reemplazos por archivo (lista completa del reviewer):
 | `TransactionFilters.tsx` | dot fallback `#9ca3af` (306) | `muted` |
 | `useTransactionMetrics.ts` | fallback `#9ca3af` (108) | `muted` |
 | **`BudgetForm.tsx`** | dot fallback `cat.color ?? '#9ca3af'` (336) | `muted` |
-| **`types/budget.ts`** | `BUDGET_STATUS_CONFIG.COMPLETED = { color: 'text-emerald-600', bg: 'bg-emerald-50' }` (81), consumido por `BudgetCard.tsx:62` y `BudgetSummary.tsx` | `{ color: 'text-[#4F6A35]', bg: 'bg-[#F2F9E3]' }` (mantiene el set semántico de 4 estados; ON_TRACK/AT_RISK/OVERDUE azul/naranja/rojo se conservan como estados) |
+| **`types/budget.ts`** | `BUDGET_STATUS_CONFIG.COMPLETED = { color: 'text-emerald-600', bg: 'bg-emerald-50' }` (81), consumido por `BudgetCard.tsx:7,62` | `{ color: 'text-[#4F6A35]', bg: 'bg-[#F2F9E3]' }` (mantiene el set semántico de 4 estados; ON_TRACK/AT_RISK/OVERDUE azul/naranja/rojo se conservan como estados) |
 | **`insights/page.tsx`** | `CLUSTER_COLORS` (89): `#f97316/#06b6d4/#ec4899/#8b5cf6/#10b981` | `series` en orden (violeta primero) |
 | **`SavingsTipCard.tsx`** | `hover:border-emerald-500/20` (30) | `hover:border-[#4F6A35]/20` |
 | **`CategoryComparison.tsx` (tooltip)** | fallback `'#8b5cf6'` (123) | `CHART_COLORS.series[0]` (centralización) |

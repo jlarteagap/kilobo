@@ -23,7 +23,7 @@ function SegmentedControl<T extends string>({
   return (
     <div
       className={cn(
-        "flex gap-1 p-1 bg-gray-100 rounded-xl",
+        "flex gap-1 p-1 bg-[#F2F9E3]/40 rounded-xl",
         fullWidth ? "w-full" : "w-fit",
         className
       )}
@@ -39,8 +39,8 @@ function SegmentedControl<T extends string>({
               ? "flex-1 py-2"
               : "px-3 py-1.5",
             value === option.value
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-400 hover:text-gray-600"
+              ? "bg-white text-foreground shadow-sm"
+              : "text-[#6E6E73] hover:text-foreground"
           )}
         >
           {option.label}

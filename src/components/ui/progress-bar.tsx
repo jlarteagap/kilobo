@@ -13,10 +13,10 @@ interface ProgressBarProps {
 }
 
 const variantStyles: Record<ProgressVariant, string> = {
-  default: 'bg-gray-900',
-  success: 'bg-emerald-400',
-  danger:  'bg-rose-400',
-  warning: 'bg-orange-400',
+  default: 'bg-[#4F6A35]',
+  success: 'bg-[#4F6A35]',
+  danger:  'bg-[#B5543D]',
+  warning: 'bg-amber-400',
 }
 
 const sizeStyles = {
@@ -39,7 +39,7 @@ export function ProgressBar({
 
   return (
     <div className={cn('space-y-1.5', className)}>
-      <div className={cn('w-full bg-gray-100 rounded-full overflow-hidden', sizeStyles[size])}>
+      <div className={cn('w-full bg-[rgba(0,0,0,0.06)] rounded-full overflow-hidden', sizeStyles[size])}>
         <div
           className={cn('h-full rounded-full transition-all duration-700', variantStyles[variant])}
           style={{ width: `${clamped}%` }}
@@ -47,11 +47,11 @@ export function ProgressBar({
       </div>
       {showLabel && (
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-gray-400">
+          <span className="text-[11px] text-[#6E6E73]">
             {percent.toFixed(0)}% completado
           </span>
           {showExtra && percent > 100 && (
-            <span className="text-[11px] text-emerald-500 font-medium">
+            <span className="text-[11px] text-[#4F6A35] font-medium">
               +{(percent - 100).toFixed(0)}% extra
             </span>
           )}

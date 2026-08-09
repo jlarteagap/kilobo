@@ -25,10 +25,10 @@ function SortIcon({ column, sortKey, sortOrder }: {
   sortKey:   SortKey
   sortOrder: SortOrder
 }) {
-  if (column !== sortKey) return <ArrowUpDown className="w-3 h-3 text-gray-300" />
+  if (column !== sortKey) return <ArrowUpDown className="w-3 h-3 text-[#6E6E73]/60" />
   return sortOrder === 'asc'
-    ? <ArrowUp   className="w-3 h-3 text-gray-600" />
-    : <ArrowDown className="w-3 h-3 text-gray-600" />
+    ? <ArrowUp   className="w-3 h-3 text-[#6E6E73]" />
+    : <ArrowDown className="w-3 h-3 text-[#6E6E73]" />
 }
 
 // ─── Header de columna ordenable ─────────────────────────────────────────────
@@ -51,7 +51,7 @@ function SortableHeader({
 }) {
   return (
     <th className={cn(
-      'px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider',
+      'px-5 py-3 text-[11px] font-semibold text-[#6E6E73] uppercase tracking-wider',
       align === 'right' && 'text-right',
       className
     )}>
@@ -59,7 +59,7 @@ function SortableHeader({
         type="button"
         onClick={() => onSort(column)}
         className={cn(
-          'inline-flex items-center gap-1 hover:text-gray-600 transition-colors duration-150',
+          'inline-flex items-center gap-1 hover:text-foreground transition-colors duration-150',
           align === 'right' && 'ml-auto'
         )}
       >
@@ -146,7 +146,7 @@ function AssetSection({
 
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-50">
+          <tr className="border-b border-[rgba(0,0,0,0.06)]">
             <SortableHeader label="Activo"    column="name"     sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} />
             <SortableHeader className="hidden sm:table-cell" label="Categoría" column="category" sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} />
             <SortableHeader className="hidden sm:table-cell" label="Peso"      column="weight"   sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} />
@@ -220,27 +220,28 @@ export function AssetsTable({
   if (assets.length === 0) {
     return (
       <div
-        className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center gap-2 min-h-[200px] shadow-card"
+        className="bg-white rounded-[22px] p-5 flex flex-col items-center justify-center gap-2 min-h-[200px]"
+        style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
       >
-        <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-xl">
-          📊
+        <div className="w-10 h-10 rounded-2xl bg-[#F2F9E3] flex items-center justify-center text-xl">
+          💼
         </div>
-        <p className="text-[13px] text-gray-400">Sin activos registrados</p>
-        <p className="text-[11px] text-gray-300">Crea cuentas para ver el detalle</p>
+        <p className="text-[13px] text-[#6E6E73]">Sin activos registrados</p>
+        <p className="text-[11px] text-[#6E6E73]/60">Crea cuentas para ver el detalle</p>
       </div>
     )
   }
 
   return (
     <div
-      className="bg-card rounded-3xl overflow-hidden border border-border/40"
-      style={{ boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.02)' }}
+      className="bg-white rounded-[22px] overflow-hidden"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       {/* ── Header principal ── */}
-      <div className="px-6 py-6 border-b border-border/40 flex items-center justify-between">
+      <div className="px-6 py-6 border-b border-[rgba(0,0,0,0.06)] flex items-center justify-between">
         <div className="flex flex-col gap-1">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">Balance patrimonial</h3>
-          <p className="text-[11px] text-muted-foreground/60">
+          <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">Balance patrimonial</h3>
+          <p className="text-[11px] text-[#6E6E73]">
             Detalle por cuenta y categoría
           </p>
         </div>

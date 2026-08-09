@@ -18,7 +18,7 @@ function SubmitButton({
       type="submit"
       disabled={disabled || isPending}
       className={cn(
-        "w-full rounded-xl bg-gray-900 hover:bg-gray-800 text-white gap-2 shadow-sm hover:shadow-md transition-all duration-200",
+        "w-full rounded-xl bg-[#4F6A35] hover:bg-[#3C5230] text-white gap-2 shadow-sm hover:shadow-md transition-all duration-200",
         className
       )}
       {...props}

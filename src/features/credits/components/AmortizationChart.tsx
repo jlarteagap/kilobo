@@ -37,11 +37,11 @@ export function AmortizationChart({ installments, currency }: AmortizationChartP
                 <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
             <XAxis
               dataKey="name"
               tick={{ fontSize: 11, fill: '#9ca3af' }}
-              axisLine={{ stroke: '#f3f4f6' }}
+              axisLine={{ stroke: "rgba(0,0,0,0.08)" }}
               tickLine={false}
             />
             <YAxis
@@ -53,7 +53,7 @@ export function AmortizationChart({ installments, currency }: AmortizationChartP
             <Tooltip
               contentStyle={{
                 borderRadius: '12px',
-                border: '1px solid #f3f4f6',
+                border: "1px solid rgba(0,0,0,0.08)",
                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                 fontSize: '12px',
               }}

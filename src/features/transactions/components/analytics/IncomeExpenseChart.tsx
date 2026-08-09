@@ -91,7 +91,7 @@ const axisProps = {
     />
   ),
   grid: (
-    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.08)" />
   ),
   tooltip: (
     <Tooltip content={<CustomTooltip />} />

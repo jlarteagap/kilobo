@@ -33,11 +33,11 @@ export function AccountBalanceHint({
     <div
       className={cn(
         "flex items-center justify-between px-3 py-2 rounded-xl text-[12px] transition-all duration-200",
-        isOverdraft ? "bg-rose-50 text-rose-500" : "bg-gray-50 text-gray-400"
+        isOverdraft ? "bg-[#FAEDE9] text-[#B5543D]" : "bg-[#F2F9E3]/40 text-[#6E6E73]"
       )}
     >
       <span>Balance disponible</span>
-      <span className={cn("font-semibold", isOverdraft && "text-rose-600")}>
+      <span className={cn("font-semibold", isOverdraft && "text-[#B5543D]")}>
         {formatCurrency(account.balance, account.currency)}
         {isOverdraft ? (
           <span className="ml-1.5 font-normal">· insuficiente</span>

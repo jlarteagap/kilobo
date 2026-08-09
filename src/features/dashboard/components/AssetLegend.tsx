@@ -13,15 +13,15 @@ export function AssetLegend({ assets }: { assets: AssetSummary[] }) {
             style={{ backgroundColor: asset.color }}
           />
           {/* Nombre */}
-          <span className="text-[13px] text-gray-600 flex-1 truncate">
+          <span className="text-[13px] text-[#6E6E73] flex-1 truncate">
             {asset.name}
           </span>
           {/* Porcentaje */}
-          <span className="text-[12px] text-gray-400 font-medium">
+          <span className="text-[12px] text-[#6E6E73]/70 font-medium">
             {asset.percent.toFixed(1)}%
           </span>
           {/* Valor */}
-          <span className="text-[13px] font-semibold text-gray-700 min-w-[80px] text-right">
+          <span className="text-[13px] font-semibold text-foreground min-w-[80px] text-right">
             {formatCurrency(asset.value, asset.currency)}
           </span>
         </div>

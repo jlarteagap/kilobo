@@ -43,7 +43,7 @@ function getAccountColors(colorClass: string) {
   if (colorClass.includes('purple')) return 'bg-purple-50 text-purple-600 dark:bg-purple-950/30 dark:text-purple-400'
   if (colorClass.includes('emerald')) return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400'
   if (colorClass.includes('orange')) return 'bg-orange-50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400'
-  return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
+  return 'bg-[rgba(0,0,0,0.06)] text-[#6E6E73] dark:bg-neutral-800 dark:text-neutral-400'
 }
 
 interface InvestmentsListProps {
@@ -61,7 +61,9 @@ const accountIconMap: Record<AccountType, typeof Wallet> = {
 
 function AccountCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-neutral-900/50 rounded-xl border border-neutral-200/60 dark:border-neutral-800/60 p-5 space-y-4">
+    <div className="bg-white dark:bg-neutral-900/50 rounded-[22px] p-5 space-y-4"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+    >
       <div className="flex items-center gap-3">
         <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
         <div className="flex-1 space-y-1.5">
@@ -81,7 +83,7 @@ function TxHistory({ investment }: { investment: Investment }) {
     <div>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-400 hover:text-indigo-500 transition-colors mt-1"
+        className="flex items-center gap-1.5 text-[11px] font-medium text-[#6E6E73] hover:text-indigo-500 transition-colors mt-1"
       >
         {open ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         Historial ({isLoading ? '...' : transactions.length} operaciones)
@@ -89,35 +91,35 @@ function TxHistory({ investment }: { investment: Investment }) {
       {open && (
         <div className="mt-2 space-y-1 pl-2 border-l-2 border-indigo-100 dark:border-indigo-950/30">
           {isLoading ? (
-            <p className="text-[11px] text-neutral-400">Cargando...</p>
+            <p className="text-[11px] text-[#6E6E73]">Cargando...</p>
           ) : transactions.length === 0 ? (
-            <p className="text-[11px] text-neutral-400">Sin operaciones registradas</p>
+            <p className="text-[11px] text-[#6E6E73]">Sin operaciones registradas</p>
           ) : (
             transactions.map((tx) => (
               <div key={tx.id} className="flex items-center justify-between py-1.5">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className={cn(
                     'w-5 h-5 rounded flex items-center justify-center shrink-0',
-                    tx.type === 'BUY' ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
+                    tx.type === 'BUY' ? 'bg-[#F2F9E3] dark:bg-emerald-950/30' : 'bg-[#FAEDE9] dark:bg-rose-950/30'
                   )}>
                     {tx.type === 'BUY' ? (
-                      <ArrowUpRight className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                      <ArrowUpRight className="w-3 h-3 text-[#4F6A35] dark:text-emerald-400" />
                     ) : (
-                      <ArrowDownRight className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                      <ArrowDownRight className="w-3 h-3 text-[#B5543D] dark:text-rose-400" />
                     )}
                   </div>
-                  <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300">
+                  <span className="text-[12px] font-medium text-foreground dark:text-neutral-300">
                     {tx.type === 'BUY' ? 'COMPRA' : 'VENTA'}
                   </span>
-                  <span className="text-[11px] text-neutral-500">
+                  <span className="text-[11px] text-[#6E6E73]">
                     {tx.units} × {formatCurrency(tx.unit_price, tx.currency)}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-[12px] font-semibold text-neutral-900 dark:text-neutral-100 tabular-nums">
+                  <span className="text-[12px] font-semibold text-foreground dark:text-neutral-100 tabular-nums">
                     {formatCurrency(tx.total_amount, tx.currency)}
                   </span>
-                  <span className="text-[10px] text-neutral-400">
+                  <span className="text-[10px] text-[#6E6E73]">
                     {formatInvestmentDate(tx.date)}
                   </span>
                 </div>
@@ -155,16 +157,16 @@ function InvestmentRow({
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+        <p className="text-[13px] font-semibold text-foreground dark:text-neutral-100 truncate">
           {investment.name}
         </p>
         <div className="flex items-center gap-2 mt-0.5">
-          <p className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
+          <p className="text-[10px] font-medium text-[#6E6E73] dark:text-neutral-400">
             {formatInvestmentDate(investment.date)}
           </p>
           {hasUnits && (
             <>
-              <span className="text-[9px] text-neutral-300">·</span>
+              <span className="text-[9px] text-[#6E6E73]/60">·</span>
               <p className="text-[10px] font-medium text-indigo-500 dark:text-indigo-400">
                 {investment.units} units @ {formatCurrency(investment.unit_price!, investment.currency)}/unit
               </p>
@@ -185,14 +187,14 @@ function InvestmentRow({
           <>
             <button
               onClick={() => onBuy(investment)}
-              className="p-1.5 rounded-md text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+              className="p-1.5 rounded-md text-[#4F6A35] hover:bg-[#F2F9E3] dark:hover:bg-emerald-950/30 transition-colors"
               title="Comprar"
             >
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => onSell(investment)}
-              className="p-1.5 rounded-md text-rose-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+              className="p-1.5 rounded-md text-[#B5543D] hover:bg-[#FAEDE9] dark:hover:bg-rose-950/30 transition-colors"
               title="Vender"
             >
               <ArrowDownRight className="w-3.5 h-3.5" />
@@ -201,13 +203,13 @@ function InvestmentRow({
         )}
         <button
           onClick={() => onEdit(investment)}
-          className="p-1.5 rounded-md text-neutral-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+          className="p-1.5 rounded-md text-[#6E6E73] hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
         >
           <Pencil className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => onDelete(investment.id)}
-          className="p-1.5 rounded-md text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+          className="p-1.5 rounded-md text-[#6E6E73] hover:text-[#B5543D] hover:bg-[#FAEDE9] dark:hover:bg-rose-950/30 transition-colors"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
@@ -265,12 +267,12 @@ export function InvestmentsList({
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
+          <h1 className="text-2xl font-bold text-foreground dark:text-neutral-100 tracking-tight">
             Inversiones
           </h1>
-          <div className="flex items-center gap-2 text-[12px] text-neutral-500">
+          <div className="flex items-center gap-2 text-[12px] text-[#6E6E73]">
             <span>{filtered.length} registros</span>
-            <span className="text-neutral-300">·</span>
+            <span className="text-[#6E6E73]/60">·</span>
             {Object.entries(totalByCurrency).map(([c, a]) => (
               <span key={c} className="font-semibold text-indigo-600 dark:text-indigo-400">
                 {formatCurrency(a, c)}
@@ -294,16 +296,18 @@ export function InvestmentsList({
           ))}
         </div>
       ) : isError ? (
-        <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-500 text-[13px] p-4 rounded-xl border border-rose-100 dark:border-rose-900/50 font-medium">
+        <div className="bg-[#FAEDE9] dark:bg-rose-950/20 text-[#B5543D] text-[13px] p-4 rounded-xl font-medium">
           Error al cargar inversiones.
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/20">
-          <div className="w-12 h-12 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex items-center justify-center mb-4">
-            <TrendingUp className="w-5 h-5 text-neutral-300" />
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-[22px]"
+          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+        >
+          <div className="w-12 h-12 rounded-xl bg-[#F2F9E3] border border-[rgba(0,0,0,0.06)] flex items-center justify-center mb-4">
+            <TrendingUp className="w-5 h-5 text-[#6E6E73]/60" />
           </div>
-          <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">Sin inversiones aún</h3>
-          <p className="text-[12px] text-neutral-500 mt-1 max-w-[240px]">
+          <h3 className="text-sm font-bold text-foreground dark:text-neutral-100">Sin inversiones aún</h3>
+          <p className="text-[12px] text-[#6E6E73] mt-1 max-w-[240px]">
             Registra una inversión desde una cuenta o al crear una transacción.
           </p>
         </div>
@@ -321,10 +325,11 @@ export function InvestmentsList({
             return (
               <div
                 key={accountId}
-                className="bg-white dark:bg-neutral-900/50 rounded-xl border border-neutral-200/60 dark:border-neutral-800/60 overflow-hidden"
+                className="bg-white dark:bg-neutral-900/50 rounded-[22px] overflow-hidden"
+                style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
               >
                 {/* Account header */}
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-neutral-100 dark:border-neutral-800/50 bg-neutral-50/50 dark:bg-neutral-900/30">
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-800/50 bg-[#F2F9E3]/40 dark:bg-neutral-900/30">
                   {details && (
                     <div className={cn(
                       'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
@@ -334,10 +339,10 @@ export function InvestmentsList({
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-[14px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                    <h3 className="text-[14px] font-semibold text-foreground dark:text-neutral-100 truncate">
                       {account?.name ?? 'Cuenta eliminada'}
                     </h3>
-                    <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                    <p className="text-[11px] font-medium text-[#6E6E73] dark:text-neutral-400">
                       {details?.label ?? '—'} · Total invertido: {Object.entries(accountByCurrency).map(([c, a]) => formatCurrency(a, c)).join(' · ')}
                     </p>
                   </div>
@@ -345,7 +350,7 @@ export function InvestmentsList({
                     onClick={() => setShowCreate(true)}
                     size="sm"
                     variant="outline"
-                    className="h-7 text-[11px] rounded-lg border-neutral-200 dark:border-neutral-700"
+                    className="h-7 text-[11px] rounded-lg border-[rgba(0,0,0,0.06)] dark:border-neutral-700"
                   >
                     <Plus className="w-3 h-3 mr-1" />
                     Inversión
@@ -353,7 +358,7 @@ export function InvestmentsList({
                 </div>
 
                 {/* Investments list */}
-                <div className="divide-y divide-neutral-100 dark:divide-neutral-800/30">
+                <div className="divide-y divide-[rgba(0,0,0,0.06)] dark:divide-neutral-800/30">
                   {accountInvestments.map((inv) => (
                     <InvestmentRow
                       key={inv.id}
@@ -372,7 +377,7 @@ export function InvestmentsList({
       )}
 
       <Dialog open={showCreate} onOpenChange={(open) => !open && setShowCreate(false)}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-neutral-200/50 dark:border-neutral-800/50 p-8">
+        <DialogContent className="sm:max-w-md rounded-[22px] border-none p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight">
               Nueva Inversión
@@ -389,7 +394,7 @@ export function InvestmentsList({
       </Dialog>
 
       <Dialog open={!!editingInvestment} onOpenChange={(open) => !open && setEditingInvestment(null)}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-neutral-200/50 dark:border-neutral-800/50 p-8">
+        <DialogContent className="sm:max-w-md rounded-[22px] border-none p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight">
               Editar Inversión
@@ -412,7 +417,7 @@ export function InvestmentsList({
       </Dialog>
 
       <Dialog open={!!txOperation} onOpenChange={(open) => !open && setTxOperation(null)}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-neutral-200/50 dark:border-neutral-800/50 p-8">
+        <DialogContent className="sm:max-w-md rounded-[22px] border-none p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight">
               {txOperation?.type === 'BUY' ? 'Comprar' : 'Vender'} {txOperation?.investment.name}
@@ -439,22 +444,22 @@ export function InvestmentsList({
         open={!!pendingDeleteId}
         onOpenChange={(open) => !open && setPendingDeleteId(null)}
       >
-        <AlertDialogContent className="rounded-[2.5rem] border-neutral-200 dark:border-neutral-800 p-8">
+        <AlertDialogContent className="rounded-[22px] border-none p-8">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-bold tracking-tight">
               ¿Eliminar inversión?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-neutral-500 dark:text-neutral-400 text-[13px] font-medium leading-relaxed">
+            <AlertDialogDescription className="text-[#6E6E73] dark:text-neutral-400 text-[13px] font-medium leading-relaxed">
               El monto invertido será devuelto al saldo de la cuenta.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-8 gap-3">
-            <AlertDialogCancel className="rounded-2xl border-neutral-200/50 px-6 font-bold">
+            <AlertDialogCancel className="rounded-xl border-[rgba(0,0,0,0.08)] px-6 font-bold">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white px-6 font-bold"
+              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-6 font-bold"
             >
               Sí, eliminar
             </AlertDialogAction>
@@ -546,7 +551,7 @@ export function InvestmentsWidget({
           return (
             <div key={inv.id} className="flex items-center justify-between py-2.5">
               <div className="min-w-0">
-                <p className="text-[13px] font-medium text-black truncate">
+                <p className="text-[13px] font-medium text-foreground truncate">
                   {inv.name}
                 </p>
                 <p className="text-[10px] text-[#6E6E73]/70 mt-0.5">
@@ -599,7 +604,7 @@ export function InvestmentsByAccount({
         <div className="pl-5 space-y-1">
           {accountInvestments.slice(0, 3).map((inv) => (
             <div key={inv.id} className="flex items-center justify-between text-[12px]">
-              <span className="text-neutral-600 dark:text-neutral-400">{inv.name}</span>
+              <span className="text-[#6E6E73] dark:text-neutral-400">{inv.name}</span>
               <span className="font-medium text-indigo-600 dark:text-indigo-400">
                 {formatCurrency(inv.amount, inv.currency)}
               </span>

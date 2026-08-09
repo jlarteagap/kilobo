@@ -65,12 +65,12 @@ export function InvestmentTxForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <div className="rounded-xl bg-neutral-50 dark:bg-neutral-900/50 px-4 py-3 space-y-1">
-          <p className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
+        <div className="rounded-xl bg-[#F2F9E3]/40 dark:bg-neutral-900/50 px-4 py-3 space-y-1">
+          <p className="text-[13px] font-semibold text-foreground dark:text-neutral-100">
             {investment.name}
           </p>
           {investment.units != null && (
-            <p className="text-[11px] text-neutral-500">
+            <p className="text-[11px] text-[#6E6E73]">
               En cartera: {investment.units} units · Precio promedio: {formatCurrency(investment.unit_price ?? 0, investment.currency)}/unit
             </p>
           )}
@@ -88,7 +88,7 @@ export function InvestmentTxForm({
             name="units"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Unidades
                 </FormLabel>
                 <FormControl>
@@ -99,7 +99,7 @@ export function InvestmentTxForm({
                     placeholder="0"
                     {...field}
                     onChange={(e) => field.onChange(+e.target.value)}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -112,7 +112,7 @@ export function InvestmentTxForm({
             name="unit_price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Precio por unidad
                 </FormLabel>
                 <FormControl>
@@ -123,7 +123,7 @@ export function InvestmentTxForm({
                     placeholder="0.00"
                     {...field}
                     onChange={(e) => field.onChange(+e.target.value)}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -146,14 +146,14 @@ export function InvestmentTxForm({
           name="date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Fecha
               </FormLabel>
               <FormControl>
                 <Input
                   type="date"
                   {...field}
-                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -166,8 +166,8 @@ export function InvestmentTxForm({
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
-                Notas <span className="text-gray-400 font-normal">(opcional)</span>
+              <FormLabel className="text-[13px] font-medium text-foreground">
+                Notas <span className="text-[#6E6E73] font-normal">(opcional)</span>
               </FormLabel>
               <FormControl>
                 <Textarea
@@ -175,7 +175,7 @@ export function InvestmentTxForm({
                   placeholder="Detalles adicionales..."
                   {...field}
                   value={field.value ?? ''}
-                  className="rounded-xl border-0 bg-gray-50 resize-none focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 resize-none focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />

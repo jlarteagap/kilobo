@@ -16,8 +16,8 @@ function ChipSelector({ items, value, onChange, clearLabel = "Ninguna" }: ChipSe
         className={cn(
           "px-3 py-1 rounded-full text-xs font-medium transition-all duration-150",
           !value
-            ? "bg-gray-900 text-white"
-            : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+            ? "bg-[#4F6A35] text-white"
+            : "bg-[#F2F9E3]/40 text-[#6E6E73] hover:bg-[#F2F9E3]"
         )}
       >
         {clearLabel}
@@ -30,8 +30,8 @@ function ChipSelector({ items, value, onChange, clearLabel = "Ninguna" }: ChipSe
           className={cn(
             "px-3 py-1 rounded-full text-xs font-medium transition-all duration-150",
             value === item
-              ? "bg-gray-900 text-white"
-              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              ? "bg-[#4F6A35] text-white"
+              : "bg-[#F2F9E3]/40 text-[#6E6E73] hover:bg-[#F2F9E3]"
           )}
         >
           {item}

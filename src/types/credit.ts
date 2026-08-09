@@ -83,13 +83,13 @@ export const CREDIT_TYPES: {
 ]
 
 export const CREDIT_STATUS_CONFIG: Record<CreditStatus, { label: string; color: string; bg: string }> = {
-  ACTIVE:    { label: 'Activo',    color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  PAID:      { label: 'Pagado',    color: 'text-gray-500',    bg: 'bg-gray-100' },
-  CANCELLED: { label: 'Cancelado', color: 'text-rose-600',    bg: 'bg-rose-50' },
+  ACTIVE:    { label: 'Activo',    color: 'text-[#4F6A35]', bg: 'bg-[#F2F9E3]' },
+  PAID:      { label: 'Pagado',    color: 'text-[#6E6E73]', bg: 'bg-[rgba(0,0,0,0.06)]' },
+  CANCELLED: { label: 'Cancelado', color: 'text-[#B5543D]', bg: 'bg-[#FAEDE9]' },
 }
 
 export const INSTALLMENT_STATUS_CONFIG: Record<InstallmentStatus, { label: string; color: string; bg: string }> = {
-  PENDING: { label: 'Pendiente', color: 'text-amber-600', bg: 'bg-amber-50' },
-  PAID:    { label: 'Pagada',    color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  OVERDUE: { label: 'Vencida',   color: 'text-rose-600',    bg: 'bg-rose-50' },
+  PENDING: { label: 'Pendiente', color: 'text-amber-700', bg: 'bg-amber-50' },
+  PAID:    { label: 'Pagada',    color: 'text-[#4F6A35]', bg: 'bg-[#F2F9E3]' },
+  OVERDUE: { label: 'Vencida',   color: 'text-[#B5543D]', bg: 'bg-[#FAEDE9]' },
 }

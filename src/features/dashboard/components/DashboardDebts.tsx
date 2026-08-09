@@ -76,10 +76,10 @@ export function DashboardDebts({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-[12px] font-medium text-black truncate">
+                    <p className="text-[12px] font-medium text-foreground truncate">
                       {debt.contact_name}
                     </p>
-                    <p className="text-[12px] font-semibold text-black tabular-nums flex-shrink-0 ml-2">
+                    <p className="text-[12px] font-semibold text-foreground tabular-nums flex-shrink-0 ml-2">
                       {formatCurrency(pending, debt.currency)}
                     </p>
                   </div>

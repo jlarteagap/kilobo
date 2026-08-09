@@ -57,7 +57,7 @@ export function DashboardBudgets({ topBudgets }: DashboardBudgetsProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-base">{typeConfig.emoji}</span>
-                    <p className="text-[13px] font-medium text-black truncate">
+                    <p className="text-[13px] font-medium text-foreground truncate">
                       {p.budget.name}
                     </p>
                   </div>

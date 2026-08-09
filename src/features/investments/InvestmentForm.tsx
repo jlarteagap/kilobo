@@ -82,7 +82,7 @@ export function InvestmentForm({
           name="account_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Cuenta
               </FormLabel>
               <Select
@@ -91,7 +91,7 @@ export function InvestmentForm({
                 disabled={!!preselectedAccountId || isEdit}
               >
                 <FormControl>
-                  <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                  <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                     <SelectValue placeholder="Seleccionar cuenta" />
                   </SelectTrigger>
                 </FormControl>
@@ -113,14 +113,14 @@ export function InvestmentForm({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Nombre de la inversión
               </FormLabel>
               <FormControl>
                 <Input
                   placeholder="Ej: BTC, Fondo indexado..."
                   {...field}
-                  className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -134,9 +134,9 @@ export function InvestmentForm({
             name="units"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Unidades
-                  <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                  <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -147,7 +147,7 @@ export function InvestmentForm({
                     {...field}
                     value={field.value ?? ''}
                     onChange={(e) => field.onChange(e.target.value ? +e.target.value : null)}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -160,9 +160,9 @@ export function InvestmentForm({
             name="unit_price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Precio/unit
-                  <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                  <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -173,7 +173,7 @@ export function InvestmentForm({
                     {...field}
                     value={field.value ?? ''}
                     onChange={(e) => field.onChange(e.target.value ? +e.target.value : null)}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -197,7 +197,7 @@ export function InvestmentForm({
             name="amount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Monto invertido
                 </FormLabel>
                 <FormControl>
@@ -207,7 +207,7 @@ export function InvestmentForm({
                     placeholder="0.00"
                     {...field}
                     onChange={(e) => field.onChange(+e.target.value)}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -222,14 +222,14 @@ export function InvestmentForm({
             name="date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Fecha
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="date"
                     {...field}
-                    className="rounded-xl border-0 bg-gray-50 focus-visible:ring-gray-900/10"
+                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -242,12 +242,12 @@ export function InvestmentForm({
             name="currency"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-gray-600">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Moneda
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value as string}>
                   <FormControl>
-                    <SelectTrigger className="rounded-xl border-0 bg-gray-50 focus:ring-gray-900/10">
+                    <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
                       <SelectValue placeholder="Moneda" />
                     </SelectTrigger>
                   </FormControl>
@@ -270,9 +270,9 @@ export function InvestmentForm({
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-gray-600">
+              <FormLabel className="text-[13px] font-medium text-foreground">
                 Notas
-                <span className="text-gray-400 font-normal ml-1">(opcional)</span>
+                <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
               </FormLabel>
               <FormControl>
                 <Textarea
@@ -280,7 +280,7 @@ export function InvestmentForm({
                   placeholder="Detalles adicionales..."
                   {...field}
                   value={field.value ?? ''}
-                  className="rounded-xl border-0 bg-gray-50 resize-none focus-visible:ring-gray-900/10"
+                  className="rounded-xl border-0 bg-[#F2F9E3]/40 resize-none focus-visible:ring-[#5F7D42]/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />

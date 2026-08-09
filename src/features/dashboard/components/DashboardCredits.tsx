@@ -71,21 +71,21 @@ export function DashboardCredits({
 
             return (
               <div key={credit.id} className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center text-sm flex-shrink-0">
+                <div className="w-7 h-7 rounded-lg bg-[#F2F9E3] flex items-center justify-center text-sm flex-shrink-0">
                   {typeConfig.emoji}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-[12px] font-medium text-black truncate">
+                    <p className="text-[12px] font-medium text-foreground truncate">
                       {credit.institution}
                     </p>
-                    <p className="text-[12px] font-semibold text-black tabular-nums flex-shrink-0 ml-2">
+                    <p className="text-[12px] font-semibold text-foreground tabular-nums flex-shrink-0 ml-2">
                       {formatCurrency(credit.current_balance, credit.currency)}
                     </p>
                   </div>
-                  <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-1 w-full bg-[rgba(0,0,0,0.06)] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gray-900 rounded-full transition-all duration-500"
+                      className="h-full bg-[#4F6A35] rounded-full transition-all duration-500"
                       style={{ width: `${progress}%` }}
                     />
                   </div>

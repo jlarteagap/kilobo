@@ -45,9 +45,9 @@ export function DashboardSavingsGoals() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-base">{goal.icon}</span>
-                  <span className="text-[13px] font-medium text-black truncate">{goal.name}</span>
+                  <span className="text-[13px] font-medium text-foreground truncate">{goal.name}</span>
                 </div>
-                <span className="text-[12px] font-semibold text-black tabular-nums shrink-0 ml-2">
+                <span className="text-[12px] font-semibold text-foreground tabular-nums shrink-0 ml-2">
                   {formatCurrency(goal.current_amount, goal.currency)}
                 </span>
               </div>

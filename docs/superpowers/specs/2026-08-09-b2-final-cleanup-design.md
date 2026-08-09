@@ -64,7 +64,7 @@ Nueva paleta de 5 tonos (colores de **dato**, no semántica), saturados pero coh
 - `useAccountsDashboard.ts`: reemplazar `ASSET_HEX_COLORS` por lookup directo de `details.color` (o un `Record<AccountType, string>` derivado del utils). Eliminar el fallback `#6b7280` → `#837A75` (o el hex de OTHER).
 - `AccountsList.tsx`: reemplazar la cadena `bg.includes(...)` por uso directo del hex con alpha: `style={{ backgroundColor: \`${details.bg}${alpha}\` }}` + color de texto del hex, siguiendo el patrón ya usado en `TransactionList` (icono con `backgroundColor` inline + color del icono).
 - `InvestmentsList.tsx` (`getAccountColors`): mismo desacople — usar el hex del tipo de cuenta directamente (style inline con alpha) en lugar de la cadena `includes()`.
-- `AccountForm.tsx:73`: `<Icon className={...color} />` → `style={{ color }}` (hex directo), manteniendo `text-white` cuando está seleccionado.
+- `AccountForm.tsx:84`: `<Icon className={...color} />` → `style={{ color }}` (hex directo), manteniendo `text-white` cuando está seleccionado.
 
 **Nota de validación de dirección**: `SavingsGoalCard.tsx:40` (`${goal.color}20`) y `AccountForm` ya asumen que `color` puede ser hex — confirma que la dirección hex-migración es segura y consistente con el patrón existente.
 
@@ -97,9 +97,9 @@ export const CHART_COLORS = {
 
 | Línea | dataKey | Antes | Después |
 |---|---|---|---|
-| previousIncome | dashed, width 2 | `#10b981` | `#ACC18A` (series[2]) |
+| previousIncome | dashed, width 2 | `#6ee7b7` | `#ACC18A` (series[2]) |
 | currentIncome | sólida, width 3 | `#10b981` | `#4F6A35` (positive) |
-| previousExpense | dashed, width 2 | `#f43f5e` | `#D9A487` (series[3]) |
+| previousExpense | dashed, width 2 | `#fda4af` | `#D9A487` (series[3]) |
 | currentExpense | sólida, width 3 | `#f43f5e` | `#B5543D` (negative) |
 
 (Las líneas actuales usan `positive`/`negative` sólidos; las anteriores usan tonos claros de la paleta con dasharray, preservando la semántica visual ya-Kilo de CashflowSection.)
@@ -120,8 +120,10 @@ Reemplazos por archivo (lista completa del reviewer):
 | `TransactionFilters.tsx` | dot fallback `#9ca3af` (306) | `muted` |
 | `useTransactionMetrics.ts` | fallback `#9ca3af` (108) | `muted` |
 | **`BudgetForm.tsx`** | dot fallback `cat.color ?? '#9ca3af'` (336) | `muted` |
+| **`types/budget.ts`** | `BUDGET_STATUS_CONFIG.COMPLETED = { color: 'text-emerald-600', bg: 'bg-emerald-50' }` (81), consumido por `BudgetCard.tsx:62` y `BudgetSummary.tsx` | `{ color: 'text-[#4F6A35]', bg: 'bg-[#F2F9E3]' }` (mantiene el set semántico de 4 estados; ON_TRACK/AT_RISK/OVERDUE azul/naranja/rojo se conservan como estados) |
 | **`insights/page.tsx`** | `CLUSTER_COLORS` (89): `#f97316/#06b6d4/#ec4899/#8b5cf6/#10b981` | `series` en orden (violeta primero) |
 | **`SavingsTipCard.tsx`** | `hover:border-emerald-500/20` (30) | `hover:border-[#4F6A35]/20` |
+| **`CategoryComparison.tsx` (tooltip)** | fallback `'#8b5cf6'` (123) | `CHART_COLORS.series[0]` (centralización) |
 | `SankeyCustomNode.tsx` | fallback `#60a5fa` (53) | `#4A6FA5` (azul de la paleta de cuentas) |
 
 Se conservan por identidad: violeta insights (ahora en `series[0]`), indigo inversiones, amber cuotas/transferencias, marcas UBER/YANGO/INDRIVE.

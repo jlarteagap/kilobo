@@ -19,23 +19,25 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-50">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-[#F2FBE0]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#4F6A35] border-t-transparent" />
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-neutral-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl shadow-neutral-200/50 ring-1 ring-neutral-200">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F2FBE0] px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 rounded-[22px] bg-white p-8"
+        style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+      >
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="flex aspect-square size-12 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-600/20">
+          <div className="flex aspect-square size-12 items-center justify-center rounded-xl bg-[#4F6A35] text-white shadow-sm ring-1 ring-[#4F6A35]/20">
             <Wallet className="size-6" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-neutral-900">
+          <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
             Kilo
           </h2>
-          <p className="mt-2 text-sm text-neutral-600">
+          <p className="mt-2 text-sm text-[#6E6E73]">
             Ingresa para gestionar tus finanzas
           </p>
         </div>
@@ -43,7 +45,7 @@ export default function LoginPage() {
         <div className="mt-8 space-y-6">
           <button
             onClick={signInWithGoogle}
-            className="group relative flex w-full justify-center rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 hover:bg-neutral-50 transition-all duration-200"
+            className="group relative flex w-full justify-center rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5F7D42]/30 focus:ring-offset-2 hover:bg-[#F2F9E3] transition-all duration-200"
           >
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
               <svg className="h-5 w-5" viewBox="0 0 24 24">

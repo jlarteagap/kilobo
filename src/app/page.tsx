@@ -20,14 +20,14 @@ export default function LandingPage() {
 
   if (loading || user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F2FBE0]">
+        <div className="w-8 h-8 border-4 border-[#4F6A35] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-50 selection:bg-emerald-100 selection:text-emerald-900">
+    <div className="min-h-screen flex flex-col bg-[#F2FBE0] selection:bg-[#C8D9A9] selection:text-[#3C5230]">
       <LandingHeader />
       
       <main className="flex-1">
@@ -35,15 +35,15 @@ export default function LandingPage() {
         <BentoGrid />
 
         {/* The Final Call CTA */}
-        <section className="bg-neutral-50 py-24 sm:py-32">
+        <section className="bg-[#F2FBE0] py-24 sm:py-32">
           <div className="container mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">
+            <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               Empieza a construir tu tranquilidad financiera hoy.
             </h2>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <a
                 href="/login"
-                className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-all font-medium"
+                className="rounded-xl bg-[#4F6A35] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#3C5230] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4F6A35] transition-all font-medium"
               >
                 Crear tu cuenta
               </a>

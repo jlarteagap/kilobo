@@ -165,8 +165,8 @@ function ProjectionSparkline({ data }: {
         <AreaChart data={data} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
           <defs>
             <linearGradient id="projGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.15} />
-              <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
+              <stop offset="0%" stopColor={CHART_COLORS.series[0]} stopOpacity={0.15} />
+              <stop offset="100%" stopColor={CHART_COLORS.series[0]} stopOpacity={0} />
             </linearGradient>
           </defs>
           <XAxis

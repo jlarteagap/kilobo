@@ -2,6 +2,7 @@
 import { useMemo } from "react"
 import { filterByPeriod } from "@/utils/date.utils"
 import { convertToBOB }   from "@/lib/config/exchange-rates"
+import { CHART_COLORS }   from "@/lib/config/chart-colors"
 import type { Transaction } from "@/types/transaction"
 import type { Category }    from "@/types/category"
 import type { Account }     from "@/types/account"
@@ -32,7 +33,7 @@ const NODE_COLORS: Record<string, string> = {
   expense:   '#EF4444',
   account:   '#3B82F6',
   balance:   '#6B7280',
-  project:   '#8B5CF6',
+  project:   CHART_COLORS.series[0],
   subtype:   '#F59E0B',
   transfer:  '#F97316',
 }

@@ -20,6 +20,7 @@ import {
   type CreateProjectInput,
 } from "@/lib/validations/project.schema"
 import type { Project } from "@/types/project"
+import { CHART_COLORS } from "@/lib/config/chart-colors"
 
 // ─── Paleta de colores predefinidos ──────────────────────────────────────────
 const PROJECT_COLORS = [
@@ -27,7 +28,7 @@ const PROJECT_COLORS = [
   '#10B981', // emerald
   '#F59E0B', // amber
   '#EF4444', // red
-  '#8B5CF6', // violet
+  CHART_COLORS.series[0], // violet (identidad insights)
   '#EC4899', // pink
   '#14B8A6', // teal
   '#F97316', // orange

@@ -5,9 +5,9 @@ import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 export const INVESTMENT_ICON: LucideIcon = TrendingUp
 
 export const INVESTMENT_COLOR = {
-  text: "text-indigo-600 dark:text-indigo-400",
-  bg: "bg-indigo-50 dark:bg-indigo-950/30",
-  badge: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
+  text: "text-indigo-600",
+  bg: "bg-indigo-50",
+  badge: "bg-indigo-100 text-indigo-700",
   hex: "#6366f1",
 }
 

@@ -60,14 +60,14 @@ export function SavingsGoalCard({ goal, onEdit, onArchive, onDelete }: SavingsGo
               <button
                 onClick={() => onEdit(goal)}
                 title="Editar"
-                className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-150"
+                className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-blue-500 hover:bg-blue-50 transition-all duration-150"
               >
                 <Pencil className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => onArchive(goal)}
                 title="Archivar"
-                className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-all duration-150"
+                className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-orange-500 hover:bg-orange-50 transition-all duration-150"
               >
                 <Archive className="w-3.5 h-3.5" />
               </button>

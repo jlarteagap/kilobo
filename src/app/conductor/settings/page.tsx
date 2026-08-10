@@ -57,8 +57,8 @@ export default function DriverSettingsPage() {
     return (
       <AppLayout>
         <div className="max-w-2xl mx-auto px-4 py-8 space-y-6 animate-pulse">
-          <div className="h-8 w-48 bg-[#F2F9E3]/40 dark:bg-neutral-900 rounded-lg" />
-          <div className="h-96 bg-[#F2F9E3]/40 dark:bg-neutral-900 rounded-2xl" />
+          <div className="h-8 w-48 bg-[#F2F9E3]/40 rounded-lg" />
+          <div className="h-96 bg-[#F2F9E3]/40 rounded-2xl" />
         </div>
       </AppLayout>
     )
@@ -70,11 +70,11 @@ export default function DriverSettingsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-[#4F6A35] dark:bg-white flex items-center justify-center text-white dark:text-black shadow-sm">
+            <div className="size-10 rounded-xl bg-[#4F6A35] flex items-center justify-center text-white shadow-sm">
               <Settings className="size-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground dark:text-neutral-100 tracking-tight">Configuración</h1>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Configuración</h1>
               <p className="text-[11px] text-[#6E6E73] font-medium">Se configura una vez y se usa siempre</p>
             </div>
           </div>
@@ -86,7 +86,7 @@ export default function DriverSettingsPage() {
           </Link>
         </div>
 
-        <div className="rounded-[22px] bg-white dark:bg-neutral-900/50 p-6 space-y-6"
+        <div className="rounded-[22px] bg-white p-6 space-y-6"
           style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
         >
           {/* Actividad (Proyecto) */}
@@ -95,7 +95,7 @@ export default function DriverSettingsPage() {
             <select
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
+              className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
             >
               <option value="">Seleccionar actividad</option>
               {activeProjects.length === 0 ? (
@@ -119,13 +119,13 @@ export default function DriverSettingsPage() {
 
           {/* Subtipos (desde el proyecto seleccionado) */}
           {selectedProject && (
-            <div className="rounded-xl bg-[#F2F9E3]/40 dark:bg-neutral-900/40 p-4 space-y-2">
+            <div className="rounded-xl bg-[#F2F9E3]/40 p-4 space-y-2">
               <p className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Subtipos</p>
               <div className="flex flex-wrap gap-1.5">
                 {selectedProject.subtypes.map((st) => (
                   <span
                     key={st}
-                    className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#F2F9E3] dark:bg-neutral-800/50 text-foreground dark:text-neutral-400"
+                    className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#F2F9E3] text-foreground"
                   >
                     {st}
                   </span>
@@ -142,11 +142,11 @@ export default function DriverSettingsPage() {
             <p className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Cuentas destino</p>
 
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-foreground dark:text-neutral-400">Efectivo (ingresos líquidos)</Label>
+              <Label className="text-[11px] font-medium text-foreground">Efectivo (ingresos líquidos)</Label>
               <select
                 value={incomeCashAccountId}
                 onChange={(e) => setIncomeCashAccountId(e.target.value)}
-                className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
+                className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
               >
                 <option value="">Seleccionar cuenta</option>
                 {accounts.map((acc) => (
@@ -156,11 +156,11 @@ export default function DriverSettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-foreground dark:text-neutral-400">QR (ingresos líquidos)</Label>
+              <Label className="text-[11px] font-medium text-foreground">QR (ingresos líquidos)</Label>
               <select
                 value={incomeQrAccountId}
                 onChange={(e) => setIncomeQrAccountId(e.target.value)}
-                className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
+                className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
               >
                 <option value="">Seleccionar cuenta</option>
                 {accounts.map((acc) => (
@@ -170,11 +170,11 @@ export default function DriverSettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-foreground dark:text-neutral-400">Gastos en efectivo (peaje, gasolina, etc.)</Label>
+              <Label className="text-[11px] font-medium text-foreground">Gastos en efectivo (peaje, gasolina, etc.)</Label>
               <select
                 value={expenseCashAccountId}
                 onChange={(e) => setExpenseCashAccountId(e.target.value)}
-                className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
+                className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
               >
                 <option value="">Seleccionar cuenta</option>
                 {accounts.map((acc) => (
@@ -184,11 +184,11 @@ export default function DriverSettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-foreground dark:text-neutral-400">Gastos con QR (peaje, gasolina, etc.)</Label>
+              <Label className="text-[11px] font-medium text-foreground">Gastos con QR (peaje, gasolina, etc.)</Label>
               <select
                 value={expenseQrAccountId}
                 onChange={(e) => setExpenseQrAccountId(e.target.value)}
-                className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
+                className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
               >
                 <option value="">Seleccionar cuenta</option>
                 {accounts.map((acc) => (
@@ -198,11 +198,11 @@ export default function DriverSettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-foreground dark:text-neutral-400">Comisiones (las descuenta la app)</Label>
+              <Label className="text-[11px] font-medium text-foreground">Comisiones (las descuenta la app)</Label>
               <select
                 value={commissionAccountId}
                 onChange={(e) => setCommissionAccountId(e.target.value)}
-                className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] dark:border-neutral-900 px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
+                className="flex h-12 w-full bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] px-0 text-sm focus:outline-none focus:border-[#4F6A35] transition-colors"
               >
                 <option value="">Seleccionar cuenta</option>
                 {accounts.map((acc) => (
@@ -217,7 +217,7 @@ export default function DriverSettingsPage() {
             <Button
               onClick={handleSave}
               disabled={saveConfig.isPending || !projectId}
-              className="h-12 px-8 rounded-xl bg-[#4F6A35] hover:bg-[#3C5230] dark:bg-white text-white dark:text-black font-semibold"
+              className="h-12 px-8 rounded-xl bg-[#4F6A35] hover:bg-[#3C5230] text-white font-semibold"
             >
               {saveConfig.isPending ? 'Guardando…' : 'Guardar configuración'}
             </Button>
@@ -225,8 +225,8 @@ export default function DriverSettingsPage() {
         </div>
 
         {!config && (
-          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/20 text-center">
-            <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
+          <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-center">
+            <p className="text-xs font-medium text-amber-700">
               ⚠️ Configura esto antes de cerrar tu primer turno
             </p>
           </div>

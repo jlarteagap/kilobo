@@ -18,19 +18,19 @@ export function ShiftDetailSheet({ shift, onClose }: ShiftDetailSheetProps) {
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/20 z-40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-[2rem] bg-white dark:bg-neutral-900 shadow-2xl border-t border-[rgba(0,0,0,0.06)] dark:border-neutral-800 animate-in slide-in-from-bottom duration-500">
+      <div className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-[2rem] bg-white shadow-2xl border-t border-[rgba(0,0,0,0.06)] animate-in slide-in-from-bottom duration-500">
         <div className="max-w-lg mx-auto p-6 space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="size-10 rounded-xl bg-[#4F6A35] dark:bg-white flex items-center justify-center text-white dark:text-black">
+              <div className="size-10 rounded-xl bg-[#4F6A35] flex items-center justify-center text-white">
                 <Receipt className="size-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground dark:text-neutral-100">
+                <h3 className="text-sm font-bold text-foreground">
                   {isValidDate
                     ? date.toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
                     : 'Fecha no disponible'}
@@ -41,14 +41,14 @@ export function ShiftDetailSheet({ shift, onClose }: ShiftDetailSheetProps) {
                 </p>
               </div>
             </div>
-            <button onClick={onClose} className="size-8 rounded-lg flex items-center justify-center text-[#6E6E73] hover:text-foreground hover:bg-[#F2F9E3] dark:hover:bg-neutral-800">
+            <button onClick={onClose} className="size-8 rounded-lg flex items-center justify-center text-[#6E6E73] hover:text-foreground hover:bg-[#F2F9E3]">
               <X className="size-4" />
             </button>
           </div>
 
           {/* Km */}
           {(shift.startKm != null || shift.totalKm != null) && (
-            <div className="flex items-center gap-2 text-[11px] text-[#6E6E73] bg-[#F2F9E3]/40 dark:bg-neutral-900/40 rounded-xl px-4 py-3">
+            <div className="flex items-center gap-2 text-[11px] text-[#6E6E73] bg-[#F2F9E3]/40 rounded-xl px-4 py-3">
               <Fuel className="size-3.5" />
               <span className="tabular-nums">
                 {shift.startKm != null ? String(shift.startKm).padStart(3, '0') : '???'}
@@ -93,8 +93,8 @@ export function ShiftDetailSheet({ shift, onClose }: ShiftDetailSheetProps) {
             <div className="space-y-2">
               <p className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Gastos</p>
               {shift.expenses.map((exp, i) => (
-                <div key={i} className="flex items-center justify-between text-[11px] bg-[#FAEDE9]/30 dark:bg-rose-950/10 rounded-lg px-3 py-2">
-                  <span className="text-[#6E6E73] dark:text-neutral-400">
+                <div key={i} className="flex items-center justify-between text-[11px] bg-[#FAEDE9]/30 rounded-lg px-3 py-2">
+                  <span className="text-[#6E6E73]">
                     {EXPENSE_TYPE_LABELS[exp.type]}
                     {' · '}
                     {PAYMENT_METHOD_LABELS[exp.paymentMethod]}
@@ -107,18 +107,18 @@ export function ShiftDetailSheet({ shift, onClose }: ShiftDetailSheetProps) {
 
           {/* Notas */}
           {shift.notes && (
-            <div className="text-[11px] text-[#6E6E73] italic bg-[#F2F9E3]/40 dark:bg-neutral-900/40 rounded-xl px-4 py-3">
+            <div className="text-[11px] text-[#6E6E73] italic bg-[#F2F9E3]/40 rounded-xl px-4 py-3">
               &ldquo;{shift.notes}&rdquo;
             </div>
           )}
 
           {/* Totales */}
-          <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-neutral-800 pt-4 space-y-1.5 text-[12px]">
+          <div className="border-t border-[rgba(0,0,0,0.06)] pt-4 space-y-1.5 text-[12px]">
             <RowDetail label="Bruto" value={shift.grossEarnings ?? 0} />
             <RowDetail label="Pendiente en app" value={-(shift.pendingAmount ?? 0)} color="text-amber-600" />
             <RowDetail label="Comisiones" value={-(shift.totalCommissions ?? 0)} color="text-[#B5543D]" />
             <RowDetail label="Gastos" value={-(shift.totalExpenses ?? 0)} color="text-[#B5543D]" />
-            <div className="border-t-2 border-[rgba(0,0,0,0.16)] dark:border-neutral-600 pt-2 flex justify-between items-center">
+            <div className="border-t-2 border-[rgba(0,0,0,0.16)] pt-2 flex justify-between items-center">
               <span className="text-[11px] font-bold text-[#6E6E73] uppercase tracking-wide">Neto líquido</span>
               <span className={`text-base font-bold tabular-nums ${(shift.liquidEarnings ?? 0) >= 0 ? 'text-[#4F6A35]' : 'text-[#B5543D]'}`}>
                 {formatBs(shift.liquidEarnings ?? 0)}
@@ -141,7 +141,7 @@ function RowDetail({ label, value, color }: { label: string; value: number; colo
   return (
     <div className="flex justify-between items-center">
       <span className="text-[#6E6E73]">{label}</span>
-      <span className={`tabular-nums font-semibold ${color ?? 'text-foreground dark:text-neutral-100'}`}>
+      <span className={`tabular-nums font-semibold ${color ?? 'text-foreground'}`}>
         {value > 0 ? '+' : ''}{value.toFixed(2)}
       </span>
     </div>

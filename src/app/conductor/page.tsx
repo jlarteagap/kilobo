@@ -39,9 +39,9 @@ export default function ConductorPage() {
     return (
       <AppLayout>
         <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 animate-pulse">
-          <div className="h-8 w-48 bg-[#F2F9E3]/40 dark:bg-neutral-900 rounded-lg" />
-          <div className="h-32 bg-[#F2F9E3]/40 dark:bg-neutral-900 rounded-2xl" />
-          <div className="h-64 bg-[#F2F9E3]/40 dark:bg-neutral-900 rounded-2xl" />
+          <div className="h-8 w-48 bg-[#F2F9E3]/40 rounded-lg" />
+          <div className="h-32 bg-[#F2F9E3]/40 rounded-2xl" />
+          <div className="h-64 bg-[#F2F9E3]/40 rounded-2xl" />
         </div>
       </AppLayout>
     )
@@ -53,23 +53,23 @@ export default function ConductorPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-[#4F6A35] dark:bg-white flex items-center justify-center text-white dark:text-black shadow-sm">
+            <div className="size-10 rounded-xl bg-[#4F6A35] flex items-center justify-center text-white shadow-sm">
               <CarTaxiFront className="size-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground dark:text-neutral-100 tracking-tight">Conductor</h1>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Conductor</h1>
               <p className="text-[11px] text-[#6E6E73] font-medium">Registro de turnos y optimización</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <Link href="/conductor/settings">
-              <Button variant="ghost" size="icon" className="size-9 rounded-lg text-[#6E6E73] hover:text-foreground dark:hover:text-neutral-300">
+              <Button variant="ghost" size="icon" className="size-9 rounded-lg text-[#6E6E73] hover:text-foreground">
                 <Settings className="size-4" />
               </Button>
             </Link>
             <Link href="/conductor/analytics">
-              <Button variant="outline" className="h-9 px-4 rounded-lg text-xs font-bold border-[rgba(0,0,0,0.06)] dark:border-neutral-800">
+              <Button variant="outline" className="h-9 px-4 rounded-lg text-xs font-bold border-[rgba(0,0,0,0.06)]">
                 <BarChart3 className="size-3.5 mr-1.5" />
                 Analytics
               </Button>
@@ -84,14 +84,14 @@ export default function ConductorPage() {
         {!showForm && !editingShift && (
           <button
             onClick={() => setShowForm(true)}
-            className="w-full rounded-2xl border-2 border-dashed border-[rgba(0,0,0,0.12)] dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/20 hover:border-[#4F6A35] dark:hover:border-[#4F6A35] hover:bg-[#F2F9E3]/50 dark:hover:bg-[#4F6A35]/10 transition-all duration-200 p-6 group"
+            className="w-full rounded-2xl border-2 border-dashed border-[rgba(0,0,0,0.12)] bg-white/50 hover:border-[#4F6A35] hover:bg-[#F2F9E3]/50 transition-all duration-200 p-6 group"
           >
             <div className="flex items-center justify-center gap-3">
               <div className="size-10 rounded-xl bg-[#4F6A35] flex items-center justify-center text-white shadow-lg shadow-[#4F6A35]/20 group-hover:scale-105 transition-transform">
                 <Plus className="size-5" />
               </div>
               <div className="text-left">
-                <p className="text-sm font-bold text-foreground dark:text-neutral-100">Registrar turno</p>
+                <p className="text-sm font-bold text-foreground">Registrar turno</p>
                 <p className="text-[11px] text-[#6E6E73]">Fecha, horas, km e ingresos — al final del día</p>
               </div>
             </div>
@@ -129,10 +129,10 @@ export default function ConductorPage() {
         {/* ── Historial ── */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="size-6 rounded-md bg-[#F2F9E3]/40 dark:bg-neutral-900 flex items-center justify-center text-[#6E6E73]">
+            <div className="size-6 rounded-md bg-[#F2F9E3]/40 flex items-center justify-center text-[#6E6E73]">
               <CarTaxiFront className="size-3" />
             </div>
-            <h2 className="text-sm font-semibold text-foreground dark:text-neutral-300">Turnos Registrados</h2>
+            <h2 className="text-sm font-semibold text-foreground">Turnos Registrados</h2>
           </div>
           <ShiftHistory shifts={shifts} onEdit={handleEdit} />
         </div>

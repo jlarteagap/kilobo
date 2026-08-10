@@ -12,9 +12,9 @@ export function ShiftAnalytics() {
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-32 bg-[#F2F9E3]/40 dark:bg-neutral-900 rounded-2xl" />
-        <div className="h-48 bg-[#F2F9E3]/40 dark:bg-neutral-900 rounded-2xl" />
-        <div className="h-64 bg-[#F2F9E3]/40 dark:bg-neutral-900 rounded-2xl" />
+        <div className="h-32 bg-[#F2F9E3]/40 rounded-2xl" />
+        <div className="h-48 bg-[#F2F9E3]/40 rounded-2xl" />
+        <div className="h-64 bg-[#F2F9E3]/40 rounded-2xl" />
       </div>
     )
   }
@@ -29,7 +29,7 @@ export function ShiftAnalytics() {
 
   if (analytics.summary.shiftCount === 0) {
     return (
-      <div className="p-12 text-center border border-dashed border-[rgba(0,0,0,0.12)] dark:border-neutral-800 rounded-2xl">
+      <div className="p-12 text-center border border-dashed border-[rgba(0,0,0,0.12)] rounded-2xl">
         <DollarSign className="size-8 text-[#6E6E73]/60 mx-auto mb-3" />
         <p className="text-sm text-[#6E6E73] font-medium">Cierra tu primer turno para ver analytics</p>
       </div>
@@ -95,24 +95,24 @@ export function ShiftAnalytics() {
       </div>
 
       {/* ── Breakdown bruto ── */}
-      <div className="rounded-[22px] bg-white dark:bg-neutral-900/50 p-6"
+      <div className="rounded-[22px] bg-white p-6"
         style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
       >
         <h3 className="text-xs font-bold text-[#6E6E73] uppercase tracking-widest mb-5">Desglose bruto</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-          <div className="p-3 rounded-xl bg-[#F2F9E3]/40 dark:bg-neutral-900/40">
+          <div className="p-3 rounded-xl bg-[#F2F9E3]/40">
             <p className="text-[9px] uppercase tracking-widest text-[#6E6E73] font-bold">Bruto total</p>
-            <p className="text-lg font-bold text-foreground dark:text-neutral-100 tabular-nums mt-1">{formatBs(s.grossEarnings)}</p>
+            <p className="text-lg font-bold text-foreground tabular-nums mt-1">{formatBs(s.grossEarnings)}</p>
           </div>
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/10">
+          <div className="p-3 rounded-xl bg-amber-50">
             <p className="text-[9px] uppercase tracking-widest text-amber-600/70 font-bold">Pendiente</p>
-            <p className="text-lg font-bold text-amber-600 dark:text-amber-400 tabular-nums mt-1">{formatBs(s.pendingAmount)}</p>
+            <p className="text-lg font-bold text-amber-600 tabular-nums mt-1">{formatBs(s.pendingAmount)}</p>
           </div>
-          <div className="p-3 rounded-xl bg-[#FAEDE9] dark:bg-rose-950/10">
+          <div className="p-3 rounded-xl bg-[#FAEDE9]">
             <p className="text-[9px] uppercase tracking-widest text-[#B5543D]/70 font-bold">Comisiones</p>
             <p className="text-lg font-bold text-[#B5543D] tabular-nums mt-1">{formatBs(s.totalCommissions)}</p>
           </div>
-          <div className="p-3 rounded-xl bg-[#FAEDE9] dark:bg-rose-950/10">
+          <div className="p-3 rounded-xl bg-[#FAEDE9]">
             <p className="text-[9px] uppercase tracking-widest text-[#B5543D]/70 font-bold">Gastos</p>
             <p className="text-lg font-bold text-[#B5543D] tabular-nums mt-1">{formatBs(s.totalExpenses)}</p>
           </div>
@@ -120,7 +120,7 @@ export function ShiftAnalytics() {
       </div>
 
       {/* ── Rendimiento por App ── */}
-      <div className="rounded-[22px] bg-white dark:bg-neutral-900/50 p-6"
+      <div className="rounded-[22px] bg-white p-6"
         style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
       >
         <h3 className="text-xs font-bold text-[#6E6E73] uppercase tracking-widest mb-5">Ingresos por App</h3>
@@ -145,7 +145,7 @@ export function ShiftAnalytics() {
                       {qr > 0 && ` | QR: ${qr.toFixed(0)}`}
                     </span>
                   </div>
-                  <span className="font-bold tabular-nums text-foreground dark:text-neutral-100">
+                  <span className="font-bold tabular-nums text-foreground">
                     {formatBs(totalEarned)}
                   </span>
                 </div>
@@ -154,7 +154,7 @@ export function ShiftAnalytics() {
                   {commissions > 0 && <span className="text-[#B5543D] ml-2">Comis: {formatBs(commissions)}</span>}
                 </div>
                 {/* Barra comparativa */}
-                <div className="h-1.5 rounded-full bg-[rgba(0,0,0,0.06)] dark:bg-neutral-800 overflow-hidden">
+                <div className="h-1.5 rounded-full bg-[rgba(0,0,0,0.06)] overflow-hidden">
                   <div
                     className="h-full rounded-full bg-[#4F6A35] transition-all duration-500"
                     style={{ width: `${Math.min((totalEarned / (Math.max(...analytics.byApp.map(a => (a.cash ?? 0) + (a.card ?? 0) + (a.qr ?? 0)), 1))) * 100, 100)}%` }}
@@ -168,14 +168,14 @@ export function ShiftAnalytics() {
 
       {/* ── Daily Trend ── */}
       {analytics.dailyTrend.length > 0 && (
-        <div className="rounded-[22px] bg-white dark:bg-neutral-900/50 p-6"
+        <div className="rounded-[22px] bg-white p-6"
           style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
         >
           <h3 className="text-xs font-bold text-[#6E6E73] uppercase tracking-widest mb-5">Evolución — Neto líquido diario</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analytics.dailyTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="text-[rgba(0,0,0,0.08)] dark:text-neutral-800" stroke="currentColor" />
+                <CartesianGrid strokeDasharray="3 3" className="text-[rgba(0,0,0,0.08)]" stroke="currentColor" />
                 <XAxis
                   dataKey="date"
                   tick={{ fontSize: 10, fill: '#a3a3a3' }}
@@ -211,10 +211,10 @@ function SummaryCard({
   color: 'emerald' | 'amber' | 'blue' | 'orange'
 }) {
   const colorMap = {
-    emerald: 'bg-[#F2F9E3] dark:bg-emerald-950/20 text-[#4F6A35] dark:text-emerald-400 border-[#C8D9A9] dark:border-emerald-900/50',
-    amber: 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/50',
-    blue: 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/50',
-    orange: 'bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/50',
+    emerald: 'bg-[#F2F9E3] text-[#4F6A35] border-[#C8D9A9]',
+    amber: 'bg-amber-50 text-amber-600 border-amber-100',
+    blue: 'bg-blue-50 text-blue-600 border-blue-100',
+    orange: 'bg-orange-50 text-orange-600 border-orange-100',
   }
 
   return (

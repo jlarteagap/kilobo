@@ -17,13 +17,13 @@ export default function AnalyticsPage() {
               <BarChart3 className="size-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground dark:text-neutral-100 tracking-tight">Analytics</h1>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Analytics</h1>
               <p className="text-[11px] text-[#6E6E73] font-medium">Métricas de optimización</p>
             </div>
           </div>
 
           <Link href="/conductor">
-            <Button variant="outline" className="h-9 px-4 rounded-lg text-xs font-bold border-[rgba(0,0,0,0.06)] dark:border-neutral-800">
+            <Button variant="outline" className="h-9 px-4 rounded-lg text-xs font-bold border-[rgba(0,0,0,0.06)]">
               <ArrowLeft className="size-3.5 mr-1.5" />
               Volver
             </Button>

@@ -65,8 +65,8 @@ export function InvestmentTxForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <div className="rounded-xl bg-[#F2F9E3]/40 dark:bg-neutral-900/50 px-4 py-3 space-y-1">
-          <p className="text-[13px] font-semibold text-foreground dark:text-neutral-100">
+        <div className="rounded-xl bg-[#F2F9E3]/40 px-4 py-3 space-y-1">
+          <p className="text-[13px] font-semibold text-foreground">
             {investment.name}
           </p>
           {investment.units != null && (
@@ -77,7 +77,7 @@ export function InvestmentTxForm({
         </div>
 
         {!isBuy && (
-          <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 px-4 py-2 text-[12px] font-medium text-amber-700 dark:text-amber-400">
+          <div className="rounded-xl bg-amber-50 px-4 py-2 text-[12px] font-medium text-amber-700">
             Disponibles: {availableUnits} units
           </div>
         )}
@@ -132,11 +132,11 @@ export function InvestmentTxForm({
           />
         </div>
 
-        <div className="rounded-xl bg-indigo-50 dark:bg-indigo-950/20 px-4 py-3 flex items-center justify-between">
-          <span className="text-[13px] font-medium text-indigo-700 dark:text-indigo-300">
+        <div className="rounded-xl bg-indigo-50 px-4 py-3 flex items-center justify-between">
+          <span className="text-[13px] font-medium text-indigo-700">
             Total
           </span>
-          <span className="text-[15px] font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
+          <span className="text-[15px] font-bold text-indigo-600 tabular-nums">
             {formatCurrency(total, investment.currency)}
           </span>
         </div>

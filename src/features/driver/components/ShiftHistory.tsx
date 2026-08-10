@@ -35,8 +35,8 @@ export function ShiftHistory({ shifts, onEdit }: ShiftHistoryProps) {
 
   if (shifts.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-[rgba(0,0,0,0.12)] dark:border-neutral-800 p-8 text-center">
-        <div className="size-10 rounded-xl bg-[#F2F9E3]/40 dark:bg-neutral-900 mx-auto flex items-center justify-center text-[#6E6E73]/60 mb-3">
+      <div className="rounded-2xl border border-dashed border-[rgba(0,0,0,0.12)] p-8 text-center">
+        <div className="size-10 rounded-xl bg-[#F2F9E3]/40 mx-auto flex items-center justify-center text-[#6E6E73]/60 mb-3">
           <History className="size-5" />
         </div>
         <p className="text-xs text-[#6E6E73] italic">Aún no hay turnos registrados</p>
@@ -62,11 +62,11 @@ export function ShiftHistory({ shifts, onEdit }: ShiftHistoryProps) {
             <div
               key={shift.id}
               onClick={() => setDetailShift(shift)}
-              className="group relative flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-white dark:bg-neutral-900/40 border border-[rgba(0,0,0,0.06)] dark:border-neutral-900 hover:border-[rgba(0,0,0,0.12)] dark:hover:border-neutral-800 transition-all duration-200 hover:shadow-sm cursor-pointer"
+              className="group relative flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-white border border-[rgba(0,0,0,0.06)] hover:border-[rgba(0,0,0,0.12)] transition-all duration-200 hover:shadow-sm cursor-pointer"
             >
               {/* Fecha */}
               <div className="min-w-[36px] text-center shrink-0">
-                <p className="text-[16px] font-bold text-foreground dark:text-neutral-100 leading-none tabular-nums">
+                <p className="text-[16px] font-bold text-foreground leading-none tabular-nums">
                   {isValidDate ? date.getDate() : '—'}
                 </p>
                 <p className="text-[8px] uppercase tracking-wider text-[#6E6E73] font-medium mt-0.5">
@@ -93,7 +93,7 @@ export function ShiftHistory({ shifts, onEdit }: ShiftHistoryProps) {
                 })}
                 {/* Notas indicator */}
                 {shift.notes && (
-                  <span className="text-[9px] text-[#6E6E73]/60 dark:text-neutral-600">
+                  <span className="text-[9px] text-[#6E6E73]/60">
                     <MessageSquareText className="size-3" />
                   </span>
                 )}
@@ -124,7 +124,7 @@ export function ShiftHistory({ shifts, onEdit }: ShiftHistoryProps) {
                 {onEdit && (
                   <button
                     onClick={(e) => handleEdit(e, shift)}
-                    className="size-7 rounded-full bg-white dark:bg-neutral-800 border border-[rgba(0,0,0,0.06)] dark:border-neutral-700 flex items-center justify-center text-[#6E6E73]/60 hover:text-blue-500 hover:border-blue-200 dark:hover:border-blue-800 shadow-sm"
+                    className="size-7 rounded-full bg-white border border-[rgba(0,0,0,0.06)] flex items-center justify-center text-[#6E6E73]/60 hover:text-blue-500 hover:border-blue-200 shadow-sm"
                     title="Editar turno"
                   >
                     <Pencil className="size-3" />
@@ -133,7 +133,7 @@ export function ShiftHistory({ shifts, onEdit }: ShiftHistoryProps) {
                 <button
                   onClick={(e) => handleDelete(e, shift.id)}
                   disabled={deletingId === shift.id}
-                  className="size-7 rounded-full bg-white dark:bg-neutral-800 border border-[rgba(0,0,0,0.06)] dark:border-neutral-700 flex items-center justify-center text-[#6E6E73]/60 hover:text-[#B5543D] hover:border-[#D9A487] dark:hover:border-red-800 shadow-sm"
+                  className="size-7 rounded-full bg-white border border-[rgba(0,0,0,0.06)] flex items-center justify-center text-[#6E6E73]/60 hover:text-[#B5543D] hover:border-[#D9A487] shadow-sm"
                   title="Eliminar turno"
                 >
                   {deletingId === shift.id ? (

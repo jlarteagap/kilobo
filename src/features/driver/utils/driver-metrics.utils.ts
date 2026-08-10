@@ -67,18 +67,18 @@ export function getAppLabel(app: DriverApp): string {
 
 export function getAppColor(app: DriverApp): string {
   const colors: Record<DriverApp, string> = {
-    UBER:    'text-blue-600 bg-blue-50 dark:bg-blue-950/30 dark:text-blue-400',
-    YANGO:   'text-orange-600 bg-orange-50 dark:bg-orange-950/30 dark:text-orange-400',
-    INDRIVE: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-400',
+    UBER:    'text-blue-600 bg-blue-50',
+    YANGO:   'text-orange-600 bg-orange-50',
+    INDRIVE: 'text-emerald-600 bg-emerald-50',
   }
   return colors[app]
 }
 
 export function getAppBadgeColor(app: DriverApp): string {
   const colors: Record<DriverApp, string> = {
-    UBER:    'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    YANGO:   'bg-orange-500/10 text-orange-600 dark:text-orange-400',
-    INDRIVE: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    UBER:    'bg-blue-500/10 text-blue-600',
+    YANGO:   'bg-orange-500/10 text-orange-600',
+    INDRIVE: 'bg-emerald-500/10 text-emerald-600',
   }
   return colors[app]
 }

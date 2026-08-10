@@ -183,11 +183,11 @@ export function InvestmentForm({
         </div>
 
         {hasUnits ? (
-          <div className="rounded-xl bg-indigo-50 dark:bg-indigo-950/20 px-4 py-3 flex items-center justify-between">
-            <span className="text-[13px] font-medium text-indigo-700 dark:text-indigo-300">
+          <div className="rounded-xl bg-indigo-50 px-4 py-3 flex items-center justify-between">
+            <span className="text-[13px] font-medium text-indigo-700">
               Total invertido
             </span>
-            <span className="text-[15px] font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
+            <span className="text-[15px] font-bold text-indigo-600 tabular-nums">
               {formatCurrency(calculatedAmount as number, form.watch('currency') || 'BOB')}
             </span>
           </div>

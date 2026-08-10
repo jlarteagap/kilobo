@@ -85,18 +85,18 @@ function CategoryCard({
         <div className="flex items-center gap-4 mb-5">
           {/* Icon with premium container */}
           <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-sm border border-white dark:border-neutral-800 ring-4 ring-[#F2F9E3]/40 dark:ring-neutral-950"
+            className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-sm border border-white ring-4 ring-[#F2F9E3]/40"
             style={{ backgroundColor: `${accentColor}10` }}
           >
             {category.icon ?? '📁'}
           </div>
 
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-foreground dark:text-neutral-100 text-sm leading-tight truncate tracking-tight">
+            <h3 className="font-bold text-foreground text-sm leading-tight truncate tracking-tight">
               {category.name}
             </h3>
             {tags.length > 0 && (
-              <p className="text-[11px] text-[#6E6E73] dark:text-neutral-400 mt-1 font-semibold uppercase tracking-wider">
+              <p className="text-[11px] text-[#6E6E73] mt-1 font-semibold uppercase tracking-wider">
                 {tags.length} Etiqueta{tags.length !== 1 ? 's' : ''}
               </p>
             )}
@@ -108,7 +108,7 @@ function CategoryCard({
           {tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center text-[10px] font-bold text-[#6E6E73] dark:text-neutral-400 bg-[#F2F9E3]/40 dark:bg-neutral-800/50 px-2.5 py-0.5 rounded-lg border border-[rgba(0,0,0,0.06)] dark:border-neutral-700/30 transition-colors hover:border-[#6E6E73]/40 dark:hover:border-neutral-600"
+              className="inline-flex items-center text-[10px] font-bold text-[#6E6E73] bg-[#F2F9E3]/40 px-2.5 py-0.5 rounded-lg border border-[rgba(0,0,0,0.06)] transition-colors hover:border-[#6E6E73]/40"
             >
               {tag}
             </span>
@@ -121,17 +121,17 @@ function CategoryCard({
         </div>
 
         {/* Action buttons revealed on hover */}
-        <div className="mt-5 pt-4 border-t border-[rgba(0,0,0,0.06)] dark:border-neutral-800/50 flex items-center justify-end gap-2">
+        <div className="mt-5 pt-4 border-t border-[rgba(0,0,0,0.06)] flex items-center justify-end gap-2">
           <button
             onClick={() => onEdit(category)}
-            className="p-2 rounded-xl text-[#6E6E73] hover:text-foreground dark:hover:text-white hover:bg-[#F2F9E3] dark:hover:bg-neutral-800 transition-all duration-200"
+            className="p-2 rounded-xl text-[#6E6E73] hover:text-foreground hover:bg-[#F2F9E3] transition-all duration-200"
             aria-label="Editar"
           >
             <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(category.id)}
-            className="p-2 rounded-xl text-[#6E6E73] hover:text-[#B5543D] hover:bg-[#FAEDE9] dark:hover:bg-rose-950/30 transition-all duration-200"
+            className="p-2 rounded-xl text-[#6E6E73] hover:text-[#B5543D] hover:bg-[#FAEDE9] transition-all duration-200"
             aria-label="Eliminar"
           >
             <Trash2 className="w-4 h-4" />
@@ -193,11 +193,11 @@ export function CategoriesList() {
             <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <LayoutGrid className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-4xl font-black text-foreground dark:text-neutral-100 tracking-tightest">
+            <h1 className="text-4xl font-black text-foreground tracking-tightest">
               Categorías
             </h1>
           </div>
-          <p className="text-sm font-medium text-[#6E6E73] dark:text-neutral-400 max-w-md leading-relaxed">
+          <p className="text-sm font-medium text-[#6E6E73] max-w-md leading-relaxed">
             Organiza y estructura tus movimientos financieros con un sistema de categorías inteligente.
           </p>
         </div>
@@ -209,7 +209,7 @@ export function CategoriesList() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Filtrar categorías..."
-              className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-neutral-900 border border-[rgba(0,0,0,0.06)] dark:border-neutral-800/50 rounded-[1.25rem] text-sm font-semibold text-foreground dark:text-neutral-100 placeholder:text-[#6E6E73] focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/30 transition-all duration-300 shadow-sm"
+              className="w-full pl-11 pr-4 py-3.5 bg-white border border-[rgba(0,0,0,0.06)] rounded-[1.25rem] text-sm font-semibold text-foreground placeholder:text-[#6E6E73] focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/30 transition-all duration-300 shadow-sm"
             />
           </div>
 
@@ -217,14 +217,14 @@ export function CategoriesList() {
             <DialogTrigger asChild>
               <button
                 onClick={handleNewCategory}
-                className="flex items-center gap-2 px-6 py-3.5 bg-[#4F6A35] hover:bg-[#3C5230] dark:bg-neutral-100 text-white dark:text-neutral-900 text-sm font-bold rounded-[1.25rem] shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-300"
+                className="flex items-center gap-2 px-6 py-3.5 bg-[#4F6A35] hover:bg-[#3C5230] text-white text-sm font-bold rounded-[1.25rem] shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-300"
               >
                 <Plus className="w-4 h-4 stroke-[3px]" />
                 <span className="hidden sm:inline">Nueva</span>
               </button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-md rounded-[2.5rem] border-[rgba(0,0,0,0.06)] dark:border-neutral-800/50 backdrop-blur-3xl">
+            <DialogContent className="sm:max-w-md rounded-[2.5rem] border-[rgba(0,0,0,0.06)] backdrop-blur-3xl">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-black tracking-tightest mb-4">
                   {dialog.mode === 'edit' ? 'Editar Categoría' : 'Nueva Categoría'}
@@ -254,11 +254,11 @@ export function CategoriesList() {
       {isLoading ? (
         <CategoriesSkeleton />
       ) : filteredCategories.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 text-center bg-[#F2F9E3]/40 dark:bg-neutral-900/30 rounded-[3rem] border border-dashed border-[rgba(0,0,0,0.12)] dark:border-neutral-800">
-          <div className="w-20 h-20 rounded-[2.5rem] bg-white dark:bg-neutral-900 flex items-center justify-center mb-6 shadow-xl border border-[rgba(0,0,0,0.06)] dark:border-neutral-800">
+        <div className="flex flex-col items-center justify-center py-32 text-center bg-[#F2F9E3]/40 rounded-[3rem] border border-dashed border-[rgba(0,0,0,0.12)]">
+          <div className="w-20 h-20 rounded-[2.5rem] bg-white flex items-center justify-center mb-6 shadow-xl border border-[rgba(0,0,0,0.06)]">
             <Search className="w-8 h-8 text-[#6E6E73]/50" />
           </div>
-          <p className="text-xl font-bold text-foreground dark:text-neutral-100">Sin resultados</p>
+          <p className="text-xl font-bold text-foreground">Sin resultados</p>
           <p className="text-sm text-[#6E6E73] mt-2 max-w-[240px]">
             {search ? 'No encontramos categorías que coincidan con tu búsqueda.' : 'Parece que aún no has creado ninguna categoría.'}
           </p>
@@ -285,12 +285,12 @@ export function CategoriesList() {
           {/* Subtle Add Empty State Card */}
           <button
             onClick={handleNewCategory}
-            className="group relative flex flex-col items-center justify-center p-8 rounded-[22px] border-2 border-dashed border-[rgba(0,0,0,0.12)] dark:border-neutral-800 hover:border-indigo-500/50 hover:bg-indigo-50/10 transition-all duration-500 min-h-[200px]"
+            className="group relative flex flex-col items-center justify-center p-8 rounded-[22px] border-2 border-dashed border-[rgba(0,0,0,0.12)] hover:border-indigo-500/50 hover:bg-indigo-50/10 transition-all duration-500 min-h-[200px]"
           >
-            <div className="w-12 h-12 rounded-2xl bg-[#F2F9E3]/40 dark:bg-neutral-900 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-[#F2F9E3]/40 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-50 transition-all">
               <Plus className="w-5 h-5 text-[#6E6E73] group-hover:text-indigo-600" />
             </div>
-            <span className="text-sm font-bold text-[#6E6E73] group-hover:text-foreground dark:group-hover:text-neutral-300">
+            <span className="text-sm font-bold text-[#6E6E73] group-hover:text-foreground">
               Nueva Categoría
             </span>
           </button>
@@ -302,10 +302,10 @@ export function CategoriesList() {
         open={!!pendingDeleteId}
         onOpenChange={(open) => !open && setPendingDeleteId(null)}
       >
-        <AlertDialogContent className="rounded-[3rem] border-[rgba(0,0,0,0.06)] dark:border-neutral-800 p-10 max-w-md">
+        <AlertDialogContent className="rounded-[3rem] border-[rgba(0,0,0,0.06)] p-10 max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl font-black tracking-tightest">¿Eliminar esta categoría?</AlertDialogTitle>
-            <AlertDialogDescription className="text-[#6E6E73] dark:text-neutral-400 text-sm font-medium leading-relaxed mt-2">
+            <AlertDialogDescription className="text-[#6E6E73] text-sm font-medium leading-relaxed mt-2">
               Esta acción es permanente. Si la categoría tiene transacciones vinculadas, el sistema impedirá su borrado por seguridad.
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -10,6 +10,7 @@ import {
   parseLocalDate,
 } from '@/utils/date.utils'
 import { convertToBOB } from '@/lib/config/exchange-rates'
+import { CHART_COLORS } from '@/lib/config/chart-colors'
 
 import type { Period }                              from '@/types/period'
 import type { Transaction, CategoryData, ChartDataPoint } from '@/types/transaction'
@@ -105,7 +106,7 @@ export function useTransactionMetrics(
         return {
           categoryId,
           name:       cat?.name  ?? 'Sin categoría',
-          color:      cat?.color ?? '#9ca3af',
+          color:      cat?.color ?? CHART_COLORS.muted,
           income:     0,
           expense:    amounts.expense,
           value:      amounts.expense,

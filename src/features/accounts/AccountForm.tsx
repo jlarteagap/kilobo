@@ -81,7 +81,10 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
                             : 'border-[rgba(0,0,0,0.06)] bg-[#F2F9E3]/40 text-[#6E6E73] hover:border-[rgba(0,0,0,0.12)] hover:bg-[#F2F9E3]'
                         )}
                       >
-                        <Icon className={cn('w-4 h-4', isSelected ? 'text-white' : color)} />
+                        <Icon
+                          className={cn('w-4 h-4', isSelected && 'text-white')}
+                          style={isSelected ? undefined : { color }}
+                        />
                         {label}
                       </button>
                     )

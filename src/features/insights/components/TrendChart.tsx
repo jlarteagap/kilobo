@@ -14,6 +14,7 @@ import {
 } from 'recharts'
 import { CategoryTrend }  from '@/lib/insights/algorithms'
 import { useMemo }        from 'react'
+import { CHART_COLORS }   from '@/lib/config/chart-colors'
 
 interface Props {
   trends     : CategoryTrend[]
@@ -26,11 +27,8 @@ interface ChartPoint {
   [key: string]: string | number
 }
 
-// Paleta de colores para líneas sin color de categoría
-const FALLBACK_COLORS = [
-  '#8b5cf6', '#06b6d4', '#f59e0b',
-  '#ec4899', '#10b981', '#f97316',
-]
+// Paleta de colores para líneas sin color de categoría (Kilo, slot 0 = violeta identidad)
+const FALLBACK_COLORS = CHART_COLORS.series
 
 export function TrendChart({ trends, maxLines = 4, annotation }: Props) {
   const topTrends = trends.slice(0, maxLines)

@@ -3,11 +3,11 @@ import { Wallet, Building2, Banknote, Bitcoin, PiggyBank, LucideIcon, Landmark, 
 import { convertToBOB } from "@/lib/config/exchange-rates"
 
 const accountTypeDetailsMap: Record<AccountType, { label: string; icon: LucideIcon; color: string; bg: string }> = {
-  BANK:   { label: "Banco",             icon: Building2,  color: "text-blue-500",      bg: "bg-blue-500" },
-  WALLET: { label: "Billetera Digital", icon: Wallet,     color: "text-purple-500",    bg: "bg-purple-500" },
-  CASH:   { label: "Efectivo",          icon: Banknote,   color: "text-emerald-500",   bg: "bg-emerald-500" },
-  CRYPTO: { label: "Cripto",            icon: Bitcoin,    color: "text-orange-500",    bg: "bg-orange-500" },
-  OTHER:  { label: "Otro",              icon: PiggyBank,  color: "text-gray-500",      bg: "bg-gray-500" },
+  BANK:   { label: "Banco",             icon: Building2,  color: "#4A6FA5", bg: "#4A6FA5" },
+  WALLET: { label: "Billetera Digital", icon: Wallet,     color: "#8B7EA8", bg: "#8B7EA8" },
+  CASH:   { label: "Efectivo",          icon: Banknote,   color: "#4F6A35", bg: "#4F6A35" },
+  CRYPTO: { label: "Cripto",            icon: Bitcoin,    color: "#C08A2E", bg: "#C08A2E" },
+  OTHER:  { label: "Otro",              icon: PiggyBank,  color: "#837A75", bg: "#837A75" },
 }
 
 export const getAccountTypeDetails = (type: AccountType) => accountTypeDetailsMap[type]

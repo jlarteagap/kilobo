@@ -6,6 +6,7 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import { cn } from "@/lib/utils"
+import { CHART_COLORS } from "@/lib/config/chart-colors"
 import type { ChartDataPoint } from "@/types/transaction"
 import { ChartTooltipContainer, ChartTooltipRow } from "@/components/ui/chart-tooltip"
 
@@ -17,8 +18,8 @@ const CHART_TYPES: { value: ChartType; label: string }[] = [
   { value: 'line', label: 'Línea' },
 ]
 
-const INCOME_COLOR  = '#4F6A35'
-const EXPENSE_COLOR = '#B5543D'
+const INCOME_COLOR  = CHART_COLORS.positive
+const EXPENSE_COLOR = CHART_COLORS.negative
 
 function formatOriginal(value: number, currency: string): string {
   return new Intl.NumberFormat('es-BO', {
@@ -77,7 +78,7 @@ const axisProps = {
       dataKey="label"
       axisLine={false}
       tickLine={false}
-      tick={{ fill: '#9ca3af', fontSize: 11 }}
+      tick={{ fill: CHART_COLORS.muted, fontSize: 11 }}
       dy={8}
     />
   ),
@@ -85,13 +86,13 @@ const axisProps = {
     <YAxis
       axisLine={false}
       tickLine={false}
-      tick={{ fill: '#9ca3af', fontSize: 11 }}
+      tick={{ fill: CHART_COLORS.muted, fontSize: 11 }}
       tickFormatter={(v) => `Bs${v}`}
       width={48}
     />
   ),
   grid: (
-    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.08)" />
+    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={CHART_COLORS.grid} />
   ),
   tooltip: (
     <Tooltip content={<CustomTooltip />} />

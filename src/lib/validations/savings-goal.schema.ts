@@ -9,7 +9,7 @@ export const createSavingsGoalSchema = z.object({
   account_id: z.string().min(1, 'Selecciona una cuenta'),
   deadline: z.string().nullable().optional(),
   icon: z.string().default('🎯'),
-  color: z.string().default('#10b981'),
+  color: z.string().default('#4F6A35'),
   auto_save_percentage: z.coerce.number().min(0).max(100).default(0),
 })
 

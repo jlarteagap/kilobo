@@ -50,7 +50,7 @@ export function SankeyCustomNode({
     (payload?.name ? NODE_COLORS[payload.name] : null) ??
     payload?.color             ??
     (payload?.type ? TYPE_COLORS[payload.type] : null) ??
-    '#60a5fa'
+    '#4A6FA5'
 
   const maxChars = containerWidth < 380 ? 6 : containerWidth < 500 ? 10 : 20
   const name     = payload?.name ?? ''

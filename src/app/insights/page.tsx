@@ -18,6 +18,7 @@ import {
   Layers, ChevronDown, BarChart,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { CHART_COLORS } from '@/lib/config/chart-colors'
 import AppLayout from "@/components/layout/AppLayout"
 import { CategoryComparison } from '@/features/insights/components/CategoryComparison'
 import { useMemo, useState } from 'react'
@@ -85,9 +86,7 @@ function Section({
 
 // ─── Anomaly Cluster Accordion ─────────────────────────────────────────────────
 
-const CLUSTER_COLORS = [
-  '#f97316', '#06b6d4', '#ec4899', '#8b5cf6', '#10b981',
-]
+const CLUSTER_COLORS = CHART_COLORS.series
 
 function AnomalyClusterCard({ cluster, index }: {
   cluster: AIInsights['anomaly_clusters'][number]

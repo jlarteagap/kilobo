@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import { cn } from "@/lib/utils"
+import { CHART_COLORS } from "@/lib/config/chart-colors"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { SegmentedControl } from "@/components/ui/segmented-control"
 
@@ -333,7 +334,7 @@ export function BudgetForm({ initialData, onSuccess }: BudgetFormProps) {
                         >
                           <div
                             className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: isSelected ? 'white' : cat.color ?? '#9ca3af' }}
+                            style={{ backgroundColor: isSelected ? 'white' : cat.color ?? CHART_COLORS.muted }}
                           />
                           {cat.name}
                         </button>

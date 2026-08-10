@@ -9,15 +9,6 @@ import { Debt } from "@/types/debt"
 import { convertToBOB } from "@/lib/config/exchange-rates"
 import type { Investment } from "@/types/investment"
 
-const ASSET_HEX_COLORS: Record<string, string> = {
-  'text-blue-500':    '#3b82f6',
-  'text-purple-500':  '#a855f7',
-  'text-emerald-500': '#10b981',
-  'text-orange-500':  '#f97316',
-  'text-red-500':     '#ef4444',
-  'text-gray-500':    '#6b7280',
-}
-
 export interface CurrencyBreakdown {
   currency: string
   balance: number
@@ -102,7 +93,7 @@ export function useAccountsDashboard(
 
       const weight = `${((valueInBOB / totalGlobalAssetsInBOB) * 100).toFixed(1)}%`
 
-      const hexColor = ASSET_HEX_COLORS[details.color] ?? '#6b7280'
+      const hexColor = details.color
 
       return {
         id:             account.id,
@@ -142,7 +133,7 @@ export function useAccountsDashboard(
           return {
             name:    details.label,
             value:   item.value,
-            color:   ASSET_HEX_COLORS[details.color] ?? '#6b7280',
+            color:   details.color,
             percent: Math.round((item.value / totalAssets) * 100) || 0,
             currency,
           }

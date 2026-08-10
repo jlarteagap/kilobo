@@ -11,6 +11,7 @@ const SparklineChart = dynamic(
 )
 
 import { cn } from "@/lib/utils"
+import { CHART_COLORS } from "@/lib/config/chart-colors"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { filterByPeriod, getDaysInPeriod, parseLocalDate } from "@/utils/date.utils"
 import { convertToBOB } from "@/lib/config/exchange-rates"
@@ -103,7 +104,7 @@ function ProjectSummaryCard({
 }) {
   const net          = income - expenses
   const isPersonal   = project === null
-  const color        = isPersonal ? '#9ca3af' : project.color
+  const color        = isPersonal ? CHART_COLORS.muted : project.color
   const icon         = isPersonal ? '👤' : (project.icon ?? '📁')
   const name         = isPersonal ? 'Personal' : project.name
   const colorBg      = `${color}06`

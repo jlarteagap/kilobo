@@ -265,7 +265,7 @@ export function AssetsTable({
         sortOrder={sortOrder}
         onSort={handleSort}
         totalValue={totalAssetsFormatted}
-        totalColor="text-emerald-600"
+        totalColor="text-[#4F6A35]"
       />
 
       {/* ── Pasivos ── */}
@@ -277,7 +277,7 @@ export function AssetsTable({
           sortOrder={sortOrder}
           onSort={handleSort}
           totalValue={totalLiabilitiesFormatted}
-          totalColor="text-rose-500"
+          totalColor="text-[#B5543D]"
         />
       ) : null}
 

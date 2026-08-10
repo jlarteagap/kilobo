@@ -38,7 +38,7 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
       account_id: goal?.account_id ?? '',
       deadline: goal?.deadline ?? '',
       icon: goal?.icon ?? '🎯',
-      color: goal?.color ?? '#10b981',
+      color: goal?.color ?? '#4F6A35',
       auto_save_percentage: goal?.auto_save_percentage ?? 0,
     },
   })

@@ -27,7 +27,7 @@ export function SavingsTipCard({ opportunity, aiTip, rank }: Props) {
   const feasStyle = feas ? FEASIBILITY[feas] : null
 
   return (
-    <div className="group rounded-2xl border border-muted/40 bg-card/10 p-6 transition-all duration-300 hover:shadow-sm hover:border-emerald-500/20 space-y-4">
+    <div className="group rounded-2xl border border-muted/40 bg-card/10 p-6 transition-all duration-300 hover:shadow-sm hover:border-[#4F6A35]/20 space-y-4">
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3">

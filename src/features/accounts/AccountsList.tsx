@@ -38,7 +38,7 @@ function AccountsGridSkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-neutral-900/50 rounded-[22px] p-4 flex items-center gap-4"
+          className="bg-white rounded-[22px] p-4 flex items-center gap-4"
           style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
         >
           <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
@@ -64,26 +64,21 @@ function AccountCard({
   onDelete:       (id: string) => void
   investments?:   Array<{ id: string; name: string; amount: number; currency: string }>
 }) {
-  const { icon: Icon, color, bg, label } = getAccountTypeDetails(account.type)
+  const { icon: Icon, color, label } = getAccountTypeDetails(account.type)
   const [expanded, setExpanded] = useState(false)
   const accountInvestments = investments.filter((inv) => inv.id && inv.currency)
   const hasInvestments = accountInvestments.length > 0
   const totalInvested = accountInvestments.reduce((sum, inv) => sum + inv.amount, 0)
 
   return (
-    <div className="group bg-white dark:bg-neutral-900/50 rounded-[22px] transition-all duration-200"
+    <div className="group bg-white rounded-[22px] transition-all duration-200"
       style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       <div className="p-4 flex items-center gap-4">
-        <div className={cn(
-          'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-          bg.includes('emerald') ? 'bg-[#F2F9E3] text-[#4F6A35]' : 
-          bg.includes('rose') ? 'bg-[#FAEDE9] text-[#B5543D]' : 
-          bg.includes('blue') ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/30' :
-          bg.includes('purple') ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/30' :
-          bg.includes('orange') ? 'bg-orange-50 text-orange-600 dark:bg-orange-950/30' :
-          'bg-[rgba(0,0,0,0.06)] text-[#6E6E73]'
-        )}>
+        <div
+          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors"
+          style={{ backgroundColor: `${color}18`, color }}
+        >
           <Icon className="w-5 h-5" />
         </div>
 
@@ -141,7 +136,7 @@ function AccountCard({
                 <TrendingUp className="w-3 h-3 text-indigo-400" />
                 <span className="text-foreground">{inv.name}</span>
               </div>
-              <span className="font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums">
+              <span className="font-semibold text-indigo-600 tabular-nums">
                 {formatCurrency(inv.amount, inv.currency)}
               </span>
             </div>

@@ -4,6 +4,7 @@
 import { useRef, useState, useEffect } from "react"
 import { ChevronDown, X, SlidersHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { CHART_COLORS } from "@/lib/config/chart-colors"
 
 import {
   DropdownMenu,
@@ -303,7 +304,7 @@ export function TransactionFilters({
               <CustomDropdownItem
                 key={cat.id}
                 label={cat.name}
-                dot={cat.color ?? '#9ca3af'}
+                dot={cat.color ?? CHART_COLORS.muted}
                 isSelected={filters.categoryId === cat.id}
                 onClick={() => {
                   onCategoryChange(cat.id)

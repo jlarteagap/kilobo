@@ -16,6 +16,7 @@ import {
 } from 'recharts'
 import { CategoryTrend } from '@/lib/insights/algorithms'
 import { cn } from '@/lib/utils'
+import { CHART_COLORS } from '@/lib/config/chart-colors'
 import { Badge } from '@/components/ui/badge'
 import {
   ArrowUpRight,
@@ -32,15 +33,8 @@ interface Props {
   trends: CategoryTrend[]
 }
 
-// Fallback colors for categories that don't have a color
-const FALLBACK_COLORS = [
-  '#8b5cf6', // Violet
-  '#06b6d4', // Cyan
-  '#f59e0b', // Amber
-  '#ec4899', // Pink
-  '#10b981', // Emerald
-  '#f97316', // Orange
-]
+// Fallback colors for categories that don't have a color (Kilo, slot 0 = violeta identidad)
+const FALLBACK_COLORS = CHART_COLORS.series
 
 export function CategoryComparison({ trends }: Props) {
   // 1. Filtrar y preparar categorías con suficientes meses (mínimo 2)
@@ -120,7 +114,7 @@ export function CategoryComparison({ trends }: Props) {
       const deltaVal = currentVal - prevVal
       const deltaPct = prevVal > 0 ? (deltaVal / prevVal) * 100 : 0
       const isUp = deltaVal > 0
-      const color = payload[1].payload?.color || '#8b5cf6'
+      const color = payload[1].payload?.color || CHART_COLORS.series[0]
 
       return (
         <div className="relative overflow-hidden rounded-xl border border-muted/80 bg-card/90 backdrop-blur-md p-3.5 shadow-xl min-w-[210px] animate-in fade-in zoom-in duration-200">
@@ -204,7 +198,7 @@ export function CategoryComparison({ trends }: Props) {
           {/* Leyendas con estilo custom */}
           <div className="flex items-center gap-4 text-xs font-semibold self-start sm:self-auto">
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded bg-slate-400/40 border border-slate-400/60" />
+              <div className="w-3 h-3 rounded bg-[#6E6E73]/40 border border-[#6E6E73]/60" />
               <span className="text-muted-foreground">{previousMonthName}</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -409,7 +403,7 @@ export function CategoryComparison({ trends }: Props) {
                     <div className="relative w-full h-3 bg-muted/15 rounded-full mt-1">
                       {/* Barra Mes Anterior (Sustrato Slate de referencia) */}
                       <div
-                        className="absolute left-0 top-0 h-full bg-slate-400/20 rounded-full transition-all duration-1000"
+                        className="absolute left-0 top-0 h-full bg-[#6E6E73]/20 rounded-full transition-all duration-1000"
                         style={{ width: prevBarWidth }}
                       />
                       
@@ -418,8 +412,8 @@ export function CategoryComparison({ trends }: Props) {
                         className={cn(
                           "absolute left-0 top-0 h-full rounded-full transition-all duration-1200",
                           isUp 
-                            ? "bg-gradient-to-r from-rose-500/80 to-red-500/90 shadow-[0_0_8px_rgba(244,63,94,0.35)]" 
-                            : "bg-gradient-to-r from-emerald-400/90 to-teal-500/90 shadow-[0_0_8px_rgba(16,185,129,0.35)]"
+                            ? "bg-gradient-to-r from-[#B5543D]/80 to-[#B5543D]/90 shadow-[0_0_8px_rgba(181,84,61,0.35)]" 
+                            : "bg-gradient-to-r from-[#4F6A35]/90 to-[#4F6A35]/90 shadow-[0_0_8px_rgba(79,106,53,0.35)]"
                         )}
                         style={{ width: currentBarWidth }}
                       />
@@ -436,7 +430,7 @@ export function CategoryComparison({ trends }: Props) {
                     {/* Leyendas numéricas de la barra */}
                     <div className="flex items-center justify-between text-[11px] font-medium pt-0.5">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded bg-slate-400/30" />
+                        <div className="w-2 h-2 rounded bg-[#6E6E73]/30" />
                         <span className="text-muted-foreground/70">
                           {previousMonthName.split(' ')[0]}: <span className="font-semibold text-muted-foreground/90 font-mono">{formatCurrency(t.prevVal)}</span>
                         </span>

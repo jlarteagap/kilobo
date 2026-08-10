@@ -3,11 +3,12 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts"
 import { ChartTooltipContainer, ChartTooltipRow } from "@/components/ui/chart-tooltip"
+import { CHART_COLORS } from "@/lib/config/chart-colors"
 
-const CURRENT_EXPENSE_COLOR  = '#f43f5e' // rose-500
-const PREVIOUS_EXPENSE_COLOR = '#fda4af' // rose-300
-const CURRENT_INCOME_COLOR   = '#10b981' // emerald-500
-const PREVIOUS_INCOME_COLOR  = '#6ee7b7' // emerald-300
+const CURRENT_EXPENSE_COLOR  = CHART_COLORS.negative
+const PREVIOUS_EXPENSE_COLOR = CHART_COLORS.series[3]
+const CURRENT_INCOME_COLOR   = CHART_COLORS.positive
+const PREVIOUS_INCOME_COLOR  = CHART_COLORS.series[2]
 
 interface ChartDataPoint {
   day: number
@@ -140,19 +141,19 @@ export function FinancialComparisonChart({ data }: FinancialComparisonChartProps
           <div className="h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.08)" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={CHART_COLORS.grid} />
                 <XAxis
                   dataKey="day"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 500 }}
+                  tick={{ fill: CHART_COLORS.muted, fontSize: 10, fontWeight: 500 }}
                   dy={10}
                   tickFormatter={(v) => (v % 5 === 0 || v === 1 ? v : '')} // Mostrar solo algunos días para que no se amontonen
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 500 }}
+                  tick={{ fill: CHART_COLORS.muted, fontSize: 10, fontWeight: 500 }}
                   tickFormatter={(v) => `Bs${v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v}`}
                   width={50}
                 />

@@ -78,6 +78,6 @@ export const BUDGET_STATUS_CONFIG: Record<
 > = {
   ON_TRACK:  { label: 'En camino',  color: 'text-blue-600',    bg: 'bg-blue-50'    },
   AT_RISK:   { label: 'En riesgo',  color: 'text-orange-600',  bg: 'bg-orange-50'  },
-  COMPLETED: { label: 'Completado', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+  COMPLETED: { label: 'Completado', color: 'text-[#4F6A35]',   bg: 'bg-[#F2F9E3]'  },
   OVERDUE:   { label: 'Vencido',    color: 'text-rose-600',    bg: 'bg-rose-50'    },
 }

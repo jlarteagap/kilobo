@@ -2,6 +2,7 @@
 
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import { CHART_COLORS } from "@/lib/config/chart-colors"
 import type { Installment } from "@/types/credit"
 
 interface AmortizationChartProps {
@@ -33,19 +34,19 @@ export function AmortizationChart({ installments, currency }: AmortizationChartP
           <AreaChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.15} />
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                <stop offset="0%" stopColor={CHART_COLORS.positive} stopOpacity={0.15} />
+                <stop offset="100%" stopColor={CHART_COLORS.positive} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 11, fill: '#9ca3af' }}
-              axisLine={{ stroke: "rgba(0,0,0,0.08)" }}
+              tick={{ fontSize: 11, fill: CHART_COLORS.muted }}
+              axisLine={{ stroke: CHART_COLORS.grid }}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 11, fill: '#9ca3af' }}
+              tick={{ fontSize: 11, fill: CHART_COLORS.muted }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v) => formatCurrency(v, currency)}
@@ -62,11 +63,11 @@ export function AmortizationChart({ installments, currency }: AmortizationChartP
             <Area
               type="monotone"
               dataKey="balance"
-              stroke="#10b981"
+              stroke={CHART_COLORS.positive}
               strokeWidth={2}
               fill="url(#balanceGradient)"
               dot={false}
-              activeDot={{ r: 4, fill: '#10b981' }}
+              activeDot={{ r: 4, fill: CHART_COLORS.positive }}
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -74,7 +75,7 @@ export function AmortizationChart({ installments, currency }: AmortizationChartP
 
       <div className="flex items-center justify-center gap-4 mt-3 text-[11px] text-[#6E6E73]">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-0.5 rounded bg-emerald-500" />
+          <div className="w-3 h-0.5 rounded bg-[#4F6A35]" />
           <span>Saldo deudor</span>
         </div>
       </div>

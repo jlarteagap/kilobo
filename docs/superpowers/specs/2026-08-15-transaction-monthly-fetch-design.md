@@ -11,6 +11,7 @@ Evitar que la aplicación descargue todo el historial de transacciones. Cada con
 - Al seleccionar otro período, el cliente solicita solo su rango exacto. Cada rango usa una clave de caché distinta; al volver a un rango previamente abierto no se hace otra solicitud mientras la entrada siga vigente.
 - Las mutaciones mantienen actualizada únicamente la caché del mes afectado. Se conserva la invalidación de cuentas cuando el servidor modifica saldos.
 - El dashboard, presupuestos, proyecciones y flujo de caja dejarán de llamar `useTransactions()` sin un rango. Cada uno declarará su intervalo necesario; las vistas con comparativas solicitarán los rangos actual y anterior en paralelo.
+- La proyección de saldo solicitará explícitamente desde hoy menos 60 días hasta hoy, que es su ventana de aprendizaje actual. La detección de recurrencias quedará limitada de manera intencional a esa misma ventana; no se cambiará el algoritmo ni se descargará historial adicional de forma implícita.
 - No se altera el acceso al historial: se carga bajo demanda.
 
 ## Diseño
@@ -48,4 +49,5 @@ La API mantiene el wrapper `{ data }` y los mensajes de error existentes. Todos 
 3. Las métricas comparativas solicitan solo el rango anterior necesario y muestran tendencias correctas.
 4. Crear, editar y borrar: todas las listas cacheadas afectadas cambian de inmediato, conservan el orden y no se solicita el historial completo.
 5. Dashboard, presupuestos, proyecciones y flujo de caja emiten solicitudes acotadas a sus necesidades.
-6. Confirmar que usuarios no autorizados, rangos ausentes/ inválidos y errores del servidor se manejan correctamente, incluyendo fechas Firestore con hora.
+6. La proyección conserva sus promedios y detección de recurrencias con una consulta explícita de los últimos 60 días.
+7. Confirmar que usuarios no autorizados, rangos ausentes/ inválidos y errores del servidor se manejan correctamente, incluyendo fechas Firestore con hora.

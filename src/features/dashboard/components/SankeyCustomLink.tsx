@@ -12,8 +12,13 @@ interface SankeyLinkProps {
   index?: number
   payload?: {
     stroke?: string
+    source?: {
+      color?: string
+    }
   }
 }
+
+const FALLBACK_STROKE = "#7A9B57"
 
 export function SankeyCustomLink({
   sourceX = 0,
@@ -27,10 +32,14 @@ export function SankeyCustomLink({
   payload,
 }: SankeyLinkProps) {
   const { selectedIdx, connectedLinkIndices } = useSankeySelection()
-  const stroke = payload?.stroke ?? "#D5CDBD"
+
+  const stroke =
+    payload?.stroke ??
+    payload?.source?.color ??
+    FALLBACK_STROKE
 
   const isConnected = selectedIdx === null || connectedLinkIndices.has(index)
-  const opacity = isConnected ? (selectedIdx === null ? 0.6 : 1) : 0.04
+  const opacity = isConnected ? (selectedIdx === null ? 0.85 : 1) : 0.04
 
   return (
     <Layer>

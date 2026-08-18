@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { TrendingUp, Pencil, Trash2, Plus, Wallet, Landmark, Banknote, Bitcoin, PiggyBank, ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { TrendingUp, Pencil, Trash2, Plus, Wallet, Landmark, Banknote, Bitcoin, PiggyBank, ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, RefreshCw, CalendarClock } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -27,6 +27,9 @@ import { useInvestments, useDeleteInvestment, useUpdateInvestment, useInvestment
 import { CreateInvestmentForm } from "./CreateInvestmentForm"
 import { InvestmentForm } from "./InvestmentForm"
 import { InvestmentTxForm } from "./InvestmentTxForm"
+import { ConfirmRecurringBuyDialog } from "./ConfirmRecurringBuyDialog"
+import { isPlanDue, nextDueString, formatWeekdayShort } from "./utils/recurrence.utils"
+import type { BuyInvestmentInput } from "@/lib/validations/investment.schema"
 import {
   INVESTMENT_ICON,
   INVESTMENT_COLOR,
@@ -36,7 +39,7 @@ import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { getAccountTypeDetails } from "@/features/accounts/utils/account-display.utils"
 
 import type { Account, AccountType } from "@/types/account"
-import type { Investment, InvestmentTxType, InvestmentTransaction } from "@/types/investment"
+import type { Investment, InvestmentTxType } from "@/types/investment"
 
 function getAccountColors(hex: string) {
   return {
@@ -131,6 +134,107 @@ function TxHistory({ investment }: { investment: Investment }) {
   )
 }
 
+function PlanStatus({ investment }: { investment: Investment }) {
+  const plan = investment.recurrence
+  if (!plan) return null
+
+  const today = new Date()
+  const due = isPlanDue(plan, today)
+  const nextDate = plan.next_due ?? nextDueString(today, plan.day_of_week)
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
+      {plan.enabled ? (
+        <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#F2F9E3] text-[#4F6A35] border border-[#C8D9A9]">
+          <RefreshCw className="w-2.5 h-2.5" />
+          Plan · {formatWeekdayShort(plan.day_of_week)} · {formatCurrency(plan.amount, plan.currency)}
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[rgba(0,0,0,0.04)] text-[#6E6E73]">
+          Plan pausado
+        </span>
+      )}
+      {plan.enabled && (
+        <span className={cn("text-[10px] font-semibold", due ? "text-[#B5543D]" : "text-[#6E6E73]")}>
+          {due ? 'Pendiente' : 'Próxima'} · {formatInvestmentDate(nextDate)}
+        </span>
+      )}
+    </div>
+  )
+}
+
+function UpcomingPurchases({ investments }: { investments: Investment[] }) {
+  const [confirmInvestment, setConfirmInvestment] = useState<Investment | null>(null)
+
+  const activePlans = investments
+    .filter((inv) => inv.recurrence?.enabled)
+    .map((inv) => ({
+      investment: inv,
+      plan: inv.recurrence!,
+      due: isPlanDue(inv.recurrence!, new Date()),
+      date: inv.recurrence!.next_due ?? nextDueString(new Date(), inv.recurrence!.day_of_week),
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+
+  if (activePlans.length === 0) {
+    if (investments.length === 0) return null
+    return (
+      <div className="bg-white rounded-[22px] overflow-hidden" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+        <div className="flex items-center gap-2 px-5 py-3 bg-[#F2F9E3]/40 border-b border-[rgba(0,0,0,0.06)]">
+          <CalendarClock className="w-3.5 h-3.5 text-[#5F7D42]" />
+          <span className="text-[12px] font-semibold text-[#6E6E73]">
+            Programa compras recurrentes semanales desde el botón de editar de cada inversión
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className="bg-white rounded-[22px] overflow-hidden" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+        <div className="flex items-center justify-between px-5 py-4 bg-[#F2F9E3]/40 border-b border-[rgba(0,0,0,0.06)]">
+          <div className="flex items-center gap-2">
+            <RefreshCw className="w-3.5 h-3.5 text-[#5F7D42]" />
+            <h3 className="text-[13px] font-bold text-foreground">Próximas compras</h3>
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#6E6E73]">
+            {activePlans.length} plan{activePlans.length !== 1 ? 'es' : ''}
+          </span>
+        </div>
+        <div className="divide-y divide-[rgba(0,0,0,0.06)]">
+          {activePlans.map(({ investment, plan, due, date }) => (
+            <div key={investment.id} className="flex items-center gap-3 px-5 py-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold text-foreground truncate">{investment.name}</p>
+                <p className={cn("text-[11px] mt-0.5", due ? "text-[#B5543D] font-semibold" : "text-[#6E6E73]")}>
+                  {due ? 'Pendiente' : 'Próxima'} · {formatInvestmentDate(date)} · {formatWeekdayShort(plan.day_of_week)} · {formatCurrency(plan.amount, plan.currency)}
+                </p>
+              </div>
+              <span className="text-[13px] font-bold text-[#4F6A35] tabular-nums shrink-0 ml-2">
+                {formatCurrency(plan.amount, plan.currency)}
+              </span>
+              {due && (
+                <Button
+                  size="sm"
+                  onClick={() => setConfirmInvestment(investment)}
+                  className="h-7 text-[11px] rounded-lg bg-[#5F7D42] hover:bg-[#4F6A35] text-white shrink-0"
+                >
+                  Confirmar
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+      <ConfirmRecurringBuyDialog
+        investment={confirmInvestment}
+        onClose={() => setConfirmInvestment(null)}
+      />
+    </>
+  )
+}
+
 function InvestmentRow({
   investment,
   onEdit,
@@ -173,6 +277,7 @@ function InvestmentRow({
           )}
         </div>
         {hasUnits && <TxHistory investment={investment} />}
+        <PlanStatus investment={investment} />
       </div>
 
       <div className="text-right shrink-0">
@@ -312,6 +417,7 @@ export function InvestmentsList({
         </div>
       ) : (
         <div className="space-y-6">
+          <UpcomingPurchases investments={filtered} />
           {Object.entries(groupedByAccount).map(([accountId, accountInvestments]) => {
             const account = getAccount(accountId)
             const accountByCurrency = accountInvestments.reduce<Record<string, number>>((acc, inv) => {
@@ -428,7 +534,7 @@ export function InvestmentsList({
               type={txOperation.type}
               onSubmit={(data) => {
                 const mutate = txOperation.type === 'BUY' ? buyInvestment : sellInvestment
-                mutate.mutate(data as any, {
+                mutate.mutate(data as BuyInvestmentInput, {
                   onSuccess: () => setTxOperation(null),
                 })
               }}
@@ -483,6 +589,16 @@ export function InvestmentsWidget({
     acc[inv.currency] = (acc[inv.currency] ?? 0) + inv.amount
     return acc
   }, {})
+
+  const nextPlan = investments
+    .filter((inv) => inv.recurrence?.enabled)
+    .map((inv) => ({
+      investment: inv,
+      plan: inv.recurrence!,
+      due: isPlanDue(inv.recurrence!, new Date()),
+      date: inv.recurrence!.next_due ?? nextDueString(new Date(), inv.recurrence!.day_of_week),
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date))[0]
 
   if (investments.length === 0) {
     return (
@@ -543,6 +659,16 @@ export function InvestmentsWidget({
           </div>
         ))}
       </div>
+
+      {nextPlan && (
+        <div className="rounded-xl bg-[#F2F9E3]/60 px-3.5 py-2.5 flex items-center gap-2 mb-4 border border-[#D3E4B8]">
+          <RefreshCw className="w-3 h-3 text-[#5F7D42] shrink-0" />
+          <p className="text-[11px] font-semibold text-[#4F6A35] truncate">
+            {nextPlan.due ? 'Pendiente' : 'Próxima compra'} · {nextPlan.investment.name} ·{' '}
+            {formatInvestmentDate(nextPlan.date)} · {formatCurrency(nextPlan.plan.amount, nextPlan.plan.currency)}
+          </p>
+        </div>
+      )}
 
       <div className="divide-y divide-[rgba(0,0,0,0.06)]">
         {investments.slice(0, 5).map((inv) => {

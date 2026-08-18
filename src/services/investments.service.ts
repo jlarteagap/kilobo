@@ -1,9 +1,11 @@
 import { investmentsRepository } from '@/repositories/investments.repository'
 import { accountsRepository } from '@/repositories/accounts.repository'
-import { CreateInvestmentInput, UpdateInvestmentInput, BuyInvestmentInput, SellInvestmentInput } from '@/lib/validations/investment.schema'
+import { CreateInvestmentInput, UpdateInvestmentInput, BuyInvestmentInput, SellInvestmentInput, SaveRecurringInput, ExecuteRecurringBuyInput } from '@/lib/validations/investment.schema'
 import { adminDb } from '@/lib/firebase.admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import { Investment, CreateInvestmentTxData } from '@/types/investment'
+import { format } from 'date-fns'
+import { nextDueString, nextDueStringAfter, isPlanDue } from '@/features/investments/utils/recurrence.utils'
 
 export const investmentsService = {
   async getAll(userId: string): Promise<Investment[]> {
@@ -179,6 +181,80 @@ export const investmentsService = {
 
   async getTransactions(investmentId: string, userId: string) {
     return investmentsRepository.findTransactions(investmentId, userId)
+  },
+
+  // ─── Plan de compra recurrente ————————————————————————————————
+
+  /**
+   * Crea o actualiza el plan de compra recurrente de una inversión.
+   * Se requiere que la inversión tenga posición (units) para programar.
+   */
+  async saveRecurring(investmentId: string, input: SaveRecurringInput, userId: string): Promise<void> {
+    const investment = await investmentsRepository.findById(investmentId, userId)
+    if (!investment) throw new Error('Inversión no encontrada.')
+    if (!investment.units || !investment.unit_price) {
+      throw new Error('La inversión necesita tener unidades (posición) para programar compras.')
+    }
+
+    const today = new Date()
+    const prev = investment.recurrence
+
+    const recurrence = {
+      enabled: input.enabled,
+      frequency: 'WEEKLY' as const,
+      day_of_week: input.day_of_week,
+      amount: input.amount,
+      currency: investment.currency,
+      account_id: investment.account_id,
+      next_due: input.enabled ? nextDueString(today, input.day_of_week) : (prev?.next_due ?? null),
+      last_executed: prev?.last_executed ?? null,
+    }
+
+    await investmentsRepository.update(investmentId, { recurrence })
+  },
+
+  /** Elimina el plan recurrente de la inversión. */
+  async deleteRecurring(investmentId: string, userId: string): Promise<void> {
+    const investment = await investmentsRepository.findById(investmentId, userId)
+    if (!investment) throw new Error('Inversión no encontrada.')
+    await investmentsRepository.update(investmentId, { recurrence: null })
+  },
+
+  /**
+   * Ejecuta la compra pendiente del plan recurrente.
+   * Valida plan activo y vencido, calcula units = monto / precio, reusa buy()
+   * (descuenta saldo, crea InvestmentTransaction, recalcula posición) y avanza next_due.
+   */
+  async executeRecurringBuy(investmentId: string, data: ExecuteRecurringBuyInput, userId: string): Promise<void> {
+    const investment = await investmentsRepository.findById(investmentId, userId)
+    if (!investment) throw new Error('Inversión no encontrada.')
+
+    const plan = investment.recurrence
+    if (!plan || !plan.enabled) throw new Error('La inversión no tiene un plan recurrente activo.')
+
+    const today = new Date()
+    if (!isPlanDue(plan, today)) throw new Error('No hay una compra pendiente para esta inversión.')
+
+    const units = plan.amount / data.unit_price
+    if (!(units > 0)) throw new Error('El precio debe ser menor al monto para comprar unidades.')
+
+    await this.buy({
+      investment_id: investmentId,
+      account_id: plan.account_id,
+      units,
+      unit_price: data.unit_price,
+      currency: plan.currency,
+      date: data.date ?? format(today, 'yyyy-MM-dd'),
+      notes: 'Compra recurrente semanal',
+    }, userId)
+
+    await investmentsRepository.update(investmentId, {
+      recurrence: {
+        ...plan,
+        next_due: nextDueStringAfter(today, plan.day_of_week),
+        last_executed: format(today, 'yyyy-MM-dd'),
+      },
+    })
   },
 
   async update(id: string, data: UpdateInvestmentInput, userId: string): Promise<Investment> {

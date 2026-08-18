@@ -1,5 +1,21 @@
 export type InvestmentTxType = 'BUY' | 'SELL'
 
+export type InvestmentRecurrenceFrequency = 'WEEKLY'
+
+export interface InvestmentRecurrence {
+  enabled: boolean
+  frequency: InvestmentRecurrenceFrequency
+  /** 0 = Domingo … 6 = Sábado (convención date-fns getDay) */
+  day_of_week: number
+  /** Monto fijo por periodo, en la moneda de la inversión */
+  amount: number
+  currency: string
+  account_id: string
+  /** Fecha programada 'yyyy-MM-dd' — es "due" cuando date <= hoy */
+  next_due: string | null
+  last_executed: string | null
+}
+
 export interface Investment {
   id: string
   user_id: string
@@ -12,6 +28,8 @@ export interface Investment {
   currency: string
   date: string
   notes?: string | null
+  /** Plan de compra recurrente semanal (opcional) */
+  recurrence?: InvestmentRecurrence | null
   created_at: Date
   updated_at: Date
 }
@@ -35,7 +53,9 @@ export type CreateInvestmentData = Pick<Investment, 'account_id' | 'name' | 'amo
   units?: number | null
   unit_price?: number | null
 }
-export type UpdateInvestmentData = Partial<Pick<CreateInvestmentData, 'name' | 'amount' | 'currency' | 'date' | 'notes'>>
+export type UpdateInvestmentData = Partial<Pick<CreateInvestmentData, 'name' | 'amount' | 'currency' | 'date' | 'notes'>> & {
+  recurrence?: InvestmentRecurrence | null
+}
 
 export type CreateInvestmentTxData = Pick<InvestmentTransaction, 'investment_id' | 'type' | 'units' | 'unit_price' | 'date' | 'notes'> & {
   account_id: string

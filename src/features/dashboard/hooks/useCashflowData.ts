@@ -29,13 +29,13 @@ export type SankeyData = {
 }
 
 const NODE_COLORS: Record<string, string> = {
-  income:    '#10B981',
-  expense:   '#EF4444',
-  account:   '#3B82F6',
-  balance:   '#6B7280',
+  income:    '#4F6A35',
+  expense:   '#B5543D',
+  account:   '#ACC18A',
+  balance:   '#837A75',
   project:   CHART_COLORS.series[0],
-  subtype:   '#F59E0B',
-  transfer:  '#F97316',
+  subtype:   '#D9A487',
+  transfer:  '#C8D9A9',
 }
 
 function buildSankeyData(

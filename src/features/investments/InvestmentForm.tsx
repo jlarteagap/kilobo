@@ -1,8 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import { SubmitButton } from "@/components/ui/submit-button"
+import { RefreshCw, Trash2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 import {
   createInvestmentSchema,
@@ -32,6 +35,8 @@ import { Account, CURRENCY_TYPES } from "@/types/account"
 import { Investment } from "@/types/investment"
 import { getLocalDateString } from "@/utils/date.utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import { WEEKDAYS, formatWeekdayLong } from "./utils/recurrence.utils"
+import { useSaveRecurringBuy, useDeleteRecurringBuy } from "./hooks/useInvestments"
 
 interface InvestmentFormProps {
   accounts: Account[]
@@ -40,6 +45,138 @@ interface InvestmentFormProps {
   onSubmit: (data: CreateInvestmentInput) => void
   onCancel: () => void
   isPending: boolean
+}
+
+function RecurringPlanSection({ initialData }: { initialData: Investment }) {
+  const saveRecurring = useSaveRecurringBuy()
+  const deleteRecurring = useDeleteRecurringBuy()
+
+  const initialPlan = initialData.recurrence
+  const [enabled, setEnabled] = useState(initialPlan?.enabled ?? false)
+  const [dayOfWeek, setDayOfWeek] = useState(initialPlan?.day_of_week ?? 0)
+  const [amount, setAmount] = useState<number>(initialPlan?.amount ?? 0)
+
+  const hasPosition = initialData.units != null && initialData.unit_price != null
+
+  if (!hasPosition) {
+    return (
+      <div className="rounded-xl bg-[rgba(0,0,0,0.03)] px-4 py-3 border border-dashed border-[rgba(0,0,0,0.12)]">
+        <p className="text-[11px] font-medium text-[#6E6E73]">
+          Para programar compras recurrentes, la inversión necesita tener posición (unidades y precio/unit).
+        </p>
+      </div>
+    )
+  }
+
+  const pending = saveRecurring.isPending || deleteRecurring.isPending
+
+  const handleSave = () => {
+    saveRecurring.mutate({
+      investmentId: initialData.id,
+      data: {
+        enabled,
+        day_of_week: dayOfWeek,
+        amount,
+      },
+    })
+  }
+
+  const handleDelete = () => {
+    deleteRecurring.mutate(initialData.id)
+  }
+
+  return (
+    <div className="rounded-xl border border-[rgba(0,0,0,0.08)] p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <RefreshCw className="w-3.5 h-3.5 text-[#5F7D42]" />
+          <span className="text-[12px] font-bold text-foreground">Compra recurrente</span>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          onClick={() => setEnabled(!enabled)}
+          className={cn(
+            "relative w-8 h-5 rounded-full transition-colors",
+            enabled ? "bg-[#5F7D42]" : "bg-[rgba(0,0,0,0.15)]"
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform",
+              enabled && "translate-x-3"
+            )}
+          />
+        </button>
+      </div>
+
+      {enabled && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-medium text-[#6E6E73] uppercase tracking-wide mb-1 block">
+                Día de la semana
+              </label>
+              <Select value={String(dayOfWeek)} onValueChange={(v) => setDayOfWeek(+v)}>
+                <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30 h-9 text-[12px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {WEEKDAYS.map(({ value, label }) => (
+                    <SelectItem key={value} value={String(value)}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-[11px] font-medium text-[#6E6E73] uppercase tracking-wide mb-1 block">
+                Monto ({initialData.currency})
+              </label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={amount}
+                onChange={(e) => setAmount(+e.target.value)}
+                className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30 h-9 text-[12px]"
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-[#6E6E73]">
+            Compra semanal de {formatCurrency(amount, initialData.currency)} los {formatWeekdayLong(dayOfWeek)}.
+            Cuando venza, confirma con el precio del día desde la lista.
+          </p>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleSave}
+              disabled={pending || amount <= 0}
+              className="h-8 flex-1 rounded-lg bg-[#5F7D42] hover:bg-[#4F6A35] text-white text-[11px] font-bold"
+            >
+              Guardar plan
+            </Button>
+            {initialPlan && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleDelete}
+                disabled={pending}
+                className="h-8 rounded-lg border-[rgba(0,0,0,0.08)] text-[11px] font-bold"
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                Quitar
+              </Button>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 export function InvestmentForm({
@@ -287,6 +424,8 @@ export function InvestmentForm({
             </FormItem>
           )}
         />
+
+        {isEdit && initialData && <RecurringPlanSection initialData={initialData} />}
 
         <div className="flex gap-2 pt-1">
           <Button

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Investment, CreateInvestmentData, UpdateInvestmentData, InvestmentTransaction } from '@/types/investment'
-import type { BuyInvestmentInput, SellInvestmentInput } from '@/lib/validations/investment.schema'
+import type { BuyInvestmentInput, SellInvestmentInput, SaveRecurringInput, ExecuteRecurringBuyInput } from '@/lib/validations/investment.schema'
 import { accountKeys } from '@/features/accounts/hooks/useAccounts'
 import { toast } from 'sonner'
 
@@ -16,6 +16,7 @@ export const investmentKeys = {
   lists:  () => [...investmentKeys.all, 'list'] as const,
   detail: (id: string) => [...investmentKeys.all, 'detail', id] as const,
   transactions: (investmentId: string) => [...investmentKeys.all, 'transactions', investmentId] as const,
+  recurring: (investmentId: string) => [...investmentKeys.all, 'recurring', investmentId] as const,
 }
 
 export function useInvestments() {
@@ -167,6 +168,70 @@ export function useDeleteInvestment() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: investmentKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
+    },
+  })
+}
+
+export function useSaveRecurringBuy() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ investmentId, data }: { investmentId: string; data: SaveRecurringInput }) => {
+      const res  = await authFetch(`/api/investments/${investmentId}/recurring`, {
+        method: 'PUT',
+        body:   JSON.stringify(data),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(typeof json.error === 'string' ? json.error : 'Error al guardar el plan recurrente')
+      return json
+    },
+    onSuccess: () => toast.success('Plan recurrente guardado'),
+    onError: (error: Error) => toast.error(error.message),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: investmentKeys.lists() })
+    },
+  })
+}
+
+export function useDeleteRecurringBuy() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (investmentId: string) => {
+      const res  = await authFetch(`/api/investments/${investmentId}/recurring`, {
+        method: 'DELETE',
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(typeof json.error === 'string' ? json.error : 'Error al eliminar el plan recurrente')
+      return json
+    },
+    onSuccess: () => toast.success('Plan recurrente eliminado'),
+    onError: (error: Error) => toast.error(error.message),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: investmentKeys.lists() })
+    },
+  })
+}
+
+export function useExecuteRecurringBuy(investmentId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: ExecuteRecurringBuyInput) => {
+      const res  = await authFetch(`/api/investments/${investmentId}/recurring/execute`, {
+        method: 'POST',
+        body:   JSON.stringify(data),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(typeof json.error === 'string' ? json.error : 'Error al ejecutar la compra pendiente')
+      return json
+    },
+    onSuccess: () => toast.success('Compra recurrente registrada'),
+    onError: (error: Error) => toast.error(error.message),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: investmentKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: investmentKeys.transactions(investmentId) })
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
     },
   })

@@ -40,7 +40,20 @@ export const sellInvestmentSchema = z.object({
   notes: z.string().nullable().optional(),
 })
 
+export const recurringBuySchema = z.object({
+  enabled: z.boolean(),
+  day_of_week: z.coerce.number().int().min(0).max(6, "Día de la semana inválido"),
+  amount: z.coerce.number().positive("El monto debe ser mayor a 0"),
+})
+
+export const executeRecurringBuySchema = z.object({
+  unit_price: z.coerce.number().positive("El precio debe ser mayor a 0"),
+  date: z.string().optional(),
+})
+
 export type CreateInvestmentInput = z.infer<typeof createInvestmentSchema>
 export type UpdateInvestmentInput = z.infer<typeof updateInvestmentSchema>
 export type BuyInvestmentInput = z.infer<typeof buyInvestmentSchema>
 export type SellInvestmentInput = z.infer<typeof sellInvestmentSchema>
+export type SaveRecurringInput = z.infer<typeof recurringBuySchema>
+export type ExecuteRecurringBuyInput = z.infer<typeof executeRecurringBuySchema>

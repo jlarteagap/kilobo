@@ -75,7 +75,7 @@ export function BalanceProjection() {
   return (
     <div className="bg-[#5F7D42] rounded-[22px] p-6 text-white"
       style={{ boxShadow: '0 4px 20px -6px rgba(47,62,32,0.35), 0 1px 3px rgba(0,0,0,0.1)' }}>
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="w-4 h-4 text-[#F2F9E3]" />
@@ -85,13 +85,13 @@ export function BalanceProjection() {
             Basado en tu saldo actual, ingresos y gastos recurrentes
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span className={cn(
-            'text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-white/15 text-white',
+            'whitespace-nowrap text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-white/15 text-white',
           )}>
             {confidence === 'high' ? 'Alta confianza' : confidence === 'medium' ? 'Confianza media' : 'Estimación'}
           </span>
-          <span className="text-2xl font-bold tracking-tight text-white tabular-nums">
+          <span className="text-xl sm:text-2xl font-bold tracking-tight text-white tabular-nums">
             {formatCurrency(today.balance, 'BOB')}
           </span>
         </div>
@@ -110,7 +110,7 @@ export function BalanceProjection() {
         </div>
       )}
 
-      <div className="h-[250px] w-full">
+      <div className="h-[170px] sm:h-[200px] md:h-[250px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={days} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
@@ -124,6 +124,8 @@ export function BalanceProjection() {
               dataKey="date"
               tickFormatter={(val) => format(parseISO(val), 'd', { locale: es })}
               tick={{ fontSize: 10, fill: '#F2F9E3' }}
+              interval="preserveStartEnd"
+              tickMargin={8}
               axisLine={false}
               tickLine={false}
               dy={6}
@@ -178,7 +180,7 @@ export function BalanceProjection() {
         </ResponsiveContainer>
       </div>
 
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#F2F9E3]/20">
+      <div className="flex flex-wrap items-center justify-between gap-y-2 mt-4 pt-4 border-t border-[#F2F9E3]/20">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-[#F2F9E3]" />

@@ -56,23 +56,24 @@ function CashflowEmpty({ period }: { period: Period }) {
 interface CustomTooltipProps {
   active?: boolean
   payload?: Array<{
-    payload: {
-      name:  string
-      value: number
+    name:  string
+    value: number
+    payload?: {
       payload?: {
-        breakdown?: Record<string, number>
+        name?:       string
+        value?:      number
+        breakdown?:  Record<string, number>
       }
-      breakdown?: Record<string, number>
     }
   }>
 }
 
 function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
-  const item = payload[0]?.payload
-  if (!item?.name || !item?.value) return null
+  const item = payload[0]
+  if (!item?.name || typeof item.value !== 'number') return null
 
-  const breakdownData = item.payload?.breakdown || item.breakdown
+  const breakdownData = item.payload?.payload?.breakdown
 
   return (
     <ChartTooltipContainer active={active} payload={payload}>
@@ -214,7 +215,7 @@ export function CashflowSection() {
       ) : (
         <>
           <div className="overflow-x-auto no-scrollbar -mx-6 px-6">
-            <div className="h-[280px] md:h-[300px] w-full min-w-[600px] md:min-w-0">
+            <div className="h-[350px] w-full min-w-[600px] md:min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <CashflowSankey sankeyData={sankeyData} />
               </ResponsiveContainer>

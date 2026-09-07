@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import AppLayout from '@/components/layout/AppLayout'
 import { ShiftAnalytics } from '@/features/driver/components/ShiftAnalytics'
@@ -9,7 +10,7 @@ import { BarChart3, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
-export default function AnalyticsPage() {
+function AnalyticsContent() {
   const searchParams = useSearchParams()
   const qYear = searchParams.get('year')
   const qMonth = searchParams.get('month')
@@ -51,5 +52,13 @@ export default function AnalyticsPage() {
         <ShiftAnalytics cycle={cycle} />
       </div>
     </AppLayout>
+  )
+}
+
+export default function AnalyticsPage() {
+  return (
+    <Suspense fallback={<AppLayout><div className="max-w-4xl mx-auto px-4 py-8"><div className="h-64 animate-pulse bg-zinc-100 rounded-2xl" /></div></AppLayout>}>
+      <AnalyticsContent />
+    </Suspense>
   )
 }

@@ -28,14 +28,15 @@ export type SankeyData = {
   links: SankeyLink[]
 }
 
+// V2 minimal — monocromo zinc + single accent emerald, ignora paleta legacy
 const NODE_COLORS: Record<string, string> = {
-  income:    '#4F6A35',
-  expense:   '#B5543D',
-  account:   '#ACC18A',
-  balance:   '#837A75',
-  project:   CHART_COLORS.series[0],
-  subtype:   '#D9A487',
-  transfer:  '#C8D9A9',
+  income:    '#059669', // emerald-600 single accent
+  expense:   '#27272a', // zinc-800
+  account:   '#e4e4e7', // zinc-200 (light node, bordeado)
+  balance:   '#18181b', // zinc-900
+  project:   '#059669',
+  subtype:   '#27272a',
+  transfer:  '#a1a1aa', // zinc-400
 }
 
 function buildSankeyData(

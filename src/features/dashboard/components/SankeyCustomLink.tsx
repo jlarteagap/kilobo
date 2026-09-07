@@ -18,7 +18,8 @@ interface SankeyLinkProps {
   }
 }
 
-const FALLBACK_STROKE = "#7A9B57"
+// V2 minimal — zinc base, emerald only for income paths
+const FALLBACK_STROKE = "#e4e4e7" // zinc-200
 
 export function SankeyCustomLink({
   sourceX = 0,
@@ -38,8 +39,11 @@ export function SankeyCustomLink({
     payload?.source?.color ??
     FALLBACK_STROKE
 
+  const isIncome = stroke === '#059669'
+  const baseColor = isIncome ? '#059669' : '#d4d4d8'
+
   const isConnected = selectedIdx === null || connectedLinkIndices.has(index)
-  const opacity = isConnected ? (selectedIdx === null ? 0.85 : 1) : 0.04
+  const opacity = isConnected ? (selectedIdx === null ? 0.55 : 0.85) : 0.08
 
   return (
     <Layer>
@@ -51,9 +55,11 @@ export function SankeyCustomLink({
            ${targetX},${targetY}
         `}
         fill="none"
-        stroke={stroke}
-        strokeWidth={linkWidth}
+        stroke={baseColor}
+        strokeWidth={Math.max(linkWidth, 1)}
         strokeOpacity={opacity}
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </Layer>
   )

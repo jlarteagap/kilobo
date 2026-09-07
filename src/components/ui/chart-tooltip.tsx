@@ -14,8 +14,8 @@ function ChartTooltipContainer({
   if (!active || !payload?.length) return null
   return (
     <div
-      className="bg-white px-3 py-2.5 rounded-xl text-sm min-w-[140px]"
-      style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid rgba(0,0,0,0.08)" }}
+      className="bg-white px-3.5 py-3 rounded-xl text-sm min-w-[160px] border border-zinc-200"
+      style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
     >
       {children}
     </div>

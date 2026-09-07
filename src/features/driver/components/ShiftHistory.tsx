@@ -7,22 +7,42 @@ import { DRIVER_APPS, DRIVER_APP_LABELS } from '@/types/driver'
 import { getAppBadgeColor, hoursToDuration, parseLocalDate } from '../utils/driver-metrics.utils'
 import { useDeleteShift } from '../hooks/useDriverShifts'
 import { ShiftDetailSheet } from './ShiftDetailSheet'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import type { MonthCycle } from '../hooks/useDriverShifts'
 
 interface ShiftHistoryProps {
   shifts: DriverShift[]
   onEdit?: (shift: DriverShift) => void
+  cycle?: MonthCycle
+  label?: string
 }
 
-export function ShiftHistory({ shifts, onEdit }: ShiftHistoryProps) {
+export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps) {
   const deleteShift = useDeleteShift()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [detailShift, setDetailShift] = useState<DriverShift | null>(null)
+  const [confirmId, setConfirmId] = useState<string | null>(null)
 
-  const handleDelete = (e: React.MouseEvent, id: string) => {
+  const handleDeleteRequest = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
-    if (deletingId) return
-    if (!window.confirm('¿Eliminar este turno? Se borrarán las transacciones y el registro de km asociados.')) return
-    setDeletingId(id)
+    setConfirmId(id)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!confirmId || deletingId) return
+    setDeletingId(confirmId)
+    const id = confirmId
+    setConfirmId(null)
     deleteShift.mutate(id, {
       onSettled: () => setDeletingId(null),
     })
@@ -35,11 +55,16 @@ export function ShiftHistory({ shifts, onEdit }: ShiftHistoryProps) {
 
   if (shifts.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-[rgba(0,0,0,0.12)] p-8 text-center">
-        <div className="size-10 rounded-xl bg-[#F2F9E3]/40 mx-auto flex items-center justify-center text-[#6E6E73]/60 mb-3">
-          <History className="size-5" />
+      <div className="rounded-[22px] border border-dashed border-border bg-card dark:bg-card p-8 text-center">
+        <div className="size-12 rounded-xl bg-secondary dark:bg-muted mx-auto flex items-center justify-center text-muted-foreground mb-3">
+          <History className="size-6" />
         </div>
-        <p className="text-xs text-[#6E6E73] italic">Aún no hay turnos registrados</p>
+        <p className="text-sm font-semibold text-foreground">
+          {label ? `No hay turnos en ${label}` : 'Aun no hay turnos'}
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {label ? 'Prueba otro ciclo o registra un turno en este mes.' : 'Registra tu primer turno para ver tu historial y tendencia.'}
+        </p>
       </div>
     )
   }
@@ -48,7 +73,6 @@ export function ShiftHistory({ shifts, onEdit }: ShiftHistoryProps) {
     <>
       <div className="space-y-2">
         {shifts.slice(0, 50).map((shift, index) => {
-          // Null-safe: los turnos viejos pueden no tener los campos nuevos
           const liquid = shift.liquidEarnings ?? 0
           const pending = shift.pendingAmount ?? 0
           const hours = shift.hoursWorked ?? 0
@@ -62,50 +86,52 @@ export function ShiftHistory({ shifts, onEdit }: ShiftHistoryProps) {
             <div
               key={shift.id}
               onClick={() => setDetailShift(shift)}
-              className="group relative flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-white border border-[rgba(0,0,0,0.06)] hover:border-[rgba(0,0,0,0.12)] transition-all duration-200 hover:shadow-sm cursor-pointer"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDetailShift(shift) } }}
+              className="group relative flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card dark:bg-card border border-border hover:border-primary/20 hover:shadow-sm transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
             >
               {/* Fecha */}
-              <div className="min-w-[36px] text-center shrink-0">
-                <p className="text-[16px] font-bold text-foreground leading-none tabular-nums">
-                  {isValidDate ? date.getDate() : '—'}
+              <div className="min-w-[44px] text-center shrink-0">
+                <p className="text-base font-bold text-foreground leading-none tabular-nums">
+                  {isValidDate ? date.getDate() : '-'}
                 </p>
-                <p className="text-[8px] uppercase tracking-wider text-[#6E6E73] font-medium mt-0.5">
+                <p className="text-xs font-medium text-muted-foreground mt-0.5 capitalize">
                   {isValidDate ? date.toLocaleDateString('es-BO', { month: 'short' }).replace('.', '') : ''}
                 </p>
               </div>
 
               {/* Horas */}
-              <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-[#6E6E73] min-w-[60px]">
-                <Clock className="size-3" />
+              <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground min-w-[72px]">
+                <Clock className="size-3.5 shrink-0" />
                 <span className="tabular-nums font-medium">{hoursToDuration(hours)}</span>
               </div>
 
               {/* Badges app */}
-              <div className="hidden sm:flex items-center gap-1 flex-1 flex-wrap">
+              <div className="hidden sm:flex items-center gap-1.5 flex-1 flex-wrap min-w-0">
                 {DRIVER_APPS.map((app) => {
                   const total = (shift.earnings?.[app]?.CASH ?? 0) + (shift.earnings?.[app]?.CARD ?? 0) + (shift.earnings?.[app]?.QR ?? 0)
                   if (!total) return null
                   return (
-                    <span key={app} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full tabular-nums ${getAppBadgeColor(app)}`}>
-                      {DRIVER_APP_LABELS[app][0]}:{total.toFixed(0)}
+                    <span key={app} className={`text-xs font-bold px-2 py-0.5 rounded-full tabular-nums border ${getAppBadgeColor(app)}`}>
+                      {DRIVER_APP_LABELS[app][0]} {total.toFixed(0)}
                     </span>
                   )
                 })}
-                {/* Notas indicator */}
                 {shift.notes && (
-                  <span className="text-[9px] text-[#6E6E73]/60">
-                    <MessageSquareText className="size-3" />
+                  <span className="text-muted-foreground" aria-label="Tiene notas">
+                    <MessageSquareText className="size-3.5" />
                   </span>
                 )}
               </div>
 
-              {/* Líquido vs Pendiente */}
-              <div className="text-right ml-auto">
-                <p className="text-sm font-bold text-[#4F6A35] tabular-nums leading-none">
+              {/* Liquido */}
+              <div className="text-right ml-auto shrink-0">
+                <p className="text-sm font-bold text-primary tabular-nums leading-none">
                   {liquid.toFixed(0)}
                 </p>
                 {pending > 0 && (
-                  <p className="text-[9px] text-[#6E6E73] tabular-nums mt-0.5">
+                  <p className="text-xs text-muted-foreground tabular-nums mt-0.5">
                     +{pending.toFixed(0)} pend.
                   </p>
                 )}
@@ -113,42 +139,62 @@ export function ShiftHistory({ shifts, onEdit }: ShiftHistoryProps) {
 
               {/* Tendencia */}
               {trend != null && trend !== 0 && (
-                <div className={`hidden sm:flex items-center gap-0.5 text-[10px] font-bold shrink-0 ${trend > 0 ? 'text-[#4F6A35]' : 'text-[#B5543D]'}`}>
-                  {trend > 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
-                  {Math.abs(trend).toFixed(0)}
+                <div className={`hidden sm:flex items-center gap-1 text-xs font-bold shrink-0 ${trend > 0 ? 'text-primary' : 'text-destructive'}`}>
+                  {trend > 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
+                  <span className="tabular-nums">{Math.abs(trend).toFixed(0)}</span>
                 </div>
               )}
 
-              {/* Actions */}
-              <div className="absolute -top-1.5 -right-1.5 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-200">
+              {/* Actions — always visible on mobile, hover-reveal on desktop */}
+              <div className="flex items-center gap-1.5 shrink-0 ml-1 sm:ml-2">
                 {onEdit && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={(e) => handleEdit(e, shift)}
-                    className="size-7 rounded-full bg-white border border-[rgba(0,0,0,0.06)] flex items-center justify-center text-[#6E6E73]/60 hover:text-blue-500 hover:border-blue-200 shadow-sm"
-                    title="Editar turno"
+                    className="size-9 rounded-xl bg-card dark:bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/20 shadow-sm sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
+                    aria-label="Editar turno"
                   >
-                    <Pencil className="size-3" />
-                  </button>
+                    <Pencil className="size-4" />
+                  </Button>
                 )}
-                <button
-                  onClick={(e) => handleDelete(e, shift.id)}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => handleDeleteRequest(e, shift.id)}
                   disabled={deletingId === shift.id}
-                  className="size-7 rounded-full bg-white border border-[rgba(0,0,0,0.06)] flex items-center justify-center text-[#6E6E73]/60 hover:text-[#B5543D] hover:border-[#D9A487] shadow-sm"
-                  title="Eliminar turno"
+                  className="size-9 rounded-xl bg-card dark:bg-card border border-border text-muted-foreground hover:text-destructive hover:border-destructive/30 hover:bg-destructive/5 shadow-sm sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
+                  aria-label="Eliminar turno"
                 >
                   {deletingId === shift.id ? (
-                    <span className="size-3 border-2 border-[#6E6E73]/40 border-t-[#6E6E73] rounded-full animate-spin" />
+                    <span className="size-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
                   ) : (
-                    <Trash2 className="size-3" />
+                    <Trash2 className="size-4" />
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           )
         })}
       </div>
 
-      {/* Detail Sheet */}
+      <AlertDialog open={!!confirmId} onOpenChange={(o) => !o && setConfirmId(null)}>
+        <AlertDialogContent className="rounded-[22px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar turno?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se borraran las transacciones y el registro de km asociados. Esta accion no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="rounded-xl bg-destructive hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {detailShift && (
         <ShiftDetailSheet shift={detailShift} onClose={() => setDetailShift(null)} />
       )}

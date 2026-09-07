@@ -10,16 +10,29 @@ async function authFetch(url: string) {
   return json.data
 }
 
-export const driverKeys = {
-  all: ['driver'] as const,
-  shifts: () => [...driverKeys.all, 'shifts'] as const,
-  analytics: () => [...driverKeys.all, 'analytics'] as const,
+export interface MonthCycle {
+  year: number
+  month: number // 1-12
 }
 
-export function useShifts() {
+export const driverKeys = {
+  all: ['driver'] as const,
+  shifts: (cycle?: MonthCycle) => [...driverKeys.all, 'shifts', cycle ? `${cycle.year}-${String(cycle.month).padStart(2, '0')}` : 'current'] as const,
+  analytics: (cycle?: MonthCycle) => [...driverKeys.all, 'analytics', cycle ? `${cycle.year}-${String(cycle.month).padStart(2, '0')}` : 'all'] as const,
+}
+
+function shiftsUrl(cycle?: MonthCycle): string {
+  if (!cycle) {
+    const now = new Date()
+    return `/api/driver/shifts?year=${now.getFullYear()}&month=${now.getMonth() + 1}`
+  }
+  return `/api/driver/shifts?year=${cycle.year}&month=${cycle.month}`
+}
+
+export function useShifts(cycle?: MonthCycle) {
   return useQuery({
-    queryKey: driverKeys.shifts(),
-    queryFn: (): Promise<DriverShift[]> => authFetch('/api/driver/shifts'),
+    queryKey: driverKeys.shifts(cycle),
+    queryFn: (): Promise<DriverShift[]> => authFetch(shiftsUrl(cycle)),
     staleTime: 1000 * 60 * 5,
   })
 }

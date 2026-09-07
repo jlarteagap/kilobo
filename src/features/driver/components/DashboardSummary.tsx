@@ -17,7 +17,7 @@ export function DashboardSummary({ shifts }: DashboardSummaryProps) {
     // Inicio de semana (lunes)
     const startOfWeek = new Date(now)
     const day = startOfWeek.getDay()
-    const diff = day === 0 ? -6 : 1 - day // domingo = 0, lunes = 1
+    const diff = day === 0 ? -6 : 1 - day
     startOfWeek.setDate(startOfWeek.getDate() + diff)
     const weekStart = localDateStr(startOfWeek)
 
@@ -49,22 +49,22 @@ export function DashboardSummary({ shifts }: DashboardSummaryProps) {
   }, [shifts])
 
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <MiniCard
-        icon={<DollarSign className="size-3.5" />}
+        icon={<DollarSign className="size-3.5 shrink-0" />}
         label="Hoy"
         value={formatBs(today.liquid)}
         color="emerald"
       />
       <MiniCard
-        icon={<CalendarRange className="size-3.5" />}
+        icon={<CalendarRange className="size-3.5 shrink-0" />}
         label="Esta semana"
         value={formatBs(week.liquid)}
         sub={week.hours > 0 ? `Bs ${(week.liquid / week.hours).toFixed(1)}/h` : undefined}
-        color="blue"
+        color="accent"
       />
       <MiniCard
-        icon={<TrendingUp className="size-3.5" />}
+        icon={<TrendingUp className="size-3.5 shrink-0" />}
         label="Este mes"
         value={formatBs(month.liquid)}
         color="neutral"
@@ -87,22 +87,22 @@ function MiniCard({
   label: string
   value: string
   sub?: string
-  color: 'emerald' | 'blue' | 'neutral'
+  color: 'emerald' | 'accent' | 'neutral'
 }) {
   const colors = {
-    emerald: 'bg-[#F2F9E3] text-[#4F6A35] border-[#C8D9A9]',
-    blue: 'bg-blue-50 text-blue-700 border-blue-100',
-    neutral: 'bg-[#F2F9E3]/50 text-[#3C5230] border-[#E5DED2]',
+    emerald: 'bg-card dark:bg-card border-border text-primary dark:text-primary border',
+    accent: 'bg-secondary dark:bg-secondary border-border text-secondary-foreground dark:text-secondary-foreground border',
+    neutral: 'bg-card-soft dark:bg-muted border-border text-tint-sage dark:text-muted-foreground border',
   }
 
   return (
-    <div className={`rounded-xl border p-3 sm:p-4 space-y-1 ${colors[color]}`}>
+    <div className={`rounded-xl border p-3 sm:p-4 space-y-1.5 ${colors[color]}`}>
       <div className="flex items-center gap-1.5">
         {icon}
-        <span className="text-[9px] uppercase tracking-widest font-bold opacity-70">{label}</span>
+        <span className="text-xs font-semibold tracking-tight opacity-70">{label}</span>
       </div>
-      <p className="text-base sm:text-lg font-bold tabular-nums tracking-tight">{value}</p>
-      {sub && <p className="text-[9px] font-medium opacity-60">{sub}</p>}
+      <p className="text-base sm:text-lg font-bold tabular-nums tracking-tight leading-none">{value}</p>
+      {sub && <p className="text-[11px] font-medium opacity-60 tabular-nums">{sub}</p>}
     </div>
   )
 }

@@ -5,9 +5,10 @@ import { Save, X, Receipt, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import type { DriverApp, PaymentMethod, ExpenseType, DriverExpense, DriverShift, ShiftInput } from '@/types/driver'
 import { DRIVER_APPS, DRIVER_APP_LABELS, PAYMENT_METHOD_LABELS, EXPENSE_TYPE_LABELS, EXPENSE_TYPES } from '@/types/driver'
-import { isoToLocalDateStr } from '../utils/driver-metrics.utils'
+import { isoToLocalDateStr, getAppBadgeColor } from '../utils/driver-metrics.utils'
 
 interface ShiftFormProps {
   isPending: boolean
@@ -33,7 +34,6 @@ function emptyCommissions(): Record<DriverApp, number> {
   return { UBER: 0, YANGO: 0, INDRIVE: 0 }
 }
 
-// Fecha local (YYYY-MM-DD) sin desfase de timezone
 function localDateStr(d: Date): string {
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -41,7 +41,6 @@ function localDateStr(d: Date): string {
   return `${y}-${m}-${day}`
 }
 
-// Convierte un DriverShift a ShiftInput para edición
 function shiftToInput(s: DriverShift): ShiftInput {
   return {
     date: s.date ?? isoToLocalDateStr(s.createdAt) ?? localDateStr(new Date()),
@@ -75,6 +74,7 @@ export function ShiftForm({
     notes: null,
   }
 
+  const [activeApp, setActiveApp] = useState<DriverApp>(DRIVER_APPS[0])
   const [date, setDate] = useState<string>(defaults.date)
   const [hoursWorked, setHoursWorked] = useState<string>(defaults.hoursWorked > 0 ? String(defaults.hoursWorked) : '')
   const [startKm, setStartKm] = useState<string>(defaults.startKm != null ? String(defaults.startKm) : '')
@@ -113,7 +113,6 @@ export function ShiftForm({
     setExpenses((prev) => prev.filter((_, i) => i !== index))
   }
 
-  // Km recorrido con wrap de 3 dígitos
   const kmPreview = useMemo(() => {
     if (!startKm || !endKm) return null
     const s = parseInt(startKm, 10)
@@ -122,7 +121,6 @@ export function ShiftForm({
     return e >= s ? e - s : 1000 + e - s
   }, [startKm, endKm])
 
-  // Totales
   const totals = useMemo(() => {
     let totalCash = 0, totalCard = 0, totalQr = 0, totalBonuses = 0, totalCommissions = 0
     for (const app of DRIVER_APPS) {
@@ -138,6 +136,14 @@ export function ShiftForm({
     const liquid = totalCash + totalQr - totalCommissions - totalExpenses
     return { totalCash, totalCard, totalQr, totalBonuses, totalCommissions, totalExpenses, gross, pending, liquid }
   }, [earnings, bonuses, commissions, expenses])
+
+  const appTotals = useMemo(() => {
+    const map: Record<DriverApp, number> = { UBER: 0, YANGO: 0, INDRIVE: 0 }
+    for (const app of DRIVER_APPS) {
+      map[app] = earnings[app].CASH + earnings[app].CARD + earnings[app].QR + bonuses[app]
+    }
+    return map
+  }, [earnings, bonuses])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -165,44 +171,45 @@ export function ShiftForm({
   const isEditMode = !!initialData?.id
 
   return (
-    <div className="rounded-[22px] bg-white p-4 sm:p-6 space-y-6"
-      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+    <div className="rounded-[22px] bg-card dark:bg-card border border-border p-4 sm:p-6 space-y-6 shadow-sm"
     >
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-[#4F6A35] flex items-center justify-center text-white">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="size-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shrink-0">
             <Receipt className="size-5" />
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">
-              {isEditMode ? 'Editar Turno' : 'Registrar Turno'}
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold text-foreground tracking-tight leading-none">
+              {isEditMode ? 'Editar turno' : 'Registrar turno'}
             </h3>
-            <p className="text-[11px] text-[#6E6E73]">Registro manual — se genera al final del día</p>
+            <p className="text-xs text-muted-foreground mt-1">Al final del dia</p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={onCancel} className="size-8 rounded-lg text-[#6E6E73]">
+        <Button variant="ghost" size="icon" onClick={onCancel} className="size-9 rounded-xl text-muted-foreground shrink-0">
           <X className="size-4" />
         </Button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* ── Fecha + Horas ── */}
-        <div className="grid grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Fecha + Horas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Fecha</Label>
+            <Label htmlFor="shift-date" className="text-xs font-semibold text-foreground">Fecha</Label>
             <Input
+              id="shift-date"
               type="date"
               value={date}
               max={localDateStr(new Date())}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="h-12 bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-sm font-medium"
+              className="h-11 bg-card dark:bg-card border-input rounded-xl text-sm font-medium focus-visible:ring-primary/30"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Horas trabajadas</Label>
+            <Label htmlFor="shift-hours" className="text-xs font-semibold text-foreground">Horas trabajadas</Label>
             <Input
+              id="shift-hours"
               type="number"
               step="0.25"
               min="0.25"
@@ -211,19 +218,18 @@ export function ShiftForm({
               onChange={(e) => setHoursWorked(e.target.value)}
               placeholder="Ej: 8"
               required
-              className="h-12 bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-sm font-medium tabular-nums"
+              className="h-11 bg-card dark:bg-card border-input rounded-xl text-sm font-medium tabular-nums focus-visible:ring-primary/30"
             />
           </div>
         </div>
 
-        {/* ── Odómetro ── */}
-        <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">
-            Odómetro (últimos 3 dígitos)
-          </Label>
+        {/* Odometro */}
+        <div className="space-y-3 rounded-xl border border-border bg-card-soft/60 dark:bg-muted/40 p-4">
+          <Label className="text-xs font-semibold text-foreground">Odometro (ultimos 3 digitos)</Label>
           <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
-            <div>
+            <div className="space-y-1">
               <Input
+                id="shift-startKm"
                 type="number"
                 min="0"
                 max="999"
@@ -233,13 +239,15 @@ export function ShiftForm({
                   if (val.length <= 3) setStartKm(val)
                 }}
                 placeholder="Inicio"
-                className="h-12 bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-xl font-light tabular-nums text-center"
+                aria-label="Odometro inicio"
+                className="h-11 bg-card dark:bg-card border-input rounded-xl text-xl font-light tabular-nums text-center focus-visible:ring-primary/30"
               />
-              <p className="text-[9px] text-[#6E6E73] text-center mt-1 uppercase tracking-wider">Inicio</p>
+              <p className="text-xs text-muted-foreground text-center">Inicio</p>
             </div>
-            <span className="text-[#6E6E73]/60 text-lg pb-2">→</span>
-            <div>
+            <span className="text-muted-foreground/60 text-lg pb-6" aria-hidden>-</span>
+            <div className="space-y-1">
               <Input
+                id="shift-endKm"
                 type="number"
                 min="0"
                 max="999"
@@ -249,57 +257,143 @@ export function ShiftForm({
                   if (val.length <= 3) setEndKm(val)
                 }}
                 placeholder="Fin"
-                className="h-12 bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none text-xl font-light tabular-nums text-center"
+                aria-label="Odometro fin"
+                className="h-11 bg-card dark:bg-card border-input rounded-xl text-xl font-light tabular-nums text-center focus-visible:ring-primary/30"
               />
-              <p className="text-[9px] text-[#6E6E73] text-center mt-1 uppercase tracking-wider">Fin</p>
+              <p className="text-xs text-muted-foreground text-center">Fin</p>
             </div>
           </div>
           {kmPreview != null && (
-            <p className="text-[11px] text-[#4F6A35] font-semibold text-center">
+            <p className="text-xs text-primary font-semibold text-center">
               +{kmPreview} km recorridos
             </p>
           )}
         </div>
 
-        {/* ── Ingresos por app ── */}
-        <div className="space-y-4">
-          <p className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Ingresos por app</p>
+        {/* Ingresos por app — Tabs */}
+        <div className="space-y-3">
+          <Label className="text-xs font-semibold text-foreground">Ingresos por app</Label>
+          <Tabs value={activeApp} onValueChange={(v) => setActiveApp(v as DriverApp)} className="w-full">
+            <TabsList className="w-full justify-start h-auto p-1 bg-muted dark:bg-muted rounded-xl gap-1">
+              {DRIVER_APPS.map((app) => {
+                const total = appTotals[app]
+                return (
+                  <TabsTrigger
+                    key={app}
+                    value={app}
+                    className="flex-1 min-w-0 gap-2 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card"
+                  >
+                    <span className={`size-2 rounded-full shrink-0 ${getAppBadgeColor(app).includes('uber') ? 'bg-driver-uber-fg' : getAppBadgeColor(app).includes('yango') ? 'bg-driver-yango-fg' : 'bg-driver-indrive-fg'}`} aria-hidden />
+                    <span className="truncate text-xs font-bold">{DRIVER_APP_LABELS[app]}</span>
+                    {total > 0 && (
+                      <span className="hidden sm:inline text-[11px] font-medium tabular-nums opacity-70">{total.toFixed(0)}</span>
+                    )}
+                  </TabsTrigger>
+                )
+              })}
+            </TabsList>
 
-          {/* Header de columnas */}
-          <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr] gap-2 text-[9px] uppercase tracking-wider text-[#6E6E73] font-bold px-1">
-            <span>App</span>
-            <span>Efectivo</span>
-            <span>Tarjeta</span>
-            <span>QR</span>
-            <span>Bonos</span>
-            <span>Comisión</span>
-          </div>
+            {DRIVER_APPS.map((app) => (
+              <TabsContent key={app} value={app} className="mt-3 space-y-3 rounded-xl border border-border bg-card dark:bg-card p-4">
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${getAppBadgeColor(app)}`}>
+                    {DRIVER_APP_LABELS[app]}
+                  </span>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {(earnings[app].CASH + earnings[app].CARD + earnings[app].QR + bonuses[app]).toFixed(0)} Bs bruto
+                  </span>
+                </div>
 
-          {DRIVER_APPS.map((app) => (
-            <AppRow
-              key={app}
-              app={app}
-              label={DRIVER_APP_LABELS[app]}
-              earnings={earnings[app]}
-              bonus={bonuses[app]}
-              commission={commissions[app]}
-              onEarningsChange={(method, val) => updateEarnings(app, method, val)}
-              onBonusChange={(val) => updateBonuses(app, val)}
-              onCommissionChange={(val) => updateCommissions(app, val)}
-            />
-          ))}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`${app}-CASH`} className="text-xs font-medium text-muted-foreground">Efectivo</Label>
+                    <Input
+                      id={`${app}-CASH`}
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      value={earnings[app].CASH || ''}
+                      onChange={(e) => updateEarnings(app, 'CASH', e.target.value)}
+                      placeholder="0.00"
+                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`${app}-CARD`} className="text-xs font-medium text-muted-foreground">Tarjeta</Label>
+                    <Input
+                      id={`${app}-CARD`}
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      value={earnings[app].CARD || ''}
+                      onChange={(e) => updateEarnings(app, 'CARD', e.target.value)}
+                      placeholder="0.00"
+                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`${app}-QR`} className="text-xs font-medium text-muted-foreground">QR</Label>
+                    <Input
+                      id={`${app}-QR`}
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      value={earnings[app].QR || ''}
+                      onChange={(e) => updateEarnings(app, 'QR', e.target.value)}
+                      placeholder="0.00"
+                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-border mt-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`${app}-BONUS`} className="text-xs font-medium text-muted-foreground">Bonos</Label>
+                    <Input
+                      id={`${app}-BONUS`}
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      value={bonuses[app] || ''}
+                      onChange={(e) => updateBonuses(app, e.target.value)}
+                      placeholder="0.00"
+                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`${app}-COMM`} className="text-xs font-medium text-muted-foreground">Comision app</Label>
+                    <Input
+                      id={`${app}-COMM`}
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      value={commissions[app] || ''}
+                      onChange={(e) => updateCommissions(app, e.target.value)}
+                      placeholder="0.00"
+                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+            ))}
+          </Tabs>
         </div>
 
-        {/* ── Gastos del turno ── */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Gastos del turno</p>
+        {/* Gastos */}
+        <div className="space-y-3 rounded-xl border border-border bg-card dark:bg-card p-4">
+          <div className="flex items-center justify-between gap-4">
+            <Label className="text-xs font-semibold text-foreground">Gastos del turno</Label>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={addExpense}
-              className="h-7 text-[10px] font-bold text-[#4F6A35] hover:text-[#3C5230]"
+              className="h-8 rounded-xl text-xs font-bold border-border"
             >
               <Plus className="size-3 mr-1" />
               Agregar
@@ -307,10 +401,10 @@ export function ShiftForm({
           </div>
 
           {expenses.length === 0 && (
-            <p className="text-[11px] text-[#6E6E73] italic text-center py-4">Sin gastos registrados</p>
+            <p className="text-xs text-muted-foreground text-center py-3">Sin gastos registrados</p>
           )}
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {expenses.map((expense, index) => (
               <ExpenseRow
                 key={index}
@@ -322,89 +416,44 @@ export function ShiftForm({
           </div>
         </div>
 
-        {/* ── Notas ── */}
+        {/* Notas */}
         <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">Notas</Label>
+          <Label htmlFor="shift-notes" className="text-xs font-semibold text-foreground">Notas</Label>
           <Input
+            id="shift-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Lluvia, tráfico, eventos…"
-            className="h-12 bg-transparent border-t-0 border-x-0 border-b border-[rgba(0,0,0,0.06)] rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#4F6A35] transition-colors shadow-none"
+            placeholder="Lluvia, trafico, eventos..."
+            className="h-11 bg-card dark:bg-card border-input rounded-xl text-sm focus-visible:ring-primary/30"
           />
         </div>
 
-        {/* ── Resumen ── */}
+        {/* Resumen */}
         <SummaryCard totals={totals} hoursWorked={parseFloat(hoursWorked) || 0} />
 
-        {/* ── Acciones ── */}
+        {/* Acciones */}
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}
-            className="flex-1 h-12 rounded-xl border-[rgba(0,0,0,0.06)] text-[#6E6E73] font-semibold">
+            className="flex-1 h-11 rounded-xl border-border text-muted-foreground font-semibold">
             Cancelar
           </Button>
           <Button type="submit" disabled={isPending || (totals.gross === 0 && totals.totalExpenses === 0)}
-            className="flex-1 h-12 rounded-xl bg-[#4F6A35] hover:bg-[#3C5230] text-white font-semibold shadow-lg active:scale-[0.98] transition-all">
+            className="flex-1 h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm active:scale-[0.98] transition-all">
             {isPending ? (
               <span className="flex items-center gap-2">
-                <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Guardando…
+                <span className="size-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                Guardando...
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <Save className="size-4" />
-                {isEditMode ? 'Guardar cambios' : 'Guardar y registrar'}
+                {isEditMode ? 'Guardar cambios' : 'Guardar turno'}
               </span>
             )}
           </Button>
         </div>
       </form>
     </div>
-  )
-}
-
-// ─── AppRow ────────────────────────────────────────────────────────────────────
-function AppRow({
-  app, label, earnings, bonus, commission,
-  onEarningsChange, onBonusChange, onCommissionChange,
-}: {
-  app: DriverApp
-  label: string
-  earnings: Record<PaymentMethod, number>
-  bonus: number
-  commission: number
-  onEarningsChange: (method: PaymentMethod, val: string) => void
-  onBonusChange: (val: string) => void
-  onCommissionChange: (val: string) => void
-}) {
-  const borderColors: Record<DriverApp, string> = {
-    UBER: 'border-blue-200/50',
-    YANGO: 'border-orange-200/50',
-    INDRIVE: 'border-emerald-200/50',
-  }
-
-  return (
-    <div className={`grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr] gap-2 items-center rounded-xl border p-2.5 ${borderColors[app]} bg-white`}>
-      <span className="text-[11px] font-bold text-foreground">{label}</span>
-      <CellInput value={earnings.CASH} onChange={(v) => onEarningsChange('CASH', v)} />
-      <CellInput value={earnings.CARD} onChange={(v) => onEarningsChange('CARD', v)} />
-      <CellInput value={earnings.QR} onChange={(v) => onEarningsChange('QR', v)} />
-      <CellInput value={bonus} onChange={onBonusChange} />
-      <CellInput value={commission} onChange={onCommissionChange} />
-    </div>
-  )
-}
-
-function CellInput({ value, onChange }: { value: number; onChange: (val: string) => void }) {
-  return (
-    <Input
-      type="number"
-      step="0.01"
-      min="0"
-      value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder="0"
-      className="h-9 bg-transparent border-0 rounded-lg text-xs font-semibold tabular-nums text-center focus:ring-0 focus:bg-[#F2F9E3]/40"
-    />
   )
 }
 
@@ -417,11 +466,12 @@ function ExpenseRow({
   onRemove: () => void
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+      <label className="sr-only" htmlFor={`exp-type-${expense.type}`}>Tipo</label>
       <select
         value={expense.type}
         onChange={(e) => onChange('type', e.target.value)}
-        className="h-10 rounded-lg bg-transparent border border-[rgba(0,0,0,0.06)] text-xs font-medium px-2 focus:outline-none focus:border-[#4F6A35]"
+        className="h-11 rounded-xl bg-card dark:bg-card border border-input text-sm font-medium px-3 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary flex-1 min-w-0"
       >
         {EXPENSE_TYPES.map((t) => (
           <option key={t} value={t}>{EXPENSE_TYPE_LABELS[t]}</option>
@@ -429,25 +479,27 @@ function ExpenseRow({
       </select>
       <Input
         type="number"
+        inputMode="decimal"
         step="0.01"
         min="0"
         value={expense.amount || ''}
         onChange={(e) => onChange('amount', e.target.value)}
         placeholder="Monto"
-        className="h-10 bg-transparent border border-[rgba(0,0,0,0.06)] rounded-lg text-xs font-semibold tabular-nums w-24 focus:ring-0"
+        aria-label="Monto gasto"
+        className="h-11 bg-card dark:bg-card border-input rounded-xl text-sm font-semibold tabular-nums sm:w-28 focus-visible:ring-primary/30"
       />
       <select
         value={expense.paymentMethod}
         onChange={(e) => onChange('paymentMethod', e.target.value)}
-        className="h-10 rounded-lg bg-transparent border border-[rgba(0,0,0,0.06)] text-xs font-medium px-2 focus:outline-none focus:border-[#4F6A35]"
+        className="h-11 rounded-xl bg-card dark:bg-card border border-input text-sm font-medium px-3 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary sm:w-28"
       >
         {(['CASH', 'QR'] as PaymentMethod[]).map((m) => (
           <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m]}</option>
         ))}
       </select>
       <Button type="button" variant="ghost" size="icon" onClick={onRemove}
-        className="size-8 rounded-lg text-[#6E6E73]/60 hover:text-[#B5543D] shrink-0">
-        <Trash2 className="size-3.5" />
+        className="size-11 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 self-end sm:self-center">
+        <Trash2 className="size-4" />
       </Button>
     </div>
   )
@@ -465,34 +517,34 @@ function SummaryCard({ totals, hoursWorked }: {
   if (totals.gross === 0 && totals.totalExpenses === 0) return null
 
   return (
-    <div className="rounded-xl bg-[#F2F9E3]/40 border border-[rgba(0,0,0,0.06)] p-4 space-y-2.5 text-[12px]">
-      <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#6E6E73] font-bold">
-        <Receipt className="size-3" />
+    <div className="rounded-xl bg-secondary/60 dark:bg-muted/60 border border-border p-4 space-y-3 text-[13px]">
+      <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+        <Receipt className="size-3.5" />
         Resumen
       </div>
 
-      <div className="space-y-1">
-        <Row label="Efectivo" value={totals.totalCash} color="text-[#4F6A35]" />
-        <Row label="Tarjeta" value={totals.totalCard} color="text-blue-600" />
-        <Row label="QR" value={totals.totalQr} color="text-purple-600" />
-        <Row label="Bonos" value={totals.totalBonuses} color="text-amber-600" />
-        <div className="border-t border-[rgba(0,0,0,0.06)] pt-1 mt-1">
+      <div className="space-y-1.5">
+        <Row label="Efectivo" value={totals.totalCash} color="text-primary" />
+        <Row label="Tarjeta" value={totals.totalCard} color="text-driver-uber-fg" />
+        <Row label="QR" value={totals.totalQr} color="text-driver-indrive-fg" />
+        <Row label="Bonos" value={totals.totalBonuses} color="text-amber-600 dark:text-amber-400" />
+        <div className="border-t border-border pt-2 mt-2">
           <Row label="Total bruto" value={totals.gross} color="text-foreground font-bold" />
         </div>
-        <Row label="Pendiente en app (tarjeta + bonos)" value={-totals.pending} color="text-[#6E6E73]" />
-        <Row label="Comisiones" value={-totals.totalCommissions} color="text-[#B5543D]" />
-        <Row label="Gastos" value={-totals.totalExpenses} color="text-[#B5543D]" />
+        <Row label="Pendiente en app (tarjeta + bonos)" value={-totals.pending} color="text-muted-foreground" />
+        <Row label="Comisiones" value={-totals.totalCommissions} color="text-destructive" />
+        <Row label="Gastos" value={-totals.totalExpenses} color="text-destructive" />
       </div>
 
-      <div className="border-t-2 border-[rgba(0,0,0,0.16)] pt-2 flex justify-between items-center">
-        <span className="text-[11px] font-bold text-[#6E6E73] uppercase tracking-wide">Neto líquido</span>
-        <span className={`text-base font-bold tabular-nums ${totals.liquid >= 0 ? 'text-[#4F6A35]' : 'text-[#B5543D]'}`}>
+      <div className="border-t-2 border-border pt-3 flex justify-between items-center gap-4">
+        <span className="text-xs font-bold text-muted-foreground">Neto liquido</span>
+        <span className={`text-base font-bold tabular-nums ${totals.liquid >= 0 ? 'text-primary' : 'text-destructive'}`}>
           Bs {totals.liquid.toFixed(2)}
         </span>
       </div>
 
       {hoursWorked > 0 && (
-        <p className="text-[10px] text-[#6E6E73] text-right">
+        <p className="text-xs text-muted-foreground text-right tabular-nums">
           {totals.liquid / hoursWorked > 0
             ? `Bs ${(totals.liquid / hoursWorked).toFixed(2)}/hora`
             : `Bs 0.00/hora`}
@@ -505,9 +557,9 @@ function SummaryCard({ totals, hoursWorked }: {
 function Row({ label, value, color }: { label: string; value: number; color: string }) {
   if (value === 0) return null
   return (
-    <div className="flex justify-between items-center">
-      <span className="text-[#6E6E73]">{label}</span>
-      <span className={`tabular-nums font-semibold ${color}`}>
+    <div className="flex justify-between items-center gap-4">
+      <span className="text-muted-foreground text-xs">{label}</span>
+      <span className={`tabular-nums font-semibold text-sm ${color}`}>
         {value > 0 ? '+' : ''}{value.toFixed(2)}
       </span>
     </div>

@@ -67,18 +67,27 @@ export function getAppLabel(app: DriverApp): string {
 
 export function getAppColor(app: DriverApp): string {
   const colors: Record<DriverApp, string> = {
-    UBER:    'text-blue-600 bg-blue-50',
-    YANGO:   'text-orange-600 bg-orange-50',
-    INDRIVE: 'text-emerald-600 bg-emerald-50',
+    UBER:    'bg-driver-uber-bg text-driver-uber-fg border-driver-uber-border',
+    YANGO:   'bg-driver-yango-bg text-driver-yango-fg border-driver-yango-border',
+    INDRIVE: 'bg-driver-indrive-bg text-driver-indrive-fg border-driver-indrive-border',
   }
   return colors[app]
 }
 
 export function getAppBadgeColor(app: DriverApp): string {
   const colors: Record<DriverApp, string> = {
-    UBER:    'bg-blue-500/10 text-blue-600',
-    YANGO:   'bg-orange-500/10 text-orange-600',
-    INDRIVE: 'bg-emerald-500/10 text-emerald-600',
+    UBER:    'bg-driver-uber-bg text-driver-uber-fg border border-driver-uber-border',
+    YANGO:   'bg-driver-yango-bg text-driver-yango-fg border border-driver-yango-border',
+    INDRIVE: 'bg-driver-indrive-bg text-driver-indrive-fg border border-driver-indrive-border',
   }
   return colors[app]
+}
+
+export function getAppAccentDot(app: DriverApp): string {
+  const dots: Record<DriverApp, string> = {
+    UBER:    'bg-driver-uber-fg',
+    YANGO:   'bg-driver-yango-fg',
+    INDRIVE: 'bg-driver-indrive-fg',
+  }
+  return dots[app]
 }

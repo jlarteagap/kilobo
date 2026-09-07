@@ -203,8 +203,15 @@ export const driverService = {
   },
 
   // ── Lecturas ─────────────────────────────────────────────────────────────────
-  async getShifts(userId: string): Promise<DriverShift[]> {
+  async getShifts(userId: string, opts?: { year?: number; month?: number }): Promise<DriverShift[]> {
+    if (opts?.year != null && opts?.month != null) {
+      return driverRepository.findByMonth(userId, opts.year, opts.month)
+    }
     return driverRepository.findAll(userId)
+  },
+
+  async getShiftsByMonth(userId: string, year: number, month: number): Promise<DriverShift[]> {
+    return driverRepository.findByMonth(userId, year, month)
   },
 
   async getShiftById(userId: string, id: string): Promise<DriverShift | null> {
@@ -239,8 +246,10 @@ export const driverService = {
   },
 
   // ── Analytics ────────────────────────────────────────────────────────────────
-  async getAnalytics(userId: string): Promise<DriverAnalytics> {
-    const shifts = await driverRepository.findAll(userId)
+  async getAnalytics(userId: string, opts?: { year?: number; month?: number }): Promise<DriverAnalytics> {
+    const shifts = opts?.year != null && opts?.month != null
+      ? await driverRepository.findByMonth(userId, opts.year, opts.month)
+      : await driverRepository.findAll(userId)
 
     if (shifts.length === 0) {
       const empty = { grossEarnings: 0, pendingAmount: 0, liquidEarnings: 0, totalBonuses: 0, totalCommissions: 0, totalExpenses: 0, totalHours: 0, liquidBsPerHour: 0, grossBsPerHour: 0, avgPerShift: 0, totalKm: 0, margin: 0, shiftCount: 0 }

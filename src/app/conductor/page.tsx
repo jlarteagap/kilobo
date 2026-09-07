@@ -5,14 +5,17 @@ import AppLayout from '@/components/layout/AppLayout'
 import { ShiftForm } from '@/features/driver/components/ShiftForm'
 import { ShiftHistory } from '@/features/driver/components/ShiftHistory'
 import { DashboardSummary } from '@/features/driver/components/DashboardSummary'
+import { MonthCyclePicker } from '@/features/driver/components/MonthCyclePicker'
 import { useShifts, useCreateShift, useUpdateShift } from '@/features/driver/hooks/useDriverShifts'
+import { useMonthCycle } from '@/features/driver/hooks/useMonthCycle'
 import { CarTaxiFront, BarChart3, Settings, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { ShiftInput, DriverShift } from '@/types/driver'
 
 export default function ConductorPage() {
-  const { data: shifts = [], isLoading: loadingShifts } = useShifts()
+  const { cycle, prev, next, label, isCurrentMonth, setCycle } = useMonthCycle()
+  const { data: shifts = [], isLoading: loadingShifts } = useShifts(cycle)
   const createShift = useCreateShift()
   const updateShift = useUpdateShift()
 
@@ -33,72 +36,78 @@ export default function ConductorPage() {
     setEditingShift(shift)
   }, [])
 
-  const isPending = createShift.isPending || updateShift.isPending
-
   if (loadingShifts) {
-    return (
-      <AppLayout>
-        <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 animate-pulse">
-          <div className="h-8 w-48 bg-[#F2F9E3]/40 rounded-lg" />
-          <div className="h-32 bg-[#F2F9E3]/40 rounded-2xl" />
-          <div className="h-64 bg-[#F2F9E3]/40 rounded-2xl" />
-        </div>
-      </AppLayout>
-    )
-  }
+     return (
+       <AppLayout>
+         <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 animate-pulse">
+           <div className="h-8 w-48 bg-card-soft dark:bg-muted rounded-xl" />
+           <div className="h-12 bg-card-soft dark:bg-muted rounded-xl" />
+           <div className="h-32 bg-card-soft dark:bg-muted rounded-[22px]" />
+           <div className="h-64 bg-card-soft dark:bg-muted rounded-[22px]" />
+         </div>
+       </AppLayout>
+     )
+   }
 
-  return (
-    <AppLayout>
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-[#4F6A35] flex items-center justify-center text-white shadow-sm">
-              <CarTaxiFront className="size-5" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground tracking-tight">Conductor</h1>
-              <p className="text-[11px] text-[#6E6E73] font-medium">Registro de turnos y optimización</p>
-            </div>
-          </div>
+   return (
+     <AppLayout>
+       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+         {/* Header */}
+         <div className="flex items-center justify-between gap-4">
+           <div className="flex items-center gap-3 min-w-0">
+             <div className="size-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-sm shrink-0">
+               <CarTaxiFront className="size-5" />
+             </div>
+             <div className="min-w-0">
+               <h1 className="text-2xl font-black text-foreground tracking-tight leading-none">Conductor</h1>
+               <p className="text-xs text-muted-foreground font-medium mt-1 truncate">Registro de turnos por ciclo mensual</p>
+             </div>
+           </div>
 
-          <div className="flex items-center gap-2">
-            <Link href="/conductor/settings">
-              <Button variant="ghost" size="icon" className="size-9 rounded-lg text-[#6E6E73] hover:text-foreground">
-                <Settings className="size-4" />
-              </Button>
-            </Link>
-            <Link href="/conductor/analytics">
-              <Button variant="outline" className="h-9 px-4 rounded-lg text-xs font-bold border-[rgba(0,0,0,0.06)]">
-                <BarChart3 className="size-3.5 mr-1.5" />
-                Analytics
-              </Button>
-            </Link>
-          </div>
-        </div>
+           <div className="flex items-center gap-2 shrink-0">
+             <Link href="/conductor/settings" aria-label="Configuracion">
+               <Button variant="ghost" size="icon" className="size-9 rounded-xl text-muted-foreground hover:text-foreground">
+                 <Settings className="size-4" />
+               </Button>
+             </Link>
+             <Link href={`/conductor/analytics?year=${cycle.year}&month=${cycle.month}`}>
+               <Button variant="outline" className="h-9 px-4 rounded-xl text-xs font-bold border-border">
+                 <BarChart3 className="size-3.5 mr-1.5" />
+                 Analytics
+               </Button>
+             </Link>
+           </div>
+         </div>
 
-        {/* ── Resumen rápido ── */}
+        <MonthCyclePicker
+          year={cycle.year}
+          month={cycle.month}
+          label={label}
+          onPrev={prev}
+          onNext={next}
+          onSelect={setCycle}
+          isCurrentMonth={isCurrentMonth}
+        />
+
         <DashboardSummary shifts={shifts} />
 
-        {/* ── CTA Registrar turno ── */}
         {!showForm && !editingShift && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="w-full rounded-2xl border-2 border-dashed border-[rgba(0,0,0,0.12)] bg-white/50 hover:border-[#4F6A35] hover:bg-[#F2F9E3]/50 transition-all duration-200 p-6 group"
-          >
-            <div className="flex items-center justify-center gap-3">
-              <div className="size-10 rounded-xl bg-[#4F6A35] flex items-center justify-center text-white shadow-lg shadow-[#4F6A35]/20 group-hover:scale-105 transition-transform">
-                <Plus className="size-5" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-foreground">Registrar turno</p>
-                <p className="text-[11px] text-[#6E6E73]">Fecha, horas, km e ingresos — al final del día</p>
-              </div>
-            </div>
-          </button>
-        )}
+           <button
+             onClick={() => setShowForm(true)}
+             className="w-full rounded-[22px] border-2 border-dashed border-border bg-card/60 dark:bg-card hover:border-primary hover:bg-secondary dark:hover:bg-secondary transition-all duration-200 p-6 group"
+           >
+             <div className="flex items-center justify-center gap-3">
+               <div className="size-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
+                 <Plus className="size-5" />
+               </div>
+               <div className="text-left">
+                 <p className="text-sm font-bold text-foreground">Registrar turno</p>
+                 <p className="text-xs text-muted-foreground">Fecha, horas, km e ingresos</p>
+               </div>
+             </div>
+           </button>
+         )}
 
-        {/* ── Formulario de registro / edición ── */}
         {showForm && (
           <ShiftForm
             isPending={createShift.isPending}
@@ -126,16 +135,18 @@ export default function ConductorPage() {
           />
         )}
 
-        {/* ── Historial ── */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="size-6 rounded-md bg-[#F2F9E3]/40 flex items-center justify-center text-[#6E6E73]">
-              <CarTaxiFront className="size-3" />
-            </div>
-            <h2 className="text-sm font-semibold text-foreground">Turnos Registrados</h2>
-          </div>
-          <ShiftHistory shifts={shifts} onEdit={handleEdit} />
-        </div>
+         <div className="space-y-4">
+           <div className="flex items-center gap-2">
+             <div className="size-6 rounded-lg bg-secondary dark:bg-muted flex items-center justify-center text-muted-foreground">
+               <CarTaxiFront className="size-3" />
+             </div>
+             <h2 className="text-sm font-bold text-foreground tracking-tight">Turnos del ciclo</h2>
+             {shifts.length > 0 && (
+               <span className="text-xs text-muted-foreground">· {shifts.length}</span>
+             )}
+           </div>
+           <ShiftHistory shifts={shifts} onEdit={handleEdit} cycle={cycle} label={label} />
+         </div>
       </div>
     </AppLayout>
   )

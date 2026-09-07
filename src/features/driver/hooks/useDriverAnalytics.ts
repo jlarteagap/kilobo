@@ -1,12 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import type { DriverAnalytics } from '@/types/driver'
-import { driverKeys } from './useDriverShifts'
+import { driverKeys, type MonthCycle } from './useDriverShifts'
 
-export function useDriverAnalytics() {
+function analyticsUrl(cycle?: MonthCycle): string {
+  if (!cycle) return '/api/driver/analytics'
+  return `/api/driver/analytics?year=${cycle.year}&month=${cycle.month}`
+}
+
+export function useDriverAnalytics(cycle?: MonthCycle) {
   return useQuery({
-    queryKey: driverKeys.analytics(),
+    queryKey: driverKeys.analytics(cycle),
     queryFn: async (): Promise<DriverAnalytics> => {
-      const res = await fetch('/api/driver/analytics')
+      const res = await fetch(analyticsUrl(cycle))
       if (!res.ok) throw new Error('Error al cargar analytics')
       const json = await res.json()
       return json.data

@@ -93,6 +93,14 @@ function mapDoc<T extends { id?: string }>(doc: FirebaseFirestore.DocumentSnapsh
   return normalizeShift({ id: doc.id, ...doc.data() }) as unknown as T
 }
 
+function monthBounds(year: number, month: number): { from: string; to: string } {
+  const from = `${year}-${String(month).padStart(2, '0')}-01`
+  const nextMonth = month === 12 ? 1 : month + 1
+  const nextYear = month === 12 ? year + 1 : year
+  const to = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`
+  return { from, to }
+}
+
 export const driverRepository = {
   async findAll(userId: string): Promise<DriverShift[]> {
     const snapshot = await shiftsCollection
@@ -102,6 +110,23 @@ export const driverRepository = {
       .get()
 
     return snapshot.docs.map((doc) => mapDoc<DriverShift>(doc))
+  },
+
+  async findByDateRange(userId: string, fromIncl: string, toExcl: string): Promise<DriverShift[]> {
+    const snapshot = await shiftsCollection
+      .where('user_id', '==', userId)
+      .where('date', '>=', fromIncl)
+      .where('date', '<', toExcl)
+      .orderBy('date', 'desc')
+      .limit(200)
+      .get()
+
+    return snapshot.docs.map((doc) => mapDoc<DriverShift>(doc))
+  },
+
+  async findByMonth(userId: string, year: number, month: number): Promise<DriverShift[]> {
+    const { from, to } = monthBounds(year, month)
+    return this.findByDateRange(userId, from, to)
   },
 
   async findById(id: string, userId: string): Promise<DriverShift | null> {

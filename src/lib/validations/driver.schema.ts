@@ -62,3 +62,14 @@ export const driverConfigSchema = z.object({
 })
 
 export type DriverConfigInput = z.infer<typeof driverConfigSchema>
+
+// Query por ciclo mensual: ?year=YYYY&month=MM (1-12), ambos opcionales pero deben ir juntos
+export const monthQuerySchema = z.object({
+  year: z.coerce.number().int().min(1900).max(2100).optional(),
+  month: z.coerce.number().int().min(1).max(12).optional(),
+}).refine(
+  (v) => (v.year == null) === (v.month == null),
+  { message: 'year y month deben ir juntos', path: ['month'] },
+)
+
+export type MonthQuery = z.infer<typeof monthQuerySchema>

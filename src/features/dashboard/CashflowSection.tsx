@@ -22,7 +22,7 @@ import type { Period }     from "@/types/period"
 
 function CashflowSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-6">
+    <div className="bg-white rounded-[22px] border border-zinc-200 p-6">
       <div className="flex justify-between items-start mb-6">
         <div className="space-y-2">
           <Skeleton className="h-4 w-32 rounded-lg bg-zinc-100" />
@@ -42,7 +42,7 @@ function CashflowSkeleton() {
 
 function CashflowEmpty({ period }: { period: Period }) {
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-10 flex flex-col items-center justify-center gap-3 min-h-[360px]">
+    <div className="bg-white rounded-[22px] border border-zinc-200 p-10 flex flex-col items-center justify-center gap-3 min-h-[360px]">
       <div className="size-11 rounded-xl bg-zinc-100 flex items-center justify-center">
         <div className="size-2.5 rounded-full bg-zinc-300" />
       </div>
@@ -215,7 +215,7 @@ export function CashflowSection() {
   if (isLoading) return <CashflowSkeleton />
 
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-6 md:p-7">
+    <div className="bg-white rounded-[22px] border border-zinc-200 p-6 md:p-7">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 md:gap-6 mb-6">
         <div>
           <h3 className="text-[13px] font-semibold text-zinc-900 tracking-tight">Flujo de caja</h3>
@@ -232,7 +232,7 @@ export function CashflowSection() {
         <CashflowEmpty period={period} />
       ) : (
         <>
-          <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-2 md:p-3">
+          <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-2 md:p-3 overflow-hidden">
             <div className="h-[360px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <CashflowSankey sankeyData={sankeyData} />

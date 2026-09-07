@@ -1,24 +1,21 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function CashflowSectionSkeleton() {
   return (
-    <Card className="col-span-2">
-      <CardHeader>
-        <Skeleton className="h-6 w-48" />
-      </CardHeader>
-      <CardContent>
-        {/* Simula el gráfico Sankey */}
-        <div className="h-[300px] w-full flex items-end gap-3 px-4">
-          {[40, 70, 50, 90, 60, 45, 80].map((height, i) => (
-            <Skeleton
-              key={i}
-              className="flex-1 rounded-md"
-              style={{ height: `${height}%` }}
-            />
-          ))}
+    <div className="bg-white rounded-[22px] border border-zinc-200 p-6 md:p-7 w-full">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-32 rounded-lg bg-zinc-100" />
+          <Skeleton className="h-3 w-24 rounded-lg bg-zinc-100" />
         </div>
-      </CardContent>
-    </Card>
+        <Skeleton className="h-9 w-44 rounded-xl bg-zinc-100" />
+      </div>
+      <Skeleton className="h-[360px] w-full rounded-xl bg-zinc-100" />
+      <div className="flex gap-4 mt-5 pt-5 border-t border-zinc-100">
+        <Skeleton className="h-3 w-20 rounded-full bg-zinc-100" />
+        <Skeleton className="h-3 w-20 rounded-full bg-zinc-100" />
+        <Skeleton className="h-3 w-20 rounded-full bg-zinc-100" />
+      </div>
+    </div>
   )
 }

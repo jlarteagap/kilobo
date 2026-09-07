@@ -58,8 +58,8 @@ export function SankeyCustomLink({
         stroke={baseColor}
         strokeWidth={Math.max(linkWidth, 1)}
         strokeOpacity={opacity}
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        strokeLinecap="butt"
+        strokeLinejoin="miter"
       />
     </Layer>
   )

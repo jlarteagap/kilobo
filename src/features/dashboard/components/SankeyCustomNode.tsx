@@ -77,7 +77,7 @@ export function SankeyCustomNode({
         height={Math.max(height, 4)}
         fill={fill}
         fillOpacity={nodeOpacity}
-        rx={6}
+        rx={3}
         stroke={stroke}
         strokeWidth={strokeW}
         data-sankey-node

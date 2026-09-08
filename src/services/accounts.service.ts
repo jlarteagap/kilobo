@@ -1,6 +1,9 @@
 import { accountsRepository } from '@/repositories/accounts.repository'
+import { accountBalanceHistoryRepository } from '@/repositories/account-balance-history.repository'
 import { CreateAccountInput, UpdateAccountInput } from '@/lib/validations/account.schema'
 import { Account } from '@/types/account'
+import { adminDb } from '@/lib/firebase.admin'
+import { FieldValue } from 'firebase-admin/firestore'
 
 export const accountsService = {
     async getAccounts(userId: string): Promise<Account[]> {
@@ -26,6 +29,30 @@ export const accountsService = {
     const account = await accountsRepository.findById(accountId, userId)
     if (!account) {
       throw new Error('Cuenta no encontrada.')
+    }
+
+    // Si cambia el balance, registrar el cambio de forma atómica en un batch
+    if (data.balance !== undefined && data.balance !== account.balance) {
+      const batch = adminDb.batch()
+
+      batch.update(adminDb.collection('accounts').doc(accountId), {
+        ...data,
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+
+      accountBalanceHistoryRepository.addInBatch(
+        batch,
+        accountId,
+        account.balance,
+        data.balance,
+        'ACCOUNT',
+        userId
+      )
+
+      await batch.commit()
+
+      const updated = await adminDb.collection('accounts').doc(accountId).get()
+      return { id: accountId, ...(updated.data() as Omit<Account, 'id'>) }
     }
 
     return accountsRepository.update(accountId, data)

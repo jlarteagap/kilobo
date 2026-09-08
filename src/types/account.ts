@@ -17,6 +17,30 @@ export interface Account {
 export type CreateAccountData = Pick<Account, "name" | "type" | "balance" | "currency">
 export type UpdateAccountData = Partial<CreateAccountData>
 
+// Origen de un cambio de balance — para trazar de dónde vino el movimiento
+export type BalanceChangeSource =
+  | "ACCOUNT"
+  | "TRANSACTION"
+  | "INVESTMENT"
+  | "DEBT"
+
+// Registro histórico de un cambio sobre el balance de una cuenta
+export interface AccountBalanceChange {
+  id: string
+  user_id: string
+  account_id: string
+  previous_balance: number
+  new_balance: number
+  delta: number
+  source: BalanceChangeSource
+  createdAt: Date
+}
+
+export type AccountBalanceChangeData = Omit<
+  AccountBalanceChange,
+  "id" | "createdAt"
+>
+
 // Constantes de presentación — separadas de los tipos
 export const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
   { value: "BANK",   label: "Banco" },

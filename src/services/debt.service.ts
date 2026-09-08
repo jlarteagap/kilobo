@@ -1,7 +1,10 @@
 // services/debt.service.ts
 import { debtRepository } from '@/repositories/debt.repository'
 import { accountsRepository } from '@/repositories/accounts.repository'
+import { accountBalanceHistoryRepository } from '@/repositories/account-balance-history.repository'
 import { transactionService } from '@/services/transactions.service'
+import { adminDb } from '@/lib/firebase.admin'
+import { FieldValue } from 'firebase-admin/firestore'
 import type { CreateDebtData, CreateDebtPaymentData } from '@/types/debt'
 
 export const debtService = {
@@ -24,9 +27,21 @@ export const debtService = {
       //    GIVEN    → presté dinero → resta de mi cuenta
       //    RECEIVED → me prestaron  → suma a mi cuenta
       const delta = debtData.type === 'GIVEN' ? -debtData.amount : +debtData.amount
-      await accountsRepository.update(debtData.account_id, {
-        balance: account.balance + delta,
+      const newBalance = account.balance + delta
+      const batch = adminDb.batch()
+      batch.update(adminDb.collection('accounts').doc(debtData.account_id), {
+        balance: newBalance,
+        updatedAt: FieldValue.serverTimestamp(),
       })
+      accountBalanceHistoryRepository.addInBatch(
+        batch,
+        debtData.account_id,
+        account.balance,
+        newBalance,
+        'DEBT',
+        userId
+      )
+      await batch.commit()
 
       // 4. Crear transacción — usar fecha del cliente si viene, sino fecha local del servidor
       const txDate = clientDate || (() => {
@@ -72,9 +87,21 @@ export const debtService = {
     //    GIVEN    → me están pagando → suma a mi cuenta
     //    RECEIVED → estoy pagando    → resta de mi cuenta
     const delta = debt.type === 'GIVEN' ? +data.amount : -data.amount
-    await accountsRepository.update(data.account_id, {
-      balance: account.balance + delta,
+    const newBalance = account.balance + delta
+    const batch = adminDb.batch()
+    batch.update(adminDb.collection('accounts').doc(data.account_id), {
+      balance: newBalance,
+      updatedAt: FieldValue.serverTimestamp(),
     })
+    accountBalanceHistoryRepository.addInBatch(
+      batch,
+      data.account_id,
+      account.balance,
+      newBalance,
+      'DEBT',
+      userId
+    )
+    await batch.commit()
 
     // 5. Registrar el pago
     const payment = await debtRepository.createPayment(debtId, data)
@@ -114,9 +141,21 @@ export const debtService = {
       const reverseDelta = debt.type === 'GIVEN'
         ? +(debt.amount - debt.paid_amount)   // devolver lo no cobrado
         : -(debt.amount - debt.paid_amount)   // devolver lo no pagado
-      await accountsRepository.update(debt.account_id, {
-        balance: account.balance + reverseDelta,
+      const newBalance = account.balance + reverseDelta
+      const batch = adminDb.batch()
+      batch.update(adminDb.collection('accounts').doc(debt.account_id), {
+        balance: newBalance,
+        updatedAt: FieldValue.serverTimestamp(),
       })
+      accountBalanceHistoryRepository.addInBatch(
+        batch,
+        debt.account_id,
+        account.balance,
+        newBalance,
+        'DEBT',
+        userId
+      )
+      await batch.commit()
     }
 
     return debtRepository.update(debtId, { status: 'CANCELLED' })

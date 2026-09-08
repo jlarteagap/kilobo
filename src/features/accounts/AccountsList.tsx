@@ -3,7 +3,6 @@
 
 import { useState } from "react"
 import { Plus, Pencil, Trash2, Landmark, TrendingUp, ChevronDown, ChevronRight } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 import {
   Dialog,
@@ -27,8 +26,10 @@ import { toast } from "sonner"
 
 import { AccountForm } from "./AccountForm"
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from "./hooks/useAccounts"
+import { useAccountBalanceChanges } from "./hooks/useAccountBalanceChanges"
 import { getAccountTypeDetails, formatCurrency } from "./utils/account-display.utils"
-import type { Account, CreateAccountData } from "@/types/account"
+import { AccountChangeBadge } from "./components/AccountChangeBadge"
+import type { Account, CreateAccountData, AccountBalanceChange } from "@/types/account"
 import { useInvestments } from "@/features/investments/hooks/useInvestments"
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -57,11 +58,13 @@ function AccountCard({
   account,
   onEdit,
   onDelete,
+  lastChange,
   investments = [],
 }: {
   account:        Account
   onEdit:         (account: Account) => void
   onDelete:       (id: string) => void
+  lastChange?:    AccountBalanceChange | null
   investments?:   Array<{ id: string; name: string; amount: number; currency: string }>
 }) {
   const { icon: Icon, color, label } = getAccountTypeDetails(account.type)
@@ -92,14 +95,18 @@ function AccountCard({
         </div>
 
         <div className="text-right">
-          <p className="text-[15px] font-bold tracking-tight text-foreground">
+          <p className="text-[15px] font-bold tracking-tight text-foreground tabular-nums">
             {formatCurrency(account.balance, account.currency)}
           </p>
-          {hasInvestments && (
-            <p className="text-[10px] font-medium text-indigo-500 mt-0.5">
-              {formatCurrency(totalInvested, account.currency)} invertidos
-            </p>
-          )}
+          <div className="flex items-center justify-end gap-2 mt-1 min-h-[18px]">
+            {lastChange ? (
+              <AccountChangeBadge change={lastChange} />
+            ) : hasInvestments ? (
+              <p className="text-[10px] font-medium text-indigo-500">
+                {formatCurrency(totalInvested, account.currency)} invertidos
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <div className="flex items-center gap-0.5 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -161,6 +168,7 @@ type DialogState =
 export function AccountsList() {
   const { data: accounts = [], isLoading, isError } = useAccounts()
   const { data: investments = [] } = useInvestments()
+  const { data: lastChanges = {} } = useAccountBalanceChanges(accounts.map((a) => a.id))
 
   const createAccount = useCreateAccount()
   const updateAccount = useUpdateAccount()
@@ -274,6 +282,7 @@ export function AccountsList() {
             <AccountCard
               key={account.id}
               account={account}
+              lastChange={lastChanges[account.id]}
               investments={investments.filter((inv) => inv.account_id === account.id)}
               onEdit={(acc) => setDialog({ mode: 'edit', account: acc })}
               onDelete={setPendingDeleteId}

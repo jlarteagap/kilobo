@@ -20,6 +20,15 @@ export const formatCurrency = (value: number, currency: string): string => {
   }).format(value)
 }
 
+// Formatea un delta sin símbolo de moneda (la tarjeta ya muestra la moneda del balance).
+// El signo lo aplica el badge para controlar el color según la dirección.
+export const formatChangeAmount = (value: number): string => {
+  return new Intl.NumberFormat("es-BO", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(Math.abs(value))
+}
+
 export const getValueInBOB = (account: Account): number => {
   return convertToBOB(account.balance, account.currency)
 }

@@ -50,7 +50,7 @@ export const transactionService = {
     const enriched = { ...data, currency: data.currency ?? sourceAccount.currency }
 
     const batch = adminDb.batch()
-    balanceService.applyForCreate(batch, enriched, accounts)
+    balanceService.applyForCreate(batch, enriched, accounts, userId)
     const { ref, payload } = transactionsRepository.createInBatch(batch, enriched, userId)
 
     await batch.commit()
@@ -90,8 +90,11 @@ export const transactionService = {
       throw new Error('Transacción no encontrada o no autorizada.')
     }
 
+    // Cargar las cuentas afectadas para registrar el cambio de balance al revertir
+    const accounts = await accountsRepository.findAll(userId)
+
     const batch = adminDb.batch()
-    balanceService.applyForDelete(batch, transaction)
+    balanceService.applyForDelete(batch, transaction, accounts, userId)
     batch.delete(adminDb.collection('transactions').doc(transactionId))
 
     await batch.commit()

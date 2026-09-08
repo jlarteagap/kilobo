@@ -1,5 +1,6 @@
 import { investmentsRepository } from '@/repositories/investments.repository'
 import { accountsRepository } from '@/repositories/accounts.repository'
+import { accountBalanceHistoryRepository } from '@/repositories/account-balance-history.repository'
 import { CreateInvestmentInput, UpdateInvestmentInput, BuyInvestmentInput, SellInvestmentInput, SaveRecurringInput, ExecuteRecurringBuyInput } from '@/lib/validations/investment.schema'
 import { adminDb } from '@/lib/firebase.admin'
 import { FieldValue } from 'firebase-admin/firestore'
@@ -72,6 +73,14 @@ export const investmentsService = {
         balance: FieldValue.increment(-amount),
         updatedAt: FieldValue.serverTimestamp(),
       })
+      accountBalanceHistoryRepository.addInBatch(
+        batch,
+        data.account_id,
+        account.balance,
+        account.balance - amount,
+        'INVESTMENT',
+        userId
+      )
 
       await batch.commit()
 
@@ -104,6 +113,14 @@ export const investmentsService = {
         balance: FieldValue.increment(-data.amount),
         updatedAt: FieldValue.serverTimestamp(),
       })
+      accountBalanceHistoryRepository.addInBatch(
+        batch,
+        data.account_id,
+        account.balance,
+        account.balance - data.amount,
+        'INVESTMENT',
+        userId
+      )
     }
 
     await batch.commit()
@@ -141,6 +158,14 @@ export const investmentsService = {
       balance: FieldValue.increment(-totalAmount),
       updatedAt: FieldValue.serverTimestamp(),
     })
+    accountBalanceHistoryRepository.addInBatch(
+      batch,
+      data.account_id,
+      account.balance,
+      account.balance - totalAmount,
+      'INVESTMENT',
+      userId
+    )
 
     await batch.commit()
 
@@ -173,6 +198,14 @@ export const investmentsService = {
       balance: FieldValue.increment(totalAmount),
       updatedAt: FieldValue.serverTimestamp(),
     })
+    accountBalanceHistoryRepository.addInBatch(
+      batch,
+      data.account_id,
+      account.balance,
+      account.balance + totalAmount,
+      'INVESTMENT',
+      userId
+    )
 
     await batch.commit()
 
@@ -265,10 +298,21 @@ export const investmentsService = {
 
     if (data.amount !== undefined && data.amount !== investment.amount && !investment.transaction_id) {
       const diff = data.amount - investment.amount
+      const account = await accountsRepository.findById(investment.account_id, userId)
       batch.update(adminDb.collection('accounts').doc(investment.account_id), {
         balance: FieldValue.increment(-diff),
         updatedAt: FieldValue.serverTimestamp(),
       })
+      if (account) {
+        accountBalanceHistoryRepository.addInBatch(
+          batch,
+          investment.account_id,
+          account.balance,
+          account.balance - diff,
+          'INVESTMENT',
+          userId
+        )
+      }
     }
 
     investmentsRepository.updateInBatch(batch, id, data)
@@ -293,10 +337,21 @@ export const investmentsService = {
         updated_at: FieldValue.serverTimestamp(),
       })
     } else {
+      const account = await accountsRepository.findById(investment.account_id, userId)
       batch.update(adminDb.collection('accounts').doc(investment.account_id), {
         balance: FieldValue.increment(investment.amount),
         updatedAt: FieldValue.serverTimestamp(),
       })
+      if (account) {
+        accountBalanceHistoryRepository.addInBatch(
+          batch,
+          investment.account_id,
+          account.balance,
+          account.balance + investment.amount,
+          'INVESTMENT',
+          userId
+        )
+      }
     }
 
     await batch.commit()

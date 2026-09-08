@@ -21,6 +21,9 @@ export const accountKeys = {
   detail: (id: string) => [...accountKeys.all, 'detail', id] as const,
 }
 
+// Invalida también el badge de último cambio cuando las cuentas mutan
+const balanceChangeKeys = ['account-balance-changes']
+
 // GET
 export function useAccounts() {
   return useQuery({
@@ -82,6 +85,7 @@ onError: (error: Error, _id, context) => {
     onSettled: () => {
       // Siempre revalida al final para tener datos reales
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: balanceChangeKeys })
     },
   })
 }
@@ -104,6 +108,7 @@ export function useUpdateAccount() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: balanceChangeKeys })
     },
   })
 }
@@ -138,6 +143,7 @@ export function useDeleteAccount() {
 
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: balanceChangeKeys })
     },
   })
 }

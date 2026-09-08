@@ -1,8 +1,8 @@
 # Kilo Design Manual — Manual de Diseño
 
-**Versión:** 1.0 (2026-08-07)
-**Sistema:** Kilo Sage · Identidad Orgánica
-**Ámbito:** Guía obligatoria para TODO feature o componente nuevo. Si un componente no sigue estas reglas, no se mergea.
+**Versión:** 1.1 (2026-09-07)
+**Sistema:** Kilo Sage · Identidad Orgánica — en migración progresiva hacia el referente **Minimal · Zinc** (§11).
+**Ámbito:** Guía obligatoria para TODO feature o componente nuevo. Si un componente no sigue estas reglas, no se mergea. Los componentes de gráficos/datos se igualan al referente §11.
 
 ---
 
@@ -204,3 +204,76 @@ Antes de mergear cualquier feature, verificar:
 | `/conductor/settings` | Ajustes |
 
 El nav de la sidebar usa estos mismos nombres (el item del dashboard se llama "Dashboard" tanto en drawer como en título).
+
+---
+
+## 11. Referente "Minimal · Zinc" — gráficos/datos (en migración)
+
+**Contexto:** el Sankey de flujo de caja (`CashflowSection` V2 + `SankeyCustomNode`/`SankeyCustomLink`) es el **primer componente migrado** a la nueva dirección: neutros zinc + **un solo acento emerald** `#059669`, radios simétricos, tipografía sobria. El resto de componentes se iguala a este referente de forma progresiva (el usuario lo pidió: "vamos a cambiar el diseño poco a poco"). Esta dirección **convive** con Sage (§1-9) hasta migrar todos los gráficos y canvas de datos.
+
+### Paleta de datos (gráficos / canvas)
+
+| Uso | Valor |
+|---|---|
+| Fondo de card | `#FFFFFF` |
+| Inset de chart | `bg-zinc-50/50` + borde `#F4F4F5` (zinc-100) |
+| **Acento positivo / ingresos** | `#059669` (emerald-600) — el único color de acento |
+| Gasto / subtipo | `#27272A` (zinc-800) |
+| Balance / fondo oscuro | `#18181B` (zinc-900) |
+| Cuenta (nodo claro) | fill `#E4E4E7` (zinc-200) + stroke `#D4D4D8` |
+| Transferencia | `#A1A1AA` (zinc-400) |
+| Links base | `#D4D4D8` (zinc-300); fallback `#E4E4E7` |
+| Label de nodo | `#52525B` (zinc-600), font-weight 500 |
+| Texto grado 1 | `#18181B` (zinc-900) |
+| Texto grado 2 | `#71717A` (zinc-500) |
+| Helper | `#A1A1AA` (zinc-400) |
+| Borde de card | `#E4E4E7` (zinc-200) |
+| Nodos especiales | `Ahorro/Excedente` `#18181B` · `Fondos Previos` `#52525B` |
+
+**Regla de color:** todo neutro zinc; el emerald `#059669` se reserva exclusivamente para valores positivos/ingresos. Prohibido usar otro acento en la misma vista, y prohibido el emerald brillante `#10B981` del estilo viejo.
+
+### Formas y radios (simétricos)
+
+| Elemento | Radio |
+|---|---|
+| Card de chart/datos | `rounded-[22px]` |
+| Inset del canvas | `rounded-xl` + `overflow-hidden` |
+| Nodo sankey (`rect`) | `rx={3}` |
+| Props sankey | `nodeWidth={10}`, `nodePadding` 28 (desktop) / 18 (<420px) |
+| Links | `strokeLinecap="butt"` `strokeLinejoin="miter"` (sin caps redondeados) |
+
+Esquinas **simétricas** (aquí no aplica el asimétrico orgánico de §4). Jerarquía de radios: card 22px → inset 12px → elementos 3px.
+
+### Interacción sankey (aislar flujo)
+
+- Click en nodo = aislar: nodos no conectados opacidad `0.22` (labels `0.35`), links no conectados `0.08`.
+- Nodo seleccionado: opacidad `1`, stroke `#09090B` 1.5px; links conectados `0.85`.
+- Links por defecto: `0.55`.
+- Reset: tecla `Escape` o click fuera del gráfico.
+- Cada `rect` lleva `cursor:pointer` y `data-sankey-node`.
+
+### Tipografía de sección
+
+| Patrón | Clases |
+|---|---|
+| Título de card | `text-[13px] font-semibold text-zinc-900 tracking-tight` |
+| Subtítulo (período) | `text-xs text-zinc-500 capitalize` |
+| Label métrica | `text-xs font-medium text-zinc-600` |
+| Valor métrica | `text-xs font-semibold text-zinc-900 tabular-nums` |
+| Helper | `text-[11px] text-zinc-400 leading-relaxed` |
+
+### Estados
+
+- **Loading:** huesos `bg-zinc-100` (no `#F2F9E3`), radios `rounded-lg / xl / full` según el elemento; mismo layout que el dato real.
+- **Vacío:** tile `size-11 rounded-xl bg-zinc-100` con punto `size-2.5 rounded-full bg-zinc-300`; título `text-sm font-medium text-zinc-900`; apoyo `text-xs text-zinc-500`. **Sin emoji.**
+- **Tooltip:** `bg-white rounded-xl border-zinc-200 shadow-[0_8px_24px_rgba(0,0,0,0.08)]`; nombre `text-xs font-semibold text-zinc-900`; monto `text-sm font-bold tabular-nums`; desglose con `border-t border-zinc-100`.
+
+### Checklist de igualación (banda de gráficos/datos)
+
+- [ ] Sin `dark:` ni estilos dark mode
+- [ ] Único acento `#059669`; sin `#10B981` ni otros acentos en la misma vista
+- [ ] Sin tokens Sage en canvas (`#4F6A35`, `#5F7D42`, `#ACC18A`, `#F2F9E3`, `#B5543D`, `#837A75`)
+- [ ] Radios simétricos: card `22px`, inset `rounded-xl`, elemento `rx={3}`
+- [ ] `tabular-nums` en todas las cifras monetarias
+- [ ] Estados loading/vacío/tooltip en zinc, sin emoji
+- [ ] Links con `strokeLinecap="butt"`

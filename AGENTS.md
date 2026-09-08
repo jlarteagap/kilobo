@@ -60,3 +60,4 @@ Run with `npx tsx scripts/<name>.ts`. Requires `.env` loaded (uses `dotenv`). Us
 - ESLint flat config ignores `.next`, `out`, `build`, `next-env.d.ts`
 - `.env` tracked in git (contains dev Firebase + OpenRouter keys)
 - `.agent/`, `.agents/`, `skills-lock.json` are gitignored
+- **Design**: `docs/DESIGN-MANUAL.md` §11 "Minimal · Zinc" is the reference to equalize graph/data components (zinc neutrals + single emerald `#059669`, symmetric radii 22px/xl/rx-3, no dark). Existing components migrate progressively; the dashboard Sankey (`src/features/dashboard/CashflowSection.tsx`) is the migrated canonical example.

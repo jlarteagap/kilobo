@@ -13,7 +13,15 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: 'Falta el parámetro account_id' }, { status: 400 })
     }
 
-    const change = await accountBalanceHistoryRepository.findLatestByAccount(accountId, userId)
+    // Límite del periodo diario (4:00 AM local) calculado en el cliente.
+    // Devuelve la ancla: el último cambio antes de ese instante.
+    const beforeParam = req.nextUrl.searchParams.get('before')
+    const before = beforeParam ? new Date(beforeParam) : new Date()
+    if (Number.isNaN(before.getTime())) {
+      return Response.json({ error: 'El parámetro before es inválido' }, { status: 400 })
+    }
+
+    const change = await accountBalanceHistoryRepository.findLastBefore(accountId, userId, before)
     return Response.json({ change })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error interno del servidor'

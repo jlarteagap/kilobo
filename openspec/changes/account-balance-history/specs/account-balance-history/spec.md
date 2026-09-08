@@ -1,7 +1,8 @@
 ## Purpose
 
 Registra de forma persistente cada cambio sobre el balance de una cuenta (valor anterior, valor
-nuevo, delta y origen) y muestra el cambio más reciente como un badge en la tarjeta de la cuenta.
+nuevo, delta y origen) y muestra la variación diaria del balance (vs el cierre de ayer) como un
+badge en la tarjeta de la cuenta.
 
 ## ADDED Requirements
 
@@ -29,32 +30,58 @@ tenía la cuenta.
 - **THEN** el sistema persiste un nuevo registro de cambio con balance anterior 128 y balance nuevo
   120, reflejando la reversión
 
-### Requirement: Mostrar el último cambio en la tarjeta de cuenta
+### Requirement: Mostrar la variación diaria del balance en la tarjeta de cuenta
 
-El sistema SHALL mostrar, en cada `AccountCard`, el cambio de balance más reciente de esa cuenta como
-un badge que indique la dirección (subió/bajó), el delta con signo y formato de moneda, y una
-referencia temporal relativa legible ("ahora", "hace 5 min", "hace 2 h", "ayer", "hace N días"). El
-badge SHALL usar los colores y formas del diseño "Minimal · Zinc": acento emerald `#059669` para
-subidas y zinc `#27272A` para bajadas.
+El sistema SHALL mostrar, en cada `AccountCard`, el delta neto del balance desde el inicio del
+periodo diario actual, comparado contra el balance al inicio de ese periodo (el cierre del día
+anterior). El límite del día SHALL ser las **4:00 AM** en hora local: los cambios registrados después
+de la medianoche pero antes de las 4:00 pertenecen al día que cierra y no se incluyen en la variación
+del día que inicia. El badge SHALL indicar la dirección (subió/bajó), el delta con signo y formato
+numérico compacto, la etiqueta "Hoy" y los colores del diseño "Minimal · Zinc": acento emerald
+`#059669` para subidas y zinc `#27272A` para bajadas.
 
-#### Scenario: Cambio reciente positivo
-- **WHEN** el último cambio de la cuenta fue un incremento de 8 Bs ocurrido ayer
-- **THEN** el badge muestra "+8" con acento emerald y la referencia relativa "ayer"
+El sistema SHALL mostrar un estado neutro para cuentas en las que el delta del periodo sea cero
+(sin movimientos): en lugar de mostrar "+0" o "0", SHALL mostrar un pill de aviso "Sin cambios"
+junto al tiempo relativo desde el último cambio registrado. Cuando la cuenta no tenga ningún registro
+previo al inicio del periodo (no existe ancla de comparación), el badge SHALL ocultarse y la tarjeta
+no presenta ruido visual.
 
-#### Scenario: Cambio reciente negativo
-- **WHEN** el último cambio de la cuenta fue una baja de 10 Bs ocurrida hace 2 horas
-- **THEN** el badge muestra "-10" con color zinc y la referencia relativa "hace 2 h"
+#### Scenario: Variación neta positiva del día
+- **WHEN** el usuario realiza varias transacciones que en conjunto incrementan el balance de 120 a 128
+  frente al cierre de ayer
+- **THEN** el badge muestra "+8" con acento emerald y la etiqueta "Hoy" (variación acumulada, no el
+  último cambio puntual)
 
-#### Scenario: Cuenta sin registros de cambio
-- **WHEN** la cuenta no tiene ningún registro de cambio de balance
+#### Scenario: Variación neta negativa
+- **WHEN** el balance actual es 10 Bs menor al cierre de ayer
+- **THEN** el badge muestra "-10" con color zinc y la etiqueta "Hoy"
+
+#### Scenario: Múltiples transacciones el mismo día
+- **WHEN** se realizan varias transacciones durante el periodo diario
+- **THEN** el badge muestra la variación **neta** acumulada del periodo (no salta con cada transacción
+  individual)
+
+#### Scenario: Actividad después de la medianoche
+- **WHEN** se registra un cambio a las 2:00 AM (después de la medianoche, antes de las 4:00)
+- **THEN** el cambio pertenece al día que cierra: el ancla del nuevo periodo (4:00 AM) ya incluye ese
+  cambio y la variación del día actual parte de él
+
+#### Scenario: Cuenta sin movimientos en el periodo
+- **WHEN** el delta del periodo es 0 (la cuenta no recibe transacciones por días o meses)
+- **THEN** el badge no muestra ningún signo numérico ("+0"/"0"); SHALL mostrar el pill de aviso
+  "Sin cambios · hace N meses" con la referencia temporal al último cambio
+
+#### Scenario: Cuenta sin historial previo al inicio del periodo
+- **WHEN** la cuenta no tiene ningún registro de cambio anterior al inicio del periodo actual
 - **THEN** el badge no se muestra y la tarjeta no presenta ruido visual
 
 ### Requirement: Persistencia y orden del historial
 
 El sistema SHALL conservar el historial completo de cambios por cuenta, ordenado por fecha, de modo
-que el cambio más reciente sea el que se muestra. La colección de cambios SHALL estar aislada por
-usuario.
+que el cambio más reciente anterior al inicio del periodo diario sea la ancla de la comparación. La
+colección de cambios SHALL estar aislada por usuario.
 
 #### Scenario: Orden por fecha
 - **WHEN** existen varios cambios para una misma cuenta
-- **THEN** el sistema identifica como último cambio el de fecha más reciente
+- **THEN** el sistema identifica como ancla el cambio de fecha más reciente anterior al inicio del
+  periodo diario (4:00 AM local)

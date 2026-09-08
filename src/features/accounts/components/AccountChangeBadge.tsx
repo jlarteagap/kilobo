@@ -1,22 +1,48 @@
 // features/accounts/components/AccountChangeBadge.tsx
-// Badge "Minimal · Zinc" del último cambio de balance de una cuenta.
-// Subida → acento emerald; baja → zinc. Solo tema claro (ver DESIGN-MANUAL §11).
+// Badge "Minimal · Zinc" de variación diaria del balance de una cuenta.
+// Estado 1: delta ≠ 0 → pill firmado ("+8 · Hoy") emerald/zinc.
+// Estado 2: delta === 0 → pill neutro "Sin cambios · hace X" (aviso, nunca "+0").
+// Estado 3: sin ancla (sin historial previo al periodo) → sin badge (no se renderiza).
+// Solo tema claro (ver DESIGN-MANUAL §11).
 import { cn } from "@/lib/utils"
-import type { AccountBalanceChange } from "@/types/account"
 import { formatRelativeTime } from "../utils/relative-time.utils"
-import { formatChangeAmount } from "../utils/account-display.utils"
+import { formatChangeAmount, formatCurrency } from "../utils/account-display.utils"
 
 export function AccountChangeBadge({
-  change,
+  delta,
+  anchorBalance,
+  lastChangeAt,
+  currency = "BOB",
   className,
 }: {
-  change: AccountBalanceChange
+  delta: number | null
+  anchorBalance: number | null
+  lastChangeAt: Date | null
+  currency?: string
   className?: string
 }) {
-  if (!change || change.delta === 0) return null
+  if (delta === null || anchorBalance === null) return null
 
-  const up = change.delta > 0
-  const period = formatRelativeTime(change.createdAt)
+  if (delta === 0) {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums leading-none bg-zinc-900/[0.04] text-[#6E6E73]",
+          className
+        )}
+        title="Sin movimientos en el periodo actual"
+      >
+        Sin cambios
+        {lastChangeAt && (
+          <span aria-hidden="true" className="opacity-70">
+            · {formatRelativeTime(lastChangeAt)}
+          </span>
+        )}
+      </span>
+    )
+  }
+
+  const up = delta > 0
 
   return (
     <span
@@ -25,15 +51,16 @@ export function AccountChangeBadge({
         up ? "bg-[#059669]/10 text-[#047857]" : "bg-zinc-900/[0.06] text-[#27272A]",
         className
       )}
-      title={`Último cambio: ${formatChangeAmount(change.delta)} · ${period}`}
+      title={`Variación de hoy (desde las 4:00) vs el cierre de ayer: ${formatCurrency(
+        anchorBalance,
+        currency
+      )}`}
     >
       <span aria-hidden="true" className={cn("font-semibold", up ? "text-[#059669]" : "text-zinc-500")}>
         {up ? "+" : "-"}
       </span>
-      {formatChangeAmount(Math.abs(change.delta))}
-      <span aria-hidden="true" className="font-medium opacity-70">
-        {period}
-      </span>
+      {formatChangeAmount(delta)}
+      <span aria-hidden="true" className="font-medium opacity-70">Hoy</span>
     </span>
   )
 }

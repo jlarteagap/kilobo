@@ -11,7 +11,8 @@ que todo cambio quede registrado.
 
 **Goals:**
 - Registrar de forma persistente y atómica cada cambio de balance desde todos los orígenes.
-- Exponer el último cambio con un badge consistente con "Minimal · Zinc".
+- Exponer la variación diaria del balance (vs el cierre de ayer) con un badge consistente con
+  "Minimal · Zinc".
 
 **Non-Goals:**
 - No implementar un panel/lista de historial completo en la UI (solo se muestra el último cambio; la
@@ -37,30 +38,52 @@ Un helper `createBalanceChange(accountId, previous, current, source)` (en el rep
 calcula el delta automáticamente y devuelve el documento a persistir, evitando lógica duplicada en
 los 4 orígenes.
 
-**D4 — Lectura del último cambio por lote (no N queries).**
-El hook `useAccountBalanceChanges(accountIds)` hace una query por cuenta con `limit(1)` en paralelo
-o una sola query filtrada por los ids de la página. El badge se pinta leyendo el primer registro de
-cada cuenta. Con máximo 10 cuentas por usuario, la carga es despreciable.
+**D4 — Lectura de la ancla diaria (no del último cambio a secas).**
+El API `GET /api/account-balance-changes?account_id=X&before=<ISO>` recibe el límite del periodo
+calculado en el cliente (fecha local) y el repository responde con `findLastBefore(accountId,
+userId, before)`: el cambio de fecha más reciente estrictamente anterior a `before` (`limit(1)` +
+índice compuesto). Su `new_balance` es el balance al cierre del día anterior = la ancla de la
+comparación. El hook pide una ancla por cuenta en paralelo; con máximo 10 cuentas la carga es
+despreciable. Recibir `before` desde el cliente evita desfases de zona horaria entre cliente y
+servidor.
 
-**D5 — Badge "Minimal · Zinc" en `AccountCard`.**
-Acento emerald `#059669` para subidas, zinc `#27272A` para bajadas, `rounded-full`, `text-xs`
-`tabular-nums`, mismo `rounded-[22px]` y legibilidad de la tarjeta existente. Referencia temporal
-relativa ejecutada en el cliente con `Intl.RelativeTimeFormat` (copada a una utilidad reutilizable).
+**D5 — Badge "Minimal · Zinc" de variación diaria en `AccountCard`.**
+`delta = balance_actual − ancla`. Tres estados:
+1. `delta ≠ 0` → pill firmado con signo, monto compacto, etiqueta "Hoy"; emerald `#047857`/`#059669`
+   para subidas, zinc `#27272A` para bajadas, `rounded-full`, `text-[11px]`, `tabular-nums`.
+2. `delta === 0` (sin movimientos en el periodo) → pill neutro de aviso "Sin cambios · {tiempo
+   relativo del último cambio}". Nunca se muestra "+0"/"0".
+3. Sin ancla (sin registros previos al inicio del periodo) → sin badge; la tarjeta se mantiene limpia.
+El signo se pinta en el color del acento y el monto en el texto; la referencia temporal se ejecuta en
+el cliente con `Intl.RelativeTimeFormat` (utilidad reutilizable, ampliada a meses/años para el
+estado neutro).
+
+**D6 — Límite del periodo diario a las 4:00 AM locales.**
+`startOfDailyPeriod(date)` normaliza a la 4:00 AM más reciente en hora local: `setHours(4,0,0,0)` y,
+si el resultado supera `now` (es de madrugada), retrocede un día. Los cambios registrados entre 0:00
+y 3:59 pertenecen al periodo que cierra — su valor queda capturado en la ancla del nuevo periodo y no
+se cuenta como variación del día que inicia.
 
 ## Risks / Trade-offs
 
 - Escrituras no atómicas existentes (debt, inversions) → Mitigación: reescribirlas como `batch`;
   verificar con tests de servicio.
-- Coste/perf de la query del último cambio por cada cuenta en páginas grandes → Mitigación: `limit(1)`
+- Coste/perf de la query de la ancla por cada cuenta en páginas grandes → Mitigación: `limit(1)`
   + índice compuesto `account_id + created_at`; pocas cuentas (máx 10) hace la carga despreciable.
+- Desfase de zona horaria al calcular el límite del día → Mitigación: el cliente calcula la 4:00 AM
+  local y envía el instante absoluto (ISO); el servidor compara timestamps (instantáneos) sin
+  interpretar zonas.
+- Cuentas inactivas muestran "Sin cambios" aunque tengan inversiones → Trade-off aceptado: el estado
+  del balance tiene prioridad sobre el pill "X invertidos"; se documenta en este mismo change.
 - Multiplicidad de orígenes puede quedar incompleta si se omite un punto de mutación → Mitigación:
   lista explícita de los 4 orígenes en tasks y revisión con `codegraph` de todos los escritores de
   `balance`.
 
 ## Migration Plan
 
-- Backfill opcional: para cuentas sin historial, no se crean registros retroactivos; el badge aparece
-  desde el primer cambio posterior al deploy. Se documenta como comportamiento esperado en Non-Goals.
+- Backfill opcional: para cuentas sin historial no se crean registros retroactivos; sin ancla previa
+  al inicio del periodo, el badge no aparece hasta que exista un registro anterior al límite (el
+  primer cambio posterior al deploy lo crea). Se documenta como comportamiento esperado en Non-Goals.
 - Rollback: eliminar la escritura del registro y el badge; la colección puede conservarse sin afectar
   el resto del sistema.
 

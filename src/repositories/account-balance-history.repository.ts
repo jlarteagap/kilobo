@@ -52,14 +52,18 @@ export const accountBalanceHistoryRepository = {
     })
   },
 
-  // Devuelve el cambio más reciente de una cuenta (o null si no hay ninguno)
-  async findLatestByAccount(
+  // Devuelve el cambio de fecha más reciente estrictamente anterior a `before`
+  // (ancla de la variación diaria: su new_balance es el balance al cierre del día
+  // anterior al límite del periodo). O null si no hay ninguno.
+  async findLastBefore(
     accountId: string,
-    userId: string
+    userId: string,
+    before: Date
   ): Promise<AccountBalanceChange | null> {
     const snapshot = await changesCol()
       .where('user_id', '==', userId)
       .where('account_id', '==', accountId)
+      .where('createdAt', '<', before)
       .orderBy('createdAt', 'desc')
       .limit(1)
       .get()

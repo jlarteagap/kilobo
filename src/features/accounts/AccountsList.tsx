@@ -73,6 +73,9 @@ function AccountCard({
   const hasInvestments = accountInvestments.length > 0
   const totalInvested = accountInvestments.reduce((sum, inv) => sum + inv.amount, 0)
 
+  // Ancla de la variación diaria: balance al cierre del día anterior (4:00 AM).
+  const dailyDelta = lastChange ? account.balance - lastChange.new_balance : null
+
   return (
     <div className="group bg-white rounded-[22px] transition-all duration-200"
       style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
@@ -100,7 +103,12 @@ function AccountCard({
           </p>
           <div className="flex items-center justify-end gap-2 mt-1 min-h-[18px]">
             {lastChange ? (
-              <AccountChangeBadge change={lastChange} />
+              <AccountChangeBadge
+                delta={dailyDelta}
+                anchorBalance={lastChange.new_balance}
+                lastChangeAt={lastChange.createdAt}
+                currency={account.currency}
+              />
             ) : hasInvestments ? (
               <p className="text-[10px] font-medium text-indigo-500">
                 {formatCurrency(totalInvested, account.currency)} invertidos

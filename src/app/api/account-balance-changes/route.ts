@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
     if (message === 'No autorizado' || message === 'Token inválido o expirado') {
       return Response.json({ error: message }, { status: 401 })
     }
+    console.error('[account-balance-changes] Error:', message)
     return Response.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

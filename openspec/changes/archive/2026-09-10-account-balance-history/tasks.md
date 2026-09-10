@@ -32,3 +32,8 @@
 - [x] 4.4 Auditoría de la skill `design-taste-frontend` sobre el badge y la tarjeta (color único,
       contraste AA, estados vacío/carga, consistencia de radios)
 - [x] 4.5 Correr `npm run lint` y `npx tsc --noEmit`
+
+## 5. Puesta en producción (requerido)
+
+- [x] 5.1 Desplegar el índice compuesto con `firebase deploy --only firestore:indexes`
+- [x] 5.2 Correr el backfill de anclas `npx tsx scripts/backfill-account-balance-anchors.ts`

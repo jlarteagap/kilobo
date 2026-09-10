@@ -69,7 +69,14 @@ se cuenta como variación del día que inicia.
 - Escrituras no atómicas existentes (debt, inversions) → Mitigación: reescribirlas como `batch`;
   verificar con tests de servicio.
 - Coste/perf de la query de la ancla por cada cuenta en páginas grandes → Mitigación: `limit(1)`
-  + índice compuesto `account_id + created_at`; pocas cuentas (máx 10) hace la carga despreciable.
+  + índice compuesto `user_id + account_id + createdAt`; pocas cuentas (máx 10) hace la carga
+  despreciable.
+- **Sin el índice compuesto desplegado en Firestore, las lecturas del badge fallan (HTTP 500) y no
+  se visualiza ningún badge.** El índice se define en `firestore.indexes.json` pero solo se aplica
+  con `firebase deploy --only firestore:indexes` → Paso obligatorio de despliegue (ver Migration
+  Plan).
+- **Sin backfill, las cuentas preexistentes no tienen ancla previa al inicio del periodo y el badge
+  queda oculto durante el primer día** → Backfill requerido (ver Migration Plan).
 - Desfase de zona horaria al calcular el límite del día → Mitigación: el cliente calcula la 4:00 AM
   local y envía el instante absoluto (ISO); el servidor compara timestamps (instantáneos) sin
   interpretar zonas.
@@ -81,9 +88,19 @@ se cuenta como variación del día que inicia.
 
 ## Migration Plan
 
-- Backfill opcional: para cuentas sin historial no se crean registros retroactivos; sin ancla previa
-  al inicio del periodo, el badge no aparece hasta que exista un registro anterior al límite (el
-  primer cambio posterior al deploy lo crea). Se documenta como comportamiento esperado en Non-Goals.
+**Requerido — Índice compuesto.** Antes del primer deploy funcional:
+`firebase deploy --only firestore:indexes --project kiposbo`. Sin él, las queries `findLastBefore`
+(y la lectura del último cambio original) lanzan error y ningún badge se muestra.
+
+**Requerido — Backfill de anclas.** `npx tsx scripts/backfill-account-balance-anchors.ts` siembra un
+registro por cuenta sin historial (previous = new = balance actual, delta 0, source 'ACCOUNT',
+timestamps = createdAt de la cuenta). Así toda cuenta preexistente tiene ancla anterior al inicio del
+periodo y el badge es visible desde el primer día: firmado ("Hoy") si hubo movimientos, o neutro
+("Sin cambios · hace X"). Idempotente: omite cuentas ya sembradas. Correctivo: `npx tsx
+scripts/diagnose-balance-badges.ts` confirma si la query falla por índice faltante.
+
+- Cuentas creadas el mismo día del backfill conservan el ancla con fecha de creación; si se crearon
+  después de las 4:00, el badge aparece al día siguiente.
 - Rollback: eliminar la escritura del registro y el badge; la colección puede conservarse sin afectar
   el resto del sistema.
 

@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Pencil, Trash2, Landmark, TrendingUp, ChevronDown, ChevronRight } from "lucide-react"
+import { Plus, Pencil, Trash2, Landmark, TrendingUp, ChevronDown, ChevronRight, History } from "lucide-react"
 
 import {
   Dialog,
@@ -26,10 +26,12 @@ import { toast } from "sonner"
 
 import { AccountForm } from "./AccountForm"
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from "./hooks/useAccounts"
-import { useAccountBalanceChanges } from "./hooks/useAccountBalanceChanges"
-import { getAccountTypeDetails, formatCurrency } from "./utils/account-display.utils"
+import { useAccountDailyDeltas, AccountDailyVariation } from "./hooks/useAccountDailyDeltas"
+import { getAccountTypeDetails, formatCurrency, formatChangeAmount, formatAssetAmount, getCurrencyLabel } from "./utils/account-display.utils"
+import { convertToBOB } from "@/lib/config/exchange-rates"
 import { AccountChangeBadge } from "./components/AccountChangeBadge"
-import type { Account, CreateAccountData, AccountBalanceChange } from "@/types/account"
+import { AccountHistoryDialog } from "./components/AccountHistoryDialog"
+import type { Account, CreateAccountData } from "@/types/account"
 import { useInvestments } from "@/features/investments/hooks/useInvestments"
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -58,13 +60,15 @@ function AccountCard({
   account,
   onEdit,
   onDelete,
-  lastChange,
+  onOpenHistory,
+  variation,
   investments = [],
 }: {
   account:        Account
   onEdit:         (account: Account) => void
   onDelete:       (id: string) => void
-  lastChange?:    AccountBalanceChange | null
+  onOpenHistory?: () => void
+  variation?:     AccountDailyVariation | null
   investments?:   Array<{ id: string; name: string; amount: number; currency: string }>
 }) {
   const { icon: Icon, color, label } = getAccountTypeDetails(account.type)
@@ -73,8 +77,8 @@ function AccountCard({
   const hasInvestments = accountInvestments.length > 0
   const totalInvested = accountInvestments.reduce((sum, inv) => sum + inv.amount, 0)
 
-  // Ancla de la variación diaria: balance al cierre del día anterior (4:00 AM).
-  const dailyDelta = lastChange ? account.balance - lastChange.new_balance : null
+  const showInvestedPill =
+    hasInvestments && (!variation || variation.delta === 0)
 
   return (
     <div className="group bg-white rounded-[22px] transition-all duration-200"
@@ -97,25 +101,30 @@ function AccountCard({
           </p>
         </div>
 
-        <div className="text-right">
+        <button
+          type="button"
+          onClick={onOpenHistory}
+          title="Ver historial de cambios"
+          className="text-right transition-opacity hover:opacity-80"
+        >
           <p className="text-[15px] font-bold tracking-tight text-foreground tabular-nums">
-            {formatCurrency(account.balance, account.currency)}
+            {formatAssetAmount(account.balance, account.currency)}
           </p>
           <div className="flex items-center justify-end gap-2 mt-1 min-h-[18px]">
-            {lastChange ? (
+            {showInvestedPill ? (
+              <p className="text-[10px] font-medium text-indigo-500">
+                {formatAssetAmount(totalInvested, account.currency)} invertidos
+              </p>
+            ) : variation ? (
               <AccountChangeBadge
-                delta={dailyDelta}
-                anchorBalance={lastChange.new_balance}
-                lastChangeAt={lastChange.createdAt}
+                delta={variation.delta}
+                anchorBalance={variation.anchorBalance}
+                lastChangeAt={variation.lastChangeAt}
                 currency={account.currency}
               />
-            ) : hasInvestments ? (
-              <p className="text-[10px] font-medium text-indigo-500">
-                {formatCurrency(totalInvested, account.currency)} invertidos
-              </p>
             ) : null}
           </div>
-        </div>
+        </button>
 
         <div className="flex items-center gap-0.5 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
           {hasInvestments && (
@@ -152,7 +161,7 @@ function AccountCard({
                 <span className="text-foreground">{inv.name}</span>
               </div>
               <span className="font-semibold text-indigo-600 tabular-nums">
-                {formatCurrency(inv.amount, inv.currency)}
+                {formatAssetAmount(inv.amount, inv.currency)}
               </span>
             </div>
           ))}
@@ -176,7 +185,7 @@ type DialogState =
 export function AccountsList() {
   const { data: accounts = [], isLoading, isError } = useAccounts()
   const { data: investments = [] } = useInvestments()
-  const { data: lastChanges = {} } = useAccountBalanceChanges(accounts.map((a) => a.id))
+  const variations = useAccountDailyDeltas()
 
   const createAccount = useCreateAccount()
   const updateAccount = useUpdateAccount()
@@ -184,6 +193,8 @@ export function AccountsList() {
 
   const [dialog, setDialog]                   = useState<DialogState>({ mode: 'closed' })
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [historyAccount, setHistoryAccount]   = useState<Account | null>(null)
+  const [sortMode, setSortMode]               = useState<'variation' | 'name' | 'balance'>('variation')
 
   const handleCreate = (data: CreateAccountData) => {
     createAccount.mutate(data, {
@@ -223,7 +234,74 @@ export function AccountsList() {
   const isDialogOpen = dialog.mode !== 'closed'
   const isPending    = createAccount.isPending || updateAccount.isPending
 
-  const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0)
+  // Desglose por moneda: subtotal de cuentas en cada moneda, BOB primero.
+  // No hay total único — cada moneda se muestra por separado (las extranjeras
+  // con su conversión a BOB).
+  const balanceByCurrency = accounts.reduce<Record<string, number>>((acc, a) => {
+    acc[a.currency] = (acc[a.currency] ?? 0) + a.balance
+    return acc
+  }, {})
+  const currencyBreakdown = Object.entries(balanceByCurrency)
+    .filter(([, value]) => value !== 0)
+    .sort(([a], [b]) => {
+      if (a === b) return 0
+      if (a === 'BOB') return -1
+      if (b === 'BOB') return 1
+      if (a === 'USD') return -1
+      if (b === 'USD') return 1
+      return a.localeCompare(b)
+    })
+
+  // Variación diaria consolidada en BOB: suma de los deltas de las cuentas con
+  // ancla, convertidas a BOB para no mezclar monedas. Silenciosa en cero.
+  const totalDailyDelta = accounts.reduce((sum, a) => {
+    const variation = variations[a.id]
+    if (!variation) return sum
+    return sum + convertToBOB(variation.delta, a.currency)
+  }, 0)
+
+  // Variación diaria por moneda: delta neto (en la moneda de cada fila),
+  // para ver el cambio por moneda (no solo el consolidado en BOB).
+  const variationByCurrency = currencyBreakdown.reduce<Record<string, number>>((acc, [currency]) => {
+    acc[currency] = accounts.reduce((sum, a) => {
+      if (a.currency !== currency) return sum
+      const v = variations[a.id]
+      return v ? sum + v.delta : sum
+    }, 0)
+    return acc
+  }, {})
+
+  const sortedAccounts = [...accounts]
+  if (sortMode === 'name') {
+    sortedAccounts.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }))
+  } else if (sortMode === 'balance') {
+    sortedAccounts.sort((a, b) => convertToBOB(b.balance, b.currency) - convertToBOB(a.balance, a.currency))
+  } else {
+    // Variación (hoy): delta neto desc, cuentas sin ancla al final.
+    sortedAccounts.sort((a, b) => {
+      const da = variations[a.id]?.delta ?? null
+      const db = variations[b.id]?.delta ?? null
+      if (da === null && db === null) return 0
+      if (da === null) return 1
+      if (db === null) return -1
+      return db - da
+    })
+  }
+
+  const SORT_OPTIONS: { value: typeof sortMode; label: string }[] = [
+    { value: 'variation', label: 'Variación (hoy)' },
+    { value: 'name',      label: 'Nombre' },
+    { value: 'balance',   label: 'Balance' },
+  ]
+
+  // Formatea delta para el chip inline del breakdown: sin símbolo de moneda,
+  // con precisión cripto (evita el falso "+0" de formatChangeAmount en BTC).
+  function formatVariationValue(value: number, currency: string): string {
+    if (currency === 'BOB' || currency === 'USD') {
+      return new Intl.NumberFormat('es-BO', { maximumFractionDigits: 2 }).format(Math.abs(value))
+    }
+    return new Intl.NumberFormat('es-BO', { maximumFractionDigits: 8 }).format(Math.abs(value))
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -250,18 +328,98 @@ export function AccountsList() {
 
       {/* ── Overview Card — Más sutil y elegante ── */}
       {!isLoading && accounts.length > 0 && (
-        <div className="relative overflow-hidden bg-white rounded-[22px] p-6"
-          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6E6E73]">Patrimonio Total</span>
-              <p className="text-2xl font-bold tracking-tight mt-1 text-foreground">
-                {formatCurrency(totalBalance, 'BOB')}
-              </p>
+        <div className="rounded-[22px] overflow-hidden">
+          <div className="bg-white rounded-[22px] p-6"
+            style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6E6E73]">Patrimonio Total</span>
+                {totalDailyDelta !== 0 && (
+                  <p className={
+                    "inline-flex items-center gap-1 mt-2 rounded-full px-2 py-0.5 text-[11px] font-bold tabular-nums leading-none " +
+                    (totalDailyDelta > 0 ? "bg-[#059669]/10 text-[#047857]" : "bg-zinc-900/[0.06] text-[#27272A]")
+                  }>
+                    <span aria-hidden="true" className={totalDailyDelta > 0 ? "text-[#059669]" : "text-zinc-500"}>
+                      {totalDailyDelta > 0 ? "+" : "-"}
+                    </span>
+                    {formatChangeAmount(totalDailyDelta)}
+                    <span aria-hidden="true" className="font-medium opacity-70">Hoy</span>
+                  </p>
+                )}
+              </div>
+              <div className="w-12 h-12 bg-[#F2F9E3] rounded-xl flex items-center justify-center shrink-0">
+                <Landmark className="w-6 h-6 text-[#4F6A35]" />
+              </div>
             </div>
-            <div className="w-12 h-12 bg-[#F2F9E3] rounded-xl flex items-center justify-center">
-              <Landmark className="w-6 h-6 text-[#4F6A35]" />
+
+            {/* Desglose por moneda — cada moneda por separado; las extranjeras
+                muestran su conversión a BOB ("≈ Bs"), las de BOB quedan en Bs. */}
+            {currencyBreakdown.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-[rgba(0,0,0,0.05)]">
+                <div className="divide-y divide-[rgba(0,0,0,0.05)]">
+                  {currencyBreakdown.map(([currency, value]) => {
+                    const delta = variationByCurrency[currency]
+                    const isPositive = delta > 0
+                    return (
+                      <div key={currency} className="flex items-center justify-between py-2 first:pt-0 last:pb-0">
+                        <span className="text-[11px] font-semibold text-[#6E6E73]">
+                          {getCurrencyLabel(currency)}
+                        </span>
+                        <div className="text-right">
+                          <div className="flex items-baseline justify-end gap-1.5">
+                            <span className="text-[12px] font-bold text-foreground tabular-nums">
+                              {formatAssetAmount(value, currency)}
+                            </span>
+                            {currency !== 'BOB' && (
+                              <span className="text-[11px] font-medium text-[#6E6E73] tabular-nums">
+                                ≈ {formatCurrency(convertToBOB(value, currency), 'BOB')}
+                              </span>
+                            )}
+                          </div>
+                          {delta !== 0 && (
+                            <p className={
+                              "mt-0.5 text-[10px] font-bold tabular-nums leading-none " +
+                              (isPositive ? "text-[#047857]" : "text-[#27272A]")
+                            }>
+                              <span aria-hidden="true" className="font-semibold">
+                                {isPositive ? '+' : '−'}
+                              </span>
+                              {formatVariationValue(delta, currency)}
+                              <span className="font-medium opacity-70"> hoy</span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Control de orden */}
+          <div className="flex items-center justify-end gap-1 pt-4">
+            <History className="w-3.5 h-3.5 text-[#6E6E73]" aria-hidden="true" />
+            <span className="text-[11px] font-medium text-[#6E6E73] mr-1">Ordenar</span>
+            <div className="inline-flex items-center gap-0.5 rounded-full bg-white p-0.5"
+              style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.04)' }}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setSortMode(option.value)}
+                  className={
+                    "rounded-full px-3 py-1 text-[11px] font-semibold transition-colors " +
+                    (sortMode === option.value
+                      ? "bg-zinc-900 text-white"
+                      : "text-[#6E6E73] hover:text-foreground")
+                  }
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -286,14 +444,15 @@ export function AccountsList() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-12">
-          {accounts.map((account) => (
+          {sortedAccounts.map((account) => (
             <AccountCard
               key={account.id}
               account={account}
-              lastChange={lastChanges[account.id]}
+              variation={variations[account.id] ?? null}
               investments={investments.filter((inv) => inv.account_id === account.id)}
               onEdit={(acc) => setDialog({ mode: 'edit', account: acc })}
               onDelete={setPendingDeleteId}
+              onOpenHistory={() => setHistoryAccount(account)}
             />
           ))}
         </div>
@@ -338,6 +497,14 @@ export function AccountsList() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── Historial de cambios ── */}
+      <AccountHistoryDialog
+        account={historyAccount}
+        open={Boolean(historyAccount)}
+        onOpenChange={(open) => !open && setHistoryAccount(null)}
+        anchorBalance={historyAccount ? variations[historyAccount.id]?.anchorBalance ?? null : null}
+      />
     </div>
   )
 }

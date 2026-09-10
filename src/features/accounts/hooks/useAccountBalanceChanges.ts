@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { AccountBalanceChange } from '@/types/account'
 import { startOfDailyPeriod } from '../utils/daily-period.utils'
@@ -31,13 +32,42 @@ function mapChange(raw: RawAccountBalanceChange | null): AccountBalanceChange | 
   return { ...raw, createdAt: new Date(raw.createdAt) }
 }
 
+// Programa un timer que dispara justo después de la siguiente 4:00 AM local y
+// vuelve a computar el límite del periodo (feature: recalcular al cruzar el día).
+function useRollingBoundary(): Date {
+  const [boundary, setBoundary] = useState(() => startOfDailyPeriod())
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+
+    const schedule = () => {
+      const now = new Date()
+      const next = startOfDailyPeriod(now)
+      next.setDate(next.getDate() + 1)
+      next.setHours(4, 0, 0, 0)
+
+      const delay = Math.max(1000, next.getTime() - now.getTime() + 1000)
+      timer = setTimeout(() => {
+        setBoundary(startOfDailyPeriod(new Date()))
+        schedule()
+      }, delay)
+    }
+
+    schedule()
+    return () => clearTimeout(timer)
+  }, [])
+
+  return boundary
+}
+
 // Lee la ancla de la variación diaria para cada cuenta en paralelo: el cambio
 // más reciente anterior al inicio del periodo (4:00 AM local). Con máximo 10
-// cuentas por usuario la carga es despreciable.
+// cuentas por usuario la carga es despreciable. Se recalcula solo al cruzar el
+// límite del día.
 export function useAccountBalanceChanges(accountIds: string[]) {
   const ids = accountIds.filter(Boolean)
   const uniqueIds = [...new Set(ids)]
-  const before = startOfDailyPeriod()
+  const before = useRollingBoundary()
 
   return useQuery({
     queryKey: accountChangeKeys.all(before.toISOString(), uniqueIds),

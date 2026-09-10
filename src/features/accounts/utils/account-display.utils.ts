@@ -29,6 +29,24 @@ export const formatChangeAmount = (value: number): string => {
   }).format(Math.abs(value))
 }
 
+// Fecha y hora absolutas legibles ("12 sep, 14:05") para el historial de cambios.
+export const formatAbsoluteDateTime = (date: Date): string => {
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date)
+}
+
+// Formatea un monto en la moneda de la cuenta. Solo BOB/USD tienen símbolo
+// mapeado por formatCurrency; el resto (cripto) se formatea como número plano
+// para no mostrar un símbolo erróneo ("Bs" en una cuenta BTC).
+export const formatAssetAmount = (value: number, currency: string): string => {
+  if (currency === "BOB" || currency === "USD") return formatCurrency(value, currency)
+  return new Intl.NumberFormat("es-BO", { maximumFractionDigits: 8 }).format(value)
+}
+
 export const getValueInBOB = (account: Account): number => {
   return convertToBOB(account.balance, account.currency)
 }

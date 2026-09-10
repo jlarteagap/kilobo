@@ -1,12 +1,15 @@
 // features/accounts/components/AccountChangeBadge.tsx
 // Badge "Minimal · Zinc" de variación diaria del balance de una cuenta.
 // Estado 1: delta ≠ 0 → pill firmado ("+8 · Hoy") emerald/zinc.
-// Estado 2: delta === 0 → pill neutro "Sin cambios · hace X" (aviso, nunca "+0").
+// Estado 2: delta === 0 con último cambio de un periodo anterior → pill neutro
+//           "Sin cambios · hace X" (aviso, nunca "+0"). Si el último cambio es
+//           de hoy, no se muestra ningún punto (actividad reciente descarta el aviso).
 // Estado 3: sin ancla (sin historial previo al periodo) → sin badge (no se renderiza).
 // Solo tema claro (ver DESIGN-MANUAL §11).
 import { cn } from "@/lib/utils"
 import { formatRelativeTime } from "../utils/relative-time.utils"
-import { formatChangeAmount, formatCurrency } from "../utils/account-display.utils"
+import { formatChangeAmount, formatAssetAmount } from "../utils/account-display.utils"
+import { startOfDailyPeriod } from "../utils/daily-period.utils"
 
 export function AccountChangeBadge({
   delta,
@@ -24,6 +27,9 @@ export function AccountChangeBadge({
   if (delta === null || anchorBalance === null) return null
 
   if (delta === 0) {
+    // El aviso "Sin cambios" solo vale cuando el último movimiento es de un
+    // periodo anterior. Actividad registrada hoy descarta el punto neutro.
+    if (lastChangeAt && lastChangeAt >= startOfDailyPeriod()) return null
     return (
       <span
         className={cn(
@@ -51,7 +57,7 @@ export function AccountChangeBadge({
         up ? "bg-[#059669]/10 text-[#047857]" : "bg-zinc-900/[0.06] text-[#27272A]",
         className
       )}
-      title={`Variación de hoy (desde las 4:00) vs el cierre de ayer: ${formatCurrency(
+      title={`Variación de hoy (desde las 4:00) vs el cierre de ayer: ${formatAssetAmount(
         anchorBalance,
         currency
       )}`}

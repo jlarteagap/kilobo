@@ -1,6 +1,7 @@
 import { TrendingUp, LucideIcon } from "lucide-react"
 import { Investment } from "@/types/investment"
-import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import { formatAssetAmount } from "@/features/accounts/utils/account-display.utils"
+import { convertToBOB } from "@/lib/config/exchange-rates"
 
 export const INVESTMENT_ICON: LucideIcon = TrendingUp
 
@@ -33,6 +34,10 @@ export function getTotalInvestedByCurrency(investments: Investment[]): Record<st
 export function formatTotalInvested(investments: Investment[]): string {
   const byCurrency = getTotalInvestedByCurrency(investments)
   return Object.entries(byCurrency)
-    .map(([currency, amount]) => formatCurrency(amount, currency))
+    .map(([currency, amount]) => formatAssetAmount(amount, currency))
     .join(" · ")
+}
+
+export function getTotalInvestedInBOB(investments: Investment[]): number {
+  return investments.reduce((sum, inv) => sum + convertToBOB(inv.amount, inv.currency), 0)
 }

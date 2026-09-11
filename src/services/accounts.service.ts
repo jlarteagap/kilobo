@@ -62,9 +62,9 @@ async deleteAccount(accountId: string, userId: string): Promise<void> {
   const account = await accountsRepository.findById(accountId, userId)
   if (!account) throw new Error('Cuenta no encontrada.')
 
-  const inUse = await accountsRepository.isUsedInTransactions(accountId, userId)
+  const inUse = await accountsRepository.isAccountInUse(accountId, userId)
   if (inUse) {
-    throw new Error('No se puede eliminar una cuenta que tiene transacciones asociadas.')
+    throw new Error('No se puede eliminar una cuenta que está en uso. Archívala para ocultarla.')
   }
 
   return accountsRepository.delete(accountId)

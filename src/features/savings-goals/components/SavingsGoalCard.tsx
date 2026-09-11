@@ -1,6 +1,6 @@
 'use client'
 
-import { Pencil, Archive, Trash2 } from 'lucide-react'
+import { Pencil, Archive, Trash2, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ProgressBar } from '@/components/ui/progress-bar'
 import type { SavingsGoal } from '@/types/savings-goal'
@@ -12,9 +12,10 @@ interface SavingsGoalCardProps {
   onEdit: (goal: SavingsGoal) => void
   onArchive: (goal: SavingsGoal) => void
   onDelete: (goal: SavingsGoal) => void
+  onDeposit: (goal: SavingsGoal) => void
 }
 
-export function SavingsGoalCard({ goal, onEdit, onArchive, onDelete }: SavingsGoalCardProps) {
+export function SavingsGoalCard({ goal, onEdit, onArchive, onDelete, onDeposit }: SavingsGoalCardProps) {
   const remaining = Math.max(goal.target_amount - goal.current_amount, 0)
   const isCompleted = goal.current_amount >= goal.target_amount
   const isActive = goal.is_active
@@ -24,6 +25,19 @@ export function SavingsGoalCard({ goal, onEdit, onArchive, onDelete }: SavingsGo
   if (goal.deadline) {
     daysRemaining = differenceInDays(parseISO(goal.deadline), new Date())
     isExpired = daysRemaining < 0
+  }
+
+  // Pacing: compara el progreso real vs el esperado a mitad de camino
+  const progress = goal.target_amount > 0 ? goal.current_amount / goal.target_amount : 0
+  let paceLabel: 'En ruta' | 'Retrasado' | null = null
+  if (goal.deadline && isActive && !isCompleted) {
+    const created = new Date(goal.created_at)
+    const totalDays = differenceInDays(parseISO(goal.deadline), created)
+    const elapsedDays = differenceInDays(new Date(), created)
+    if (totalDays > 0 && elapsedDays >= 0) {
+      const expected = Math.min(elapsedDays / totalDays, 1)
+      paceLabel = progress >= expected ? 'En ruta' : 'Retrasado'
+    }
   }
 
   return (
@@ -57,6 +71,13 @@ export function SavingsGoalCard({ goal, onEdit, onArchive, onDelete }: SavingsGo
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0">
           {isActive && !isCompleted && (
             <>
+              <button
+                onClick={() => onDeposit(goal)}
+                title="Depositar"
+                className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-[#059669] hover:bg-emerald-50 transition-all duration-150"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
               <button
                 onClick={() => onEdit(goal)}
                 title="Editar"
@@ -119,11 +140,25 @@ export function SavingsGoalCard({ goal, onEdit, onArchive, onDelete }: SavingsGo
           </span>
         )}
 
-        {goal.auto_save_percentage > 0 && (
-          <span className="text-[10px] text-muted-foreground/60 font-medium">
-            Auto {goal.auto_save_percentage}%
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {paceLabel && (
+            <span
+              className={cn(
+                'text-[10px] font-semibold px-2 py-1 rounded-full',
+                paceLabel === 'En ruta'
+                  ? 'text-[#4F6A35] bg-[#F2F9E3]'
+                  : 'text-[#B5543D] bg-[#FAEDE9]'
+              )}
+            >
+              {paceLabel === 'En ruta' ? '● En ruta' : '● Retrasado'}
+            </span>
+          )}
+          {goal.auto_save_percentage > 0 && (
+            <span className="text-[10px] text-muted-foreground/60 font-medium">
+              Auto {goal.auto_save_percentage}%
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )

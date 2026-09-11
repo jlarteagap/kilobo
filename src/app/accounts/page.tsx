@@ -6,13 +6,24 @@ import { ProjectsList } from "@/features/projects/ProjectsList"
 import { InvestmentsList } from "@/features/investments/InvestmentsList"
 import { useAccounts } from "@/features/accounts/hooks/useAccounts"
 import { cn } from "@/lib/utils"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 
 type Tab = "accounts" | "investments"
 
+// El tab se sincroniza con ?tab= para permitir deep-links desde el dashboard
+// ("Ver todas →" del widget de inversiones) sin perder el estado.
 export default function AccountsPage() {
-  const [tab, setTab] = useState<Tab>("accounts")
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const initialTab = searchParams.get("tab") === "investments" ? "investments" : "accounts"
+  const [tab, setTab] = useState<Tab>(initialTab)
   const { data: accounts = [] } = useAccounts()
+
+  const changeTab = (next: Tab) => {
+    setTab(next)
+    router.replace(next === "investments" ? "/accounts?tab=inversiones" : "/accounts", { scroll: false })
+  }
 
   return (
     <AppLayout>
@@ -21,25 +32,25 @@ export default function AccountsPage() {
           {/* Columna Principal */}
           <div className="lg:col-span-8 space-y-12">
             {/* ── Tabs ── */}
-            <div className="flex items-center gap-1 bg-[#F2F9E3] rounded-xl p-1 w-fit">
+            <div className="flex items-center gap-1 bg-zinc-100 rounded-xl p-1 w-fit">
               <button
-                onClick={() => setTab("accounts")}
+                onClick={() => changeTab("accounts")}
                 className={cn(
                   "px-4 py-2 rounded-lg text-[12px] font-bold transition-all duration-200",
                   tab === "accounts"
-                    ? "bg-white text-foreground shadow-sm"
-                    : "text-[#6E6E73] hover:text-foreground"
+                    ? "bg-white border border-zinc-200 shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-900"
                 )}
               >
                 Cuentas
               </button>
               <button
-                onClick={() => setTab("investments")}
+                onClick={() => changeTab("investments")}
                 className={cn(
                   "px-4 py-2 rounded-lg text-[12px] font-bold transition-all duration-200",
                   tab === "investments"
-                    ? "bg-white text-foreground shadow-sm"
-                    : "text-[#6E6E73] hover:text-foreground"
+                    ? "bg-white border border-zinc-200 shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-900"
                 )}
               >
                 Inversiones

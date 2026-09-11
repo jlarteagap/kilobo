@@ -4,7 +4,7 @@ import { accountBalanceHistoryRepository } from '@/repositories/account-balance-
 import { CreateInvestmentInput, UpdateInvestmentInput, BuyInvestmentInput, SellInvestmentInput, SaveRecurringInput, ExecuteRecurringBuyInput } from '@/lib/validations/investment.schema'
 import { adminDb } from '@/lib/firebase.admin'
 import { FieldValue } from 'firebase-admin/firestore'
-import { Investment, CreateInvestmentTxData } from '@/types/investment'
+import { Investment, CreateInvestmentTxData, CreateInvestmentData } from '@/types/investment'
 import { format } from 'date-fns'
 import { nextDueString, nextDueStringAfter, isPlanDue } from '@/features/investments/utils/recurrence.utils'
 
@@ -23,52 +23,90 @@ export const investmentsService = {
     const account = await accountsRepository.findById(data.account_id, userId)
     if (!account) throw new Error('Cuenta no encontrada.')
 
+    const currency = data.currency ?? account.currency
+    const amount = data.amount
     const isLinkedToTransaction = !!data.transaction_id
-    const hasUnits = !!data.units && !!data.unit_price
-
-    const amount = hasUnits
-      ? data.units! * data.unit_price!
-      : data.amount
 
     // Si NO está vinculada a una transacción, se debe verificar y descontar saldo
     if (!isLinkedToTransaction && account.balance < amount) {
       throw new Error('Saldo insuficiente en la cuenta para esta inversión.')
     }
 
-    const batch = adminDb.batch()
-    const currency = data.currency ?? account.currency
+    const existing = await investmentsRepository.findByName(data.name, data.account_id, userId)
 
-    // Si tiene units, crear una transacción BUY automática
-    if (hasUnits && !isLinkedToTransaction) {
+    const batch = adminDb.batch()
+
+    // Si ya existe una inversión con el mismo nombre en la cuenta, se agrega
+    // una compra a la posición existente en lugar de crear un duplicado.
+    if (existing) {
       const txData: CreateInvestmentTxData = {
-        investment_id: '', // se asigna después de crear el ref
+        investment_id: existing.id,
         account_id: data.account_id,
         type: 'BUY',
-        units: data.units!,
-        unit_price: data.unit_price!,
+        amount,
         currency,
         date: data.date,
         notes: data.notes ?? null,
       }
-
-      const invData = {
-        account_id: data.account_id,
-        name: data.name,
-        amount: amount,
-        units: data.units!,
-        unit_price: data.unit_price!,
-        currency,
-        date: data.date,
-        notes: data.notes ?? null,
-        transaction_id: data.transaction_id ?? null,
-      }
-
-      const { ref, payload } = investmentsRepository.createInBatch(batch, invData, userId)
-
-      txData.investment_id = ref.id
       investmentsRepository.createTransactionInBatch(batch, txData, userId)
 
-      // Descontar saldo
+      if (isLinkedToTransaction) {
+        batch.update(adminDb.collection('transactions').doc(data.transaction_id!), {
+          investment_id: existing.id,
+          updated_at: FieldValue.serverTimestamp(),
+        })
+      } else {
+        batch.update(adminDb.collection('accounts').doc(data.account_id), {
+          balance: FieldValue.increment(-amount),
+          updatedAt: FieldValue.serverTimestamp(),
+        })
+        accountBalanceHistoryRepository.addInBatch(
+          batch,
+          data.account_id,
+          account.balance,
+          account.balance - amount,
+          'INVESTMENT',
+          userId
+        )
+      }
+
+      await batch.commit()
+      await investmentsRepository.recalculatePosition(existing.id, userId)
+
+      const updated = await investmentsRepository.findById(existing.id, userId)
+      return updated!
+    }
+
+    // Nueva inversión → crear documento + transacción BUY inicial
+    const invData: CreateInvestmentData = {
+      account_id: data.account_id,
+      name: data.name,
+      amount,
+      currency,
+      date: data.date,
+      notes: data.notes ?? null,
+      transaction_id: data.transaction_id ?? null,
+    }
+
+    const { ref } = investmentsRepository.createInBatch(batch, invData, userId)
+
+    const txData: CreateInvestmentTxData = {
+      investment_id: ref.id,
+      account_id: data.account_id,
+      type: 'BUY',
+      amount,
+      currency,
+      date: data.date,
+      notes: data.notes ?? null,
+    }
+    investmentsRepository.createTransactionInBatch(batch, txData, userId)
+
+    if (isLinkedToTransaction) {
+      batch.update(adminDb.collection('transactions').doc(data.transaction_id!), {
+        investment_id: ref.id,
+        updated_at: FieldValue.serverTimestamp(),
+      })
+    } else {
       batch.update(adminDb.collection('accounts').doc(data.account_id), {
         balance: FieldValue.increment(-amount),
         updatedAt: FieldValue.serverTimestamp(),
@@ -81,56 +119,12 @@ export const investmentsService = {
         'INVESTMENT',
         userId
       )
-
-      await batch.commit()
-
-      return {
-        id: ref.id,
-        ...payload,
-        created_at: payload.created_at.toDate(),
-        updated_at: payload.updated_at.toDate(),
-      } as unknown as Investment
-    }
-
-    // Flujo legacy (sin units)
-    const payloadData = {
-      ...data,
-      currency,
-      amount: data.amount,
-      units: null,
-      unit_price: null,
-    }
-
-    const { ref, payload } = investmentsRepository.createInBatch(batch, payloadData, userId)
-
-    if (isLinkedToTransaction) {
-      batch.update(adminDb.collection('transactions').doc(data.transaction_id!), {
-        investment_id: ref.id,
-        updated_at: FieldValue.serverTimestamp(),
-      })
-    } else {
-      batch.update(adminDb.collection('accounts').doc(data.account_id), {
-        balance: FieldValue.increment(-data.amount),
-        updatedAt: FieldValue.serverTimestamp(),
-      })
-      accountBalanceHistoryRepository.addInBatch(
-        batch,
-        data.account_id,
-        account.balance,
-        account.balance - data.amount,
-        'INVESTMENT',
-        userId
-      )
     }
 
     await batch.commit()
 
-    return {
-      id: ref.id,
-      ...payload,
-      created_at: payload.created_at.toDate(),
-      updated_at: payload.updated_at.toDate(),
-    } as unknown as Investment
+    const created = await investmentsRepository.findById(ref.id, userId)
+    return created!
   },
 
   async buy(data: BuyInvestmentInput, userId: string): Promise<void> {
@@ -140,7 +134,7 @@ export const investmentsService = {
     const account = await accountsRepository.findById(data.account_id, userId)
     if (!account) throw new Error('Cuenta no encontrada.')
 
-    const totalAmount = data.units * data.unit_price
+    const totalAmount = data.amount
 
     if (account.balance < totalAmount) {
       throw new Error('Saldo insuficiente en la cuenta para esta compra.')
@@ -179,12 +173,12 @@ export const investmentsService = {
     const account = await accountsRepository.findById(data.account_id, userId)
     if (!account) throw new Error('Cuenta no encontrada.')
 
-    const currentUnits = investment.units ?? 0
-    if (currentUnits < data.units) {
-      throw new Error(`No tienes suficientes unidades. Disponibles: ${currentUnits}`)
+    const available = investment.amount
+    if (available < data.amount) {
+      throw new Error(`No tienes suficientes fondos invertidos. Disponibles: ${available}`)
     }
 
-    const totalAmount = data.units * data.unit_price
+    const totalAmount = data.amount
 
     const batch = adminDb.batch()
 
@@ -216,18 +210,71 @@ export const investmentsService = {
     return investmentsRepository.findTransactions(investmentId, userId)
   },
 
+  /**
+   * Elimina una operación (BUY/SELL) y revierte su efecto sobre el saldo.
+   * - BUY: devuelve el capital a la cuenta (excepto la compra inicial de una
+   *   inversión vinculada a transacción, que nunca descontó saldo).
+   * - SELL: descuenta el monto revertido del balance.
+   * Rechaza operaciones que dejarían la posición en negativo o el saldo
+   * insuficiente para revertir una venta.
+   */
+  async deleteTransaction(investmentId: string, txId: string, userId: string): Promise<void> {
+    const investment = await investmentsRepository.findById(investmentId, userId)
+    if (!investment) throw new Error('Inversión no encontrada.')
+
+    const tx = await investmentsRepository.findTransaction(investmentId, txId, userId)
+    if (!tx) throw new Error('Operación no encontrada.')
+
+    // La compra inicial de una inversión vinculada a transacción nunca tocó el
+    // saldo (lo movió la transacción 1:1). Heurística: coincide fecha con la alta.
+    const isInitialLinked =
+      !!investment.transaction_id && tx.type === 'BUY' && tx.date === investment.date
+
+    if (tx.type === 'BUY' && investment.amount < tx.amount) {
+      throw new Error('No puedes eliminar esta compra: primero reduce las ventas.')
+    }
+
+    const batch = adminDb.batch()
+    investmentsRepository.deleteTransactionInBatch(batch, investmentId, txId)
+
+    if (!isInitialLinked) {
+      const account = await accountsRepository.findById(investment.account_id, userId)
+      if (!account) throw new Error('Cuenta no encontrada.')
+
+      if (tx.type === 'SELL' && account.balance < tx.amount) {
+        throw new Error('Saldo insuficiente para revertir la venta.')
+      }
+
+      const delta = tx.type === 'BUY' ? tx.amount : -tx.amount
+      const newBalance = account.balance + delta
+
+      batch.update(adminDb.collection('accounts').doc(investment.account_id), {
+        balance: FieldValue.increment(delta),
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+      accountBalanceHistoryRepository.addInBatch(
+        batch,
+        investment.account_id,
+        account.balance,
+        newBalance,
+        'INVESTMENT',
+        userId
+      )
+    }
+
+    await batch.commit()
+
+    await investmentsRepository.recalculatePosition(investmentId, userId)
+  },
+
   // ─── Plan de compra recurrente ————————————————————————————————
 
   /**
    * Crea o actualiza el plan de compra recurrente de una inversión.
-   * Se requiere que la inversión tenga posición (units) para programar.
    */
   async saveRecurring(investmentId: string, input: SaveRecurringInput, userId: string): Promise<void> {
     const investment = await investmentsRepository.findById(investmentId, userId)
     if (!investment) throw new Error('Inversión no encontrada.')
-    if (!investment.units || !investment.unit_price) {
-      throw new Error('La inversión necesita tener unidades (posición) para programar compras.')
-    }
 
     const today = new Date()
     const prev = investment.recurrence
@@ -255,8 +302,8 @@ export const investmentsService = {
 
   /**
    * Ejecuta la compra pendiente del plan recurrente.
-   * Valida plan activo y vencido, calcula units = monto / precio, reusa buy()
-   * (descuenta saldo, crea InvestmentTransaction, recalcula posición) y avanza next_due.
+   * Reusa buy() (descuenta saldo, crea InvestmentTransaction, recalcula posición)
+   * y avanza next_due.
    */
   async executeRecurringBuy(investmentId: string, data: ExecuteRecurringBuyInput, userId: string): Promise<void> {
     const investment = await investmentsRepository.findById(investmentId, userId)
@@ -268,14 +315,10 @@ export const investmentsService = {
     const today = new Date()
     if (!isPlanDue(plan, today)) throw new Error('No hay una compra pendiente para esta inversión.')
 
-    const units = plan.amount / data.unit_price
-    if (!(units > 0)) throw new Error('El precio debe ser menor al monto para comprar unidades.')
-
     await this.buy({
       investment_id: investmentId,
       account_id: plan.account_id,
-      units,
-      unit_price: data.unit_price,
+      amount: plan.amount,
       currency: plan.currency,
       date: data.date ?? format(today, 'yyyy-MM-dd'),
       notes: 'Compra recurrente semanal',
@@ -296,22 +339,40 @@ export const investmentsService = {
 
     const batch = adminDb.batch()
 
-    if (data.amount !== undefined && data.amount !== investment.amount && !investment.transaction_id) {
+    if (data.amount !== undefined && data.amount !== investment.amount) {
       const diff = data.amount - investment.amount
-      const account = await accountsRepository.findById(investment.account_id, userId)
-      batch.update(adminDb.collection('accounts').doc(investment.account_id), {
-        balance: FieldValue.increment(-diff),
-        updatedAt: FieldValue.serverTimestamp(),
-      })
-      if (account) {
-        accountBalanceHistoryRepository.addInBatch(
-          batch,
-          investment.account_id,
-          account.balance,
-          account.balance - diff,
-          'INVESTMENT',
-          userId
-        )
+
+      // Registra una transacción compensadora (BUY/SELL) para que
+      // amount == Σ(BUY) − Σ(SELL) y recalculatePosition no borre el monto.
+      if (diff < 0 && investment.amount < -diff) {
+        throw new Error(`No tienes suficientes fondos invertidos. Disponibles: ${investment.amount}`)
+      }
+      investmentsRepository.createTransactionInBatch(batch, {
+        investment_id: investment.id,
+        account_id: investment.account_id,
+        type: diff > 0 ? 'BUY' : 'SELL',
+        amount: Math.abs(diff),
+        currency: investment.currency,
+        date: data.date ?? investment.date ?? format(new Date(), 'yyyy-MM-dd'),
+        notes: 'Ajuste de monto',
+      }, userId)
+
+      if (!investment.transaction_id) {
+        const account = await accountsRepository.findById(investment.account_id, userId)
+        batch.update(adminDb.collection('accounts').doc(investment.account_id), {
+          balance: FieldValue.increment(-diff),
+          updatedAt: FieldValue.serverTimestamp(),
+        })
+        if (account) {
+          accountBalanceHistoryRepository.addInBatch(
+            batch,
+            investment.account_id,
+            account.balance,
+            account.balance - diff,
+            'INVESTMENT',
+            userId
+          )
+        }
       }
     }
 

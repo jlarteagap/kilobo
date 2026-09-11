@@ -10,7 +10,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control"
 import { ChipSelector } from "@/components/ui/chip-selector"
 
 import { useCategories } from "@/features/categories/hooks/useCategories"
-import { useAccounts } from "@/features/accounts/hooks/useAccounts"
+import { useActiveAccounts } from "@/features/accounts/hooks/useAccounts"
 import { useCreateTransaction } from "@/features/transactions/hooks/useTransactions"
 
 import {
@@ -45,7 +45,7 @@ import { TRANSACTION_TYPE_LABELS } from "./utils/transaction-display.utils"
 import { getTagsForCategory, getSubtypesForProject } from "./utils/transaction-form.utils"
 export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const { data: categories = [] } = useCategories()
-  const { data: accounts   = [] } = useAccounts()
+  const { data: accounts   = [] } = useActiveAccounts()
   const { data: projects = [] } = useProjects()
   const createTransaction         = useCreateTransaction()
   const createInvestment          = useCreateInvestment()
@@ -169,7 +169,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
                     {...field}
                     onChange={(e) => field.onChange(e.target.value === '' ? 0 : +e.target.value)}
                     value={typeof field.value === 'number' || typeof field.value === 'string' ? field.value : ''}
-                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                    className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -190,7 +190,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
                     type="date"
                     {...field}
                     value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ''}
-                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                    className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -206,20 +206,20 @@ const onSubmit = async (data: CreateTransactionInput) => {
     <FormItem>
       <FormLabel className="text-[13px] font-medium text-foreground">
         Actividad
-        <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+        <span className="text-zinc-500 font-normal ml-1">(opcional)</span>
       </FormLabel>
       <Select
         onValueChange={handleProjectChange}
         value={field.value ?? 'none'}
       >
         <FormControl>
-          <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
+          <SelectTrigger className="rounded-xl bg-white border border-zinc-200 focus:ring-zinc-400/30">
             <SelectValue placeholder="Personal" />
           </SelectTrigger>
         </FormControl>
         <SelectContent>
           <SelectItem value="none">
-            <span className="text-[#6E6E73]">Sin actividad</span>
+            <span className="text-zinc-500">Sin actividad</span>
           </SelectItem>
           {projects.map((p) => (
             <SelectItem key={p.id} value={p.id}>
@@ -244,7 +244,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
       <FormItem>
         <FormLabel className="text-[13px] font-medium text-foreground">
           Etiqueta
-          <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+          <span className="text-zinc-500 font-normal ml-1">(opcional)</span>
         </FormLabel>
         <FormControl>
           <ChipSelector items={availableSubtypes} value={field.value as string | null | undefined} onChange={(v) => form.setValue('subtype', v ?? undefined)} clearLabel="Ninguno" />
@@ -270,7 +270,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value ?? ''}>
                 <FormControl>
-                  <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
+                  <SelectTrigger className="rounded-xl bg-white border border-zinc-200 focus:ring-zinc-400/30">
                     <SelectValue placeholder="Seleccionar cuenta" />
                   </SelectTrigger>
                 </FormControl>
@@ -300,7 +300,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
           </FormLabel>
           <Select onValueChange={field.onChange} value={field.value ?? ''}>
             <FormControl>
-              <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
+              <SelectTrigger className="rounded-xl bg-white border border-zinc-200 focus:ring-zinc-400/30">
                 <SelectValue placeholder="Seleccionar cuenta" />
               </SelectTrigger>
             </FormControl>
@@ -332,7 +332,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
             value={field.value ?? ''}      // ← nunca undefined
           >
             <FormControl>
-              <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
+              <SelectTrigger className="rounded-xl bg-white border border-zinc-200 focus:ring-zinc-400/30">
                 <SelectValue placeholder="Sin categoría" />
               </SelectTrigger>
             </FormControl>
@@ -361,7 +361,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
               <FormItem>
                 <FormLabel className="text-[13px] font-medium text-foreground">
                   Etiqueta
-                  <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+                  <span className="text-zinc-500 font-normal ml-1">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <ChipSelector items={availableTags} value={field.value as string | null | undefined} onChange={(v) => form.setValue('tag', v)} clearLabel="Ninguna" />
@@ -415,7 +415,7 @@ const onSubmit = async (data: CreateTransactionInput) => {
                         placeholder="Ej: Compra BTC, Fondo indexado..."
                         {...field}
                         value={field.value ?? ''}
-                        className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                        className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                       />
                     </FormControl>
                     <FormMessage className="text-[12px]" />
@@ -434,14 +434,14 @@ const onSubmit = async (data: CreateTransactionInput) => {
             <FormItem>
               <FormLabel className="text-[13px] font-medium text-foreground">
                 Nota
-                <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+                <span className="text-zinc-500 font-normal ml-1">(opcional)</span>
               </FormLabel>
               <FormControl>
                 <Textarea
                   rows={2}
                   {...field}
                   value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ''}
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 resize-none focus-visible:ring-[#5F7D42]/30"
+                  className="rounded-xl bg-white border border-zinc-200 resize-none focus-visible:ring-zinc-400/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />

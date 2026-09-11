@@ -3,25 +3,12 @@ import { accountsRepository } from '@/repositories/accounts.repository'
 import { balanceService } from '@/services/balance.service'
 import { adminDb } from '@/lib/firebase.admin'
 import { CreateTransactionData, Transaction } from "@/types/transaction"
-import { setUSDRate } from '@/lib/config/exchange-rates'
+import { refreshRates } from '@/lib/config/exchange-rates'
 
-// ─── Caché de tipo de cambio con time-to-live ──────────────────────────────
-let _lastFetched = 0
-const CACHE_TTL = 5 * 60 * 1000 // 5 min
-
+// Asegura tipos de cambio actualizados (USD y cripto) antes de operar.
+// La caché interna de refreshRates evita llamadas repetidas.
 async function ensureLiveRate() {
-  if (Date.now() - _lastFetched < CACHE_TTL) return
-  try {
-    const res = await fetch('https://bo.dolarapi.com/v1/dolares/binance')
-    if (!res.ok) return
-    const data = await res.json()
-    if (data.venta && typeof data.venta === 'number') {
-      setUSDRate(data.venta)
-      _lastFetched = Date.now()
-    }
-  } catch {
-    // Silencio — se mantiene el rate actual
-  }
+  await refreshRates()
 }
 
 export const transactionService = {

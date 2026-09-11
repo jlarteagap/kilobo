@@ -117,7 +117,7 @@ export function BottomNav() {
             </div>
             <div className="mt-1 flex flex-col gap-0.5 border-t border-[rgba(0,0,0,0.06)] pt-1.5">
               <Link
-                href="/conductor/settings"
+                href="/ajustes"
                 className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-[#F2F9E3]"
               >
                 <Settings className="size-4 text-[#6E6E73]" />

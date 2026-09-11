@@ -94,7 +94,7 @@ export function TransactionEditForm({
   }
 
   const typeColors = {
-    INCOME:   'bg-[#F2F9E3] text-[#4F6A35]',
+    INCOME:   'bg-emerald-50 text-emerald-700',
     EXPENSE:  'bg-[#FAEDE9] text-[#B5543D]',
     TRANSFER: 'bg-blue-100    text-blue-700',
     SAVING:   'bg-violet-100  text-violet-700',
@@ -105,7 +105,7 @@ export function TransactionEditForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
         {/* ── Resumen ── */}
-        <div className="flex items-center gap-4 p-4 bg-[#F2F9E3]/40 rounded-2xl">
+        <div className="flex items-center gap-4 p-4 bg-zinc-50 border border-zinc-200 rounded-2xl">
           <Badge
             variant="secondary"
             className={cn('text-[11px] rounded-full px-3 py-1', typeColors[transaction.type])}
@@ -117,7 +117,7 @@ export function TransactionEditForm({
               {transaction.amount} {transaction.currency}
             </p>
             {transaction.description && (
-              <p className="text-[12px] text-[#6E6E73] mt-0.5 truncate max-w-[180px]">
+              <p className="text-[12px] text-zinc-500 mt-0.5 truncate max-w-[180px]">
                 {transaction.description}
               </p>
             )}
@@ -127,11 +127,11 @@ export function TransactionEditForm({
         {/* ── Fecha y Actividad ── */}
         <div className="space-y-5">
           <div className="flex items-center gap-2">
-            <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
-            <span className="text-[10px] uppercase tracking-widest font-semibold text-[#6E6E73]">
+            <div className="h-px flex-1 bg-zinc-100" />
+            <span className="text-[10px] uppercase tracking-widest font-semibold text-zinc-500">
               Fecha y Actividad
             </span>
-            <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
+            <div className="h-px flex-1 bg-zinc-100" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -146,7 +146,7 @@ export function TransactionEditForm({
                       type="date"
                       {...field}
                       value={field.value as string}
-                      className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                      className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                     />
                   </FormControl>
                   <FormMessage className="text-[12px]" />
@@ -161,20 +161,20 @@ export function TransactionEditForm({
                 <FormItem>
                   <FormLabel className="text-[13px] font-medium text-foreground">
                     Actividad
-                    <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+                    <span className="text-zinc-500 font-normal ml-1">(opcional)</span>
                   </FormLabel>
                   <Select
                     onValueChange={handleProjectChange}
                     value={(field.value as string) ?? 'none'}
                   >
                     <FormControl>
-                      <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
+                      <SelectTrigger className="rounded-xl bg-white border border-zinc-200 focus:ring-zinc-400/30">
                         <SelectValue placeholder="Sin actividad" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="none">
-                        <span className="text-[#6E6E73]">Sin actividad</span>
+                        <span className="text-zinc-500">Sin actividad</span>
                       </SelectItem>
                       {projects.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
@@ -200,7 +200,7 @@ export function TransactionEditForm({
                 <FormItem>
                   <FormLabel className="text-[13px] font-medium text-foreground">
                     Etiqueta
-                    <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+                    <span className="text-zinc-500 font-normal ml-1">(opcional)</span>
                   </FormLabel>
                   <FormControl>
                     <ChipSelector items={availableSubtypes} value={field.value as string | null | undefined} onChange={(v) => form.setValue('subtype', v ?? undefined)} clearLabel="Ninguno" />
@@ -216,11 +216,11 @@ export function TransactionEditForm({
         {showCategory || showTags ? (
           <div className="space-y-5">
             <div className="flex items-center gap-2">
-              <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
-              <span className="text-[10px] uppercase tracking-widest font-semibold text-[#6E6E73]">
+              <div className="h-px flex-1 bg-zinc-100" />
+              <span className="text-[10px] uppercase tracking-widest font-semibold text-zinc-500">
                 Clasificación
               </span>
-              <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
+              <div className="h-px flex-1 bg-zinc-100" />
             </div>
 
             <div className={cn(showCategory && showTags ? 'grid grid-cols-2 gap-4' : 'space-y-4')}>
@@ -233,7 +233,7 @@ export function TransactionEditForm({
                       <FormLabel className="text-[13px] font-medium text-foreground">Categoría</FormLabel>
                       <Select onValueChange={handleCategoryChange} defaultValue={field.value as string}>
                         <FormControl>
-                          <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
+                          <SelectTrigger className="rounded-xl bg-white border border-zinc-200 focus:ring-zinc-400/30">
                             <SelectValue placeholder="Sin categoría" />
                           </SelectTrigger>
                         </FormControl>
@@ -261,7 +261,7 @@ export function TransactionEditForm({
                     <FormItem>
                       <FormLabel className="text-[13px] font-medium text-foreground">
                         Etiqueta
-                        <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+                        <span className="text-zinc-500 font-normal ml-1">(opcional)</span>
                       </FormLabel>
                       <FormControl>
                         <ChipSelector items={availableTags} value={field.value as string | null | undefined} onChange={(v) => form.setValue('tag', v ?? undefined)} clearLabel="Ninguna" />
@@ -278,11 +278,11 @@ export function TransactionEditForm({
         {/* ── Detalles ── */}
         <div className="space-y-5">
           <div className="flex items-center gap-2">
-            <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
-            <span className="text-[10px] uppercase tracking-widest font-semibold text-[#6E6E73]">
+            <div className="h-px flex-1 bg-zinc-100" />
+            <span className="text-[10px] uppercase tracking-widest font-semibold text-zinc-500">
               Detalles
             </span>
-            <div className="h-px flex-1 bg-[rgba(0,0,0,0.06)]" />
+            <div className="h-px flex-1 bg-zinc-100" />
           </div>
 
           <FormField<EditFormValues>
@@ -292,14 +292,14 @@ export function TransactionEditForm({
               <FormItem>
                 <FormLabel className="text-[13px] font-medium text-foreground">
                   Nota
-                  <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+                  <span className="text-zinc-500 font-normal ml-1">(opcional)</span>
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     rows={2}
                     {...field}
                     value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ''}
-                    className="rounded-xl border-0 bg-[#F2F9E3]/40 resize-none focus-visible:ring-[#5F7D42]/30"
+                    className="rounded-xl bg-white border border-zinc-200 resize-none focus-visible:ring-zinc-400/30"
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />

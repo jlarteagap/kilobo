@@ -3,13 +3,7 @@ import { Investment, CreateInvestmentData, UpdateInvestmentData, InvestmentTrans
 import type { BuyInvestmentInput, SellInvestmentInput, SaveRecurringInput, ExecuteRecurringBuyInput } from '@/lib/validations/investment.schema'
 import { accountKeys } from '@/features/accounts/hooks/useAccounts'
 import { toast } from 'sonner'
-
-async function authFetch(url: string, options?: RequestInit) {
-  return fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  })
-}
+import { apiFetch } from '@/lib/http'
 
 export const investmentKeys = {
   all:    ['investments'] as const,
@@ -23,7 +17,7 @@ export function useInvestments() {
   return useQuery({
     queryKey: investmentKeys.lists(),
     queryFn: async (): Promise<Investment[]> => {
-      const res  = await authFetch('/api/investments')
+      const res  = await apiFetch('/api/investments')
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener las inversiones')
       return Array.isArray(json.data) ? json.data : []
@@ -36,7 +30,7 @@ export function useInvestmentTransactions(investmentId: string) {
   return useQuery({
     queryKey: investmentKeys.transactions(investmentId),
     queryFn: async (): Promise<InvestmentTransaction[]> => {
-      const res  = await authFetch(`/api/investments/${investmentId}/transactions`)
+      const res  = await apiFetch(`/api/investments/${investmentId}/transactions`)
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener transacciones')
       return Array.isArray(json.data) ? json.data : []
@@ -50,7 +44,7 @@ export function useCreateInvestment() {
 
   return useMutation({
     mutationFn: async (data: CreateInvestmentData): Promise<Investment> => {
-      const res  = await authFetch('/api/investments', {
+      const res  = await apiFetch('/api/investments', {
         method: 'POST',
         body:   JSON.stringify(data),
       })
@@ -73,7 +67,7 @@ export function useBuyInvestment() {
 
   return useMutation({
     mutationFn: async (data: BuyInvestmentInput) => {
-      const res  = await authFetch(`/api/investments/${data.investment_id}/transactions`, {
+      const res  = await apiFetch(`/api/investments/${data.investment_id}/transactions`, {
         method: 'POST',
         body:   JSON.stringify({ ...data, type: 'BUY' }),
       })
@@ -100,7 +94,7 @@ export function useSellInvestment() {
 
   return useMutation({
     mutationFn: async (data: SellInvestmentInput) => {
-      const res  = await authFetch(`/api/investments/${data.investment_id}/transactions`, {
+      const res  = await apiFetch(`/api/investments/${data.investment_id}/transactions`, {
         method: 'POST',
         body:   JSON.stringify({ ...data, type: 'SELL' }),
       })
@@ -127,7 +121,7 @@ export function useUpdateInvestment() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateInvestmentData }) => {
-      const res  = await authFetch(`/api/investments/${id}`, {
+      const res  = await apiFetch(`/api/investments/${id}`, {
         method: 'PUT',
         body:   JSON.stringify(data),
       })
@@ -148,7 +142,7 @@ export function useDeleteInvestment() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res  = await authFetch(`/api/investments/${id}`, { method: 'DELETE' })
+      const res  = await apiFetch(`/api/investments/${id}`, { method: 'DELETE' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al eliminar la inversión')
     },
@@ -178,7 +172,7 @@ export function useSaveRecurringBuy() {
 
   return useMutation({
     mutationFn: async ({ investmentId, data }: { investmentId: string; data: SaveRecurringInput }) => {
-      const res  = await authFetch(`/api/investments/${investmentId}/recurring`, {
+      const res  = await apiFetch(`/api/investments/${investmentId}/recurring`, {
         method: 'PUT',
         body:   JSON.stringify(data),
       })
@@ -199,7 +193,7 @@ export function useDeleteRecurringBuy() {
 
   return useMutation({
     mutationFn: async (investmentId: string) => {
-      const res  = await authFetch(`/api/investments/${investmentId}/recurring`, {
+      const res  = await apiFetch(`/api/investments/${investmentId}/recurring`, {
         method: 'DELETE',
       })
       const json = await res.json()
@@ -219,7 +213,7 @@ export function useExecuteRecurringBuy(investmentId: string) {
 
   return useMutation({
     mutationFn: async (data: ExecuteRecurringBuyInput) => {
-      const res  = await authFetch(`/api/investments/${investmentId}/recurring/execute`, {
+      const res  = await apiFetch(`/api/investments/${investmentId}/recurring/execute`, {
         method: 'POST',
         body:   JSON.stringify(data),
       })
@@ -232,6 +226,27 @@ export function useExecuteRecurringBuy(investmentId: string) {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: investmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: investmentKeys.transactions(investmentId) })
+      queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
+    },
+  })
+}
+
+export function useDeleteInvestmentTransaction() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ investmentId, txId }: { investmentId: string; txId: string }) => {
+      const res = await apiFetch(`/api/investments/${investmentId}/transactions/${txId}`, {
+        method: 'DELETE',
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Error al eliminar la operación')
+      return json
+    },
+    onError: (error: Error) => toast.error(error.message),
+    onSettled: (_data, _error, vars) => {
+      queryClient.invalidateQueries({ queryKey: investmentKeys.transactions(vars.investmentId) })
+      queryClient.invalidateQueries({ queryKey: investmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
     },
   })

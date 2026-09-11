@@ -30,6 +30,7 @@ import { DebtForm }        from "../DebtForm"
 import { DebtPaymentForm } from "./DebtPaymentForm"
 import { CreditForm }      from "@/features/credits/CreditForm"
 import { CreditsList }     from "@/features/credits/components/CreditsList"
+import { UpcomingPaymentsCalendar } from "@/features/credits/components/UpcomingPaymentsCalendar"
 import { useCredits }      from "@/features/credits/hooks/useCredits"
 import {
   useDebts,
@@ -253,6 +254,7 @@ export function DebtsList() {
           {/* Credits — 2/3 */}
           <div className="lg:col-span-2 space-y-4">
             <SectionLabel icon="🏦" label="Instituciones" />
+            <UpcomingPaymentsCalendar />
             <CreditsList
               credits={creditsData}
               isLoading={creditsLoading}
@@ -306,6 +308,7 @@ export function DebtsList() {
       ) : hasCredits ? (
         <div className="space-y-4">
           <SectionLabel icon="🏦" label="Instituciones" />
+          <UpcomingPaymentsCalendar />
           <CreditsList
             credits={creditsData}
             isLoading={creditsLoading}

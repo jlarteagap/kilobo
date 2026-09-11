@@ -26,6 +26,6 @@ export const SAVINGS_GOAL_ICONS = [
 ]
 
 export const SAVINGS_GOAL_COLORS = [
-  '#4F6A35', '#4A6FA5', '#8B7EA8', '#C08A2E', '#B5543D',
-  '#7A9B57', '#ACC18A', '#D9A487', '#5F7D42', '#837A75',
+  '#059669', '#4A6FA5', '#8B7EA8', '#C08A2E', '#B5543D',
+  '#14B8A6', '#A3B18A', '#D9A487', '#64748B', '#837A75',
 ]

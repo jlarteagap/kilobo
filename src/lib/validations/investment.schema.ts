@@ -4,8 +4,6 @@ export const createInvestmentSchema = z.object({
   account_id: z.string().min(1, "Selecciona una cuenta"),
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   amount: z.coerce.number().min(0.01, "El monto debe ser mayor a 0"),
-  units: z.coerce.number().positive("Las unidades deben ser mayores a 0").nullable().optional(),
-  unit_price: z.coerce.number().positive("El precio debe ser mayor a 0").nullable().optional(),
   currency: z.string().optional(),
   date: z.string().min(1, "Selecciona una fecha"),
   notes: z.string().nullable().optional(),
@@ -23,8 +21,7 @@ export const updateInvestmentSchema = z.object({
 export const buyInvestmentSchema = z.object({
   investment_id: z.string().min(1, "Inversión requerida"),
   account_id: z.string().min(1, "Cuenta requerida"),
-  units: z.coerce.number().positive("Las unidades deben ser mayores a 0"),
-  unit_price: z.coerce.number().positive("El precio debe ser mayor a 0"),
+  amount: z.coerce.number().positive("El monto debe ser mayor a 0"),
   currency: z.string().min(1, "Moneda requerida"),
   date: z.string().min(1, "Selecciona una fecha"),
   notes: z.string().nullable().optional(),
@@ -33,8 +30,7 @@ export const buyInvestmentSchema = z.object({
 export const sellInvestmentSchema = z.object({
   investment_id: z.string().min(1, "Inversión requerida"),
   account_id: z.string().min(1, "Cuenta requerida"),
-  units: z.coerce.number().positive("Las unidades deben ser mayores a 0"),
-  unit_price: z.coerce.number().positive("El precio debe ser mayor a 0"),
+  amount: z.coerce.number().positive("El monto debe ser mayor a 0"),
   currency: z.string().min(1, "Moneda requerida"),
   date: z.string().min(1, "Selecciona una fecha"),
   notes: z.string().nullable().optional(),
@@ -47,7 +43,6 @@ export const recurringBuySchema = z.object({
 })
 
 export const executeRecurringBuySchema = z.object({
-  unit_price: z.coerce.number().positive("El precio debe ser mayor a 0"),
   date: z.string().optional(),
 })
 

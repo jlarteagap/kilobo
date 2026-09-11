@@ -3,7 +3,7 @@
 import { toast } from "sonner"
 import { InvestmentForm } from "./InvestmentForm"
 import { useCreateInvestment } from "./hooks/useInvestments"
-import { useAccounts } from "@/features/accounts/hooks/useAccounts"
+import { useActiveAccounts } from "@/features/accounts/hooks/useAccounts"
 import type { CreateInvestmentData } from "@/types/investment"
 import type { CreateInvestmentInput } from "@/lib/validations/investment.schema"
 
@@ -18,7 +18,7 @@ export function CreateInvestmentForm({
   onSuccess,
   onCancel,
 }: CreateInvestmentFormProps) {
-  const { data: accounts = [] } = useAccounts()
+  const { data: accounts = [] } = useActiveAccounts()
   const createInvestment = useCreateInvestment()
 
   const handleCreate = (data: CreateInvestmentInput) => {

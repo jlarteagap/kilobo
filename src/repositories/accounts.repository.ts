@@ -63,20 +63,41 @@ export const accountsRepository = {
     await accountsCollection.doc(accountId).delete()
   },
 
-  async isUsedInTransactions(accountId: string, userId: string): Promise<boolean> {
-  const [snapshot, snapshotDest] = await Promise.all([
-    adminDb.collection('transactions')
-      .where('account_id', '==', accountId)
-      .where('user_id', '==', userId)
-      .limit(1)
-      .get(),
-    adminDb.collection('transactions')
-      .where('to_account_id', '==', accountId)
-      .where('user_id', '==', userId)
-      .limit(1)
-      .get(),
-  ])
+  async isAccountInUse(accountId: string, userId: string): Promise<boolean> {
+    const checks: Promise<{ empty: boolean }>[] = [
+      adminDb.collection('transactions')
+        .where('account_id', '==', accountId)
+        .where('user_id', '==', userId)
+        .limit(1)
+        .get(),
+      adminDb.collection('transactions')
+        .where('to_account_id', '==', accountId)
+        .where('user_id', '==', userId)
+        .limit(1)
+        .get(),
+      adminDb.collection('investments')
+        .where('account_id', '==', accountId)
+        .where('user_id', '==', userId)
+        .limit(1)
+        .get(),
+      adminDb.collection('debts')
+        .where('account_id', '==', accountId)
+        .where('user_id', '==', userId)
+        .limit(1)
+        .get(),
+      adminDb.collection('credits')
+        .where('account_id', '==', accountId)
+        .where('user_id', '==', userId)
+        .limit(1)
+        .get(),
+      adminDb.collection('savings_goals')
+        .where('account_id', '==', accountId)
+        .where('user_id', '==', userId)
+        .limit(1)
+        .get(),
+    ]
 
-  return !snapshot.empty || !snapshotDest.empty
-},
+    const snapshots = await Promise.all(checks)
+    return snapshots.some((snap) => !snap.empty)
+  },
 }

@@ -35,7 +35,14 @@ export function useFinancialMetrics({
     const expense = monthlyTransactions
       .filter((t) => t.type === 'EXPENSE')
       .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
-    return { income, expense, net: income - expense }
+
+    // Gastos "fijos" = gastos marcados como recurrentes (proxy de suscripciones)
+    const fixedExpense = monthlyTransactions
+      .filter((t) => t.type === 'EXPENSE' && t.is_recurring)
+      .reduce((sum, t) => sum + convertToBOB(t.amount, t.currency), 0)
+    const variableExpense = expense - fixedExpense
+
+    return { income, expense, net: income - expense, fixedExpense, variableExpense }
   }, [monthlyTransactions])
 
   const prevMonthlyStats = useMemo(() => {

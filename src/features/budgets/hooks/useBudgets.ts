@@ -10,13 +10,7 @@ import { convertToBOB } from '@/lib/config/exchange-rates'
 import type { Budget, BudgetProgress, BudgetSummaryData } from '@/types/budget'
 import type { CreateBudgetInput, UpdateBudgetInput } from '@/lib/validations/budget.schema'
 import type { Transaction } from '@/types/transaction'
-
-async function authFetch(url: string, options?: RequestInit) {
-  return fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  })
-}
+import { apiFetch } from '@/lib/http'
 
 // ─── Query keys ───────────────────────────────────────────────────────────────
 export const budgetKeys = {
@@ -118,7 +112,7 @@ export function useBudgets() {
   return useQuery({
     queryKey: budgetKeys.lists(),
     queryFn:  async (): Promise<Budget[]> => {
-      const res  = await authFetch('/api/budgets')
+      const res  = await apiFetch('/api/budgets')
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener los presupuestos')
       return Array.isArray(json.data) ? json.data : []
@@ -174,7 +168,7 @@ export function useCreateBudget() {
 
   return useMutation({
     mutationFn: async (data: CreateBudgetInput) => {
-      const res  = await authFetch('/api/budgets', {
+      const res  = await apiFetch('/api/budgets', {
         method: 'POST',
         body:   JSON.stringify(data),
       })
@@ -196,7 +190,7 @@ export function useUpdateBudget() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateBudgetInput }) => {
-      const res  = await authFetch(`/api/budgets/${id}`, {
+      const res  = await apiFetch(`/api/budgets/${id}`, {
         method: 'PATCH',
         body:   JSON.stringify(data),
       })
@@ -232,7 +226,7 @@ export function useArchiveBudget() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res  = await authFetch(`/api/budgets/${id}`, { method: 'PUT' })
+      const res  = await apiFetch(`/api/budgets/${id}`, { method: 'PUT' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al archivar el presupuesto')
       return json.data as Budget
@@ -264,7 +258,7 @@ export function useDeleteBudget() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res  = await authFetch(`/api/budgets/${id}`, { method: 'DELETE' })
+      const res  = await apiFetch(`/api/budgets/${id}`, { method: 'DELETE' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al eliminar el presupuesto')
     },

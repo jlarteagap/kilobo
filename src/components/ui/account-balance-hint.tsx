@@ -33,7 +33,7 @@ export function AccountBalanceHint({
     <div
       className={cn(
         "flex items-center justify-between px-3 py-2 rounded-xl text-[12px] transition-all duration-200",
-        isOverdraft ? "bg-[#FAEDE9] text-[#B5543D]" : "bg-[#F2F9E3]/40 text-[#6E6E73]"
+        isOverdraft ? "bg-[#FAEDE9] text-[#B5543D]" : "bg-zinc-50 text-zinc-500 border border-zinc-200"
       )}
     >
       <span>Balance disponible</span>

@@ -40,10 +40,7 @@ import { useCredits, creditKeys }  from "@/features/credits/hooks/useCredits"
 import { useQueries } from "@tanstack/react-query"
 import type { BudgetProgress } from "@/types/budget"
 import type { Credit, Installment } from "@/types/credit"
-
-function authFetch(url: string) {
-  return fetch(url, { headers: { 'Content-Type': 'application/json' } })
-}
+import { apiFetch } from "@/lib/http"
 
 // ─── Filter tabs ──────────────────────────────────────────────────────────────
 type FilterTab = 'ALL' | 'INCOME_SOURCE' | 'FIXED_EXPENSE' | 'SAVINGS_GOAL' | 'ARCHIVED'
@@ -118,7 +115,7 @@ export function BudgetsList() {
     queries: activeCredits.map((credit) => ({
       queryKey: creditKeys.detail(credit.id),
       queryFn: async (): Promise<{ credit: Credit; installments: Installment[] }> => {
-        const res  = await authFetch(`/api/credits/${credit.id}`)
+        const res  = await apiFetch(`/api/credits/${credit.id}`)
         const json = await res.json()
         if (!res.ok) throw new Error(json.error ?? 'Error al obtener el crédito')
         return json.data

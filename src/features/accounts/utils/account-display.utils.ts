@@ -41,10 +41,14 @@ export const formatAbsoluteDateTime = (date: Date): string => {
 
 // Formatea un monto en la moneda de la cuenta. Solo BOB/USD tienen símbolo
 // mapeado por formatCurrency; el resto (cripto) se formatea como número plano
-// para no mostrar un símbolo erróneo ("Bs" en una cuenta BTC).
+// para no mostrar un símbolo erróneo ("Bs" en una cuenta BTC). Las stablecoins
+// (USDT/USDC) muestran 2 decimales; el resto de cripto hasta 8.
 export const formatAssetAmount = (value: number, currency: string): string => {
-  if (currency === "BOB" || currency === "USD") return formatCurrency(value, currency)
-  return new Intl.NumberFormat("es-BO", { maximumFractionDigits: 8 }).format(value)
+  if (currency === 'BOB' || currency === 'USD') return formatCurrency(value, currency)
+  if (currency === 'USDT' || currency === 'USDC') {
+    return new Intl.NumberFormat('es-BO', { maximumFractionDigits: 2 }).format(value)
+  }
+  return new Intl.NumberFormat('es-BO', { maximumFractionDigits: 8 }).format(value)
 }
 
 export const getValueInBOB = (account: Account): number => {

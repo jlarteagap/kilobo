@@ -2,13 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { DriverShift, ShiftInput } from '@/types/driver'
 import { createShiftAction } from '@/app/conductor/actions'
-
-async function authFetch(url: string) {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error('Error al cargar datos')
-  const json = await res.json()
-  return json.data
-}
+import { apiFetch } from '@/lib/http'
 
 export interface MonthCycle {
   year: number
@@ -32,7 +26,12 @@ function shiftsUrl(cycle?: MonthCycle): string {
 export function useShifts(cycle?: MonthCycle) {
   return useQuery({
     queryKey: driverKeys.shifts(cycle),
-    queryFn: (): Promise<DriverShift[]> => authFetch(shiftsUrl(cycle)),
+    queryFn: async (): Promise<DriverShift[]> => {
+      const res = await apiFetch(shiftsUrl(cycle))
+      if (!res.ok) throw new Error('Error al cargar datos')
+      const json = await res.json()
+      return json.data
+    },
     staleTime: 1000 * 60 * 5,
   })
 }

@@ -22,7 +22,7 @@ export function CategoryColorPicker({ value, onChange }: CategoryColorPickerProp
               'w-7 h-7 rounded-full transition-all duration-200',
               'hover:scale-110 focus:outline-none',
               value === color
-                ? 'ring-2 ring-offset-2 ring-[#4F6A35] scale-110'
+                ? 'ring-2 ring-offset-2 ring-zinc-900 scale-110'
                 : 'ring-1 ring-black/5'
             )}
             style={{ backgroundColor: color }}

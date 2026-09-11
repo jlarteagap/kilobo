@@ -22,10 +22,16 @@ export function useAccountsDashboard(
   debts: Debt[] = [],
   investments: Investment[] = []
 ) {
+  // Las cuentas archivadas quedan fuera del patrimonio y de los desgloses.
+  const activeAccounts = useMemo(
+    () => accounts.filter((a) => !a.archived),
+    [accounts]
+  )
+
   // ── Multi-currency breakdown ──────────────────────────────────────────────
   const currencies = useMemo(
-    () => Array.from(new Set(accounts.map((a) => a.currency))),
-    [accounts]
+    () => Array.from(new Set(activeAccounts.map((a) => a.currency))),
+    [activeAccounts]
   )
 
   const investmentByCurrency = useMemo(() => {
@@ -37,7 +43,7 @@ export function useAccountsDashboard(
 
   const currencyBreakdown: CurrencyBreakdown[] = useMemo(
     () => currencies.map((currency) => {
-      const balance = accounts
+      const balance = activeAccounts
         .filter((a) => a.currency === currency)
         .reduce((sum, a) => sum + a.balance, 0)
       const invested = investmentByCurrency[currency] ?? 0
@@ -49,15 +55,15 @@ export function useAccountsDashboard(
         formattedInvested: formatCurrency(invested, currency),
       }
     }),
-    [currencies, accounts, investmentByCurrency]
+    [currencies, activeAccounts, investmentByCurrency]
   )
 
   const totalInvestedByCurrency = investmentByCurrency
 
   // ── Total activos en BOB ───────────────────────────────────────────────────
   const totalGlobalAssetsInBOB = useMemo(
-    () => accounts.reduce((acc, account) => acc + getValueInBOB(account), 0),
-    [accounts]
+    () => activeAccounts.reduce((acc, account) => acc + getValueInBOB(account), 0),
+    [activeAccounts]
   )
 
   // ── Total pasivos en BOB ───────────────────────────────────────────────────
@@ -76,18 +82,18 @@ export function useAccountsDashboard(
 
   // ── Net worth solo BOB (sin conversión de otras monedas) ───────────────────
   const netWorthBOBOnly = useMemo(() => {
-    const bobBalance = accounts
+    const bobBalance = activeAccounts
       .filter((a) => a.currency === 'BOB')
       .reduce((sum, a) => sum + a.balance, 0)
     const bobDebts = debts
       .filter((d) => d.status === 'ACTIVE' && d.type === 'RECEIVED' && d.currency === 'BOB')
       .reduce((acc, debt) => acc + (debt.amount - debt.paid_amount), 0)
     return bobBalance - bobDebts
-  }, [accounts, debts])
+  }, [activeAccounts, debts])
 
   // ── Asset detail ───────────────────────────────────────────────────────────
   const assetsDetail: AssetDetail[] = useMemo(
-    () => accounts.map((account) => {
+    () => activeAccounts.map((account) => {
       const details    = getAccountTypeDetails(account.type)
       const valueInBOB = getValueInBOB(account)
 
@@ -105,13 +111,13 @@ export function useAccountsDashboard(
         color:          hexColor,
       }
     }),
-    [accounts, totalGlobalAssetsInBOB]
+    [activeAccounts, totalGlobalAssetsInBOB]
   )
 
   // ── Currency groups ────────────────────────────────────────────────────────
   const currencyGroups: CurrencyGroup[] = useMemo(() => {
     return currencies.map((currency) => {
-      const currencyAccounts = accounts.filter((a) => a.currency === currency)
+      const currencyAccounts = activeAccounts.filter((a) => a.currency === currency)
       const totalAssets = currencyAccounts.reduce((acc, account) => acc + account.balance, 0)
 
       const assetsByType = currencyAccounts.reduce(
@@ -147,7 +153,7 @@ export function useAccountsDashboard(
         assets,
       }
     })
-  }, [currencies, accounts])
+  }, [currencies, activeAccounts])
 
   const totalInvestedFormatted = Object.entries(totalInvestedByCurrency)
     .map(([c, a]) => formatCurrency(a, c))

@@ -106,6 +106,31 @@ export const creditsRepository = {
     return snapshot.docs.map((doc) => mapInstallment(doc.id, doc.data()))
   },
 
+  /**
+   * Devuelve las cuotas pendientes y vencidas de todos los créditos activos,
+   * con su crédito embebido para renderizar el calendario consolidado.
+   */
+  async findUpcomingInstallments(userId: string): Promise<{ credit: Credit; installment: Installment }[]> {
+    const creditsSnap = await creditsCollection
+      .where('user_id', '==', userId)
+      .where('status', '==', 'ACTIVE')
+      .get()
+
+    const credits = creditsSnap.docs.map((doc) => mapCredit(doc.id, doc.data()))
+
+    const rows: { credit: Credit; installment: Installment }[] = []
+    await Promise.all(credits.map(async (credit) => {
+      const installments = await this.findInstallments(credit.id)
+      installments
+        .filter((inst) => inst.status === 'PENDING' || inst.status === 'OVERDUE')
+        .forEach((inst) => rows.push({ credit, installment: inst }))
+    }))
+
+    return rows.sort(
+      (a, b) => new Date(a.installment.due_date).getTime() - new Date(b.installment.due_date).getTime()
+    )
+  },
+
   async createInstallments(creditId: string, installments: Omit<Installment, 'id' | 'created_at'>[]): Promise<void> {
     const batch = adminDb.batch()
     const sub = installmentsSub(creditId)

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
-import { useAccounts } from "@/features/accounts/hooks/useAccounts"
+import { useActiveAccounts } from "@/features/accounts/hooks/useAccounts"
 import { useCreateDebt } from "@/features/debts/hooks/useDebts"
 import {
   createDebtSchema,
@@ -81,10 +81,10 @@ function StepIndicator({
               className={cn(
                 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300',
                 i === current
-                  ? 'bg-[#4F6A35] text-white scale-110 shadow-md'
+                  ? 'bg-zinc-900 text-white scale-110 shadow-md'
                   : i < current
-                    ? 'bg-[#F2F9E3] text-[#4F6A35]'
-                    : 'bg-[rgba(0,0,0,0.06)] text-[#6E6E73]'
+                    ? 'bg-zinc-100 text-zinc-900'
+                    : 'bg-zinc-100 text-zinc-500'
               )}
             >
               {i < current ? '✓' : step.emoji}
@@ -95,8 +95,8 @@ function StepIndicator({
                 i === current
                   ? 'text-foreground'
                   : i < current
-                    ? 'text-[#4F6A35]'
-                    : 'text-[#6E6E73]'
+                    ? 'text-zinc-900'
+                    : 'text-zinc-500'
               )}
             >
               {step.title}
@@ -106,7 +106,7 @@ function StepIndicator({
             <div
               className={cn(
                 'w-10 h-0.5 mx-1.5 mt-[-1.25rem] rounded-full transition-colors duration-300',
-                i < current ? 'bg-[#4F6A35]/30' : 'bg-[rgba(0,0,0,0.06)]'
+                i < current ? 'bg-zinc-900/30' : 'bg-zinc-100'
               )}
             />
           )}
@@ -118,7 +118,7 @@ function StepIndicator({
 
 // ─── Componente principal ────────────────────────────────────────────────
 export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
-  const { data: accounts = [] } = useAccounts()
+  const { data: accounts = [] } = useActiveAccounts()
   const createDebt = useCreateDebt()
 
   const [currentStep, setCurrentStep] = useState(0)
@@ -189,8 +189,8 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                             className={cn(
                               'flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all duration-200',
                               field.value === value
-                                ? 'border-[#4F6A35] bg-[#4F6A35] text-white'
-                                : 'border-[rgba(0,0,0,0.06)] bg-[#F2F9E3]/40 text-[#6E6E73] hover:border-[rgba(0,0,0,0.12)] hover:bg-white'
+                                ? 'border-zinc-900 bg-zinc-900 text-white'
+                                : 'border-zinc-200 bg-zinc-50 text-zinc-500 hover:border-zinc-300 hover:bg-zinc-100'
                             )}
                           >
                             <span className="text-lg">{config.emoji}</span>
@@ -199,7 +199,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                             </span>
                             <span className={cn(
                               'text-[11px] leading-tight',
-                              field.value === value ? 'text-white/70' : 'text-[#6E6E73]'
+                              field.value === value ? 'text-white/70' : 'text-zinc-500'
                             )}>
                               {config.description}
                             </span>
@@ -228,7 +228,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       ref={field.ref}
-                      className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                      className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                     />
                   </FormControl>
                   <FormMessage className="text-[12px]" />
@@ -259,7 +259,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                         onChange={field.onChange}
                         onBlur={field.onBlur}
                         ref={field.ref}
-                        className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                        className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                       />
                     </FormControl>
                     <FormMessage className="text-[12px]" />
@@ -277,7 +277,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                     </FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value as string}>
                       <FormControl>
-                        <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
+                        <SelectTrigger className="rounded-xl bg-white border border-zinc-200 focus:ring-zinc-400/30">
                           <SelectValue placeholder="Moneda" />
                         </SelectTrigger>
                       </FormControl>
@@ -310,7 +310,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       ref={field.ref}
-                      className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                      className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                     />
                   </FormControl>
                   <FormMessage className="text-[12px]" />
@@ -333,7 +333,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                   </FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value as string}>
                     <FormControl>
-                      <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
+                      <SelectTrigger className="rounded-xl bg-white border border-zinc-200 focus:ring-zinc-400/30">
                         <SelectValue placeholder="Seleccionar cuenta" />
                       </SelectTrigger>
                     </FormControl>
@@ -364,19 +364,19 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
               name="is_legacy"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-[#F2F9E3]/40">
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-zinc-50 border border-zinc-200">
                     <FormControl>
                       <Checkbox
                         checked={!!field.value}
                         onCheckedChange={(checked) => field.onChange(checked)}
-                        className="mt-0.5 data-[state=checked]:bg-[#4F6A35] data-[state=checked]:border-[#4F6A35]"
+                        className="mt-0.5 data-[state=checked]:bg-zinc-900 data-[state=checked]:border-zinc-900"
                       />
                     </FormControl>
                     <div className="space-y-0.5">
                       <FormLabel className="text-[13px] font-medium text-foreground cursor-pointer">
                         Es una deuda previa
                       </FormLabel>
-                      <p className="text-[12px] text-[#6E6E73] leading-relaxed">
+                      <p className="text-[12px] text-zinc-500 leading-relaxed">
                         Registra una deuda que ya existía antes. No afectará el saldo de tu cuenta ni aparecerá en transacciones.
                       </p>
                     </div>
@@ -393,7 +393,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                 <FormItem>
                   <FormLabel className="text-[13px] font-medium text-foreground">
                     Descripción
-                    <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+                    <span className="text-zinc-500 font-normal ml-1">(opcional)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
@@ -403,7 +403,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       ref={field.ref}
-                      className="rounded-xl border-0 bg-[#F2F9E3]/40 resize-none focus-visible:ring-[#5F7D42]/30"
+                      className="rounded-xl bg-white border border-zinc-200 resize-none focus-visible:ring-zinc-400/30"
                     />
                   </FormControl>
                   <FormMessage className="text-[12px]" />
@@ -420,7 +420,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
               type="button"
               variant="ghost"
               onClick={handleBack}
-              className="gap-1.5 text-[#6E6E73] hover:text-foreground rounded-xl"
+              className="gap-1.5 text-zinc-500 hover:text-foreground rounded-xl"
             >
               <ArrowLeft className="w-4 h-4" />
               Atrás
@@ -437,7 +437,7 @@ export function DebtForm({ onSuccess }: { onSuccess: () => void }) {
             <Button
               type="button"
               onClick={handleNext}
-              className="gap-1.5 bg-[#4F6A35] hover:bg-[#3C5230] text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+              className="gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
             >
               Siguiente
               <ArrowRight className="w-4 h-4" />

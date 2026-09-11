@@ -224,7 +224,7 @@ export function ShiftForm({
         </div>
 
         {/* Odometro */}
-        <div className="space-y-3 rounded-xl border border-border bg-card-soft/60 dark:bg-muted/40 p-4">
+        <div className="space-y-3 rounded-xl border border-border bg-zinc-50 p-4">
           <Label className="text-xs font-semibold text-foreground">Odometro (ultimos 3 digitos)</Label>
           <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
             <div className="space-y-1">

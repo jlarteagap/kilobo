@@ -23,8 +23,6 @@ export interface Investment {
   transaction_id?: string | null
   name: string
   amount: number
-  units?: number | null
-  unit_price?: number | null
   currency: string
   date: string
   notes?: string | null
@@ -39,9 +37,7 @@ export interface InvestmentTransaction {
   investment_id: string
   user_id: string
   type: InvestmentTxType
-  units: number
-  unit_price: number
-  total_amount: number
+  amount: number
   currency: string
   date: string
   notes?: string | null
@@ -49,15 +45,12 @@ export interface InvestmentTransaction {
   updated_at: Date
 }
 
-export type CreateInvestmentData = Pick<Investment, 'account_id' | 'name' | 'amount' | 'currency' | 'date' | 'notes' | 'transaction_id'> & {
-  units?: number | null
-  unit_price?: number | null
-}
+export type CreateInvestmentData = Pick<Investment, 'account_id' | 'name' | 'amount' | 'currency' | 'date' | 'notes' | 'transaction_id'>
 export type UpdateInvestmentData = Partial<Pick<CreateInvestmentData, 'name' | 'amount' | 'currency' | 'date' | 'notes'>> & {
   recurrence?: InvestmentRecurrence | null
 }
 
-export type CreateInvestmentTxData = Pick<InvestmentTransaction, 'investment_id' | 'type' | 'units' | 'unit_price' | 'date' | 'notes'> & {
+export type CreateInvestmentTxData = Pick<InvestmentTransaction, 'investment_id' | 'type' | 'amount' | 'date' | 'notes'> & {
   account_id: string
   currency: string
 }

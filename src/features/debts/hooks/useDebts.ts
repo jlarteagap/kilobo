@@ -6,13 +6,7 @@ import { toast } from 'sonner'
 import type { Debt, DebtSummary } from '@/types/debt'
 import { convertToBOB } from '@/lib/config/exchange-rates'
 import type { CreateDebtInput, CreateDebtPaymentInput } from '@/lib/validations/debt.schema'
-
-async function authFetch(url: string, options?: RequestInit) {
-  return fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  })
-}
+import { apiFetch } from '@/lib/http'
 
 export const debtKeys = {
   all:      ['debts'] as const,
@@ -26,7 +20,7 @@ export function useDebts() {
   return useQuery({
     queryKey: debtKeys.lists(),
     queryFn:  async (): Promise<Debt[]> => {
-      const res  = await authFetch('/api/debts')
+      const res  = await apiFetch('/api/debts')
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener las deudas')
       return Array.isArray(json.data) ? json.data : []
@@ -66,7 +60,7 @@ export function useCreateDebt() {
 
   return useMutation({
     mutationFn: async (data: CreateDebtInput) => {
-      const res  = await authFetch('/api/debts', {
+      const res  = await apiFetch('/api/debts', {
         method: 'POST',
         body:   JSON.stringify(data),
       })
@@ -96,7 +90,7 @@ export function useRegisterPayment() {
       debtId: string
       data:   CreateDebtPaymentInput
     }) => {
-      const res  = await authFetch(`/api/debts/${debtId}`, {
+      const res  = await apiFetch(`/api/debts/${debtId}`, {
         method: 'POST',
         body:   JSON.stringify(data),
       })
@@ -143,7 +137,7 @@ export function useCancelDebt() {
 
   return useMutation({
     mutationFn: async (debtId: string) => {
-      const res  = await authFetch(`/api/debts/${debtId}`, { method: 'PATCH' })
+      const res  = await apiFetch(`/api/debts/${debtId}`, { method: 'PATCH' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al cancelar la deuda')
       return json.data as Debt
@@ -178,7 +172,7 @@ export function useDeleteDebt() {
 
   return useMutation({
     mutationFn: async (debtId: string) => {
-      const res  = await authFetch(`/api/debts/${debtId}`, { method: 'DELETE' })
+      const res  = await apiFetch(`/api/debts/${debtId}`, { method: 'DELETE' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al eliminar la deuda')
     },

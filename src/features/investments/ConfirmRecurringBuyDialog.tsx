@@ -1,9 +1,5 @@
 "use client"
 
-import { useForm, useWatch } from "react-hook-form"
-import { createZodResolver } from "@/lib/validations/rhf-resolver"
-import { executeRecurringBuySchema } from "@/lib/validations/investment.schema"
-import type { ExecuteRecurringBuyInput } from "@/lib/validations/investment.schema"
 import type { Investment } from "@/types/investment"
 
 import {
@@ -12,19 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { SubmitButton } from "@/components/ui/submit-button"
+import { RefreshCw } from "lucide-react"
 
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import { getLocalDateString } from "@/utils/date.utils"
 import { formatWeekdayLong } from "./utils/recurrence.utils"
 import { useExecuteRecurringBuy } from "./hooks/useInvestments"
 
@@ -35,94 +24,61 @@ interface ConfirmRecurringBuyDialogProps {
 
 export function ConfirmRecurringBuyDialog({ investment, onClose }: ConfirmRecurringBuyDialogProps) {
   const execute = useExecuteRecurringBuy(investment?.id ?? "")
-
-  const form = useForm<ExecuteRecurringBuyInput>({
-    resolver: createZodResolver(executeRecurringBuySchema),
-    defaultValues: { unit_price: 0 },
-  })
-
-  const price = useWatch({ control: form.control, name: "unit_price" }) || 0
   const plan = investment?.recurrence
-  const units = plan && price > 0 ? plan.amount / price : 0
 
-  const handleSubmit = (data: ExecuteRecurringBuyInput) => {
-    execute.mutate(data, { onSuccess: onClose })
+  const handleConfirm = () => {
+    execute.mutate({ date: getLocalDateString() }, { onSuccess: onClose })
   }
 
   return (
     <Dialog open={!!investment} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md rounded-[22px] border-none p-8">
+      <DialogContent className="sm:max-w-md rounded-[22px] border border-zinc-200 p-8">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black tracking-tight">
+          <DialogTitle className="text-2xl font-bold text-zinc-900 tracking-tight">
             Confirmar compra
           </DialogTitle>
         </DialogHeader>
         {investment && plan && (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
-              <div className="rounded-xl bg-[#F2F9E3]/40 px-4 py-3 flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-foreground truncate">
-                    {investment.name}
-                  </p>
-                  <p className="text-[11px] text-[#6E6E73] mt-0.5">
-                    {formatWeekdayLong(plan.day_of_week)} · {formatCurrency(plan.amount, plan.currency)}
-                  </p>
-                </div>
-                <span className="text-[13px] font-bold text-[#4F6A35] tabular-nums shrink-0 ml-3">
-                  {formatCurrency(plan.amount, plan.currency)}
-                </span>
+          <div className="space-y-5">
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50/80 px-4 py-3 flex items-center justify-between">
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold text-zinc-900 truncate">
+                  {investment.name}
+                </p>
+                <p className="text-[11px] text-zinc-500 mt-0.5">
+                  {formatWeekdayLong(plan.day_of_week)}
+                </p>
               </div>
+              <span className="text-[13px] font-bold text-zinc-900 tabular-nums shrink-0 ml-3">
+                {formatCurrency(plan.amount, plan.currency)}
+              </span>
+            </div>
 
-              <FormField
-                control={form.control}
-                name="unit_price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-foreground">
-                      Precio del día
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0.01"
-                        placeholder="0.00"
-                        {...field}
-                        onChange={(e) => field.onChange(+e.target.value)}
-                        className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-[12px]" />
-                  </FormItem>
-                )}
-              />
+            <p className="flex items-start gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-[12px] leading-relaxed text-zinc-600">
+              <RefreshCw className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400" />
+              Se registrará una compra de {formatCurrency(plan.amount, plan.currency)} desde
+              la cuenta vinculada al plan.
+            </p>
 
-              <div className="rounded-xl bg-indigo-50 px-4 py-3 flex items-center justify-between">
-                <span className="text-[13px] font-medium text-indigo-700">
-                  Unidades a comprar
-                </span>
-                <span className="text-[15px] font-bold text-indigo-600 tabular-nums">
-                  {units > 0 ? new Intl.NumberFormat("es-BO", { maximumFractionDigits: 8 }).format(units) : '—'}
-                </span>
-              </div>
-
-              <div className="flex gap-2 pt-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                  disabled={execute.isPending}
-                  className="flex-1 rounded-xl"
-                >
-                  Cancelar
-                </Button>
-                <SubmitButton isPending={execute.isPending} className="flex-1">
-                  Confirmar compra
-                </SubmitButton>
-              </div>
-            </form>
-          </Form>
+            <div className="flex gap-2 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={execute.isPending}
+                className="flex-1 rounded-xl border-zinc-200"
+              >
+                Cancelar
+              </Button>
+              <SubmitButton
+                isPending={execute.isPending}
+                className="flex-1 rounded-xl bg-zinc-900 hover:bg-zinc-800"
+                onClick={handleConfirm}
+              >
+                Confirmar compra
+              </SubmitButton>
+            </div>
+          </div>
         )}
       </DialogContent>
     </Dialog>

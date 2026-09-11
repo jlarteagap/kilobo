@@ -35,6 +35,8 @@ interface AccountFormProps {
   isPending:    boolean
 }
 
+const fieldClass = "rounded-xl bg-white border-zinc-200 focus-visible:ring-zinc-400/30"
+
 export function AccountForm({ initialData, onSubmit, onCancel, isPending }: AccountFormProps) {
   const isEdit = !!initialData
 
@@ -45,10 +47,9 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
       type:     initialData?.type     ?? 'BANK',
       balance:  initialData?.balance  ?? 0,
       currency: initialData?.currency ?? 'BOB',
+      institution: initialData?.institution ?? '',
     },
   })
-
-
 
   return (
     <Form {...form}>
@@ -60,7 +61,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-foreground">
+              <FormLabel className="text-[13px] font-medium text-zinc-900">
                 Tipo de cuenta
               </FormLabel>
               <FormControl>
@@ -77,8 +78,8 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
                           'flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl text-[11px] font-medium',
                           'border transition-all duration-200',
                           isSelected
-                            ? 'border-[#4F6A35] bg-[#4F6A35] text-white'
-                            : 'border-[rgba(0,0,0,0.06)] bg-[#F2F9E3]/40 text-[#6E6E73] hover:border-[rgba(0,0,0,0.12)] hover:bg-[#F2F9E3]'
+                            ? 'border-zinc-900 bg-zinc-900 text-white'
+                            : 'border-zinc-200 bg-zinc-50 text-zinc-500 hover:border-zinc-300 hover:bg-zinc-100'
                         )}
                       >
                         <Icon
@@ -102,20 +103,44 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-foreground">
+              <FormLabel className="text-[13px] font-medium text-zinc-900">
                 Nombre
               </FormLabel>
               <FormControl>
                 <Input
                   placeholder="Ej: Banco Nacional, Efectivo…"
                   {...field}
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                  className={fieldClass}
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
             </FormItem>
           )}
         />
+
+        {/* ── Institución — solo para cuentas bancarias ── */}
+        {form.watch('type') === 'BANK' && (
+          <FormField<CreateAccountInput>
+            control={form.control}
+            name="institution"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[13px] font-medium text-zinc-900">
+                  Institución / Banco
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Ej: Banco Mercantil, Banco Unión…"
+                    value={field.value ?? ''}
+                    onChange={field.onChange}
+                    className={fieldClass}
+                  />
+                </FormControl>
+                <FormMessage className="text-[12px]" />
+              </FormItem>
+            )}
+          />
+        )}
 
         {/* ── Saldo + Moneda ── */}
         <div className="grid grid-cols-2 gap-4">
@@ -124,7 +149,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
             name="balance"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-foreground">
+                <FormLabel className="text-[13px] font-medium text-zinc-900">
                   Saldo inicial
                 </FormLabel>
                 <FormControl>
@@ -134,7 +159,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
                     placeholder="0.00"
                     {...field}
                     onChange={(e) => field.onChange(+e.target.value)}
-                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                    className={fieldClass}
                   />
                 </FormControl>
                 <FormMessage className="text-[12px]" />
@@ -147,12 +172,12 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
             name="currency"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[13px] font-medium text-foreground">
+                <FormLabel className="text-[13px] font-medium text-zinc-900">
                   Moneda
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value as string}>
                   <FormControl>
-                    <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
+                    <SelectTrigger className={fieldClass}>
                       <SelectValue placeholder="Moneda" />
                     </SelectTrigger>
                   </FormControl>
@@ -177,11 +202,11 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
             variant="outline"
             onClick={onCancel}
             disabled={isPending}
-            className="flex-1 rounded-xl"
+            className="flex-1 rounded-xl border-zinc-200"
           >
             Cancelar
           </Button>
-          <SubmitButton isPending={isPending} className="flex-1">
+          <SubmitButton isPending={isPending} className="flex-1 rounded-xl bg-zinc-900 hover:bg-zinc-800">
             {isEdit ? 'Guardar cambios' : 'Crear cuenta'}
           </SubmitButton>
         </div>

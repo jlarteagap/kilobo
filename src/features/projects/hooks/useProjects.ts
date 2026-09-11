@@ -2,13 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { Project, CreateProjectData, UpdateProjectData } from '@/types/project'
-
-async function authFetch(url: string, options?: RequestInit) {
-  return fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  })
-}
+import { apiFetch } from '@/lib/http'
 
 export const projectKeys = {
   all:   ['projects'] as const,
@@ -21,7 +15,7 @@ export function useProjects() {
   return useQuery({
     queryKey: projectKeys.lists(),
     queryFn: async (): Promise<Project[]> => {
-      const res  = await authFetch('/api/projects')
+      const res  = await apiFetch('/api/projects')
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener actividades')
       return Array.isArray(json.data) ? json.data : []
@@ -36,7 +30,7 @@ export function useCreateProject() {
 
   return useMutation({
     mutationFn: async (data: CreateProjectData): Promise<Project> => {
-      const res  = await authFetch('/api/projects', { method: 'POST', body: JSON.stringify(data) })
+      const res  = await apiFetch('/api/projects', { method: 'POST', body: JSON.stringify(data) })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al crear actividad')
       return json.data
@@ -72,7 +66,7 @@ export function useUpdateProject() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateProjectData }): Promise<Project> => {
-      const res  = await authFetch(`/api/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+      const res  = await apiFetch(`/api/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al actualizar actividad')
       return json.data
@@ -100,7 +94,7 @@ export function useDeleteProject() {
 
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
-      const res  = await authFetch(`/api/projects/${id}`, { method: 'DELETE' })
+      const res  = await apiFetch(`/api/projects/${id}`, { method: 'DELETE' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al archivar actividad')
     },

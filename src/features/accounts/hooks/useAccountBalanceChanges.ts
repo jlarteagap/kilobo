@@ -2,17 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { AccountBalanceChange } from '@/types/account'
 import { startOfDailyPeriod } from '../utils/daily-period.utils'
-
-// Cliente HTTP que añade el token automáticamente
-async function authFetch(url: string, options?: RequestInit) {
-  return fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  })
-}
+import { apiFetch } from '@/lib/http'
 
 // Query key centralizada. Incluye `before` (límite del periodo diario local):
 // al cruzar las 4:00 AM el key cambia y el badge se recalcula.
@@ -74,7 +64,7 @@ export function useAccountBalanceChanges(accountIds: string[]) {
     queryFn: async (): Promise<Record<string, AccountBalanceChange>> => {
       const entries = await Promise.all(
         uniqueIds.map(async (accountId) => {
-          const res = await authFetch(
+          const res = await apiFetch(
             `/api/account-balance-changes?account_id=${encodeURIComponent(
               accountId
             )}&before=${encodeURIComponent(before.toISOString())}`

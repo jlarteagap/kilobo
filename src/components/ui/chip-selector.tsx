@@ -14,10 +14,10 @@ function ChipSelector({ items, value, onChange, clearLabel = "Ninguna" }: ChipSe
         type="button"
         onClick={() => onChange(null)}
         className={cn(
-          "px-3 py-1 rounded-full text-xs font-medium transition-all duration-150",
+          "px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 border",
           !value
-            ? "bg-[#4F6A35] text-white"
-            : "bg-[#F2F9E3]/40 text-[#6E6E73] hover:bg-[#F2F9E3]"
+            ? "bg-zinc-900 border-zinc-900 text-white"
+            : "bg-zinc-50 border-zinc-200 text-zinc-500 hover:bg-zinc-100"
         )}
       >
         {clearLabel}
@@ -28,10 +28,10 @@ function ChipSelector({ items, value, onChange, clearLabel = "Ninguna" }: ChipSe
           type="button"
           onClick={() => onChange(item)}
           className={cn(
-            "px-3 py-1 rounded-full text-xs font-medium transition-all duration-150",
+            "px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 border",
             value === item
-              ? "bg-[#4F6A35] text-white"
-              : "bg-[#F2F9E3]/40 text-[#6E6E73] hover:bg-[#F2F9E3]"
+              ? "bg-zinc-900 border-zinc-900 text-white"
+              : "bg-zinc-50 border-zinc-200 text-zinc-500 hover:bg-zinc-100"
           )}
         >
           {item}

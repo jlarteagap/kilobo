@@ -34,6 +34,8 @@ interface InvestmentTxFormProps {
   isPending: boolean
 }
 
+const inputClass = "rounded-xl bg-white border-zinc-200 focus-visible:ring-zinc-400/30"
+
 export function InvestmentTxForm({
   investment,
   type,
@@ -43,101 +45,70 @@ export function InvestmentTxForm({
 }: InvestmentTxFormProps) {
   const isBuy = type === 'BUY'
   const schema = isBuy ? buyInvestmentSchema : sellInvestmentSchema
-  const availableUnits = investment.units ?? 0
+  const available = investment.amount
 
   const form = useForm<BuyInvestmentInput | SellInvestmentInput>({
     resolver: createZodResolver(schema),
     defaultValues: {
       investment_id: investment.id,
       account_id: investment.account_id,
-      units: 0,
-      unit_price: 0,
+      amount: 0,
       currency: investment.currency,
       date: getLocalDateString(),
       notes: null,
     } as BuyInvestmentInput | SellInvestmentInput,
   })
 
-  const units = form.watch('units') || 0
-  const unitPrice = form.watch('unit_price') || 0
-  const total = units * unitPrice
+  const amount = form.watch('amount') || 0
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <div className="rounded-xl bg-[#F2F9E3]/40 px-4 py-3 space-y-1">
-          <p className="text-[13px] font-semibold text-foreground">
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50/80 px-4 py-3 space-y-1">
+          <p className="text-[13px] font-semibold text-zinc-900">
             {investment.name}
           </p>
-          {investment.units != null && (
-            <p className="text-[11px] text-[#6E6E73]">
-              En cartera: {investment.units} units · Precio promedio: {formatCurrency(investment.unit_price ?? 0, investment.currency)}/unit
-            </p>
-          )}
+          <p className="text-[11px] text-zinc-500">
+            Total invertido: {formatCurrency(available, investment.currency)}
+          </p>
         </div>
 
         {!isBuy && (
-          <div className="rounded-xl bg-amber-50 px-4 py-2 text-[12px] font-medium text-amber-700">
-            Disponibles: {availableUnits} units
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-[12px] font-medium text-amber-700">
+            Disponible para vender: {formatCurrency(available, investment.currency)}
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="units"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[13px] font-medium text-foreground">
-                  Unidades
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step={investment.currency === 'BTC' || investment.currency === 'ETH' ? '0.000001' : '0.01'}
-                    min="0"
-                    placeholder="0"
-                    {...field}
-                    onChange={(e) => field.onChange(+e.target.value)}
-                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
-                  />
-                </FormControl>
-                <FormMessage className="text-[12px]" />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[13px] font-medium text-zinc-900">
+                {isBuy ? '¿Cuánto compraste?' : '¿Cuánto vendiste?'}
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  placeholder="0.00"
+                  value={field.value === 0 ? '' : field.value}
+                  onChange={(e) => field.onChange(+e.target.value)}
+                  className={inputClass}
+                />
+              </FormControl>
+              <FormMessage className="text-[12px]" />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={form.control}
-            name="unit_price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[13px] font-medium text-foreground">
-                  Precio por unidad
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    {...field}
-                    onChange={(e) => field.onChange(+e.target.value)}
-                    className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
-                  />
-                </FormControl>
-                <FormMessage className="text-[12px]" />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="rounded-xl bg-indigo-50 px-4 py-3 flex items-center justify-between">
-          <span className="text-[13px] font-medium text-indigo-700">
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50/80 px-4 py-3 flex items-center justify-between">
+          <span className="text-[13px] font-medium text-zinc-600">
             Total
           </span>
-          <span className="text-[15px] font-bold text-indigo-600 tabular-nums">
-            {formatCurrency(total, investment.currency)}
+          <span className="text-[15px] font-bold text-zinc-900 tabular-nums">
+            {formatCurrency(amount, investment.currency)}
           </span>
         </div>
 
@@ -146,14 +117,14 @@ export function InvestmentTxForm({
           name="date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-foreground">
+              <FormLabel className="text-[13px] font-medium text-zinc-900">
                 Fecha
               </FormLabel>
               <FormControl>
                 <Input
                   type="date"
                   {...field}
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                  className={inputClass}
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -166,8 +137,8 @@ export function InvestmentTxForm({
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-foreground">
-                Notas <span className="text-[#6E6E73] font-normal">(opcional)</span>
+              <FormLabel className="text-[13px] font-medium text-zinc-900">
+                Notas <span className="text-zinc-400 font-normal">(opcional)</span>
               </FormLabel>
               <FormControl>
                 <Textarea
@@ -175,7 +146,7 @@ export function InvestmentTxForm({
                   placeholder="Detalles adicionales..."
                   {...field}
                   value={field.value ?? ''}
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 resize-none focus-visible:ring-[#5F7D42]/30"
+                  className={`${inputClass} resize-none`}
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -189,11 +160,14 @@ export function InvestmentTxForm({
             variant="outline"
             onClick={onCancel}
             disabled={isPending}
-            className="flex-1 rounded-xl"
+            className="flex-1 rounded-xl border-zinc-200"
           >
             Cancelar
           </Button>
-          <SubmitButton isPending={isPending} className="flex-1">
+          <SubmitButton
+            isPending={isPending}
+            className="flex-1 rounded-xl bg-zinc-900 hover:bg-zinc-800"
+          >
             {isBuy ? 'Registrar Compra' : 'Registrar Venta'}
           </SubmitButton>
         </div>

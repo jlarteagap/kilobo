@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
-import { useAccounts } from '@/features/accounts/hooks/useAccounts'
+import { useActiveAccounts } from '@/features/accounts/hooks/useAccounts'
 import { useTransactions } from '@/features/transactions/hooks/useTransactions'
 import { projectBalance } from '@/lib/forecast/projection'
 import type { ProjectionResult } from '@/lib/forecast/projection'
 
 export function useBalanceProjection(): ProjectionResult & { isLoading: boolean } {
-  const { data: accounts = [], isLoading: loadingAccounts } = useAccounts()
+  const { data: accounts = [], isLoading: loadingAccounts } = useActiveAccounts()
   const { data: transactions = [], isLoading: loadingTransactions } = useTransactions()
 
   const projection = useMemo(

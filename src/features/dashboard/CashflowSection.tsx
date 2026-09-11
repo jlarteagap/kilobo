@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 import { useTransactions } from "@/features/transactions/hooks/useTransactions"
 import { useCategories }   from "@/features/categories/hooks/useCategories"
-import { useAccounts }     from "@/features/accounts/hooks/useAccounts"
+import { useActiveAccounts }     from "@/features/accounts/hooks/useAccounts"
 import { useProjects }     from "@/features/projects/hooks/useProjects"
 import { SankeyCustomNode } from "./components/SankeyCustomNode"
 import { SankeyCustomLink } from "./components/SankeyCustomLink"
@@ -175,7 +175,7 @@ export function CashflowSection() {
 
   const { data: transactions = [], isLoading: loadingTx  } = useTransactions()
   const { data: categories   = [], isLoading: loadingCat } = useCategories()
-  const { data: accounts     = [], isLoading: loadingAcc } = useAccounts()
+  const { data: accounts     = [], isLoading: loadingAcc } = useActiveAccounts()
   const { data: projects = [] } = useProjects()
 
   const isLoading = loadingTx || loadingCat || loadingAcc

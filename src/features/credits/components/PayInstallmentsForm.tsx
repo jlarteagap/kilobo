@@ -9,7 +9,7 @@ import { SubmitButton } from "@/components/ui/submit-button"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { payInstallmentsSchema, type PayInstallmentsInput } from "@/lib/validations/credit.schema"
 import { usePayInstallments } from "@/features/credits/hooks/useCredits"
-import { useAccounts } from "@/features/accounts/hooks/useAccounts"
+import { useActiveAccounts } from "@/features/accounts/hooks/useAccounts"
 import { cn } from "@/lib/utils"
 import type { Credit, Installment } from "@/types/credit"
 
@@ -24,7 +24,7 @@ export function PayInstallmentsForm({
   installment,
   onSuccess,
 }: PayInstallmentsFormProps) {
-  const { data: accounts = [] } = useAccounts()
+  const { data: accounts = [] } = useActiveAccounts()
   const { mutateAsync: payInstallments, isPending } = usePayInstallments()
 
   const form = useForm<PayInstallmentsInput>({
@@ -52,12 +52,12 @@ export function PayInstallmentsForm({
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
 
         {/* ── Resumen de la cuota ── */}
-        <div className="flex items-center gap-3 px-3 py-2.5 bg-[#F2F9E3]/40 rounded-xl">
+        <div className="flex items-center gap-3 px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl">
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-foreground truncate">
               {credit.institution}
             </p>
-            <p className="text-[11px] text-[#6E6E73]">
+            <p className="text-[11px] text-zinc-500">
               Cuota #{installment.number} · {formatCurrency(installment.total_amount, credit.currency)}
             </p>
           </div>
@@ -78,7 +78,7 @@ export function PayInstallmentsForm({
                   step="0.01"
                   placeholder="0.00"
                   {...field}
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                  className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -100,7 +100,7 @@ export function PayInstallmentsForm({
                 value={field.value as string}
               >
                 <FormControl>
-                  <SelectTrigger className="rounded-xl border-0 bg-[#F2F9E3]/40 focus:ring-[#5F7D42]/30">
+                  <SelectTrigger className="rounded-xl bg-white border border-zinc-200 focus:ring-zinc-400/30">
                     <SelectValue placeholder="Seleccionar cuenta" />
                   </SelectTrigger>
                 </FormControl>
@@ -116,7 +116,7 @@ export function PayInstallmentsForm({
               {account && (
                 <div className={cn(
                   'flex items-center justify-between px-3 py-2 rounded-xl text-[12px] mt-2',
-                  isOverBalance ? 'bg-[#FAEDE9] text-[#B5543D]' : 'bg-[#F2F9E3]/40 text-[#6E6E73]'
+                  isOverBalance ? 'bg-[#FAEDE9] text-[#B5543D]' : 'bg-zinc-50 text-zinc-500 border border-zinc-200'
                 )}>
                   <span>Balance disponible</span>
                   <span className={cn('font-semibold', isOverBalance && 'text-[#B5543D]')}>

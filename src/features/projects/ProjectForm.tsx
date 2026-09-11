@@ -43,6 +43,8 @@ interface ProjectFormProps {
   isPending:    boolean
 }
 
+const fieldClass = "rounded-xl bg-white border-zinc-200 focus-visible:ring-zinc-400/30"
+
 export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: ProjectFormProps) {
   const isEdit = !!initialData
 
@@ -90,7 +92,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
           name="icon"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-foreground">
+              <FormLabel className="text-[13px] font-medium text-zinc-900">
                 Ícono
               </FormLabel>
               <FormControl>
@@ -103,8 +105,8 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
                       className={cn(
                         'w-10 h-10 rounded-xl text-lg flex items-center justify-center transition-all duration-150',
                         field.value === icon
-                          ? 'bg-[#4F6A35] shadow-sm scale-105'
-                          : 'bg-[#F2F9E3]/40 hover:bg-[#F2F9E3]'
+                          ? 'bg-zinc-900 shadow-sm scale-105'
+                          : 'bg-zinc-50 hover:bg-zinc-100'
                       )}
                     >
                       {icon}
@@ -123,7 +125,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
           name="color"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-foreground">
+              <FormLabel className="text-[13px] font-medium text-zinc-900">
                 Color
               </FormLabel>
               <FormControl>
@@ -136,7 +138,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
                       className={cn(
                         'w-8 h-8 rounded-full transition-all duration-150',
                         field.value === color
-                          ? 'ring-2 ring-offset-2 ring-[#4F6A35] scale-110'
+                          ? 'ring-2 ring-offset-2 ring-zinc-900 scale-110'
                           : 'hover:scale-105'
                       )}
                       style={{ backgroundColor: color }}
@@ -149,8 +151,8 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
           )}
         />
 
-        {/* ── Preview — igual que AccountCard ── */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-[#F2F9E3]/40 rounded-2xl border border-[rgba(0,0,0,0.06)]">
+        {/* ── Preview ── */}
+        <div className="flex items-center gap-3 px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
             style={{ backgroundColor: selectedColor + '20' }}
@@ -158,10 +160,10 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
             {selectedIcon}
           </div>
           <div>
-            <p className="text-[13px] font-bold text-foreground leading-tight">
+            <p className="text-[13px] font-bold text-zinc-900 leading-tight">
               {projectName || 'Nombre de la actividad'}
             </p>
-            <p className="text-[11px] text-[#6E6E73] mt-0.5">
+            <p className="text-[11px] text-zinc-500 mt-0.5">
               {currentSubtypes.length > 0
                 ? currentSubtypes.slice(0, 3).join(', ') + (currentSubtypes.length > 3 ? '…' : '')
                 : 'Sin etiquetas aún'}
@@ -175,7 +177,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-foreground">
+              <FormLabel className="text-[13px] font-medium text-zinc-900">
                 Nombre
               </FormLabel>
               <FormControl>
@@ -183,6 +185,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
                   placeholder="Ej: Uber, Edición de video…"
                   {...field}
                   value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ""}
+                  className={fieldClass}
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -196,16 +199,16 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-foreground">
+              <FormLabel className="text-[13px] font-medium text-zinc-900">
                 Descripción
-                <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+                <span className="text-zinc-400 font-normal ml-1">(opcional)</span>
               </FormLabel>
               <FormControl>
                 <Input
                   placeholder="Ej: Ingresos y gastos de Uber"
                   {...field}
                   value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ""}
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#4F6A35]/10"
+                  className={fieldClass}
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -219,9 +222,9 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
           name="subtypes"
           render={() => (
             <FormItem>
-              <FormLabel className="text-[13px] font-medium text-foreground">
+              <FormLabel className="text-[13px] font-medium text-zinc-900">
                 Etiquetas
-                <span className="text-[#6E6E73] font-normal ml-1">(opcional)</span>
+                <span className="text-zinc-400 font-normal ml-1">(opcional)</span>
               </FormLabel>
 
               {/* Input + botón agregar */}
@@ -231,14 +234,14 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
                   value={subtypeInput}
                   onChange={(e) => setSubtypeInput(e.target.value)}
                   onKeyDown={handleSubtypeKeyDown}
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#4F6A35]/10"
+                  className={fieldClass}
                 />
                 <Button
                   type="button"
                   variant="outline"
                   onClick={addSubtype}
                   disabled={!subtypeInput.trim()}
-                  className="rounded-xl flex-shrink-0 border-[rgba(0,0,0,0.08)]"
+                  className="rounded-xl flex-shrink-0 border-zinc-200"
                 >
                   Agregar
                 </Button>
@@ -250,7 +253,7 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
                   {currentSubtypes.map((s) => (
                     <span
                       key={s}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[12px] font-medium bg-[#4F6A35] text-white"
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[12px] font-medium bg-zinc-900 text-white"
                     >
                       {s}
                       <button
@@ -277,11 +280,11 @@ export function ProjectForm({ initialData, onSubmit, onCancel, isPending }: Proj
             variant="outline"
             onClick={onCancel}
             disabled={isPending}
-            className="flex-1 rounded-xl"
+            className="flex-1 rounded-xl border-zinc-200"
           >
             Cancelar
           </Button>
-          <SubmitButton isPending={isPending} className="flex-1 bg-[#4F6A35] hover:bg-[#3C5230]">
+          <SubmitButton isPending={isPending} className="flex-1 rounded-xl bg-zinc-900 hover:bg-zinc-800">
             {isEdit ? 'Guardar cambios' : 'Crear actividad'}
           </SubmitButton>
         </div>

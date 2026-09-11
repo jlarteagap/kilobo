@@ -82,7 +82,7 @@ function CreateCategoryForm({ onSuccess }: Omit<CreateModeProps, 'mode'>) {
                 <Input
                   {...field}
                   placeholder="Ej: Alimentación, Transporte…"
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                  className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -97,14 +97,14 @@ function CreateCategoryForm({ onSuccess }: Omit<CreateModeProps, 'mode'>) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-[13px] font-medium text-foreground">
-                Icono <span className="text-[#6E6E73] font-normal">(emoji)</span>
+                Icono <span className="text-zinc-500 font-normal">(emoji)</span>
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   value={field.value ?? ''}
                   placeholder="🍔"
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                  className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -194,7 +194,7 @@ function EditCategoryForm({ category, lockedTags = [], onSuccess }: Omit<EditMod
                 <Input
                   {...field}
                   placeholder="Ej: Alimentación, Transporte…"
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                  className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />
@@ -209,14 +209,14 @@ function EditCategoryForm({ category, lockedTags = [], onSuccess }: Omit<EditMod
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-[13px] font-medium text-foreground">
-                Icono <span className="text-[#6E6E73] font-normal">(emoji)</span>
+                Icono <span className="text-zinc-500 font-normal">(emoji)</span>
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   value={field.value ?? ''}
                   placeholder="🍔"
-                  className="rounded-xl border-0 bg-[#F2F9E3]/40 focus-visible:ring-[#5F7D42]/30"
+                  className="rounded-xl bg-white border border-zinc-200 focus-visible:ring-zinc-400/30"
                 />
               </FormControl>
               <FormMessage className="text-[12px]" />

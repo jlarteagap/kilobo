@@ -1,5 +1,5 @@
 import { adminDb } from '@/lib/firebase.admin'
-import { Timestamp } from 'firebase-admin/firestore'
+import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 import type { SavingsGoal, CreateSavingsGoalData, UpdateSavingsGoalData } from '@/types/savings-goal'
 
 const collection = adminDb.collection('savings_goals')
@@ -53,6 +53,15 @@ export const savingsGoalRepository = {
     }
     const ref = await collection.add(payload)
     return mapSavingsGoal(ref.id, payload)
+  },
+
+  async deposit(id: string, amount: number): Promise<SavingsGoal> {
+    await collection.doc(id).update({
+      current_amount: FieldValue.increment(amount),
+      updated_at: Timestamp.now(),
+    })
+    const doc = await collection.doc(id).get()
+    return mapSavingsGoal(doc.id, doc.data()!)
   },
 
   async update(id: string, data: UpdateSavingsGoalData): Promise<SavingsGoal> {

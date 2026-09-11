@@ -18,6 +18,10 @@ export const creditsService = {
     return { credit, installments }
   },
 
+  async getUpcomingInstallments(userId: string) {
+    return creditsRepository.findUpcomingInstallments(userId)
+  },
+
   async createCredit(data: CreateCreditInput, userId: string): Promise<Credit> {
     const hasHistory = data.has_history ?? false
 

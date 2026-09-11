@@ -13,6 +13,7 @@ import { DashboardSavingsGoals }       from "@/features/dashboard/components/Das
 import { AssetsSection }               from "@/features/dashboard/AssetsSection"
 import { FinancialComparisonChart }    from "@/features/dashboard/components/FinancialComparisonChart"
 import { BalanceProjection }           from "@/features/dashboard/components/BalanceProjection"
+import { FixedExpensesCard }           from "@/features/dashboard/components/FixedExpensesCard"
 import { DashboardSkeleton }           from "@/features/dashboard/components/skeletons/DashboardSkeleton"
 
 import { useDashboard }          from "@/features/dashboard/hooks/useDashboard"
@@ -115,6 +116,13 @@ export default function DashboardPage() {
           <aside className="flex flex-col gap-6 md:gap-8 lg:sticky lg:top-24 lg:self-start">
             {/* 1. Proyección de saldo (card sage destacada) */}
             <BalanceProjection />
+
+            {/* 1b. Gastos fijos vs variables */}
+            <FixedExpensesCard
+              fixedExpense={monthlyStats.fixedExpense}
+              variableExpense={monthlyStats.variableExpense}
+              currency="BOB"
+            />
 
             {/* 2. Obligaciones (Credits+Debts+Budgets compactos) */}
             <div className="flex flex-col gap-4">

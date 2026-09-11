@@ -1,18 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Account, CreateAccountData, UpdateAccountData } from '@/types/account'
 import { toast } from 'sonner'
-
-// Cliente HTTP que añade el token automáticamente
-async function authFetch(url: string, options?: RequestInit) {
-
-  return fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  })
-}
+import { apiFetch } from '@/lib/http'
 
 // Query keys centralizadas — evita typos y facilita invalidación
 export const accountKeys = {
@@ -29,12 +18,21 @@ export function useAccounts() {
   return useQuery({
     queryKey: accountKeys.lists(),
     queryFn: async (): Promise<Account[]> => {
-      const res = await authFetch('/api/accounts')
+      const res = await apiFetch('/api/accounts')
       if (!res.ok) throw new Error('Error al obtener las cuentas')
       return res.json()
     },
     staleTime: 1000 * 60 * 5, // 5 minutos en caché
   })
+}
+
+// Cuentas activas (no archivadas) para pickers, dashboard y cálculo de patrimonio.
+export function useActiveAccounts() {
+  const query = useAccounts()
+  return {
+    ...query,
+    data: (query.data ?? []).filter((account) => !account.archived),
+  }
 }
 
 // POST con optimistic update
@@ -43,7 +41,7 @@ export function useCreateAccount() {
 
   return useMutation({
     mutationFn: async (data: CreateAccountData): Promise<Account> => {
-      const res = await authFetch('/api/accounts', {
+      const res = await apiFetch('/api/accounts', {
         method: 'POST',
         body: JSON.stringify(data),
       })
@@ -96,7 +94,7 @@ export function useUpdateAccount() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateAccountData }) => {
-      const res = await authFetch(`/api/accounts/${id}`, {
+      const res = await apiFetch(`/api/accounts/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
       })
@@ -119,7 +117,7 @@ export function useDeleteAccount() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await authFetch(`/api/accounts/${id}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/accounts/${id}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json()
         throw new Error(err.error || 'Error al eliminar la cuenta')

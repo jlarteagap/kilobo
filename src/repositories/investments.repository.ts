@@ -9,7 +9,11 @@ function mapInvestment(id: string, data: FirebaseFirestore.DocumentData): Invest
 }
 
 function mapTransaction(id: string, data: FirebaseFirestore.DocumentData): InvestmentTransaction {
-  return { id, ...data } as unknown as InvestmentTransaction
+  const mapped = { id, ...data } as unknown as InvestmentTransaction
+  if (mapped.amount == null && (data as { total_amount?: number }).total_amount != null) {
+    mapped.amount = (data as { total_amount: number }).total_amount
+  }
+  return mapped
 }
 
 function buildPayload(data: CreateInvestmentData, userId: string) {
@@ -20,8 +24,6 @@ function buildPayload(data: CreateInvestmentData, userId: string) {
     currency: data.currency ?? 'BOB',
     notes: data.notes ?? null,
     transaction_id: data.transaction_id ?? null,
-    units: data.units ?? null,
-    unit_price: data.unit_price ?? null,
     created_at: now,
     updated_at: now,
   }
@@ -53,6 +55,13 @@ export const investmentsRepository = {
     const data = doc.data()!
     if (data.user_id !== userId) return null
     return mapInvestment(doc.id, data)
+  },
+
+  /** Busca por nombre (case-insensitive) dentro de una cuenta. */
+  async findByName(name: string, accountId: string, userId: string): Promise<Investment | null> {
+    const investments = await this.findByAccount(accountId, userId)
+    const normalized = name.trim().toLowerCase()
+    return investments.find(inv => inv.name.trim().toLowerCase() === normalized) ?? null
   },
 
   async create(data: CreateInvestmentData, userId: string): Promise<Investment> {
@@ -127,11 +136,10 @@ export const investmentsRepository = {
     userId: string
   ): Promise<InvestmentTransaction> {
     const now = Timestamp.now()
-    const total_amount = data.units * data.unit_price
     const payload = {
       ...data,
       user_id: userId,
-      total_amount,
+      amount: data.amount,
       notes: data.notes ?? null,
       created_at: now,
       updated_at: now,
@@ -146,14 +154,13 @@ export const investmentsRepository = {
     userId: string
   ): {
     ref: FirebaseFirestore.DocumentReference
-    payload: { id?: string; investment_id: string; user_id: string; type: InvestmentTxType; units: number; unit_price: number; total_amount: number; currency: string; date: string; notes: string | null; created_at: FirebaseFirestore.Timestamp; updated_at: FirebaseFirestore.Timestamp }
+    payload: { id?: string; investment_id: string; user_id: string; type: InvestmentTxType; amount: number; currency: string; date: string; notes: string | null; created_at: FirebaseFirestore.Timestamp; updated_at: FirebaseFirestore.Timestamp }
   } {
     const now = Timestamp.now()
-    const total_amount = data.units * data.unit_price
     const payload = {
       ...data,
       user_id: userId,
-      total_amount,
+      amount: data.amount,
       notes: data.notes ?? null,
       created_at: now,
       updated_at: now,
@@ -169,8 +176,24 @@ export const investmentsRepository = {
     await this.txCollection(investmentId).doc(txId).delete()
   },
 
+  async findTransaction(investmentId: string, txId: string, userId: string): Promise<InvestmentTransaction | null> {
+    const inv = await this.findById(investmentId, userId)
+    if (!inv) throw new Error('Inversión no encontrada.')
+    const doc = await this.txCollection(investmentId).doc(txId).get()
+    if (!doc.exists) return null
+    return mapTransaction(doc.id, doc.data()!)
+  },
+
+  deleteTransactionInBatch(
+    batch: FirebaseFirestore.WriteBatch,
+    investmentId: string,
+    txId: string
+  ): void {
+    batch.delete(this.txCollection(investmentId).doc(txId))
+  },
+
   /**
-   * Recalcula units, unit_price (avg ponderado), y amount basado en todas las transacciones BUY/SELL.
+   * Recalcula amount como la suma de compras menos las ventas (monto invertido neto).
    */
   async recalculatePosition(investmentId: string, userId: string): Promise<void> {
     const inv = await this.findById(investmentId, userId)
@@ -180,43 +203,19 @@ export const investmentsRepository = {
       .orderBy('created_at', 'asc')
       .get()
 
-    if (txSnapshot.empty) {
-      // No hay transacciones → resetear position
-      await collection.doc(investmentId).update({
-        units: null,
-        unit_price: null,
-        amount: 0,
-        updated_at: FieldValue.serverTimestamp(),
-      })
-      return
-    }
-
-    let totalUnits = 0
-    let totalCost = 0
+    let netAmount = 0
 
     for (const doc of txSnapshot.docs) {
       const tx = doc.data() as InvestmentTransaction
-      if (tx.type === 'BUY') {
-        totalCost += tx.total_amount
-        totalUnits += tx.units
-      } else if (tx.type === 'SELL') {
-        // Reduce units; cost basis se descuenta al avg actual
-        if (totalUnits > 0) {
-          const avgPrice = totalCost / totalUnits
-          totalCost -= tx.units * avgPrice
-          totalUnits -= tx.units
-        }
-      }
+      const amount = tx.amount ?? (tx as unknown as { total_amount?: number }).total_amount ?? 0
+      if (tx.type === 'BUY') netAmount += amount
+      else if (tx.type === 'SELL') netAmount -= amount
     }
 
-    totalUnits = Math.max(0, totalUnits)
-    totalCost = Math.max(0, totalCost)
-    const avgPrice = totalUnits > 0 ? +(totalCost / totalUnits).toFixed(6) : null
+    netAmount = Math.max(0, netAmount)
 
     await collection.doc(investmentId).update({
-      units: totalUnits > 0 ? totalUnits : null,
-      unit_price: avgPrice,
-      amount: totalUnits > 0 ? totalCost : 0,
+      amount: netAmount,
       updated_at: FieldValue.serverTimestamp(),
     })
   },

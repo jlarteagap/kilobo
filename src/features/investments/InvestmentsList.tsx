@@ -1,9 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { TrendingUp, Pencil, Trash2, Plus, Wallet, Landmark, Banknote, Bitcoin, PiggyBank, ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, RefreshCw, CalendarClock } from "lucide-react"
-import { cn } from "@/lib/utils"
-
+import { TrendingUp, Wallet, Plus } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -20,306 +18,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 
-import { useInvestments, useDeleteInvestment, useUpdateInvestment, useInvestmentTransactions, useBuyInvestment, useSellInvestment } from "./hooks/useInvestments"
+import { useInvestments, useDeleteInvestment, useUpdateInvestment, useBuyInvestment, useSellInvestment } from "./hooks/useInvestments"
 import { CreateInvestmentForm } from "./CreateInvestmentForm"
 import { InvestmentForm } from "./InvestmentForm"
 import { InvestmentTxForm } from "./InvestmentTxForm"
-import { ConfirmRecurringBuyDialog } from "./ConfirmRecurringBuyDialog"
-import { isPlanDue, nextDueString, formatWeekdayShort } from "./utils/recurrence.utils"
-import type { BuyInvestmentInput } from "@/lib/validations/investment.schema"
-import {
-  INVESTMENT_ICON,
-  INVESTMENT_COLOR,
-  formatInvestmentDate,
-} from "./utils/investment-display.utils"
-import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
+import { RecurringPlanDialog } from "./RecurringPlanDialog"
+import { AccountCardSkeleton as AccountSkeleton, accountIconMap, getAccountColors } from "./components/InvestmentShared"
+import { InvestmentRow } from "./components/InvestmentRow"
+import { UpcomingPurchases } from "./components/UpcomingPurchases"
+import { getTotalInvestedByCurrency, getTotalInvestedInBOB } from "./utils/investment-display.utils"
+import { formatAssetAmount, formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { getAccountTypeDetails } from "@/features/accounts/utils/account-display.utils"
+import type { BuyInvestmentInput } from "@/lib/validations/investment.schema"
 
-import type { Account, AccountType } from "@/types/account"
+import type { Account } from "@/types/account"
 import type { Investment, InvestmentTxType } from "@/types/investment"
 
-function getAccountColors(hex: string) {
-  return {
-    backgroundColor: `${hex}18`,
-    color: hex,
-  }
-}
+export { InvestmentsWidget } from "./components/InvestmentsWidget"
+export { InvestmentsByAccount } from "./components/InvestmentsByAccount"
 
 interface InvestmentsListProps {
   accounts: Account[]
   preselectedAccountId?: string
-}
-
-const accountIconMap: Record<AccountType, typeof Wallet> = {
-  BANK:   Landmark,
-  WALLET: Wallet,
-  CASH:   Banknote,
-  CRYPTO: Bitcoin,
-  OTHER:  PiggyBank,
-}
-
-function AccountCardSkeleton() {
-  return (
-    <div className="bg-white rounded-[22px] p-5 space-y-4"
-      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
-    >
-      <div className="flex items-center gap-3">
-        <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
-        <div className="flex-1 space-y-1.5">
-          <Skeleton className="h-4 w-28 rounded-full" />
-          <Skeleton className="h-3 w-20 rounded-full" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function TxHistory({ investment }: { investment: Investment }) {
-  const [open, setOpen] = useState(false)
-  const { data: transactions = [], isLoading } = useInvestmentTransactions(investment.id)
-
-  return (
-    <div>
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-[11px] font-medium text-[#6E6E73] hover:text-indigo-500 transition-colors mt-1"
-      >
-        {open ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-        Historial ({isLoading ? '...' : transactions.length} operaciones)
-      </button>
-      {open && (
-        <div className="mt-2 space-y-1 pl-2 border-l-2 border-indigo-100">
-          {isLoading ? (
-            <p className="text-[11px] text-[#6E6E73]">Cargando...</p>
-          ) : transactions.length === 0 ? (
-            <p className="text-[11px] text-[#6E6E73]">Sin operaciones registradas</p>
-          ) : (
-            transactions.map((tx) => (
-              <div key={tx.id} className="flex items-center justify-between py-1.5">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className={cn(
-                    'w-5 h-5 rounded flex items-center justify-center shrink-0',
-                    tx.type === 'BUY' ? 'bg-[#F2F9E3]' : 'bg-[#FAEDE9]'
-                  )}>
-                    {tx.type === 'BUY' ? (
-                      <ArrowUpRight className="w-3 h-3 text-[#4F6A35]" />
-                    ) : (
-                      <ArrowDownRight className="w-3 h-3 text-[#B5543D]" />
-                    )}
-                  </div>
-                  <span className="text-[12px] font-medium text-foreground">
-                    {tx.type === 'BUY' ? 'COMPRA' : 'VENTA'}
-                  </span>
-                  <span className="text-[11px] text-[#6E6E73]">
-                    {tx.units} × {formatCurrency(tx.unit_price, tx.currency)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-[12px] font-semibold text-foreground tabular-nums">
-                    {formatCurrency(tx.total_amount, tx.currency)}
-                  </span>
-                  <span className="text-[10px] text-[#6E6E73]">
-                    {formatInvestmentDate(tx.date)}
-                  </span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function PlanStatus({ investment }: { investment: Investment }) {
-  const plan = investment.recurrence
-  if (!plan) return null
-
-  const today = new Date()
-  const due = isPlanDue(plan, today)
-  const nextDate = plan.next_due ?? nextDueString(today, plan.day_of_week)
-
-  return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
-      {plan.enabled ? (
-        <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#F2F9E3] text-[#4F6A35] border border-[#C8D9A9]">
-          <RefreshCw className="w-2.5 h-2.5" />
-          Plan · {formatWeekdayShort(plan.day_of_week)} · {formatCurrency(plan.amount, plan.currency)}
-        </span>
-      ) : (
-        <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[rgba(0,0,0,0.04)] text-[#6E6E73]">
-          Plan pausado
-        </span>
-      )}
-      {plan.enabled && (
-        <span className={cn("text-[10px] font-semibold", due ? "text-[#B5543D]" : "text-[#6E6E73]")}>
-          {due ? 'Pendiente' : 'Próxima'} · {formatInvestmentDate(nextDate)}
-        </span>
-      )}
-    </div>
-  )
-}
-
-function UpcomingPurchases({ investments }: { investments: Investment[] }) {
-  const [confirmInvestment, setConfirmInvestment] = useState<Investment | null>(null)
-
-  const activePlans = investments
-    .filter((inv) => inv.recurrence?.enabled)
-    .map((inv) => ({
-      investment: inv,
-      plan: inv.recurrence!,
-      due: isPlanDue(inv.recurrence!, new Date()),
-      date: inv.recurrence!.next_due ?? nextDueString(new Date(), inv.recurrence!.day_of_week),
-    }))
-    .sort((a, b) => a.date.localeCompare(b.date))
-
-  if (activePlans.length === 0) {
-    if (investments.length === 0) return null
-    return (
-      <div className="bg-white rounded-[22px] overflow-hidden" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
-        <div className="flex items-center gap-2 px-5 py-3 bg-[#F2F9E3]/40 border-b border-[rgba(0,0,0,0.06)]">
-          <CalendarClock className="w-3.5 h-3.5 text-[#5F7D42]" />
-          <span className="text-[12px] font-semibold text-[#6E6E73]">
-            Programa compras recurrentes semanales desde el botón de editar de cada inversión
-          </span>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <>
-      <div className="bg-white rounded-[22px] overflow-hidden" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
-        <div className="flex items-center justify-between px-5 py-4 bg-[#F2F9E3]/40 border-b border-[rgba(0,0,0,0.06)]">
-          <div className="flex items-center gap-2">
-            <RefreshCw className="w-3.5 h-3.5 text-[#5F7D42]" />
-            <h3 className="text-[13px] font-bold text-foreground">Próximas compras</h3>
-          </div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#6E6E73]">
-            {activePlans.length} plan{activePlans.length !== 1 ? 'es' : ''}
-          </span>
-        </div>
-        <div className="divide-y divide-[rgba(0,0,0,0.06)]">
-          {activePlans.map(({ investment, plan, due, date }) => (
-            <div key={investment.id} className="flex items-center gap-3 px-5 py-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-foreground truncate">{investment.name}</p>
-                <p className={cn("text-[11px] mt-0.5", due ? "text-[#B5543D] font-semibold" : "text-[#6E6E73]")}>
-                  {due ? 'Pendiente' : 'Próxima'} · {formatInvestmentDate(date)} · {formatWeekdayShort(plan.day_of_week)} · {formatCurrency(plan.amount, plan.currency)}
-                </p>
-              </div>
-              <span className="text-[13px] font-bold text-[#4F6A35] tabular-nums shrink-0 ml-2">
-                {formatCurrency(plan.amount, plan.currency)}
-              </span>
-              {due && (
-                <Button
-                  size="sm"
-                  onClick={() => setConfirmInvestment(investment)}
-                  className="h-7 text-[11px] rounded-lg bg-[#5F7D42] hover:bg-[#4F6A35] text-white shrink-0"
-                >
-                  Confirmar
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-      <ConfirmRecurringBuyDialog
-        investment={confirmInvestment}
-        onClose={() => setConfirmInvestment(null)}
-      />
-    </>
-  )
-}
-
-function InvestmentRow({
-  investment,
-  onEdit,
-  onDelete,
-  onBuy,
-  onSell,
-}: {
-  investment: Investment
-  onEdit: (inv: Investment) => void
-  onDelete: (id: string) => void
-  onBuy: (inv: Investment) => void
-  onSell: (inv: Investment) => void
-}) {
-  const hasUnits = investment.units != null && investment.unit_price != null
-
-  return (
-    <div className="group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-indigo-50/30">
-      <div className={cn(
-        'w-7 h-7 rounded-lg flex items-center justify-center shrink-0',
-        INVESTMENT_COLOR.bg
-      )}>
-        <TrendingUp className="w-3.5 h-3.5 text-indigo-600" />
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-foreground truncate">
-          {investment.name}
-        </p>
-        <div className="flex items-center gap-2 mt-0.5">
-          <p className="text-[10px] font-medium text-[#6E6E73]">
-            {formatInvestmentDate(investment.date)}
-          </p>
-          {hasUnits && (
-            <>
-              <span className="text-[9px] text-[#6E6E73]/60">·</span>
-              <p className="text-[10px] font-medium text-indigo-500">
-                {investment.units} units @ {formatCurrency(investment.unit_price!, investment.currency)}/unit
-              </p>
-            </>
-          )}
-        </div>
-        {hasUnits && <TxHistory investment={investment} />}
-        <PlanStatus investment={investment} />
-      </div>
-
-      <div className="text-right shrink-0">
-        <p className="text-[14px] font-bold text-indigo-600 tabular-nums">
-          {formatCurrency(investment.amount, investment.currency)}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        {hasUnits && (
-          <>
-            <button
-              onClick={() => onBuy(investment)}
-              className="p-1.5 rounded-md text-[#4F6A35] hover:bg-[#F2F9E3] transition-colors"
-              title="Comprar"
-            >
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onSell(investment)}
-              className="p-1.5 rounded-md text-[#B5543D] hover:bg-[#FAEDE9] transition-colors"
-              title="Vender"
-            >
-              <ArrowDownRight className="w-3.5 h-3.5" />
-            </button>
-          </>
-        )}
-        <button
-          onClick={() => onEdit(investment)}
-          className="p-1.5 rounded-md text-[#6E6E73] hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
-        >
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={() => onDelete(investment.id)}
-          className="p-1.5 rounded-md text-[#6E6E73] hover:text-[#B5543D] hover:bg-[#FAEDE9] transition-colors"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    </div>
-  )
 }
 
 export function InvestmentsList({
@@ -336,6 +58,7 @@ export function InvestmentsList({
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const [txOperation, setTxOperation] = useState<{ investment: Investment; type: InvestmentTxType } | null>(null)
+  const [planInvestment, setPlanInvestment] = useState<Investment | null>(null)
 
   const filtered = preselectedAccountId
     ? investments.filter((inv) => inv.account_id === preselectedAccountId)
@@ -361,32 +84,37 @@ export function InvestmentsList({
     })
   }
 
-  const totalByCurrency = filtered.reduce<Record<string, number>>((acc, inv) => {
-    acc[inv.currency] = (acc[inv.currency] ?? 0) + inv.amount
-    return acc
-  }, {})
+  const totalByCurrency = getTotalInvestedByCurrency(filtered)
 
   return (
     <div className="space-y-6">
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">
             Inversiones
           </h1>
-          <div className="flex items-center gap-2 text-[12px] text-[#6E6E73]">
-            <span>{filtered.length} registros</span>
-            <span className="text-[#6E6E73]/60">·</span>
+          <div className="flex items-center gap-2 text-[12px] text-zinc-500">
+            <span>{filtered.length} registro{filtered.length !== 1 ? 's' : ''}</span>
+            <span className="text-zinc-400">·</span>
             {Object.entries(totalByCurrency).map(([c, a]) => (
-              <span key={c} className="font-semibold text-indigo-600">
-                {formatCurrency(a, c)}
+              <span key={c} className="font-semibold text-zinc-900">
+                {formatAssetAmount(a, c)}
               </span>
             ))}
+            {Object.keys(totalByCurrency).length > 1 && (
+              <>
+                <span className="text-zinc-400">≈</span>
+                <span className="font-semibold text-zinc-900">
+                  {formatCurrency(getTotalInvestedInBOB(filtered), 'BOB')}
+                </span>
+              </>
+            )}
           </div>
         </div>
         <Button
           onClick={() => setShowCreate(true)}
-          className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold"
+          className="h-9 px-4 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-bold"
         >
           <Plus className="w-4 h-4 mr-1.5" />
           Nueva Inversión
@@ -396,23 +124,21 @@ export function InvestmentsList({
       {isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 2 }).map((_, i) => (
-            <AccountCardSkeleton key={i} />
+            <AccountSkeleton key={i} />
           ))}
         </div>
       ) : isError ? (
-        <div className="bg-[#FAEDE9] text-[#B5543D] text-[13px] p-4 rounded-xl font-medium">
+        <div className="bg-zinc-50 text-zinc-500 text-[13px] p-4 rounded-xl border border-zinc-200 font-medium">
           Error al cargar inversiones.
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-[22px]"
-          style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
-        >
-          <div className="w-12 h-12 rounded-xl bg-[#F2F9E3] border border-[rgba(0,0,0,0.06)] flex items-center justify-center mb-4">
-            <TrendingUp className="w-5 h-5 text-[#6E6E73]/60" />
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-[22px] border border-zinc-200">
+          <div className="w-12 h-12 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center mb-4">
+            <TrendingUp className="w-5 h-5 text-zinc-400" />
           </div>
-          <h3 className="text-sm font-bold text-foreground">Sin inversiones aún</h3>
-          <p className="text-[12px] text-[#6E6E73] mt-1 max-w-[240px]">
-            Registra una inversión desde una cuenta o al crear una transacción.
+          <h3 className="text-sm font-medium text-zinc-900">Sin inversiones aún</h3>
+          <p className="text-xs text-zinc-500 mt-1 max-w-[240px] leading-relaxed">
+            Registra una inversión para empezar a rastrear tu cartera.
           </p>
         </div>
       ) : (
@@ -420,21 +146,17 @@ export function InvestmentsList({
           <UpcomingPurchases investments={filtered} />
           {Object.entries(groupedByAccount).map(([accountId, accountInvestments]) => {
             const account = getAccount(accountId)
-            const accountByCurrency = accountInvestments.reduce<Record<string, number>>((acc, inv) => {
-              acc[inv.currency] = (acc[inv.currency] ?? 0) + inv.amount
-              return acc
-            }, {})
+            const accountByCurrency = getTotalInvestedByCurrency(accountInvestments)
             const details = account ? getAccountTypeDetails(account.type) : null
             const AccIcon = account ? accountIconMap[account.type] : Wallet
 
             return (
               <div
                 key={accountId}
-                className="bg-white rounded-[22px] overflow-hidden"
-                style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
+                className="bg-white rounded-[22px] border border-zinc-200 overflow-hidden"
               >
                 {/* Account header */}
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-[rgba(0,0,0,0.06)] bg-[#F2F9E3]/40">
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-zinc-100 bg-zinc-50/80">
                   {details && (
                     <div
                       className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
@@ -444,18 +166,18 @@ export function InvestmentsList({
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-[14px] font-semibold text-foreground truncate">
+                    <h3 className="text-[14px] font-semibold text-zinc-900 truncate">
                       {account?.name ?? 'Cuenta eliminada'}
                     </h3>
-                    <p className="text-[11px] font-medium text-[#6E6E73]">
-                      {details?.label ?? '—'} · Total invertido: {Object.entries(accountByCurrency).map(([c, a]) => formatCurrency(a, c)).join(' · ')}
+                    <p className="text-[11px] font-medium text-zinc-500">
+                      {details?.label ?? '—'} · Total invertido: {Object.entries(accountByCurrency).map(([c, a]) => formatAssetAmount(a, c)).join(' · ')}
                     </p>
                   </div>
                   <Button
                     onClick={() => setShowCreate(true)}
                     size="sm"
                     variant="outline"
-                    className="h-7 text-[11px] rounded-lg border-[rgba(0,0,0,0.06)]"
+                    className="h-7 text-[11px] rounded-lg border-zinc-200 text-zinc-700"
                   >
                     <Plus className="w-3 h-3 mr-1" />
                     Inversión
@@ -463,7 +185,7 @@ export function InvestmentsList({
                 </div>
 
                 {/* Investments list */}
-                <div className="divide-y divide-[rgba(0,0,0,0.06)]">
+                <div className="divide-y divide-zinc-100">
                   {accountInvestments.map((inv) => (
                     <InvestmentRow
                       key={inv.id}
@@ -472,6 +194,7 @@ export function InvestmentsList({
                       onDelete={setPendingDeleteId}
                       onBuy={(inv) => setTxOperation({ investment: inv, type: 'BUY' })}
                       onSell={(inv) => setTxOperation({ investment: inv, type: 'SELL' })}
+                      onPlan={setPlanInvestment}
                     />
                   ))}
                 </div>
@@ -482,9 +205,9 @@ export function InvestmentsList({
       )}
 
       <Dialog open={showCreate} onOpenChange={(open) => !open && setShowCreate(false)}>
-        <DialogContent className="sm:max-w-md rounded-[22px] border-none p-8">
+        <DialogContent className="sm:max-w-md rounded-[22px] border border-zinc-200 p-8">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black tracking-tight">
+            <DialogTitle className="text-2xl font-bold text-zinc-900 tracking-tight">
               Nueva Inversión
             </DialogTitle>
           </DialogHeader>
@@ -499,9 +222,9 @@ export function InvestmentsList({
       </Dialog>
 
       <Dialog open={!!editingInvestment} onOpenChange={(open) => !open && setEditingInvestment(null)}>
-        <DialogContent className="sm:max-w-md rounded-[22px] border-none p-8">
+        <DialogContent className="sm:max-w-md rounded-[22px] border border-zinc-200 p-8">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black tracking-tight">
+            <DialogTitle className="text-2xl font-bold text-zinc-900 tracking-tight">
               Editar Inversión
             </DialogTitle>
           </DialogHeader>
@@ -522,9 +245,9 @@ export function InvestmentsList({
       </Dialog>
 
       <Dialog open={!!txOperation} onOpenChange={(open) => !open && setTxOperation(null)}>
-        <DialogContent className="sm:max-w-md rounded-[22px] border-none p-8">
+        <DialogContent className="sm:max-w-md rounded-[22px] border border-zinc-200 p-8">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black tracking-tight">
+            <DialogTitle className="text-2xl font-bold text-zinc-900 tracking-tight">
               {txOperation?.type === 'BUY' ? 'Comprar' : 'Vender'} {txOperation?.investment.name}
             </DialogTitle>
           </DialogHeader>
@@ -545,198 +268,41 @@ export function InvestmentsList({
         </DialogContent>
       </Dialog>
 
+      {planInvestment && (
+        <RecurringPlanDialog
+          key={planInvestment.id}
+          investment={planInvestment}
+          open
+          onOpenChange={(open) => !open && setPlanInvestment(null)}
+        />
+      )}
+
       <AlertDialog
         open={!!pendingDeleteId}
         onOpenChange={(open) => !open && setPendingDeleteId(null)}
       >
-        <AlertDialogContent className="rounded-[22px] border-none p-8">
+        <AlertDialogContent className="rounded-[22px] border border-zinc-200 p-8">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-bold tracking-tight">
+            <AlertDialogTitle className="text-xl font-bold text-zinc-900 tracking-tight">
               ¿Eliminar inversión?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[#6E6E73] text-[13px] font-medium leading-relaxed">
+            <AlertDialogDescription className="text-zinc-500 text-[13px] font-medium leading-relaxed">
               El monto invertido será devuelto al saldo de la cuenta.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-8 gap-3">
-            <AlertDialogCancel className="rounded-xl border-[rgba(0,0,0,0.08)] px-6 font-bold">
+            <AlertDialogCancel className="rounded-xl border-zinc-200 px-6 font-bold">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-6 font-bold"
+              className="rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white px-6 font-bold"
             >
               Sí, eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  )
-}
-
-export function InvestmentsWidget({
-  investments,
-  accounts,
-  onShowCreate,
-}: {
-  investments: Investment[]
-  accounts: Account[]
-  onShowCreate: () => void
-}) {
-  const Icon = INVESTMENT_ICON
-  const totalByCurrency = investments.reduce<Record<string, number>>((acc, inv) => {
-    acc[inv.currency] = (acc[inv.currency] ?? 0) + inv.amount
-    return acc
-  }, {})
-
-  const nextPlan = investments
-    .filter((inv) => inv.recurrence?.enabled)
-    .map((inv) => ({
-      investment: inv,
-      plan: inv.recurrence!,
-      due: isPlanDue(inv.recurrence!, new Date()),
-      date: inv.recurrence!.next_due ?? nextDueString(new Date(), inv.recurrence!.day_of_week),
-    }))
-    .sort((a, b) => a.date.localeCompare(b.date))[0]
-
-  if (investments.length === 0) {
-    return (
-      <div
-        className="bg-white rounded-[22px] p-5 cursor-pointer hover:shadow-md transition-all"
-        onClick={onShowCreate}
-        style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#F2F9E3] flex items-center justify-center">
-            <Icon className="w-4 h-4 text-[#5F7D42]" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">
-              Inversiones
-            </h3>
-            <p className="text-[11px] text-[#6E6E73] mt-0.5">
-              Sin inversiones registradas
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="bg-white rounded-[22px] p-5"
-      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
-    >
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#F2F9E3] flex items-center justify-center">
-            <Icon className="w-4 h-4 text-[#5F7D42]" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">
-              Inversiones
-            </h3>
-            <p className="text-[11px] text-[#6E6E73] mt-0.5">
-              {investments.length} registro{investments.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-        </div>
-        <span className="text-[10px] font-bold text-[#5F7D42] cursor-pointer hover:text-[#4F6A35] transition-colors">
-          Ver todas →
-        </span>
-      </div>
-
-      <div className="space-y-3 mb-4">
-        {Object.entries(totalByCurrency).map(([currency, amount]) => (
-          <div key={currency} className="flex items-center justify-between">
-            <span className="text-[12px] font-medium text-[#6E6E73]/70">
-              Total invertido en {currency}
-            </span>
-            <span className="text-sm font-bold text-[#4F6A35] tabular-nums">
-              {formatCurrency(amount, currency)}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {nextPlan && (
-        <div className="rounded-xl bg-[#F2F9E3]/60 px-3.5 py-2.5 flex items-center gap-2 mb-4 border border-[#D3E4B8]">
-          <RefreshCw className="w-3 h-3 text-[#5F7D42] shrink-0" />
-          <p className="text-[11px] font-semibold text-[#4F6A35] truncate">
-            {nextPlan.due ? 'Pendiente' : 'Próxima compra'} · {nextPlan.investment.name} ·{' '}
-            {formatInvestmentDate(nextPlan.date)} · {formatCurrency(nextPlan.plan.amount, nextPlan.plan.currency)}
-          </p>
-        </div>
-      )}
-
-      <div className="divide-y divide-[rgba(0,0,0,0.06)]">
-        {investments.slice(0, 5).map((inv) => {
-          const account = accounts.find((a) => a.id === inv.account_id)
-          return (
-            <div key={inv.id} className="flex items-center justify-between py-2.5">
-              <div className="min-w-0">
-                <p className="text-[13px] font-medium text-foreground truncate">
-                  {inv.name}
-                </p>
-                <p className="text-[10px] text-[#6E6E73]/70 mt-0.5">
-                  {account?.name ?? 'Cuenta eliminada'} · {formatInvestmentDate(inv.date)}
-                </p>
-              </div>
-              <span className="text-[13px] font-semibold text-[#4F6A35] tabular-nums shrink-0 ml-3">
-                {formatCurrency(inv.amount, inv.currency)}
-              </span>
-            </div>
-          )
-        })}
-      </div>
-
-      {investments.length > 5 && (
-        <p className="text-[10px] text-center text-[#6E6E73]/50 mt-3 font-medium">
-          +{investments.length - 5} inversiones más
-        </p>
-      )}
-    </div>
-  )
-}
-
-export function InvestmentsByAccount({
-  accountId,
-  investments,
-  compact = true,
-}: {
-  accountId: string
-  investments: Investment[]
-  compact?: boolean
-}) {
-  const accountInvestments = investments.filter((inv) => inv.account_id === accountId)
-  const byCurrency = accountInvestments.reduce<Record<string, number>>((acc, inv) => {
-    acc[inv.currency] = (acc[inv.currency] ?? 0) + inv.amount
-    return acc
-  }, {})
-
-  if (accountInvestments.length === 0 && compact) return null
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <TrendingUp className="w-3.5 h-3.5 text-indigo-500" />
-        <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">
-          Invertido: {Object.entries(byCurrency).map(([c, a]) => formatCurrency(a, c)).join(' · ')}
-        </span>
-      </div>
-      {!compact && accountInvestments.length > 1 && (
-        <div className="pl-5 space-y-1">
-          {accountInvestments.slice(0, 3).map((inv) => (
-            <div key={inv.id} className="flex items-center justify-between text-[12px]">
-              <span className="text-[#6E6E73]">{inv.name}</span>
-              <span className="font-medium text-indigo-600">
-                {formatCurrency(inv.amount, inv.currency)}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   )
 }

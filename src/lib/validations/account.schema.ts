@@ -10,10 +10,13 @@ export const createAccountSchema = z.object({
   type: z.enum(ACCOUNT_TYPE_VALUES, { message: "Tipo de cuenta inválido" }),
   balance: z.coerce.number().min(0, "El saldo no puede ser negativo"),
   currency: z.enum(CURRENCY_TYPE_VALUES, { message: "Moneda inválida" }).default("BOB"),
+  institution: z.string().max(40, "La institución es demasiado larga").optional(),
 })
 
-// Schema para actualizar — todos los campos opcionales
-export const updateAccountSchema = createAccountSchema.partial()
+// Schema para actualizar — todos los campos opcionales + archivar
+export const updateAccountSchema = createAccountSchema.partial().extend({
+  archived: z.boolean().optional(),
+})
 
 // Tipos inferidos del schema — úsalos en formularios y API routes
 export type CreateAccountInput = z.infer<typeof createAccountSchema>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import AppLayout from '@/components/layout/AppLayout'
 import { useDriverConfig, useSaveDriverConfig } from '@/features/driver/hooks/useDriverConfig'
-import { useAccounts } from '@/features/accounts/hooks/useAccounts'
+import { useActiveAccounts } from '@/features/accounts/hooks/useAccounts'
 import { useProjects } from '@/features/projects/hooks/useProjects'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -14,7 +14,7 @@ import { DEFAULT_SUBTYPE_MAPPING } from '@/types/driver'
 
 export default function DriverSettingsPage() {
   const { data: config, isLoading: loadingConfig } = useDriverConfig()
-  const { data: accounts = [] } = useAccounts()
+  const { data: accounts = [] } = useActiveAccounts()
   const { data: projects = [] } = useProjects()
   const saveConfig = useSaveDriverConfig()
 

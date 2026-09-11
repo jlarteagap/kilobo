@@ -113,7 +113,7 @@ export function Sidebar({ ...props }: React.ComponentProps<typeof ShadcnSidebar>
               className="h-10 px-3 rounded-lg text-[#6E6E73] hover:bg-[#F2F9E3]"
               tooltip="Ajustes"
             >
-              <Link href="/conductor/settings">
+              <Link href="/ajustes">
                 <Settings className="size-5" />
                 <span className="font-medium">Ajustes</span>
               </Link>

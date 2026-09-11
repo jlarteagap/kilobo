@@ -2,13 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { SavingsGoal } from '@/types/savings-goal'
 import type { CreateSavingsGoalInput, UpdateSavingsGoalInput } from '@/lib/validations/savings-goal.schema'
-
-async function authFetch(url: string, options?: RequestInit) {
-  return fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  })
-}
+import { apiFetch } from '@/lib/http'
+import { accountKeys } from '@/features/accounts/hooks/useAccounts'
+import { transactionKeys } from '@/features/transactions/hooks/useTransactions'
+import type { DepositSavingsGoalInput } from '@/lib/validations/savings-goal.schema'
 
 export const savingsGoalKeys = {
   all: ['savings-goals'] as const,
@@ -20,7 +17,7 @@ export function useSavingsGoals() {
   return useQuery({
     queryKey: savingsGoalKeys.lists(),
     queryFn: async (): Promise<SavingsGoal[]> => {
-      const res = await authFetch('/api/savings-goals')
+      const res = await apiFetch('/api/savings-goals')
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener metas de ahorro')
       return Array.isArray(json.data) ? json.data : []
@@ -34,7 +31,7 @@ export function useCreateSavingsGoal() {
 
   return useMutation({
     mutationFn: async (data: CreateSavingsGoalInput) => {
-      const res = await authFetch('/api/savings-goals', {
+      const res = await apiFetch('/api/savings-goals', {
         method: 'POST',
         body: JSON.stringify(data),
       })
@@ -55,7 +52,7 @@ export function useUpdateSavingsGoal() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateSavingsGoalInput }) => {
-      const res = await authFetch(`/api/savings-goals/${id}`, {
+      const res = await apiFetch(`/api/savings-goals/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
       })
@@ -90,7 +87,7 @@ export function useDeleteSavingsGoal() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await authFetch(`/api/savings-goals/${id}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/savings-goals/${id}`, { method: 'DELETE' })
       if (!res.ok) {
         const json = await res.json()
         throw new Error(json.error ?? 'Error al eliminar la meta')
@@ -112,6 +109,40 @@ export function useDeleteSavingsGoal() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: savingsGoalKeys.lists() })
+    },
+  })
+}
+
+export interface DepositSavingsGoalResult {
+  goal: SavingsGoal
+  completed: boolean
+}
+
+export function useDepositSavingsGoal() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: DepositSavingsGoalInput }) => {
+      const res = await apiFetch(`/api/savings-goals/${id}/deposit`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Error al registrar el depósito')
+      return json.data as DepositSavingsGoalResult
+    },
+    onSuccess: (result) => {
+      if (result.completed) {
+        toast.success('🎉 ¡Meta alcanzada! 🎯')
+      } else {
+        toast.success('Depósito registrado')
+      }
+    },
+    onError: (error: Error) => toast.error(error.message),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: savingsGoalKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: transactionKeys.lists() })
     },
   })
 }

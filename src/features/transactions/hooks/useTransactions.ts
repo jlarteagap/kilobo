@@ -5,13 +5,7 @@ import type { Transaction } from '@/types/transaction'
 import { CreateTransactionInput } from '@/lib/validations/transaction.schema'
 
 import { toast } from 'sonner'
-
-async function authFetch(url: string, options?: RequestInit) {
-  return fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  })
-}
+import { apiFetch } from '@/lib/http'
 
 export const transactionKeys = {
   all:    ['transactions'] as const,
@@ -24,7 +18,7 @@ export function useTransactions() {
   return useQuery({
     queryKey: transactionKeys.lists(),
     queryFn: async (): Promise<Transaction[]> => {
-      const res  = await authFetch('/api/transactions')
+      const res  = await apiFetch('/api/transactions')
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener las transacciones')
 
@@ -42,7 +36,7 @@ export function useCreateTransaction() {
 
   return useMutation({
     mutationFn: async (data: CreateTransactionInput) => {
-      const res  = await authFetch('/api/transactions', {
+      const res  = await apiFetch('/api/transactions', {
         method: 'POST',
         body:   JSON.stringify(data),
       })
@@ -75,7 +69,7 @@ export function useUpdateTransaction() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: EditableTransactionFields }) => {
-      const res  = await authFetch(`/api/transactions/${id}`, {
+      const res  = await apiFetch(`/api/transactions/${id}`, {
         method: 'PATCH',
         body:   JSON.stringify(data),
       })
@@ -114,7 +108,7 @@ export function useDeleteTransaction() {
 
   return useMutation({
     mutationFn: async (tx: Transaction) => {
-      const res  = await authFetch(`/api/transactions/${tx.id}`, { method: 'DELETE' })
+      const res  = await apiFetch(`/api/transactions/${tx.id}`, { method: 'DELETE' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al eliminar la transacción')
     },

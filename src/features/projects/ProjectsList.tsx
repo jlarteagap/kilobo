@@ -33,18 +33,17 @@ import {
 } from "./hooks/useProjects"
 import type { Project, CreateProjectData } from "@/types/project"
 import { cn } from "@/lib/utils"
-import { EmptyState } from "@/components/ui/empty-state"
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
 function ProjectsGridSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="bg-white rounded-xl p-4 flex items-center gap-4 border border-[rgba(0,0,0,0.08)]/60">
-          <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
+        <div key={i} className="bg-white rounded-xl p-4 flex items-center gap-4 border border-zinc-200/60">
+          <Skeleton className="w-10 h-10 rounded-lg shrink-0 bg-zinc-100" />
           <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-24 rounded-full" />
-            <Skeleton className="h-3 w-16 rounded-full" />
+            <Skeleton className="h-4 w-24 rounded-full bg-zinc-100" />
+            <Skeleton className="h-3 w-16 rounded-full bg-zinc-100" />
           </div>
         </div>
       ))}
@@ -65,7 +64,7 @@ function ProjectCard({
   compact?: boolean
 }) {
   return (
-    <div className="group relative bg-white rounded-xl p-4 flex items-center gap-4 border border-[rgba(0,0,0,0.08)]/60 transition-all duration-200 hover:border-neutral-300 hover:shadow-sm">
+    <div className="group relative bg-white rounded-xl p-4 flex items-center gap-4 border border-zinc-200 transition-all duration-200 hover:border-zinc-300">
       
       {/* Icono con color sutil */}
       <div
@@ -77,11 +76,11 @@ function ProjectCard({
 
       {/* Info Principal */}
       <div className="flex-1 min-w-0">
-        <h3 className="text-[14px] font-semibold text-neutral-900 truncate">
+        <h3 className="text-[14px] font-semibold text-zinc-900 truncate">
           {project.name}
         </h3>
         {!compact && project.description && (
-          <p className="text-[11px] text-[#6E6E73] truncate">
+          <p className="text-[11px] text-zinc-500 truncate">
             {project.description}
           </p>
         )}
@@ -91,13 +90,13 @@ function ProjectCard({
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={() => onEdit(project)}
-          className="p-1.5 rounded-md text-[#6E6E73] hover:text-neutral-900 hover:bg-[#F2F9E3]/40 transition-colors"
+          className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
         >
           <Pencil className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => onDelete(project.id)}
-          className="p-1.5 rounded-md text-[#6E6E73] hover:text-rose-500 hover:bg-rose-50 transition-colors"
+          className="p-1.5 rounded-md text-zinc-500 hover:text-red-500 hover:bg-red-50 transition-colors"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
@@ -168,13 +167,13 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <h2 className={cn(
-            "font-bold text-neutral-900 tracking-tight",
+            "font-bold text-zinc-900 tracking-tight",
             isSidebar ? "text-lg" : "text-2xl"
           )}>
             Actividades
           </h2>
           {!isSidebar && (
-            <p className="text-xs font-medium text-[#6E6E73]">
+            <p className="text-xs font-medium text-zinc-500">
               Agrupa ingresos y gastos de un trabajo, negocio o pasatiempo.
             </p>
           )}
@@ -183,7 +182,7 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
         <Button
           onClick={() => setDialog({ mode: 'create' })}
           className={cn(
-            "bg-neutral-900 text-white rounded-lg text-xs font-bold transition-all duration-200 active:scale-95 shadow-sm hover:opacity-90",
+            "bg-zinc-900 text-white rounded-lg text-xs font-bold transition-all duration-200 active:scale-95 shadow-sm hover:bg-zinc-800",
             isSidebar ? "h-8 px-3" : "h-9 px-4"
           )}
         >
@@ -200,14 +199,14 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
           Error al cargar las actividades.
         </div>
       ) : projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-[rgba(0,0,0,0.08)] rounded-2xl bg-[#F2F9E3]/40/50">
-          <div className="w-10 h-10 rounded-xl bg-white border border-[rgba(0,0,0,0.06)] flex items-center justify-center mb-3 text-xl">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-zinc-300 rounded-2xl bg-zinc-100/50">
+          <div className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center mb-3 text-xl">
             📁
           </div>
-          <h3 className="text-sm font-bold text-neutral-900">
+          <h3 className="text-sm font-bold text-zinc-900">
             Sin actividades
           </h3>
-          <p className="text-[11px] text-[#6E6E73] mt-1 max-w-[200px]">
+          <p className="text-[11px] text-zinc-500 mt-1 max-w-[200px]">
             Crea tu primera actividad para agrupar ingresos y gastos.
           </p>
         </div>
@@ -230,9 +229,9 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
 
       {/* ── Dialog crear/editar ── */}
       <Dialog open={isDialogOpen} onOpenChange={(open) => !open && setDialog({ mode: 'closed' })}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-[rgba(0,0,0,0.08)]/50 p-8">
+        <DialogContent className="sm:max-w-md rounded-[2rem] border border-zinc-200 p-8">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black tracking-tight">
+            <DialogTitle className="text-2xl font-bold text-zinc-900 tracking-tight">
               {dialog.mode === 'edit' ? 'Editar Actividad' : 'Nueva Actividad'}
             </DialogTitle>
           </DialogHeader>
@@ -270,22 +269,22 @@ export function ProjectsList({ isSidebar = false }: { isSidebar?: boolean }) {
         open={!!pendingDeleteId}
         onOpenChange={(open) => !open && setPendingDeleteId(null)}
       >
-        <AlertDialogContent className="rounded-[2.5rem] border-[rgba(0,0,0,0.08)] p-8">
+        <AlertDialogContent className="rounded-[22px] border border-zinc-200 p-8">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-bold tracking-tight">
+            <AlertDialogTitle className="text-xl font-bold text-zinc-900 tracking-tight">
               ¿Archivar actividad?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[#6E6E73] text-[13px] font-medium leading-relaxed">
+            <AlertDialogDescription className="text-zinc-500 text-[13px] font-medium leading-relaxed">
               La actividad dejará de aparecer en los selectores. Las transacciones asociadas conservan su historial intacto.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-8 gap-3">
-            <AlertDialogCancel className="rounded-2xl border-[rgba(0,0,0,0.08)]/50 px-6 font-bold">
+            <AlertDialogCancel className="rounded-xl border-zinc-200 px-6 font-bold">
               Mantener
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="rounded-2xl bg-rose-600 hover:bg-rose-700 text-white px-6 font-bold"
+              className="rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white px-6 font-bold"
             >
               Archivar
             </AlertDialogAction>

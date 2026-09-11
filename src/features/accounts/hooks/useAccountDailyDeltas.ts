@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useAccounts } from './useAccounts'
+import { useActiveAccounts } from './useAccounts'
 import { useAccountBalanceChanges } from './useAccountBalanceChanges'
 
 // Variación diaria calculada de una cuenta: delta neto del periodo (balance
@@ -16,7 +16,7 @@ export interface AccountDailyVariation {
 // y el ordenamiento. Reusa la caché de useAccounts y useAccountBalanceChanges.
 // Devuelve solo las cuentas que tienen ancla de comparación.
 export function useAccountDailyDeltas(): Record<string, AccountDailyVariation> {
-  const { data: accounts = [] } = useAccounts()
+  const { data: accounts = [] } = useActiveAccounts()
   const accountIds = accounts.map((account) => account.id)
   const { data: lastChanges = {} } = useAccountBalanceChanges(accountIds)
 

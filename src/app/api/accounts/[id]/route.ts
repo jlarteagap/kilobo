@@ -46,7 +46,7 @@ function handleError(error: unknown): NextResponse {
     'No autorizado':             401,
     'Token inválido o expirado': 401,
     'Cuenta no encontrada.':     404,
-    'No se puede eliminar una cuenta que tiene transacciones asociadas.': 409,
+    'No se puede eliminar una cuenta que está en uso. Archívala para ocultarla.': 409,
   }
   const status = statusMap[message] ?? 500
   return NextResponse.json({ error: message }, { status })

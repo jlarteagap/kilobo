@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal } from '../hooks/useSavingsGoals'
+import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal, useDepositSavingsGoal } from '../hooks/useSavingsGoals'
 import { SavingsGoalCard } from './SavingsGoalCard'
 import { SavingsGoalForm } from './SavingsGoalForm'
+import { SavingsGoalDepositForm } from './SavingsGoalDepositForm'
 import type { SavingsGoal } from '@/types/savings-goal'
-import type { CreateSavingsGoalInput } from '@/lib/validations/savings-goal.schema'
-import { useAccounts } from '@/features/accounts/hooks/useAccounts'
+import type { CreateSavingsGoalInput, DepositSavingsGoalInput } from '@/lib/validations/savings-goal.schema'
+import { useActiveAccounts } from '@/features/accounts/hooks/useAccounts'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -17,13 +18,15 @@ import { Plus, PiggyBank } from 'lucide-react'
 
 export function SavingsGoalsList() {
   const { data: goals = [], isLoading } = useSavingsGoals()
-  const { data: accounts = [] } = useAccounts()
+  const { data: accounts = [] } = useActiveAccounts()
   const createMutation = useCreateSavingsGoal()
   const updateMutation = useUpdateSavingsGoal()
   const deleteMutation = useDeleteSavingsGoal()
+  const depositMutation = useDepositSavingsGoal()
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null)
+  const [depositGoal, setDepositGoal] = useState<SavingsGoal | null>(null)
 
   const activeGoals = goals.filter(g => g.is_active)
   const archivedGoals = goals.filter(g => !g.is_active)
@@ -50,6 +53,13 @@ export function SavingsGoalsList() {
 
   const handleDelete = (goal: SavingsGoal) => {
     deleteMutation.mutate(goal.id)
+  }
+
+  const handleDeposit = (data: DepositSavingsGoalInput) => {
+    if (!depositGoal) return
+    depositMutation.mutate({ id: depositGoal.id, data }, {
+      onSuccess: () => setDepositGoal(null),
+    })
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending
@@ -108,6 +118,7 @@ export function SavingsGoalsList() {
                 onEdit={(g) => { setEditingGoal(g); setIsFormOpen(true) }}
                 onArchive={handleArchive}
                 onDelete={handleDelete}
+                onDeposit={setDepositGoal}
               />
             ))}
           </TabsContent>
@@ -123,6 +134,7 @@ export function SavingsGoalsList() {
                   onEdit={(g) => { setEditingGoal(g); setIsFormOpen(true) }}
                   onArchive={handleArchive}
                   onDelete={handleDelete}
+                  onDeposit={setDepositGoal}
                 />
               ))
             )}
@@ -144,6 +156,25 @@ export function SavingsGoalsList() {
             onSubmit={editingGoal ? handleUpdate : handleCreate}
             isPending={isPending}
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!depositGoal} onOpenChange={(open) => { if (!open) setDepositGoal(null) }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Depositar en meta</DialogTitle>
+            <DialogDescription>
+              Registra un aporte real a tu meta de ahorro.
+            </DialogDescription>
+          </DialogHeader>
+          {depositGoal && (
+            <SavingsGoalDepositForm
+              goal={depositGoal}
+              accounts={accounts}
+              onSubmit={handleDeposit}
+              isPending={depositMutation.isPending}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

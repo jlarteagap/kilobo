@@ -4,19 +4,14 @@ import { accountKeys } from '@/features/accounts/hooks/useAccounts'
 import { transactionKeys } from '@/features/transactions/hooks/useTransactions'
 import type { Credit, Installment, CreditType } from '@/types/credit'
 import type { CreateCreditInput } from '@/lib/validations/credit.schema'
-
-async function authFetch(url: string, options?: RequestInit) {
-  return fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  })
-}
+import { apiFetch } from '@/lib/http'
 
 export const creditKeys = {
   all:        ['credits'] as const,
   lists:      () => [...creditKeys.all, 'list'] as const,
   detail:     (id: string) => [...creditKeys.all, 'detail', id] as const,
   details:    () => [...creditKeys.all, 'detail'] as const,
+  upcoming:   () => [...creditKeys.all, 'upcoming'] as const,
 }
 
 // ─── GET ──────────────────────────────────────────────────────────────────────
@@ -24,7 +19,7 @@ export function useCredits() {
   return useQuery({
     queryKey: creditKeys.lists(),
     queryFn:  async (): Promise<Credit[]> => {
-      const res  = await authFetch('/api/credits')
+      const res  = await apiFetch('/api/credits')
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener los créditos')
       return Array.isArray(json.data) ? json.data : []
@@ -37,12 +32,30 @@ export function useCreditDetail(id: string) {
   return useQuery({
     queryKey: creditKeys.detail(id),
     queryFn:  async (): Promise<{ credit: Credit; installments: Installment[] }> => {
-      const res  = await authFetch(`/api/credits/${id}`)
+      const res  = await apiFetch(`/api/credits/${id}`)
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener el crédito')
       return json.data
     },
     enabled: !!id,
+    staleTime: 1000 * 60 * 2,
+  })
+}
+
+export interface UpcomingInstallmentRow {
+  credit: Credit
+  installment: Installment
+}
+
+export function useUpcomingInstallments() {
+  return useQuery({
+    queryKey: creditKeys.upcoming(),
+    queryFn:  async (): Promise<UpcomingInstallmentRow[]> => {
+      const res  = await apiFetch('/api/credits/upcoming')
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Error al obtener las cuotas')
+      return Array.isArray(json.data) ? json.data : []
+    },
     staleTime: 1000 * 60 * 2,
   })
 }
@@ -53,7 +66,7 @@ export function useCreateCredit() {
 
   return useMutation({
     mutationFn: async (data: CreateCreditInput) => {
-      const res  = await authFetch('/api/credits', {
+      const res  = await apiFetch('/api/credits', {
         method: 'POST',
         body:   JSON.stringify(data),
       })
@@ -77,7 +90,7 @@ export function useCancelCredit() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res  = await authFetch(`/api/credits/${id}`, { method: 'PATCH' })
+      const res  = await apiFetch(`/api/credits/${id}`, { method: 'PATCH' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al cancelar el crédito')
       return json.data as Credit
@@ -96,9 +109,10 @@ export function useCancelCredit() {
       }
       toast.error(error.message)
     },
-    onSuccess: () => toast.success('Crédito cancelado'),
+onSuccess: () => toast.success('Crédito cancelado'),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: creditKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: creditKeys.upcoming() })
     },
   })
 }
@@ -109,7 +123,7 @@ export function useDeleteCredit() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res  = await authFetch(`/api/credits/${id}`, { method: 'DELETE' })
+      const res  = await apiFetch(`/api/credits/${id}`, { method: 'DELETE' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al eliminar el crédito')
     },
@@ -146,7 +160,7 @@ export function usePayInstallments() {
       creditId: string
       data: { installment_ids: string[]; amount: number; account_id: string }
     }) => {
-      const res  = await authFetch(`/api/credits/${creditId}/pay`, {
+      const res  = await apiFetch(`/api/credits/${creditId}/pay`, {
         method: 'POST',
         body:   JSON.stringify(data),
       })
@@ -158,6 +172,7 @@ export function usePayInstallments() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: creditKeys.lists() })
       queryClient.invalidateQueries({ queryKey: creditKeys.details() })   // invalidates all details
+      queryClient.invalidateQueries({ queryKey: creditKeys.upcoming() })
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() })
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() })
     },

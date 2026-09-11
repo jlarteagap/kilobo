@@ -9,7 +9,7 @@ export const createSavingsGoalSchema = z.object({
   account_id: z.string().min(1, 'Selecciona una cuenta'),
   deadline: z.string().nullable().optional(),
   icon: z.string().default('🎯'),
-  color: z.string().default('#4F6A35'),
+  color: z.string().default('#059669'),
   auto_save_percentage: z.coerce.number().min(0).max(100).default(0),
 })
 
@@ -18,5 +18,12 @@ export const updateSavingsGoalSchema = createSavingsGoalSchema.partial().extend(
   is_active: z.boolean().optional(),
 })
 
+export const depositSavingsGoalSchema = z.object({
+  amount: z.coerce.number().min(1, 'El monto debe ser mayor a 0'),
+  account_id: z.string().min(1, 'Selecciona una cuenta'),
+  date: z.string().optional(),
+})
+
 export type CreateSavingsGoalInput = z.infer<typeof createSavingsGoalSchema>
 export type UpdateSavingsGoalInput = z.infer<typeof updateSavingsGoalSchema>
+export type DepositSavingsGoalInput = z.infer<typeof depositSavingsGoalSchema>

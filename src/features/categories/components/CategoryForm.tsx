@@ -110,14 +110,14 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
           className="[&>button]:text-sm"
         />
       ) : (
-        <div className="flex items-center gap-2 px-3 py-2.5 bg-[#F2F9E3]/40 rounded-xl">
-          <span className="text-[13px] text-[#6E6E73]">
+        <div className="flex items-center gap-2 px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl">
+          <span className="text-[13px] text-zinc-500">
             Subcategoría de tipo
           </span>
           <span className={cn(
             'text-[12px] font-medium px-2 py-0.5 rounded-full',
             parentType === 'INCOME'
-              ? 'bg-[#F2F9E3] text-[#4F6A35]'
+              ? 'bg-emerald-50 text-emerald-700'
               : 'bg-[#FAEDE9] text-[#B5543D]'
           )}>
             {parentType === 'INCOME' ? 'Ingreso' : 'Gasto'}
@@ -132,9 +132,9 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
           {...form.register('name')}
           placeholder="Ej: Alimentación, Transporte…"
           className={cn(
-            'w-full rounded-xl border-0 bg-[#F2F9E3]/40 px-4 py-3 text-sm',
-            'placeholder:text-[#6E6E73]/40 text-foreground',
-            'focus:outline-none focus:ring-2 focus:ring-[#5F7D42]/30',
+            'w-full rounded-xl bg-white border border-zinc-200 px-4 py-3 text-sm',
+            'placeholder:text-zinc-400 text-foreground',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/30',
             'transition-all duration-200',
             form.formState.errors.name && 'ring-2 ring-[#B5543D]/40'
           )}
@@ -149,15 +149,15 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
       {/* ── Icono ── */}
       <div className="space-y-1.5">
         <label className="text-[13px] font-medium text-foreground">
-          Icono <span className="text-[#6E6E73] font-normal">(emoji)</span>
+          Icono <span className="text-zinc-500 font-normal">(emoji)</span>
         </label>
         <input
           {...form.register('icon')}
           placeholder="🍔"
           className={cn(
-            'w-full rounded-xl border-0 bg-[#F2F9E3]/40 px-4 py-3 text-sm',
-            'placeholder:text-[#6E6E73]/40',
-            'focus:outline-none focus:ring-2 focus:ring-[#5F7D42]/30',
+            'w-full rounded-xl bg-white border border-zinc-200 px-4 py-3 text-sm',
+            'placeholder:text-zinc-400',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/30',
             'transition-all duration-200'
           )}
         />
@@ -177,7 +177,7 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
                 'w-7 h-7 rounded-full transition-all duration-200',
                 'hover:scale-110 focus:outline-none',
                 selectedColor === value
-                  ? 'ring-2 ring-offset-2 ring-[#4F6A35] scale-110'
+                  ? 'ring-2 ring-offset-2 ring-zinc-900 scale-110'
                   : 'ring-1 ring-black/5'
               )}
               style={{ backgroundColor: value }}
@@ -189,22 +189,22 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
       {/* ── Tags ── */}
       <div className="space-y-1.5">
         <label className="text-[13px] font-medium text-foreground">
-          Tags <span className="text-[#6E6E73] font-normal">(opcional)</span>
+          Tags <span className="text-zinc-500 font-normal">(opcional)</span>
         </label>
 
         {/* Área de chips + input */}
         <div
           onClick={() => tagInputRef.current?.focus()}
           className={cn(
-            'min-h-[46px] w-full rounded-xl bg-[#F2F9E3]/40 px-3 py-2',
+            'min-h-[46px] w-full rounded-xl bg-white border border-zinc-200 px-3 py-2',
             'flex flex-wrap gap-1.5 items-center cursor-text',
-            'focus-within:ring-2 focus-within:ring-[#5F7D42]/30 transition-all duration-200'
+            'focus-within:ring-2 focus-within:ring-zinc-400/30 transition-all duration-200'
           )}
         >
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F2F9E3] rounded-full text-[12px] text-foreground font-medium"
+              className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-900 text-white rounded-full text-[12px] font-medium"
             >
               {tag}
               <button
@@ -223,10 +223,10 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
             onKeyDown={handleTagKeyDown}
             onBlur={addTag}
             placeholder={tags.length === 0 ? 'Añadir tag…' : ''}
-            className="flex-1 min-w-[80px] bg-transparent text-sm placeholder:text-[#6E6E73]/40 focus:outline-none"
+            className="flex-1 min-w-[80px] bg-transparent text-sm placeholder:text-zinc-400 focus:outline-none"
           />
         </div>
-        <p className="text-[12px] text-[#6E6E73]">
+        <p className="text-[12px] text-zinc-500">
           Presiona Enter o coma para añadir · máximo 10 tags
         </p>
       </div>
@@ -238,10 +238,10 @@ export function CategoryForm({ onSuccess, parentId, parentType }: CategoryFormPr
         className={cn(
           'w-full flex justify-center items-center gap-2',
           'py-3 px-4 rounded-xl text-sm font-medium text-white',
-          'bg-[#4F6A35] hover:bg-[#3C5230]',
+          'bg-zinc-900 hover:bg-zinc-800',
           'transition-all duration-200 shadow-sm hover:shadow-md',
           'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none',
-          'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4F6A35]'
+          'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900'
         )}
       >
         {createCategory.isPending

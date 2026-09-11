@@ -9,13 +9,15 @@ export interface Account {
   type: AccountType
   balance: number
   currency: CurrencyType   // tipado estricto, antes era string
+  institution?: string     // banco/institución (solo tipo BANK)
+  archived?: boolean       // oculta la cuenta sin borrar su historial
   createdAt: Date
   updatedAt: Date
 }
 
 // Derivados del tipo base — sin duplicar campos manualmente
-export type CreateAccountData = Pick<Account, "name" | "type" | "balance" | "currency">
-export type UpdateAccountData = Partial<CreateAccountData>
+export type CreateAccountData = Pick<Account, "name" | "type" | "balance" | "currency" | "institution">
+export type UpdateAccountData = Partial<CreateAccountData & Pick<Account, "archived">>
 
 // Origen de un cambio de balance — para trazar de dónde vino el movimiento
 export type BalanceChangeSource =

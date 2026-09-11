@@ -7,13 +7,11 @@ import { InvestmentsList } from "@/features/investments/InvestmentsList"
 import { useAccounts } from "@/features/accounts/hooks/useAccounts"
 import { cn } from "@/lib/utils"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 
 type Tab = "accounts" | "investments"
 
-// El tab se sincroniza con ?tab= para permitir deep-links desde el dashboard
-// ("Ver todas →" del widget de inversiones) sin perder el estado.
-export default function AccountsPage() {
+function AccountsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const initialTab = searchParams.get("tab") === "investments" ? "investments" : "accounts"
@@ -73,5 +71,27 @@ export default function AccountsPage() {
         </div>
       </div>
     </AppLayout>
+  )
+}
+
+export default function AccountsPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout>
+          <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 py-8 px-4 md:px-6">
+            <div className="lg:col-span-8 space-y-12">
+              <div className="h-10 w-40 animate-pulse bg-zinc-100 rounded-xl" />
+              <div className="h-64 animate-pulse bg-zinc-100 rounded-2xl" />
+            </div>
+            <aside className="lg:col-span-4 space-y-8">
+              <div className="h-64 animate-pulse bg-zinc-100 rounded-2xl" />
+            </aside>
+          </div>
+        </AppLayout>
+      }
+    >
+      <AccountsContent />
+    </Suspense>
   )
 }

@@ -15,12 +15,19 @@ import {
   DRIVER_APPS,
   DRIVER_APP_LABELS,
   PAYMENT_METHOD_LABELS,
+  sumTips,
+  sumAppTips,
+  emptyTips,
 } from '@/types/driver'
 import type { CreateTransactionData } from '@/types/transaction'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function sum(values: number[]): number {
   return values.reduce((a, b) => a + b, 0)
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100
 }
 
 function todayDateStr(): string {
@@ -36,17 +43,21 @@ async function processShiftTransactions(
   userId: string,
 ) {
   const totalEarnings = sum(DRIVER_APPS.flatMap((app) => Object.values(data.earnings[app])))
-  const totalBonuses = sum(Object.values(data.bonuses))
-  const totalCommissions = sum(Object.values(data.commissions))
+  const totalBonuses = sum(Object.values(data.bonuses ?? {}))
+  const totalCommissions = sum(Object.values(data.commissions ?? {}))
+  const tips = data.tips ?? emptyTips()
+  const totalTips = sumTips(tips)
   const totalExpenses = data.expenses.reduce((s, e) => s + e.amount, 0)
-  const grossEarnings = totalEarnings + totalBonuses
+  const grossEarnings = totalEarnings + totalBonuses + totalTips
 
   const cardEarnings = sum(DRIVER_APPS.map((app) => data.earnings[app].CARD))
   const pendingAmount = cardEarnings + totalBonuses
 
   const cashEarnings = sum(DRIVER_APPS.map((app) => data.earnings[app].CASH))
   const qrEarnings = sum(DRIVER_APPS.map((app) => data.earnings[app].QR))
-  const liquidEarnings = cashEarnings + qrEarnings - totalCommissions - totalExpenses
+  const preMaintenanceLiquid = cashEarnings + qrEarnings + totalTips - totalCommissions - totalExpenses
+  const maintenanceReserve = preMaintenanceLiquid > 0 ? round2(preMaintenanceLiquid * 0.06) : 0
+  const liquidEarnings = round2(preMaintenanceLiquid - maintenanceReserve)
 
   const endKm3 = data.endKm != null ? data.endKm % 1000 : null
   const startKm3 = data.startKm != null ? data.startKm % 1000 : null
@@ -76,6 +87,26 @@ async function processShiftTransactions(
         amount: data.earnings[app].CASH,
         date: shiftDate,
         description: `${DRIVER_APP_LABELS[app]} efectivo`,
+      })
+    }
+    if ((tips[app]?.CASH ?? 0) > 0) {
+      await createTx({
+        account_id: config.incomeCashAccountId,
+        project_id: config.projectId,
+        subtype, type: 'INCOME',
+        amount: tips[app].CASH,
+        date: shiftDate,
+        description: `${DRIVER_APP_LABELS[app]} propina`,
+      })
+    }
+    if ((tips[app]?.QR ?? 0) > 0) {
+      await createTx({
+        account_id: config.incomeQrAccountId,
+        project_id: config.projectId,
+        subtype, type: 'INCOME',
+        amount: tips[app].QR,
+        date: shiftDate,
+        description: `${DRIVER_APP_LABELS[app]} propina QR`,
       })
     }
     if (data.earnings[app].QR > 0) {
@@ -124,6 +155,18 @@ async function processShiftTransactions(
     })
   }
 
+  if (maintenanceReserve > 0) {
+    await createTx({
+      account_id: config.expenseCashAccountId,
+      project_id: config.projectId,
+      subtype: config.subtypeMapping.maintenance,
+      type: 'EXPENSE',
+      amount: maintenanceReserve,
+      date: shiftDate,
+      description: 'Mantenimiento (6%)',
+    })
+  }
+
   let gasolinaTripCreatedAt: number | null = null
   if (endKm3 != null && startKm3 != null) {
     try {
@@ -147,14 +190,17 @@ async function processShiftTransactions(
     earnings: data.earnings,
     bonuses: data.bonuses,
     commissions: data.commissions,
+    tips,
     expenses: data.expenses,
     totalEarnings,
     totalBonuses,
     totalCommissions,
     totalExpenses,
+    totalTips,
     grossEarnings,
     pendingAmount,
     liquidEarnings,
+    maintenanceReserve,
     generatedTransactionIds: createdTxIds,
     gasolinaTripCreatedAt,
     notes: data.notes ?? null,
@@ -252,10 +298,10 @@ export const driverService = {
       : await driverRepository.findAll(userId)
 
     if (shifts.length === 0) {
-      const empty = { grossEarnings: 0, pendingAmount: 0, liquidEarnings: 0, totalBonuses: 0, totalCommissions: 0, totalExpenses: 0, totalHours: 0, liquidBsPerHour: 0, grossBsPerHour: 0, avgPerShift: 0, totalKm: 0, margin: 0, shiftCount: 0 }
+      const empty = { grossEarnings: 0, pendingAmount: 0, liquidEarnings: 0, totalBonuses: 0, totalCommissions: 0, totalExpenses: 0, totalMaintenance: 0, totalHours: 0, liquidBsPerHour: 0, grossBsPerHour: 0, avgPerShift: 0, totalKm: 0, margin: 0, shiftCount: 0 }
       return {
         summary: empty,
-        byApp: DRIVER_APPS.map((app) => ({ app, cash: 0, card: 0, qr: 0, bonuses: 0, commissions: 0, totalGross: 0 })),
+        byApp: DRIVER_APPS.map((app) => ({ app, cash: 0, card: 0, qr: 0, bonuses: 0, tips: 0, commissions: 0, totalGross: 0 })),
         dailyTrend: [],
       }
     }
@@ -267,6 +313,7 @@ export const driverService = {
     const totalBonuses = shifts.reduce((s, sh) => s + sh.totalBonuses, 0)
     const totalCommissions = shifts.reduce((s, sh) => s + sh.totalCommissions, 0)
     const totalExpenses = shifts.reduce((s, sh) => s + sh.totalExpenses, 0)
+    const totalMaintenance = shifts.reduce((s, sh) => s + (sh.maintenanceReserve ?? 0), 0)
     const totalHours = shifts.reduce((s, sh) => s + (sh.hoursWorked ?? 0), 0)
     const totalKm = shifts.reduce((s, sh) => s + (sh.totalKm ?? 0), 0)
     const liquidBsPerHour = totalHours > 0 ? liquidEarnings / totalHours : 0
@@ -280,13 +327,15 @@ export const driverService = {
       const card = shifts.reduce((s, sh) => s + ((sh.earnings[app]?.CARD ?? 0)), 0)
       const qr = shifts.reduce((s, sh) => s + ((sh.earnings[app]?.QR ?? 0)), 0)
       const bonuses = shifts.reduce((s, sh) => s + (sh.bonuses[app] ?? 0), 0)
+      const tips = shifts.reduce((s, sh) => s + sumAppTips(sh.tips?.[app]), 0)
       const commissions = shifts.reduce((s, sh) => s + (sh.commissions[app] ?? 0), 0)
       return {
         app,
         cash, card, qr,
         bonuses,
+        tips,
         commissions,
-        totalGross: cash + card + qr + bonuses,
+        totalGross: cash + card + qr + bonuses + tips,
       }
     })
 
@@ -321,6 +370,7 @@ export const driverService = {
         totalBonuses: totalBonuses ?? 0,
         totalCommissions: totalCommissions ?? 0,
         totalExpenses: totalExpenses ?? 0,
+        totalMaintenance: totalMaintenance ?? 0,
         totalHours: totalHours ?? 0,
         liquidBsPerHour: liquidBsPerHour ?? 0,
         grossBsPerHour: grossBsPerHour ?? 0,
@@ -335,6 +385,7 @@ export const driverService = {
         card: a.card ?? 0,
         qr: a.qr ?? 0,
         bonuses: a.bonuses ?? 0,
+        tips: a.tips ?? 0,
         commissions: a.commissions ?? 0,
         totalGross: (a.totalGross ?? 0),
       })),

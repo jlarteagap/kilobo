@@ -110,7 +110,7 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
               {/* Badges app */}
               <div className="hidden sm:flex items-center gap-1.5 flex-1 flex-wrap min-w-0">
                 {DRIVER_APPS.map((app) => {
-                  const total = (shift.earnings?.[app]?.CASH ?? 0) + (shift.earnings?.[app]?.CARD ?? 0) + (shift.earnings?.[app]?.QR ?? 0)
+                  const total = (shift.earnings?.[app]?.CASH ?? 0) + (shift.earnings?.[app]?.CARD ?? 0) + (shift.earnings?.[app]?.QR ?? 0) + (shift.tips?.[app]?.CASH ?? 0) + (shift.tips?.[app]?.QR ?? 0)
                   if (!total) return null
                   return (
                     <span key={app} className={`text-xs font-bold px-2 py-0.5 rounded-full tabular-nums border ${getAppBadgeColor(app)}`}>

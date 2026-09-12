@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import type { DriverApp, PaymentMethod, ExpenseType, DriverExpense, DriverShift, ShiftInput } from '@/types/driver'
-import { DRIVER_APPS, DRIVER_APP_LABELS, PAYMENT_METHOD_LABELS, EXPENSE_TYPE_LABELS, EXPENSE_TYPES } from '@/types/driver'
+import type { DriverApp, PaymentMethod, ExpenseType, DriverExpense, DriverShift, ShiftInput, TipsByMethod } from '@/types/driver'
+import { DRIVER_APPS, DRIVER_APP_LABELS, PAYMENT_METHOD_LABELS, EXPENSE_TYPE_LABELS, EXPENSE_TYPES, emptyTips } from '@/types/driver'
 import { isoToLocalDateStr, getAppBadgeColor } from '../utils/driver-metrics.utils'
 
 interface ShiftFormProps {
@@ -50,6 +50,7 @@ function shiftToInput(s: DriverShift): ShiftInput {
     earnings: s.earnings,
     bonuses: s.bonuses,
     commissions: s.commissions,
+    tips: s.tips,
     expenses: s.expenses,
     notes: s.notes,
   }
@@ -70,6 +71,7 @@ export function ShiftForm({
     earnings: emptyEarnings(),
     bonuses: emptyBonuses(),
     commissions: emptyCommissions(),
+    tips: emptyTips(),
     expenses: [] as DriverExpense[],
     notes: null,
   }
@@ -82,6 +84,7 @@ export function ShiftForm({
   const [earnings, setEarnings] = useState<Record<DriverApp, Record<PaymentMethod, number>>>(defaults.earnings)
   const [bonuses, setBonuses] = useState<Record<DriverApp, number>>(defaults.bonuses)
   const [commissions, setCommissions] = useState<Record<DriverApp, number>>(defaults.commissions)
+  const [tips, setTips] = useState<Record<DriverApp, TipsByMethod>>(defaults.tips ?? emptyTips())
   const [expenses, setExpenses] = useState<DriverExpense[]>(defaults.expenses)
   const [notes, setNotes] = useState(defaults.notes ?? '')
 
@@ -99,6 +102,10 @@ export function ShiftForm({
 
   const updateCommissions = (app: DriverApp, value: string) => {
     setCommissions((prev) => ({ ...prev, [app]: parseFloat(value) || 0 }))
+  }
+
+  const updateTips = (app: DriverApp, method: keyof TipsByMethod, value: string) => {
+    setTips((prev) => ({ ...prev, [app]: { ...prev[app], [method]: parseFloat(value) || 0 } }))
   }
 
   const addExpense = () => {
@@ -122,28 +129,33 @@ export function ShiftForm({
   }, [startKm, endKm])
 
   const totals = useMemo(() => {
-    let totalCash = 0, totalCard = 0, totalQr = 0, totalBonuses = 0, totalCommissions = 0
+    let totalCash = 0, totalCard = 0, totalQr = 0, totalBonuses = 0, totalCommissions = 0, totalCashTips = 0, totalQrTips = 0
     for (const app of DRIVER_APPS) {
       totalCash += earnings[app].CASH
       totalCard += earnings[app].CARD
       totalQr += earnings[app].QR
       totalBonuses += bonuses[app]
       totalCommissions += commissions[app]
+      totalCashTips += tips[app]?.CASH ?? 0
+      totalQrTips += tips[app]?.QR ?? 0
     }
+    const totalTips = totalCashTips + totalQrTips
     const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0)
-    const gross = totalCash + totalCard + totalQr + totalBonuses
+    const gross = totalCash + totalCard + totalQr + totalBonuses + totalTips
     const pending = totalCard + totalBonuses
-    const liquid = totalCash + totalQr - totalCommissions - totalExpenses
-    return { totalCash, totalCard, totalQr, totalBonuses, totalCommissions, totalExpenses, gross, pending, liquid }
-  }, [earnings, bonuses, commissions, expenses])
+    const preMaintenanceLiquid = totalCash + totalQr + totalTips - totalCommissions - totalExpenses
+    const maintenanceReserve = preMaintenanceLiquid > 0 ? Math.round(preMaintenanceLiquid * 0.06 * 100) / 100 : 0
+    const liquid = Math.round((preMaintenanceLiquid - maintenanceReserve) * 100) / 100
+    return { totalCash, totalCard, totalQr, totalBonuses, totalCommissions, totalCashTips, totalQrTips, totalTips, totalExpenses, maintenanceReserve, gross, pending, liquid }
+  }, [earnings, bonuses, commissions, tips, expenses])
 
   const appTotals = useMemo(() => {
     const map: Record<DriverApp, number> = { UBER: 0, YANGO: 0, INDRIVE: 0 }
     for (const app of DRIVER_APPS) {
-      map[app] = earnings[app].CASH + earnings[app].CARD + earnings[app].QR + bonuses[app]
+      map[app] = earnings[app].CASH + earnings[app].CARD + earnings[app].QR + bonuses[app] + (tips[app]?.CASH ?? 0) + (tips[app]?.QR ?? 0)
     }
     return map
-  }, [earnings, bonuses])
+  }, [earnings, bonuses, tips])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -157,6 +169,7 @@ export function ShiftForm({
       earnings,
       bonuses,
       commissions,
+      tips,
       expenses,
       notes: notes || null,
     }
@@ -300,7 +313,7 @@ export function ShiftForm({
                     {DRIVER_APP_LABELS[app]}
                   </span>
                   <span className="text-xs text-muted-foreground tabular-nums">
-                    {(earnings[app].CASH + earnings[app].CARD + earnings[app].QR + bonuses[app]).toFixed(0)} Bs bruto
+                    {(earnings[app].CASH + earnings[app].CARD + earnings[app].QR + bonuses[app] + (tips[app]?.CASH ?? 0) + (tips[app]?.QR ?? 0)).toFixed(0)} Bs bruto
                   </span>
                 </div>
 
@@ -349,7 +362,35 @@ export function ShiftForm({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-border mt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1 border-t border-border mt-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`${app}-TIP-CASH`} className="text-xs font-medium text-muted-foreground">Propinas efectivo</Label>
+                    <Input
+                      id={`${app}-TIP-CASH`}
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      value={tips[app]?.CASH || ''}
+                      onChange={(e) => updateTips(app, 'CASH', e.target.value)}
+                      placeholder="0.00"
+                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`${app}-TIP-QR`} className="text-xs font-medium text-muted-foreground">Propinas QR</Label>
+                    <Input
+                      id={`${app}-TIP-QR`}
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      value={tips[app]?.QR || ''}
+                      onChange={(e) => updateTips(app, 'QR', e.target.value)}
+                      placeholder="0.00"
+                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
+                    />
+                  </div>
                   <div className="space-y-1.5">
                     <Label htmlFor={`${app}-BONUS`} className="text-xs font-medium text-muted-foreground">Bonos</Label>
                     <Input
@@ -509,7 +550,9 @@ function ExpenseRow({
 function SummaryCard({ totals, hoursWorked }: {
   totals: {
     totalCash: number; totalCard: number; totalQr: number
-    totalBonuses: number; totalCommissions: number; totalExpenses: number
+    totalBonuses: number; totalCommissions: number
+    totalCashTips: number; totalQrTips: number; totalTips: number
+    totalExpenses: number; maintenanceReserve: number
     gross: number; pending: number; liquid: number
   }
   hoursWorked: number
@@ -528,12 +571,15 @@ function SummaryCard({ totals, hoursWorked }: {
         <Row label="Tarjeta" value={totals.totalCard} color="text-driver-uber-fg" />
         <Row label="QR" value={totals.totalQr} color="text-driver-indrive-fg" />
         <Row label="Bonos" value={totals.totalBonuses} color="text-amber-600 dark:text-amber-400" />
+        <Row label="Propinas efectivo" value={totals.totalCashTips} color="text-amber-600 dark:text-amber-400" />
+        <Row label="Propinas QR" value={totals.totalQrTips} color="text-amber-600 dark:text-amber-400" />
         <div className="border-t border-border pt-2 mt-2">
           <Row label="Total bruto" value={totals.gross} color="text-foreground font-bold" />
         </div>
         <Row label="Pendiente en app (tarjeta + bonos)" value={-totals.pending} color="text-muted-foreground" />
         <Row label="Comisiones" value={-totals.totalCommissions} color="text-destructive" />
         <Row label="Gastos" value={-totals.totalExpenses} color="text-destructive" />
+        <Row label="Mantenimiento 6%" value={-totals.maintenanceReserve} color="text-destructive" />
       </div>
 
       <div className="border-t-2 border-border pt-3 flex justify-between items-center gap-4">

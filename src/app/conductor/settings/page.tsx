@@ -26,6 +26,7 @@ export default function DriverSettingsPage() {
   const [expenseCashAccountId, setExpenseCashAccountId] = useState('')
   const [expenseQrAccountId, setExpenseQrAccountId] = useState('')
   const [commissionAccountId, setCommissionAccountId] = useState('')
+  const [bonusDepositAccountId, setBonusDepositAccountId] = useState('')
 
   const selectedProject = activeProjects.find((p) => p.id === projectId)
 
@@ -37,6 +38,7 @@ export default function DriverSettingsPage() {
       setExpenseCashAccountId(config.expenseCashAccountId)
       setExpenseQrAccountId(config.expenseQrAccountId)
       setCommissionAccountId(config.commissionAccountId)
+      setBonusDepositAccountId(config.bonusDepositAccountId)
     }
   }, [config])
 
@@ -48,6 +50,7 @@ export default function DriverSettingsPage() {
       expenseCashAccountId,
       expenseQrAccountId,
       commissionAccountId,
+      bonusDepositAccountId,
       subtypeMapping: DEFAULT_SUBTYPE_MAPPING,
     }
     saveConfig.mutate(data)
@@ -154,6 +157,7 @@ export default function DriverSettingsPage() {
               { id: 'expenseCash', label: 'Gastos en efectivo', value: expenseCashAccountId, setter: setExpenseCashAccountId },
               { id: 'expenseQr', label: 'Gastos con QR', value: expenseQrAccountId, setter: setExpenseQrAccountId },
               { id: 'commission', label: 'Comisiones (descuento app)', value: commissionAccountId, setter: setCommissionAccountId },
+              { id: 'bonusDeposit', label: 'Bonos (deposito de la app)', value: bonusDepositAccountId, setter: setBonusDepositAccountId },
             ].map((f) => (
               <div key={f.id} className="space-y-2">
                 <Label htmlFor={f.id} className="text-xs font-medium text-foreground">{f.label}</Label>

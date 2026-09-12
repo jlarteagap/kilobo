@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import AppLayout from '@/components/layout/AppLayout'
 import { ShiftForm } from '@/features/driver/components/ShiftForm'
 import { ShiftHistory } from '@/features/driver/components/ShiftHistory'
+import { DriverDeposits } from '@/features/driver/components/DriverDeposits'
 import { DashboardSummary } from '@/features/driver/components/DashboardSummary'
 import { MonthCyclePicker } from '@/features/driver/components/MonthCyclePicker'
 import { useShifts, useCreateShift, useUpdateShift } from '@/features/driver/hooks/useDriverShifts'
@@ -127,6 +128,7 @@ export default function ConductorPage() {
               earnings: editingShift.earnings,
               bonuses: editingShift.bonuses,
               commissions: editingShift.commissions,
+              tips: editingShift.tips,
               expenses: editingShift.expenses,
               notes: editingShift.notes,
             }}
@@ -147,6 +149,8 @@ export default function ConductorPage() {
            </div>
            <ShiftHistory shifts={shifts} onEdit={handleEdit} cycle={cycle} label={label} />
          </div>
+
+         <DriverDeposits cycle={cycle} label={label} />
       </div>
     </AppLayout>
   )

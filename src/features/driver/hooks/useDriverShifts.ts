@@ -13,6 +13,8 @@ export const driverKeys = {
   all: ['driver'] as const,
   shifts: (cycle?: MonthCycle) => [...driverKeys.all, 'shifts', cycle ? `${cycle.year}-${String(cycle.month).padStart(2, '0')}` : 'current'] as const,
   analytics: (cycle?: MonthCycle) => [...driverKeys.all, 'analytics', cycle ? `${cycle.year}-${String(cycle.month).padStart(2, '0')}` : 'all'] as const,
+  deposits: (cycle?: MonthCycle) => [...driverKeys.all, 'deposits', cycle ? `${cycle.year}-${String(cycle.month).padStart(2, '0')}` : 'current'] as const,
+  reconciliation: () => [...driverKeys.all, 'deposits', 'reconciliation'] as const,
 }
 
 function shiftsUrl(cycle?: MonthCycle): string {

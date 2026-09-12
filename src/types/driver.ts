@@ -8,6 +8,45 @@ export const DRIVER_APPS: DriverApp[] = ['UBER', 'YANGO', 'INDRIVE']
 export const PAYMENT_METHODS: PaymentMethod[] = ['CASH', 'CARD', 'QR']
 export const EXPENSE_TYPES: ExpenseType[] = ['TOLL', 'GAS', 'MAINTENANCE', 'OTHER']
 
+export type TipsByMethod = { CASH: number; QR: number }
+
+export const DEFAULT_TIPS_PER_APP: TipsByMethod = { CASH: 0, QR: 0 }
+
+type TipsEntry = TipsByMethod | number | undefined | null
+
+export function emptyTips(): Record<DriverApp, TipsByMethod> {
+  return {
+    UBER: { ...DEFAULT_TIPS_PER_APP },
+    YANGO: { ...DEFAULT_TIPS_PER_APP },
+    INDRIVE: { ...DEFAULT_TIPS_PER_APP },
+  }
+}
+
+export function sumAppTips(value: TipsEntry): number {
+  if (value == null) return 0
+  if (typeof value === 'number') return value
+  return (value.CASH ?? 0) + (value.QR ?? 0)
+}
+
+export function sumTips(tips: Record<DriverApp, TipsEntry> | undefined | null): number {
+  if (!tips) return 0
+  return DRIVER_APPS.reduce((total, app) => total + sumAppTips(tips[app]), 0)
+}
+
+export function sumTipsByMethod(
+  tips: Record<DriverApp, TipsEntry> | undefined | null,
+  method: keyof TipsByMethod,
+): number {
+  if (!tips) return 0
+  let total = 0
+  for (const app of DRIVER_APPS) {
+    const v = tips[app]
+    if (v == null || typeof v === 'number') continue
+    total += v[method] ?? 0
+  }
+  return total
+}
+
 export const DRIVER_APP_LABELS: Record<DriverApp, string> = {
   UBER:   'Uber',
   YANGO:  'Yango',
@@ -35,6 +74,7 @@ export interface DriverConfig {
   expenseCashAccountId: string // para gastos pagados en efectivo
   expenseQrAccountId: string   // para gastos pagados con QR
   commissionAccountId: string  // para comisiones (las descuenta la app)
+  bonusDepositAccountId: string // cuenta donde la app deposita los bonos
   subtypeMapping: {
     uber: string
     yango: string
@@ -78,14 +118,17 @@ export interface DriverShift {
   earnings: Record<DriverApp, Record<PaymentMethod, number>>
   bonuses: Record<DriverApp, number>
   commissions: Record<DriverApp, number>
+  tips: Record<DriverApp, TipsByMethod>
   expenses: DriverExpense[]
   totalEarnings: number
   totalBonuses: number
   totalCommissions: number
   totalExpenses: number
+  totalTips: number
   grossEarnings: number
   pendingAmount: number
   liquidEarnings: number
+  maintenanceReserve: number
   generatedTransactionIds: string[]
   gasolinaTripCreatedAt?: number | null  // referencia al trip creado en Gasolina al cerrar turno
   notes: string | null
@@ -102,8 +145,40 @@ export interface ShiftInput {
   earnings: Record<DriverApp, Record<PaymentMethod, number>>
   bonuses: Record<DriverApp, number>
   commissions: Record<DriverApp, number>
+  tips: Record<DriverApp, TipsByMethod>
   expenses: DriverExpense[]
   notes?: string | null
+}
+
+// ─── Depósitos de apps ────────────────────────────────────────────────────────
+export interface DriverDeposit {
+  id: string
+  user_id: string
+  app: DriverApp
+  date: string               // Fecha del depósito (YYYY-MM-DD)
+  grossAmount: number        // Monto bruto depositado por la app
+  commission: number         // Comisión cobrada por la app sobre bonos/tarjetas
+  netAmount: number          // bruto − comisión (derivado, calculado en el service)
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+// Datos de entrada: crear o editar un depósito
+export interface DepositInput {
+  app: DriverApp
+  date: string               // YYYY-MM-DD
+  grossAmount: number
+  commission: number
+  notes?: string | null
+}
+
+// Reconciliación por app: depositado vs pendiente registrado en turnos
+export interface DriverDepositReconciliation {
+  app: DriverApp
+  deposited: number          // suma de grossAmount de depósitos
+  pending: number            // suma de tarjeta + bonos de turnos
+  difference: number         // deposited − pending
 }
 
 // ─── Analytics ────────────────────────────────────────────────────────────────
@@ -114,6 +189,7 @@ export interface DriverAnalyticsSummary {
   totalBonuses: number
   totalCommissions: number
   totalExpenses: number
+  totalMaintenance: number
   totalHours: number
   liquidBsPerHour: number
   grossBsPerHour: number
@@ -129,6 +205,7 @@ export interface DriverAppBreakdown {
   card: number
   qr: number
   bonuses: number
+  tips: number
   commissions: number
   totalGross: number
 }

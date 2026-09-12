@@ -5,8 +5,10 @@ import {
   DriverShift,
   DriverApp,
   PaymentMethod,
+  TipsByMethod,
   ShiftInput,
   DRIVER_APPS,
+  emptyTips,
 } from '@/types/driver'
 
 const shiftsCollection = adminDb.collection('driver_shifts')
@@ -47,11 +49,23 @@ function normalizeShift(data: Record<string, unknown>): DriverShift {
 
   const bonusesRaw = (data.bonuses ?? {}) as Record<string, unknown>
   const commissionsRaw = (data.commissions ?? {}) as Record<string, unknown>
+  const tipsRaw = (data.tips ?? {}) as Record<string, unknown>
   const bonuses = emptyAppAmounts()
   const commissions = emptyAppAmounts()
+  const tips = emptyTips()
   for (const app of DRIVER_APPS) {
     bonuses[app] = typeof bonusesRaw[app] === 'number' ? (bonusesRaw[app] as number) : 0
     commissions[app] = typeof commissionsRaw[app] === 'number' ? (commissionsRaw[app] as number) : 0
+    const rawTip = tipsRaw[app]
+    if (rawTip && typeof rawTip === 'object') {
+      const t = rawTip as Record<string, number>
+      tips[app] = {
+        CASH: typeof t.CASH === 'number' ? t.CASH : 0,
+        QR: typeof t.QR === 'number' ? t.QR : 0,
+      } satisfies TipsByMethod
+    } else if (typeof rawTip === 'number') {
+      tips[app] = { CASH: rawTip, QR: 0 }
+    }
   }
 
   return {
@@ -69,14 +83,17 @@ function normalizeShift(data: Record<string, unknown>): DriverShift {
     earnings,
     bonuses,
     commissions,
+    tips,
     expenses: Array.isArray(data.expenses) ? (data.expenses as DriverShift['expenses']) : [],
     totalEarnings: typeof data.totalEarnings === 'number' ? (data.totalEarnings as number) : 0,
     totalBonuses: typeof data.totalBonuses === 'number' ? (data.totalBonuses as number) : 0,
     totalCommissions: typeof data.totalCommissions === 'number' ? (data.totalCommissions as number) : 0,
     totalExpenses: typeof data.totalExpenses === 'number' ? (data.totalExpenses as number) : 0,
+    totalTips: typeof data.totalTips === 'number' ? (data.totalTips as number) : 0,
     grossEarnings: typeof data.grossEarnings === 'number' ? (data.grossEarnings as number) : 0,
     pendingAmount: typeof data.pendingAmount === 'number' ? (data.pendingAmount as number) : 0,
     liquidEarnings: typeof data.liquidEarnings === 'number' ? (data.liquidEarnings as number) : 0,
+    maintenanceReserve: typeof data.maintenanceReserve === 'number' ? (data.maintenanceReserve as number) : 0,
     generatedTransactionIds: Array.isArray(data.generatedTransactionIds)
       ? (data.generatedTransactionIds as string[])
       : [],
@@ -151,11 +168,13 @@ export const driverRepository = {
       earnings: data.earnings,
       bonuses: data.bonuses,
       commissions: data.commissions,
+      tips: data.tips ?? emptyTips(),
       expenses: data.expenses ?? [],
       totalEarnings: data.totalEarnings ?? 0,
       totalBonuses: data.totalBonuses ?? 0,
       totalCommissions: data.totalCommissions ?? 0,
       totalExpenses: data.totalExpenses ?? 0,
+      totalTips: data.totalTips ?? 0,
       grossEarnings: data.grossEarnings ?? 0,
       pendingAmount: data.pendingAmount ?? 0,
       liquidEarnings: data.liquidEarnings ?? 0,

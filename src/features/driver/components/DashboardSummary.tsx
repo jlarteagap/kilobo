@@ -25,6 +25,7 @@ export function DashboardSummary({ shifts }: DashboardSummaryProps) {
     const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 
     let todayLiquid = 0
+    let todayMaintenance = 0
     let weekLiquid = 0
     let monthLiquid = 0
     let weekHours = 0
@@ -33,7 +34,10 @@ export function DashboardSummary({ shifts }: DashboardSummaryProps) {
       const dayStr = (sh.date ?? isoToLocalDateStr(sh.createdAt) ?? '').slice(0, 10)
       const liquid = sh.liquidEarnings ?? 0
 
-      if (dayStr === todayStr) todayLiquid += liquid
+      if (dayStr === todayStr) {
+        todayLiquid += liquid
+        todayMaintenance += sh.maintenanceReserve ?? 0
+      }
       if (dayStr >= weekStart) {
         weekLiquid += liquid
         weekHours += sh.hoursWorked ?? 0
@@ -42,7 +46,7 @@ export function DashboardSummary({ shifts }: DashboardSummaryProps) {
     }
 
     return {
-      today: { liquid: todayLiquid },
+      today: { liquid: todayLiquid, maintenance: todayMaintenance },
       week: { liquid: weekLiquid, hours: weekHours },
       month: { liquid: monthLiquid },
     }
@@ -54,6 +58,7 @@ export function DashboardSummary({ shifts }: DashboardSummaryProps) {
         icon={<DollarSign className="size-3.5 shrink-0" />}
         label="Hoy"
         value={formatBs(today.liquid)}
+        sub={today.maintenance > 0 ? `${formatBs(today.maintenance)} mant.` : undefined}
         color="emerald"
       />
       <MiniCard

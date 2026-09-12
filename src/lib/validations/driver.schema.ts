@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { EXPENSE_TYPES, PAYMENT_METHODS } from '@/types/driver'
+import { DRIVER_APPS, EXPENSE_TYPES, PAYMENT_METHODS } from '@/types/driver'
 
 const appAmount = z.coerce.number().min(0, 'El valor no puede ser negativo')
 
@@ -7,6 +7,17 @@ const earningsPerApp = z.object({
   CASH: appAmount,
   CARD: appAmount,
   QR: appAmount,
+})
+
+const tipsByMethod = z.object({
+  CASH: appAmount,
+  QR: appAmount,
+})
+
+export const tipsSchema = z.object({
+  UBER: tipsByMethod,
+  YANGO: tipsByMethod,
+  INDRIVE: tipsByMethod,
 })
 
 // Schema para registrar un turno manualmente (crear o editar)
@@ -30,6 +41,7 @@ export const shiftSchema = z.object({
     YANGO: appAmount,
     INDRIVE: appAmount,
   }),
+  tips: tipsSchema,
   expenses: z.array(z.object({
     type: z.enum(EXPENSE_TYPES),
     amount: appAmount,
@@ -48,6 +60,7 @@ export const driverConfigSchema = z.object({
   expenseCashAccountId: z.string().min(1, 'Selecciona una cuenta para gastos en efectivo'),
   expenseQrAccountId: z.string().min(1, 'Selecciona una cuenta para gastos con QR'),
   commissionAccountId: z.string().min(1, 'Selecciona una cuenta para comisiones'),
+  bonusDepositAccountId: z.string().min(1, 'Selecciona una cuenta para bonos'),
   subtypeMapping: z.object({
     uber: z.string().min(1),
     yango: z.string().min(1),
@@ -73,3 +86,24 @@ export const monthQuerySchema = z.object({
 )
 
 export type MonthQuery = z.infer<typeof monthQuerySchema>
+
+// ─── Depósitos de apps ─────────────────────────────────────────────────────────
+function todayLocalStr(): string {
+  const d = new Date()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
+export const depositSchema = z.object({
+  app: z.enum(DRIVER_APPS),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (YYYY-MM-DD)'),
+  grossAmount: z.coerce.number().min(0, 'El valor no puede ser negativo'),
+  commission: z.coerce.number().min(0, 'El valor no puede ser negativo'),
+  notes: z.string().max(500, 'Máximo 500 caracteres').nullable().optional(),
+}).refine((v) => v.date <= todayLocalStr(), {
+  message: 'La fecha del depósito no puede ser futura',
+  path: ['date'],
+})
+
+export type DepositInputSchema = z.infer<typeof depositSchema>

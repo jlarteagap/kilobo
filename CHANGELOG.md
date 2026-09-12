@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.3] - 2026-09-12
+
+### Added
+- **Módulo Conductor — Propinas por App y Método de Pago**: Soporte para registrar propinas individualizadas por plataforma (Uber, Yango, InDrive) y método de cobro (`CASH`, `QR`) en el formulario de turnos (`ShiftForm`). Cálculo automático de propinas totales (`totalTips`) y visualización en el desglose de turno (`ShiftDetailSheet`) y analíticas.
+- **Módulo Conductor — Depósitos de Apps y Reconciliación**: Nuevo submódulo `DriverDeposits` y endpoint `/api/driver/deposits` para registrar depósitos bancarios de las plataformas, deducción de comisiones sobre bonos/tarjetas y reconciliación automática de montos pendientes vs depositados (`DriverDepositReconciliation`).
+- **Módulo Conductor — Reserva de Mantenimiento Estimada**: Cálculo y persistencia del campo `maintenanceReserve` por turno para proyectar el fondo sugerido de ahorro para el desgaste y mantenimiento del vehículo.
+- **Módulo Conductor — Configuración de Cuenta de Bonos**: Soporte para configurar la cuenta de depósito de bonos (`bonusDepositAccountId`) en `DriverConfig` y ajustes de conductor (`/conductor/settings`).
+
+### Changed
+- **Esquemas de validación y tipos de Conductor**: Actualización de `driver.schema.ts` y `src/types/driver.ts` con tipos `TipsByMethod`, helpers `sumTips`, `sumTipsByMethod`, `sumAppTips`, `emptyTips` y esquemas Zod `tipsSchema`, `depositSchema`.
+- **Persistencia y normalización en Repositorio**: `driver.repository.ts` normaliza de forma segura `tips` (soportando números legacy o el nuevo objeto `{ CASH, QR }`), `totalTips`, `maintenanceReserve` y `totalMaintenance` en analíticas.
+- **Índices de Firestore**: Nuevos índices compuestos en `firestore.indexes.json` para consultar depósitos de conductor por `user_id`, `app` y `date desc`.
+
+## [1.7.2] - 2026-09-11
+
+### Added
+- **Cuentas — Variación Diaria de Saldo**: Indicador visual en tiempo real (`AccountChangeBadge`) en la lista de cuentas que refleja la variación neta de saldo en las últimas 24 horas con badges de estado (positivo, negativo o sin cambio) y montos formateados.
+- **Cuentas — Diálogo de Historial de Auditoría**: Componente modal `AccountHistoryDialog` para auditar el historial cronológico y deltas diarios de saldo de cada cuenta (`useAccountBalanceHistory`, `useAccountDailyDeltas`, `useAccountBalanceChanges`).
+- **Inversiones — Planes de Compra Recurrente**: Modales `RecurringPlanDialog` y `ConfirmRecurringBuyDialog` para definir planes de inversión periódicos y automatizar el registro de compras con cálculo de rendimientos.
+- **Inversiones — Vistas y Widgets Modulares**: Componentes desacoplados para la gestión integral de inversiones (`InvestmentsWidget`, `InvestmentsByAccount`, `UpcomingPurchases`, `TxHistory`, `PlanStatus`, `InvestmentRow`).
+- **Metas de Ahorro — Formulario de Depósitos**: Componente `SavingsGoalDepositForm` para registrar depósitos y transferencias directas hacia metas de ahorro desde las tarjetas de metas (`SavingsGoalCard`, `SavingsGoalsList`).
+- **Preferencias de Usuario**: Repositorio y hook `usePreferences` / `user-preferences.repository.ts` para persistir configuraciones personalizadas del usuario.
+
+### Changed
+- **Servicios de Inversión y Ahorro**: `investments.service.ts` y `savings-goal.service.ts` refactorizados para soportar transacciones atómicas con Firestore batch en depósitos, retiros y planes recurrentes.
+- **Tipos y Validaciones**: Esquemas de Zod y tipos TypeScript ampliados para `investment.schema.ts`, `savings-goal.schema.ts` y `account.schema.ts`.
+
+### Fixed
+- **Carga de cuentas y Suspense**: Corrección de estados de carga y transiciones de Suspense en la lista de cuentas (`AccountsList.tsx`) para evitar parpadeos y desincronización de badges de variación.
+
+## [1.7.1] - 2026-09-07
+
+### Added
+- **Módulo Conductor — Filtro de Ciclos Mensuales**: Selector de ciclos (`MonthCyclePicker`) y hook `useMonthCycle` que permite filtrar turnos y analíticas por períodos mensuales personalizados o ciclos estándar (ej. del 1 al fin de mes), adaptando las consultas de `/api/driver/shifts` y `/api/driver/analytics`.
+- **Sistema de Diseño Kilo Sage (B2)**: Implementación integral de la nueva identidad visual de Kilo: paleta Sage (`#F2FBE0` background, `#4F6A35` CTA), tipografía Inter, radios simétricos de 22px (`rounded-[22px]`) sin bordes duros y sombras sólidas.
+- **Shell y Navegación Rediseñados**: Nueva barra lateral (sidebar rail), títulos de página consistentes (30px), barra de navegación móvil (`bottom-nav`) y eliminación de clases obsoletas de modo oscuro.
+- **Paleta Unificada de Gráficos**: Token global `CHART_COLORS` para estandarizar las series de datos en Recharts, Flujo de Caja (Sankey) y widgets analíticos.
+- **Landing Page & Login Reskin**: Rediseño de la página de bienvenida con cuadrícula Bento (`BentoGrid`), widget interactivo Pulse y pantalla de autenticación adaptada a la estética Sage.
+
+### Changed
+- **Dashboard — Sección de Flujo de Caja (Sankey)**: Rediseño completo de `CashflowSection`, optimizando `SankeyCustomNode`, `SankeyCustomLink` y `chart-tooltip.tsx` con soporte responsivo y mejor jerarquía visual.
+- **Reskin de Todos los Módulos**: Adaptación visual de Cuentas, Presupuestos, Deudas, Créditos, Categorías, Insights y Metas de Ahorro bajo los estándares de `docs/DESIGN-MANUAL.md`.
+
 ## [1.7.0] - 2026-08-06
 
 ### Added
@@ -176,7 +219,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.2] - 2026-03-11
 - Initial version found in this log.
 
-[Unreleased]: https://github.com/jlarteagap/kilobo/compare/v1.6.2...HEAD
+[Unreleased]: https://github.com/jlarteagap/kilobo/compare/v1.7.3...HEAD
+[1.7.3]: https://github.com/jlarteagap/kilobo/compare/v1.7.2...v1.7.3
+[1.7.2]: https://github.com/jlarteagap/kilobo/compare/v1.7.1...v1.7.2
+[1.7.1]: https://github.com/jlarteagap/kilobo/compare/v1.7.0...v1.7.1
+[1.7.0]: https://github.com/jlarteagap/kilobo/compare/v1.6.2...v1.7.0
 [1.6.2]: https://github.com/jlarteagap/kilobo/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/jlarteagap/kilobo/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jlarteagap/kilobo/compare/v1.5.6...v1.6.0

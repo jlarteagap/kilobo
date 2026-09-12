@@ -83,92 +83,96 @@ function AccountCard({
 
   return (
     <div className="group bg-white rounded-[22px] border border-zinc-200 transition-all duration-200 hover:bg-zinc-50">
-      <div className="p-4 flex items-center gap-4">
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors"
-          style={{ backgroundColor: `${color}18`, color }}
-        >
-          <Icon className="w-5 h-5" />
+      <div className="p-4 flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors"
+            style={{ backgroundColor: `${color}18`, color }}
+          >
+            <Icon className="w-5 h-5" />
+          </div>
+
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <h3 className="text-[14px] font-semibold text-zinc-900 leading-snug break-words">
+                {account.name}
+              </h3>
+              {account.archived && (
+                <span className="inline-flex items-center gap-1 shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-500 border border-zinc-200">
+                  <Archive className="w-2.5 h-2.5" />
+                  Archivada
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] font-medium text-zinc-500">
+              {label}{account.institution ? ` · ${account.institution}` : ''}
+            </p>
+          </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="text-[14px] font-semibold text-zinc-900 truncate">
-              {account.name}
-            </h3>
-            {account.archived && (
-              <span className="inline-flex items-center gap-1 shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-500 border border-zinc-200">
-                <Archive className="w-2.5 h-2.5" />
-                Archivada
-              </span>
+        <div className="flex items-center justify-between gap-4 md:justify-end md:shrink-0">
+          <button
+            type="button"
+            onClick={onOpenHistory}
+            title="Ver historial de cambios"
+            className="text-left md:text-right transition-opacity hover:opacity-80 min-w-0"
+          >
+            <p className="text-[15px] font-bold tracking-tight text-zinc-900 tabular-nums leading-snug break-words">
+              {formatAssetAmount(account.balance, account.currency)}
+            </p>
+            <div className="flex items-center justify-start md:justify-end gap-2 mt-1 min-h-[18px]">
+              {showInvestedPill ? (
+                <p className="text-[10px] font-medium text-emerald-600">
+                  {formatAssetAmount(totalInvested, account.currency)} invertidos
+                </p>
+              ) : variation ? (
+                <AccountChangeBadge
+                  delta={variation.delta}
+                  anchorBalance={variation.anchorBalance}
+                  lastChangeAt={variation.lastChangeAt}
+                  currency={account.currency}
+                />
+              ) : null}
+            </div>
+          </button>
+
+          <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity max-md:opacity-100">
+            {hasInvestments && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+              >
+                {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+              </button>
             )}
-          </div>
-          <p className="text-[11px] font-medium text-zinc-500">
-            {label}{account.institution ? ` · ${account.institution}` : ''}
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={onOpenHistory}
-          title="Ver historial de cambios"
-          className="text-right transition-opacity hover:opacity-80"
-        >
-          <p className="text-[15px] font-bold tracking-tight text-zinc-900 tabular-nums">
-            {formatAssetAmount(account.balance, account.currency)}
-          </p>
-          <div className="flex items-center justify-end gap-2 mt-1 min-h-[18px]">
-            {showInvestedPill ? (
-              <p className="text-[10px] font-medium text-emerald-600">
-                {formatAssetAmount(totalInvested, account.currency)} invertidos
-              </p>
-            ) : variation ? (
-              <AccountChangeBadge
-                delta={variation.delta}
-                anchorBalance={variation.anchorBalance}
-                lastChangeAt={variation.lastChangeAt}
-                currency={account.currency}
-              />
-            ) : null}
-          </div>
-        </button>
-
-        <div className="flex items-center gap-0.5 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          {hasInvestments && (
             <button
-              onClick={() => setExpanded(!expanded)}
+              onClick={() => onEdit(account)}
               className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
             >
-              {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+              <Pencil className="w-3.5 h-3.5" />
             </button>
-          )}
-          <button
-            onClick={() => onEdit(account)}
-            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          {onArchive && (
+            {onArchive && (
+              <button
+                onClick={() => onArchive(account)}
+                className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+                title={account.archived ? 'Restaurar cuenta' : 'Archivar cuenta'}
+              >
+                {account.archived ? <ArchiveRestore className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
+              </button>
+            )}
             <button
-              onClick={() => onArchive(account)}
-              className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
-              title={account.archived ? 'Restaurar cuenta' : 'Archivar cuenta'}
+              onClick={() => onDelete(account.id)}
+              className="p-1.5 rounded-md text-zinc-500 hover:text-red-500 hover:bg-red-50 transition-colors"
             >
-              {account.archived ? <ArchiveRestore className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
-          )}
-          <button
-            onClick={() => onDelete(account.id)}
-            className="p-1.5 rounded-md text-zinc-500 hover:text-red-500 hover:bg-red-50 transition-colors"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+          </div>
         </div>
       </div>
 
       {/* Expanded investments */}
       {expanded && hasInvestments && (
-        <div className="px-4 pb-4 pl-14 space-y-2">
+        <div className="px-4 pb-4 md:pl-14 space-y-2">
           <div className="h-px bg-zinc-100 mb-2" />
           {accountInvestments.slice(0, 5).map((inv) => (
             <div key={inv.id} className="flex items-center justify-between text-[12px]">

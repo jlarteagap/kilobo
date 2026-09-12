@@ -84,8 +84,10 @@ export function ShiftDetailSheet({ shift, onClose }: ShiftDetailSheetProps) {
             {DRIVER_APPS.map((app) => {
               const e = shift.earnings?.[app]
               const bonuses = shift.bonuses?.[app] ?? 0
+              const tips = shift.tips?.[app]
+              const tipsTotal = (tips?.CASH ?? 0) + (tips?.QR ?? 0)
               const commissions = shift.commissions?.[app] ?? 0
-              const total = (e?.CASH ?? 0) + (e?.CARD ?? 0) + (e?.QR ?? 0)
+              const total = (e?.CASH ?? 0) + (e?.CARD ?? 0) + (e?.QR ?? 0) + tipsTotal
               if (total === 0 && !bonuses && !commissions) return null
               return (
                 <div key={app} className={`rounded-xl border p-4 space-y-2 ${getAppBadgeColor(app)}`}>
@@ -98,6 +100,7 @@ export function ShiftDetailSheet({ shift, onClose }: ShiftDetailSheetProps) {
                     {e?.CARD ? <span>Tarjeta: <strong className="tabular-nums text-foreground">{e.CARD.toFixed(2)}</strong></span> : null}
                     {e?.QR ? <span>QR: <strong className="tabular-nums text-foreground">{e.QR.toFixed(2)}</strong></span> : null}
                     {bonuses ? <span className="text-amber-600 dark:text-amber-400">Bonos: <strong className="tabular-nums">+{bonuses.toFixed(2)}</strong></span> : null}
+                    {tipsTotal ? <span className="text-amber-600 dark:text-amber-400">Propinas: <strong className="tabular-nums">+{tipsTotal.toFixed(2)}</strong> <span className="font-normal">(Ef {+(tips?.CASH ?? 0).toFixed(2)} · QR {+(tips?.QR ?? 0).toFixed(2)})</span></span> : null}
                     {commissions ? <span className="text-destructive">Comision: <strong className="tabular-nums">-{commissions.toFixed(2)}</strong></span> : null}
                   </div>
                 </div>

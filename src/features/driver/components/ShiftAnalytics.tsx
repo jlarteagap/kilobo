@@ -51,6 +51,7 @@ export function ShiftAnalytics({ cycle }: { cycle?: MonthCycle }) {
     pendingAmount: summary.pendingAmount ?? 0,
     totalCommissions: summary.totalCommissions ?? 0,
     totalExpenses: summary.totalExpenses ?? 0,
+    totalMaintenance: summary.totalMaintenance ?? 0,
   }
 
   return (
@@ -98,7 +99,7 @@ export function ShiftAnalytics({ cycle }: { cycle?: MonthCycle }) {
       <div className="rounded-[22px] bg-card dark:bg-card border border-border p-6 shadow-sm"
       >
         <h3 className="text-xs font-semibold text-foreground mb-4">Desglose bruto</h3>
-        <div className="grid grid-cols-2 gap-3 text-center">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 text-center">
           <div className="p-4 rounded-xl bg-secondary dark:bg-muted border border-border">
             <p className="text-xs font-medium text-muted-foreground">Bruto total</p>
             <p className="text-lg font-bold text-foreground tabular-nums mt-1">{formatBs(s.grossEarnings)}</p>
@@ -118,6 +119,11 @@ export function ShiftAnalytics({ cycle }: { cycle?: MonthCycle }) {
             <p className="text-xs font-medium text-destructive">Gastos</p>
             <p className="text-lg font-bold text-destructive tabular-nums mt-1">{formatBs(s.totalExpenses)}</p>
             <p className="text-xs text-destructive/70 mt-1">Turno</p>
+          </div>
+          <div className="p-4 rounded-xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/20">
+            <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Mantenimiento</p>
+            <p className="text-lg font-bold text-amber-700 dark:text-amber-400 tabular-nums mt-1">{formatBs(s.totalMaintenance)}</p>
+            <p className="text-xs text-amber-700/70 dark:text-amber-400/70 mt-1">6% del neto</p>
           </div>
         </div>
       </div>

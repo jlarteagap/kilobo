@@ -43,7 +43,7 @@ function AccountsGridSkeleton() {
           key={i}
           className="bg-white rounded-[22px] border border-zinc-200 p-4 flex items-center gap-4"
         >
-          <Skeleton className="w-10 h-10 rounded-lg shrink-0 bg-zinc-100" />
+          <Skeleton className="w-9 h-9 rounded-lg shrink-0 bg-zinc-100" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-24 rounded-full bg-zinc-100" />
             <Skeleton className="h-3 w-16 rounded-full bg-zinc-100" />
@@ -72,7 +72,7 @@ function AccountCard({
   variation?:     AccountDailyVariation | null
   investments?:   Array<{ id: string; name: string; amount: number; currency: string }>
 }) {
-  const { icon: Icon, color, label } = getAccountTypeDetails(account.type)
+  const { icon: Icon, label } = getAccountTypeDetails(account.type)
   const [expanded, setExpanded] = useState(false)
   const accountInvestments = investments.filter((inv) => inv.id && inv.currency)
   const hasInvestments = accountInvestments.length > 0
@@ -82,13 +82,10 @@ function AccountCard({
     hasInvestments && (!variation || variation.delta === 0)
 
   return (
-    <div className="group bg-white rounded-[22px] border border-zinc-200 transition-all duration-200 hover:bg-zinc-50">
-      <div className="p-4 flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+    <div className="relative bg-white rounded-[22px] border border-zinc-200 transition-all duration-200 hover:bg-zinc-50">
+      <div className="p-4 flex flex-col gap-3 md:flex-row md:items-center md:gap-4 md:pb-11">
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors"
-            style={{ backgroundColor: `${color}18`, color }}
-          >
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-zinc-100 text-zinc-400">
             <Icon className="w-5 h-5" />
           </div>
 
@@ -136,7 +133,7 @@ function AccountCard({
             </div>
           </button>
 
-          <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity max-md:opacity-100">
+          <div className="flex items-center gap-0.5 shrink-0 md:absolute md:right-3 md:bottom-3 md:bg-zinc-100 md:border md:border-zinc-200 md:rounded-lg md:p-0.5 md:z-10">
             {hasInvestments && (
               <button
                 onClick={() => setExpanded(!expanded)}
@@ -162,7 +159,7 @@ function AccountCard({
             )}
             <button
               onClick={() => onDelete(account.id)}
-              className="p-1.5 rounded-md text-zinc-500 hover:text-red-500 hover:bg-red-50 transition-colors"
+              className="p-1.5 rounded-md text-red-500 hover:text-red-600 hover:bg-red-100 transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -172,7 +169,7 @@ function AccountCard({
 
       {/* Expanded investments */}
       {expanded && hasInvestments && (
-        <div className="px-4 pb-4 md:pl-14 space-y-2">
+        <div className="px-4 pb-4 md:pl-14 md:pb-11 space-y-2">
           <div className="h-px bg-zinc-100 mb-2" />
           {accountInvestments.slice(0, 5).map((inv) => (
             <div key={inv.id} className="flex items-center justify-between text-[12px]">

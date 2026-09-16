@@ -11,9 +11,8 @@ const SparklineChart = dynamic(
 )
 
 import { cn } from "@/lib/utils"
-import { CHART_COLORS } from "@/lib/config/chart-colors"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
-import { filterByPeriod, getDaysInPeriod, parseLocalDate } from "@/utils/date.utils"
+import { filterByPeriod, getDaysInPeriod, getPreviousPeriod, parseLocalDate } from "@/utils/date.utils"
 import { convertToBOB } from "@/lib/config/exchange-rates"
 import { format } from "date-fns"
 import type { Period } from "@/types/period"
@@ -62,7 +61,7 @@ function calcTrend(current: number, previous: number): number {
 
 // ─── SummaryCard principal ─────────────────────────────────────────────────────
 function SummaryCard({
-  title, amount, currency, trend, sparkData, sparkColor, amountColor, inversetrend = false,
+  title, amount, currency, trend, sparkData, sparkColor = '#D4D4D8', amountColor, inversetrend = false,
 }: {
   title: string; amount: number; currency: string; trend: number
   sparkData: SparkPoint[]; sparkColor: string; amountColor?: string; inversetrend?: boolean
@@ -73,19 +72,19 @@ function SummaryCard({
       style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
     >
       <div className="flex items-start justify-between">
-        <p className="text-[13px] font-medium text-[#6E6E73]">{title}</p>
+        <p className="text-xs font-medium text-zinc-500">{title}</p>
       </div>
       <div>
-        <p className={cn('text-2xl font-semibold tracking-tight', amountColor ?? 'text-foreground')}>
-          {formatCurrency(Math.abs(amount), currency)}
-        </p>
+<p className={cn('text-2xl font-bold tracking-tight text-zinc-900 tabular-nums', amountColor)}>
+  {formatCurrency(Math.abs(amount), currency)}
+</p>
         <div className="mt-1">
-          <TrendBadge trend={trend} inverse={inversetrend} />
+          <TrendBadge trend={trend} inverse={inversetrend} variant="zinc" />
         </div>
       </div>
-      <div className="h-[52px] -mx-5 -mb-5 mt-auto">
-        <SparklineChart data={sparkData} color={sparkColor} />
-      </div>
+<div className="h-[52px] -mx-5 -mb-5 mt-auto bg-zinc-50/50 border-t border-zinc-100">
+  <SparklineChart data={sparkData} color={sparkColor} />
+</div>
     </div>
   )
 }
@@ -104,31 +103,26 @@ function ProjectSummaryCard({
 }) {
   const net          = income - expenses
   const isPersonal   = project === null
-  const color        = isPersonal ? CHART_COLORS.muted : project.color
-  const icon         = isPersonal ? '👤' : (project.icon ?? '📁')
   const name         = isPersonal ? 'Personal' : project.name
-  const colorBg      = `${color}06`
-  const colorBorder  = `${color}20`
-  const colorDivider = `${color}20`
+  const initial      = name.charAt(0).toUpperCase()
+  const colorDivider = '#E4E4E7'
 
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col gap-3"
-      style={{
-        backgroundColor: colorBg,
-        border:          `0.5px solid ${colorBorder}`,
-        borderLeft:      `3px solid ${color}`,
-      }}
+      className="rounded-2xl p-5 flex flex-col gap-3 bg-white border border-zinc-200"
+      style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
     >
       {/* Header */}
       <div className="flex items-start gap-2">
-        <span style={{ fontSize: 18 }} className="mt-0.5">{icon}</span>
+        <span className="w-8 h-8 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-500 text-[15px] font-semibold">
+          {initial}
+        </span>
         <div>
-          <p className="text-[13px] font-semibold" style={{ color }}>
+          <p className="text-[13px] font-semibold text-zinc-900">
             {name}
           </p>
           {isPersonal && (
-            <p className="text-[11px] text-[#6E6E73] font-medium mt-0.5">
+            <p className="text-[11px] text-zinc-500 font-medium mt-0.5">
               Sin actividad asignada
             </p>
           )}
@@ -138,14 +132,14 @@ function ProjectSummaryCard({
       {/* Ingresos + Gastos */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-[#6E6E73]">Ingresos</span>
-          <span className="text-[13px] font-medium text-[#4F6A35]">
+          <span className="text-[12px] text-zinc-500">Ingresos</span>
+          <span className="text-[13px] font-medium text-zinc-900 tabular-nums">
             {formatCurrency(income, currency)}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-[#6E6E73]">Gastos</span>
-          <span className="text-[13px] font-medium text-[#B5543D]">
+          <span className="text-[12px] text-zinc-500">Gastos</span>
+          <span className="text-[13px] font-medium text-zinc-900 tabular-nums">
             {formatCurrency(expenses, currency)}
           </span>
         </div>
@@ -156,10 +150,12 @@ function ProjectSummaryCard({
         className="flex items-center justify-between pt-3 mt-auto"
         style={{ borderTop: `0.5px solid ${colorDivider}` }}
       >
-        <span className="text-[12px] text-[#6E6E73]">Neto</span>
+        <span className="text-[12px] text-zinc-500">Neto</span>
         <span
-          className="text-[15px] font-semibold"
-          style={{ color: net >= 0 ? '#4F6A35' : '#B5543D' }}
+          className={cn(
+            'text-[15px] font-semibold tabular-nums',
+            net >= 0 ? 'text-[#059669]' : 'text-zinc-800'
+          )}
         >
           {net >= 0 ? '+' : ''}{formatCurrency(net, currency)}
         </span>
@@ -208,12 +204,12 @@ export function SummaryCards({
     if (propPrevIncome !== undefined && propPrevExpense !== undefined) {
       return { income: propPrevIncome, expense: propPrevExpense, net: propPrevIncome - propPrevExpense }
     }
-    const prevPeriod = { type: 'LAST_MONTH' as const }
+    const prevPeriod = getPreviousPeriod(period)
     const filtered = filterByPeriod(transactions, prevPeriod)
     const income   = filtered.filter((t) => t.type === 'INCOME').reduce((s, t) => s + convertToBOB(t.amount, t.currency), 0)
     const expense  = filtered.filter((t) => t.type === 'EXPENSE').reduce((s, t) => s + convertToBOB(t.amount, t.currency), 0)
     return { income, expense, net: income - expense }
-  }, [transactions, propPrevIncome, propPrevExpense])
+  }, [transactions, period, propPrevIncome, propPrevExpense])
 
   // ── P&L por proyecto ─────────────────────────────────────────────────────────
   const projectStats = useMemo(() => {
@@ -246,8 +242,6 @@ export function SummaryCards({
   const expenseTrend = calcTrend(current.expense, previous.expense)
   const netTrend     = calcTrend(current.net,     previous.net)
 
-  const netColor = current.net > 0 ? 'text-[#4F6A35]' : current.net < 0 ? 'text-[#B5543D]' : 'text-foreground'
-
   // ── Proyectos con actividad en el período ─────────────────────────────────
   // Solo mostrar cards de proyectos que tienen al menos una transacción
   const activeProjects = projects.filter((p) => {
@@ -272,7 +266,8 @@ export function SummaryCards({
           currency={currency}
           trend={incomeTrend}
           sparkData={incomeSpark}
-          sparkColor="#4F6A35"
+          sparkColor="#059669"
+          amountColor="text-[#059669]"
         />
         <SummaryCard
           title="Gastos"
@@ -280,7 +275,8 @@ export function SummaryCards({
           currency={currency}
           trend={expenseTrend}
           sparkData={expenseSpark}
-          sparkColor="#B5543D"
+          sparkColor="#27272A"
+          amountColor="text-zinc-800"
           inversetrend
         />
         <SummaryCard
@@ -289,8 +285,8 @@ export function SummaryCards({
           currency={currency}
           trend={netTrend}
           sparkData={netSpark}
-          sparkColor={current.net >= 0 ? '#4F6A35' : '#B5543D'}
-          amountColor={netColor}
+          sparkColor={current.net >= 0 ? '#059669' : '#27272A'}
+          amountColor={current.net >= 0 ? 'text-[#059669]' : 'text-zinc-800'}
         />
       </div>
 

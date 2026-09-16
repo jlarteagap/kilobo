@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, PiggyBank, TrendingUp, Handshake, LucideIcon } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, PiggyBank, TrendingUp, Wallet, LucideIcon } from "lucide-react"
 import { TransactionType } from "@/types/transaction"
 import { Account } from "@/types/account"
 import { Category } from "@/types/category"
@@ -12,10 +12,10 @@ export const normalizeCurrency = (currency: string): string => {
 }
 
 const transactionAmountColorMap: Record<TransactionType, string> = {
-  INCOME:   "text-[#4F6A35]",
-  EXPENSE:  "text-[#B5543D]",
-  TRANSFER: "text-amber-600",
-  SAVING:   "text-purple-600",
+  INCOME:   "text-[#059669]",
+  EXPENSE:  "text-zinc-800",
+  TRANSFER: "text-zinc-500",
+  SAVING:   "text-zinc-600",
 }
 
 export const getTransactionAmountColor = (type: TransactionType): string =>
@@ -31,15 +31,15 @@ const transactionIconMap: Record<TransactionType, LucideIcon | null> = {
 export const getTransactionIcon = (type: TransactionType) => transactionIconMap[type]
 
 export const INVESTMENT_COLORS = {
-  text: "text-indigo-600",
-  bg:   "bg-indigo-50",
-  badge: "bg-indigo-100 text-indigo-700",
+  text: "text-zinc-600",
+  bg:   "bg-zinc-50",
+  badge: "bg-zinc-100 text-zinc-700",
   icon: TrendingUp,
 }
 
 const subtypeIconMap: Record<string, LucideIcon> = {
-  'Préstamo':      Handshake,
-  'Pago de deuda': Handshake,
+  'Préstamo':      Wallet,
+  'Pago de deuda': Wallet,
 }
 
 export const getSubtypeIcon = (subtype: string | null | undefined): LucideIcon | null =>

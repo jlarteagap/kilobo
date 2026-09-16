@@ -120,11 +120,11 @@ function ChartLegend() {
 function EmptyChart() {
   return (
     <div className="h-[280px] flex flex-col items-center justify-center gap-2">
-      <div className="w-10 h-10 rounded-2xl bg-[#F2F9E3] flex items-center justify-center text-xl">
-        📈
+      <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center">
+        <span className="w-2.5 h-2.5 rounded-full bg-zinc-300" />
       </div>
-      <p className="text-[13px] text-[#6E6E73]">Sin datos para el período</p>
-      <p className="text-[11px] text-[#6E6E73]/60">Registra transacciones para ver la gráfica</p>
+      <p className="text-sm font-medium text-zinc-900">Sin datos para el período</p>
+      <p className="text-xs text-zinc-500">Registra transacciones para ver la gráfica</p>
     </div>
   )
 }
@@ -147,9 +147,9 @@ export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
         <div className="w-full sm:w-auto">
           <h3 className="text-sm font-bold text-foreground tracking-[-0.01em]">Ingresos vs Gastos</h3>
-          <p className="text-[11px] text-[#6E6E73] mt-0.5">Evolución del período</p>
+          <p className="text-[11px] text-zinc-500 mt-0.5">Evolución del período</p>
         </div>
-        <div className="flex gap-1 p-1 bg-[#F2F9E3] rounded-xl w-full sm:w-auto">
+        <div className="flex gap-1 p-1 bg-zinc-100 rounded-xl w-full sm:w-auto">
           {CHART_TYPES.map((type) => (
             <button
               key={type.value}

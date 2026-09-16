@@ -3,7 +3,7 @@
 
 import { Fragment, useState } from "react"
 import type { ReactNode } from "react"
-import { Repeat, Trash2, Pencil, Handshake } from "lucide-react"
+import { Repeat, Trash2, Pencil, Folder } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -82,7 +82,7 @@ function DateSeparator({ date }: { date: string }) {
   return (
     <tr>
       <td colSpan={6} className="px-4 pt-5 pb-1">
-        <span className="text-[11px] font-semibold text-[#6E6E73] uppercase tracking-wider">
+        <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
           {formatTransactionDate(date)}
         </span>
       </td>
@@ -110,37 +110,21 @@ function TransactionRow({
 }) {
   const category     = getCategoryDisplay(tx.category_id, categories)
   const project      = projects.find((p) => p.id === tx.project_id)
-  const categoryData = categories.find((c) => c.id === tx.category_id)
   const isInvestment = !!tx.investment_id
   const isTransfer   = tx.type === 'TRANSFER'
-  const amountColor  = isInvestment ? 'text-indigo-600' : getTransactionAmountColor(tx.type)
+  const amountColor  = isInvestment ? 'text-zinc-600' : getTransactionAmountColor(tx.type)
   const sign         = getTransactionSign(tx.type)
   const isDebt       = !isTransfer && !!tx.subtype && DEBT_SUBTYPES.has(tx.subtype)
-
-  // ── Colores derivados del proyecto ────────────────────────────────────────
-  const projectColor  = project?.color ?? null
-  const rowBg         = isInvestment ? '#EEF2FF' : (projectColor ? `${projectColor}06` : 'transparent')
-  const rowBorder     = isInvestment ? '2px solid #6366f1' : (projectColor ? `2px solid ${projectColor}` : '2px solid transparent')
-  const badgeBg       = projectColor ? `${projectColor}18` : 'transparent'
-  const badgeBorder   = projectColor ? `0.5px solid ${projectColor}28` : 'none'
 
   // ── Resolver icono y colores según tipo ────────────────────────────────────
   const typeIcon = (() => {
     if (isInvestment) return INVESTMENT_COLORS.icon
-    if (isDebt) return Handshake
+    if (isDebt) return getSubtypeIcon(tx.subtype) ?? null
     if (isTransfer) return getTransactionIcon(tx.type)
-    if (project && project.icon) return null
     return getSubtypeIcon(tx.subtype) ?? getTransactionIcon(tx.type) ?? null
   })()
 
-  const iconBgStyle = (() => {
-    if (isInvestment) return '#EEF2FF'
-    if (isDebt) return '#FFF7ED'
-    if (isTransfer) return '#FFFBEB'
-    if (projectColor) return `${projectColor}25`
-    if (categoryData?.color) return `${categoryData.color}40`
-    return '#F2F9E3'
-  })()
+  const iconBgStyle = '#F4F4F5'
 
   const title = (() => {
     if (isInvestment) return tx.description ?? 'Inversión'
@@ -153,12 +137,12 @@ function TransactionRow({
   const secondaryLines: ReactNode[] = (() => {
     if (isInvestment) {
       const accountName = getAccountName(tx.account_id, accounts)
-      return [<span key="acct" className="text-[11px] text-indigo-500">{accountName}</span>]
+      return [<span key="acct" className="text-[11px] text-zinc-500">{accountName}</span>]
     }
     if (isTransfer) {
       const origin = getAccountName(tx.account_id, accounts)
       const dest   = getAccountName(tx.to_account_id, accounts)
-      return [<span key="route" className="text-[11px] text-amber-500">{origin} → {dest}</span>]
+      return [<span key="route" className="text-[11px] text-zinc-500">{origin} → {dest}</span>]
     }
     if (isDebt) return []
     const lines: React.ReactNode[] = []
@@ -166,14 +150,8 @@ function TransactionRow({
       lines.push(
         <span
           key="project"
-          className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
-          style={{
-            color:           projectColor!,
-            backgroundColor: badgeBg,
-            border:          badgeBorder,
-          }}
+          className="text-[10px] font-medium text-zinc-500 px-1.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200"
         >
-          {project.icon && <span className="mr-0.5">{project.icon}</span>}
           {project.name}
         </span>
       )
@@ -190,11 +168,7 @@ function TransactionRow({
 
   return (
     <tr
-      className="group transition-colors duration-100"
-      style={{
-        backgroundColor: rowBg,
-        borderLeft:      rowBorder,
-      }}
+      className="group transition-colors duration-100 hover:bg-zinc-50/60"
     >
 <td className="px-4 py-3">
         <div className="flex items-center gap-2.5">
@@ -204,22 +178,20 @@ function TransactionRow({
             className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
             style={{ backgroundColor: iconBgStyle }}
           >
-              {project && project.icon ? (
-              <span>{project.icon}</span>
-            ) : typeIcon ? (
+              {typeIcon ? (
               (() => {
                 const Icon = typeIcon
                 return (
                   <Icon className={cn(
                     'w-4 h-4',
-                    isInvestment && 'text-indigo-600',
-                    isDebt       && 'text-orange-600',
-                    isTransfer   && 'text-amber-600',
+                    isInvestment && 'text-zinc-600',
+                    isDebt       && 'text-zinc-600',
+                    isTransfer   && 'text-zinc-500',
                   )} />
                 )
               })()
             ) : (
-              <span className="text-[#6E6E73]">📁</span>
+              <Folder className="w-4 h-4 text-zinc-400" />
             )}
           </div>
 
@@ -227,7 +199,7 @@ function TransactionRow({
             {/* Línea principal */}
             <p className={cn(
               'text-sm font-medium truncate',
-              isTransfer && 'text-amber-700',
+              isTransfer && 'text-zinc-500',
               !isTransfer && 'text-foreground',
             )}>
               {title}
@@ -247,7 +219,7 @@ function TransactionRow({
       <td className="px-4 py-3 hidden sm:table-cell">
         <div className="flex gap-2">
           {tx.tag ? (
-            <span className="inline-flex items-center text-[11px] text-[#6E6E73] bg-[#F2F9E3] px-2 py-0.5 rounded-full border border-[rgba(0,0,0,0.06)]">
+            <span className="inline-flex items-center text-[11px] text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded-full border border-zinc-200">
               {tx.tag}
             </span>
           ) : (
@@ -261,11 +233,11 @@ function TransactionRow({
           variant="secondary"
           className={cn(
             'text-[10px] font-medium rounded-full',
-            isInvestment && 'bg-indigo-100 text-indigo-700 hover:bg-indigo-100',
-            !isInvestment && tx.type === 'INCOME'   && 'bg-[#F2F9E3] text-[#4F6A35] hover:bg-[#F2F9E3]',
-            !isInvestment && tx.type === 'EXPENSE'  && 'bg-[#FAEDE9] text-[#B5543D] hover:bg-[#FAEDE9]',
-            !isInvestment && tx.type === 'TRANSFER' && 'bg-amber-100   text-amber-700   hover:bg-amber-100',
-            !isInvestment && tx.type === 'SAVING'   && 'bg-violet-100  text-violet-700  hover:bg-violet-100',
+            isInvestment && 'bg-zinc-100 text-zinc-700 hover:bg-zinc-100',
+            !isInvestment && tx.type === 'INCOME'   && 'bg-zinc-100 text-zinc-700 hover:bg-zinc-100',
+            !isInvestment && tx.type === 'EXPENSE'  && 'bg-zinc-100 text-zinc-800 hover:bg-zinc-100',
+            !isInvestment && tx.type === 'TRANSFER' && 'bg-zinc-100 text-zinc-500 hover:bg-zinc-100',
+            !isInvestment && tx.type === 'SAVING'   && 'bg-zinc-100 text-zinc-600 hover:bg-zinc-100',
           )}
         >
           {isInvestment ? 'Inversión' : TRANSACTION_TYPE_LABELS[tx.type]}
@@ -291,7 +263,7 @@ function TransactionRow({
       <td className={cn('px-4 py-3 text-right font-semibold text-sm', amountColor)}>
         <div className="flex items-center justify-end gap-1">
           {tx.is_recurring ? (
-            <Repeat className="w-3 h-3 text-[#6E6E73] flex-shrink-0" />
+            <Repeat className="w-3 h-3 text-zinc-400 flex-shrink-0" />
           ) : null}
           {sign}{formatCurrency(tx.amount, normalizeCurrency(tx.currency))}
         </div>
@@ -303,14 +275,14 @@ function TransactionRow({
           <button
             onClick={() => onEdit(tx)}
             title="Editar"
-            className="p-2 rounded-xl text-[#6E6E73] hover:text-[#4F6A35] hover:bg-[#F2F9E3] transition-all duration-150"
+            className="p-2 rounded-xl text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-all duration-150"
           >
             <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(tx)}
             title="Eliminar"
-            className="p-2 rounded-xl text-[#6E6E73] hover:text-[#B5543D] hover:bg-[#FAEDE9] transition-all duration-150"
+            className="p-2 rounded-xl text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -370,12 +342,12 @@ export function TransactionList({
 
           {/* ── Header ── */}
           <thead>
-            <tr className="border-b border-[rgba(0,0,0,0.06)]">
+            <tr className="border-b border-zinc-200">
               {['Categoría / Etiqueta', 'Tags', 'Tipo', 'Cuenta', 'Monto', ''].map((h) => (
                 <th
                   key={h}
                   className={cn(
-                    'px-4 py-3 text-[11px] font-semibold text-[#6E6E73] uppercase tracking-wider',
+                    'px-4 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-[0.14em]',
                     h === 'Monto' && 'text-right',
                     (h === 'Tags' || h === 'Tipo') && 'hidden sm:table-cell',
                     h === 'Cuenta' && 'hidden md:table-cell',
@@ -388,14 +360,14 @@ export function TransactionList({
           </thead>
 
           {/* ── Body ── */}
-          <tbody className="divide-y divide-[rgba(0,0,0,0.06)]">
+          <tbody className="divide-y divide-zinc-100">
             {loading ? (
               <TransactionRowSkeleton />
             ) : transactions.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-16 text-center">
-                  <p className="text-[#6E6E73] text-sm">No hay transacciones registradas.</p>
-                  <p className="text-[#6E6E73]/60 text-[13px] mt-1">
+                  <p className="text-zinc-900 text-sm font-medium">No hay transacciones registradas.</p>
+                  <p className="text-zinc-500 text-[13px] mt-1">
                     Crea tu primera transacción con el botón de arriba.
                   </p>
                 </td>

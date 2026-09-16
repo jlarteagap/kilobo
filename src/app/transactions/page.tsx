@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus } from "lucide-react"
+import { Plus, Download } from "lucide-react"
 
 import AppLayout          from "@/components/layout/AppLayout"
 import { useTransactions } from "@/features/transactions/hooks/useTransactions"
@@ -39,8 +39,9 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
-import { getPeriodLabel } from "@/utils/date.utils"
+import { filterByPeriod, getPeriodLabel } from "@/utils/date.utils"
 import { cn } from "@/lib/utils"
+import { buildTransactionRows, exportToCSV } from "@/features/transactions/utils/csv-export.utils"
 
 export default function TransactionsPage() {
   const [open, setOpen] = useState(false)
@@ -74,10 +75,17 @@ export default function TransactionsPage() {
   // ── Métricas — sobre transacciones filtradas por período ───────────────────
   // Para analytics usamos todas las transacciones del período sin filtros secundarios
   // para no distorsionar los gráficos al filtrar por cuenta/categoría
-  const metricsTransactions = filtered
+  const metricsTransactions = transactions
 
   // ── Métricas para CategoryOverview e IncomeExpenseChart ───────────────────
   const metrics = useTransactionMetrics(metricsTransactions, categories, filters.period)
+
+  // ── Exportación CSV ──────────────────────────────────────────────────────
+  const handleExportCSV = () => {
+    const rows = buildTransactionRows(filtered, accounts, categories, projects)
+    const date = new Date().toISOString().slice(0, 10)
+    exportToCSV(rows, `transacciones-${date}.csv`)
+  }
 
   return (
     <AppLayout>
@@ -110,7 +118,7 @@ export default function TransactionsPage() {
             <Dialog open={open} onOpenChange={setOpen}>
               <Button
                 onClick={() => setOpen(true)}
-                className="flex-shrink-0 gap-2 bg-[#4F6A35] hover:bg-[#3C5230] text-white rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all duration-200"
+                className="flex-shrink-0 gap-2 bg-[#059669] hover:bg-[#047857] text-white rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <Plus className="w-4 h-4" />
                 Nueva
@@ -158,7 +166,7 @@ export default function TransactionsPage() {
                 <CategoryOverview
                   key={`cat-${filters.period.type}-${filters.projectId}`}
                   data={metrics.categoryData}
-                  transactions={metricsTransactions}
+                  transactions={filterByPeriod(transactions, filters.period)}
                   projects={projects}
                   projectId={filters.projectId}
                 />
@@ -175,36 +183,53 @@ export default function TransactionsPage() {
                 <h2 className="text-sm font-bold text-foreground tracking-[-0.01em]">
                   Movimientos
                 </h2>
-                <p className="text-[11px] text-[#6E6E73] mt-0.5">
+                <p className="text-[11px] text-zinc-500 mt-0.5">
                   {filtered.length} transaccion{filtered.length !== 1 ? 'es' : ''}
                 </p>
               </div>
 
+              <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto sm:flex-none">
               {filtered.length > 0 && (
-                <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 w-full sm:w-auto">
+                <>
                   <div className="text-right sm:text-left md:text-right">
-                    <p className="text-[11px] text-[#6E6E73]">Ingresos</p>
-                    <p className="text-[13px] font-semibold text-[#4F6A35]">
+                    <p className="text-[11px] text-zinc-500">Ingresos</p>
+                    <p className="text-[13px] font-semibold text-[#059669]">
                       {formatCurrency(stats.income, 'BOB')}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[11px] text-[#6E6E73]">Gastos</p>
-                    <p className="text-[13px] font-semibold text-[#B5543D]">
+                    <p className="text-[11px] text-zinc-500">Gastos</p>
+                    <p className="text-[13px] font-semibold text-zinc-800">
                       {formatCurrency(stats.expense, 'BOB')}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[11px] text-[#6E6E73]">Neto</p>
+                    <p className="text-[11px] text-zinc-500">Neto</p>
                     <p className={cn(
                       'text-[13px] font-semibold',
-                      stats.net >= 0 ? 'text-foreground' : 'text-[#B5543D]'
+                      stats.net >= 0 ? 'text-[#059669]' : 'text-zinc-800'
                     )}>
                       {formatCurrency(stats.net, 'BOB')}
                     </p>
                   </div>
-                </div>
+                </>
               )}
+
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                disabled={filtered.length === 0}
+                className={cn(
+                  'hidden sm:flex items-center gap-1 text-[11px] font-medium rounded-full px-3 py-1.5 transition-colors',
+                  filtered.length === 0
+                    ? 'text-zinc-300 opacity-40 cursor-not-allowed pointer-events-none'
+                    : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
+                )}
+              >
+                <Download className="w-3.5 h-3.5" />
+                Exportar CSV
+              </button>
+            </div>
             </div>
 
             <TransactionFilters

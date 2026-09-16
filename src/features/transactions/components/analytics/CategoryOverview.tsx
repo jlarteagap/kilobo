@@ -99,13 +99,13 @@ export function CategoryOverview({
         className="bg-white rounded-[22px] p-5 flex flex-col items-center justify-center h-[400px] gap-2"
         style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
       >
-        <div className="w-10 h-10 rounded-2xl bg-[#F2F9E3] flex items-center justify-center text-xl">
-          {isProjectMode ? (project?.icon ?? '📁') : '🥧'}
+        <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center">
+          <span className="w-2.5 h-2.5 rounded-full bg-zinc-300" />
         </div>
-        <p className="text-[13px] text-[#6E6E73]">
+        <p className="text-sm font-medium text-zinc-900">
           {isProjectMode ? 'Sin gastos en esta actividad' : 'Sin datos de gastos'}
         </p>
-        <p className="text-[11px] text-[#6E6E73]/60">
+        <p className="text-xs text-zinc-500">
           {isProjectMode
             ? 'Registra gastos con etiquetas para ver la distribución'
             : 'Registra gastos para ver la distribución'

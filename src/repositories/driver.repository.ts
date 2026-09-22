@@ -178,6 +178,7 @@ export const driverRepository = {
       grossEarnings: data.grossEarnings ?? 0,
       pendingAmount: data.pendingAmount ?? 0,
       liquidEarnings: data.liquidEarnings ?? 0,
+      maintenanceReserve: data.maintenanceReserve ?? 0,
       generatedTransactionIds: data.generatedTransactionIds ?? [],
       gasolinaTripCreatedAt: data.gasolinaTripCreatedAt ?? null,
       notes: data.notes ?? null,

@@ -76,6 +76,7 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
           const liquid = shift.liquidEarnings ?? 0
           const pending = shift.pendingAmount ?? 0
           const hours = shift.hoursWorked ?? 0
+          const maintenance = shift.maintenanceReserve ?? 0
           const prevLiquid = index < shifts.length - 1 ? (shifts[index + 1].liquidEarnings ?? 0) : null
           const trend = prevLiquid != null ? liquid - prevLiquid : null
           const dateStr = shift.date ?? ''
@@ -124,6 +125,13 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
                   </span>
                 )}
               </div>
+
+              {/* Mantenimiento */}
+              {maintenance > 0 && (
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full tabular-nums border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400" title="Mantenimiento (6% del neto)">
+                  Mant {maintenance.toFixed(0)}
+                </span>
+              )}
 
               {/* Liquido */}
               <div className="text-right ml-auto shrink-0">

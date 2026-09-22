@@ -135,6 +135,7 @@ export function ShiftDetailSheet({ shift, onClose }: ShiftDetailSheetProps) {
             <RowDetail label="Pendiente en app" value={-(shift.pendingAmount ?? 0)} color="text-muted-foreground" />
             <RowDetail label="Comisiones" value={-(shift.totalCommissions ?? 0)} color="text-destructive" />
             <RowDetail label="Gastos" value={-(shift.totalExpenses ?? 0)} color="text-destructive" />
+            <RowDetail label="Mantenimiento (6%)" value={-(shift.maintenanceReserve ?? 0)} color="text-amber-600 dark:text-amber-400" />
             <div className="border-t-2 border-border pt-3 flex justify-between items-center gap-4">
               <span className="text-xs font-bold text-muted-foreground">Neto liquido</span>
               <span className={`text-base font-bold tabular-nums ${(shift.liquidEarnings ?? 0) >= 0 ? 'text-primary' : 'text-destructive'}`}>

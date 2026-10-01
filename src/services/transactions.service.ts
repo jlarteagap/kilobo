@@ -29,6 +29,9 @@ export const transactionService = {
     const sourceAccount = accounts.find((a) => a.id === data.account_id)
     if (!sourceAccount) throw new Error('Cuenta origen no encontrada.')
     if (data.type === 'TRANSFER' || data.type === 'SAVING') {
+      if (data.to_account_id === data.account_id) {
+        throw new Error('La cuenta destino debe ser distinta de la origen.')
+      }
       if (data.to_account_id && !accounts.find((a) => a.id === data.to_account_id)) {
         throw new Error('Cuenta destino no encontrada.')
       }

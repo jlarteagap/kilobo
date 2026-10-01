@@ -5,30 +5,18 @@ import { carSharingRepository } from '@/repositories/car-sharing.repository'
 import { transactionService } from '@/services/transactions.service'
 import {
   DriverShift,
-  DriverApp,
-  PaymentMethod,
   DriverConfig,
   DriverAnalytics,
-  DriverAnalyticsSummary,
   DriverAppBreakdown,
   ShiftInput,
   DRIVER_APPS,
   DRIVER_APP_LABELS,
   PAYMENT_METHOD_LABELS,
-  sumTips,
   sumAppTips,
+  computeShiftMetrics,
   emptyTips,
 } from '@/types/driver'
 import type { CreateTransactionData } from '@/types/transaction'
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function sum(values: number[]): number {
-  return values.reduce((a, b) => a + b, 0)
-}
-
-function round2(n: number): number {
-  return Math.round(n * 100) / 100
-}
 
 function todayDateStr(): string {
   return new Date().toISOString().slice(0, 10)
@@ -42,22 +30,11 @@ async function processShiftTransactions(
   data: ShiftInput,
   userId: string,
 ) {
-  const totalEarnings = sum(DRIVER_APPS.flatMap((app) => Object.values(data.earnings[app])))
-  const totalBonuses = sum(Object.values(data.bonuses ?? {}))
-  const totalCommissions = sum(Object.values(data.commissions ?? {}))
+  const metrics = computeShiftMetrics(data)
+
+  const { totalEarnings, totalBonuses, totalCommissions, totalTips, totalExpenses } = metrics
+  const { grossEarnings, pendingAmount, liquidEarnings, maintenanceReserve } = metrics
   const tips = data.tips ?? emptyTips()
-  const totalTips = sumTips(tips)
-  const totalExpenses = data.expenses.reduce((s, e) => s + e.amount, 0)
-  const grossEarnings = totalEarnings + totalBonuses + totalTips
-
-  const cardEarnings = sum(DRIVER_APPS.map((app) => data.earnings[app].CARD))
-  const pendingAmount = cardEarnings + totalBonuses
-
-  const cashEarnings = sum(DRIVER_APPS.map((app) => data.earnings[app].CASH))
-  const qrEarnings = sum(DRIVER_APPS.map((app) => data.earnings[app].QR))
-  const preMaintenanceLiquid = cashEarnings + qrEarnings + totalTips - totalCommissions - totalExpenses
-  const maintenanceReserve = preMaintenanceLiquid > 0 ? round2(preMaintenanceLiquid * 0.06) : 0
-  const liquidEarnings = round2(preMaintenanceLiquid - maintenanceReserve)
 
   const endKm3 = data.endKm != null ? data.endKm % 1000 : null
   const startKm3 = data.startKm != null ? data.startKm % 1000 : null
@@ -155,16 +132,35 @@ async function processShiftTransactions(
     })
   }
 
+  // ── Fondo de mantenimiento ────────────────────────────────────────────────
+  // La reserva NO es un gasto: es dinero que se aparta a una cuenta aparte
+  // (ahorro) para pagar los mantenimientos del auto. Si el conductor todavía no
+  // eligió una cuenta de fondo, cae al comportamiento anterior: gasto directo.
   if (maintenanceReserve > 0) {
-    await createTx({
-      account_id: config.expenseCashAccountId,
-      project_id: config.projectId,
-      subtype: config.subtypeMapping.maintenance,
-      type: 'EXPENSE',
-      amount: maintenanceReserve,
-      date: shiftDate,
-      description: 'Mantenimiento (6%)',
-    })
+    const fondo = config.maintenanceSavingsAccountId
+
+    if (fondo && fondo !== config.incomeCashAccountId) {
+      await createTx({
+        account_id: config.incomeCashAccountId,
+        to_account_id: fondo,
+        project_id: config.projectId,
+        subtype: config.subtypeMapping.maintenance,
+        type: 'SAVING',
+        amount: maintenanceReserve,
+        date: shiftDate,
+        description: 'Ahorro mantenimiento (6%)',
+      })
+    } else {
+      await createTx({
+        account_id: config.incomeCashAccountId,
+        project_id: config.projectId,
+        subtype: config.subtypeMapping.maintenance,
+        type: 'EXPENSE',
+        amount: maintenanceReserve,
+        date: shiftDate,
+        description: 'Mantenimiento (6%)',
+      })
+    }
   }
 
   let gasolinaTripCreatedAt: number | null = null

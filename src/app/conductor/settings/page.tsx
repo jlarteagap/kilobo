@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import AppLayout from '@/components/layout/AppLayout'
 import { useDriverConfig, useSaveDriverConfig } from '@/features/driver/hooks/useDriverConfig'
 import { useActiveAccounts } from '@/features/accounts/hooks/useAccounts'
+import { formatCurrency } from '@/features/accounts/utils/account-display.utils'
 import { useProjects } from '@/features/projects/hooks/useProjects'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -27,8 +28,12 @@ export default function DriverSettingsPage() {
   const [expenseQrAccountId, setExpenseQrAccountId] = useState('')
   const [commissionAccountId, setCommissionAccountId] = useState('')
   const [bonusDepositAccountId, setBonusDepositAccountId] = useState('')
+  const [maintenanceSavingsAccountId, setMaintenanceSavingsAccountId] = useState('')
 
   const selectedProject = activeProjects.find((p) => p.id === projectId)
+  const incomeCashAccount = accounts.find((a) => a.id === incomeCashAccountId)
+  const savingsAccount = accounts.find((a) => a.id === maintenanceSavingsAccountId)
+  const savingsIsSameAsIncome = !!maintenanceSavingsAccountId && maintenanceSavingsAccountId === incomeCashAccountId
 
   useEffect(() => {
     if (config) {
@@ -39,6 +44,7 @@ export default function DriverSettingsPage() {
       setExpenseQrAccountId(config.expenseQrAccountId)
       setCommissionAccountId(config.commissionAccountId)
       setBonusDepositAccountId(config.bonusDepositAccountId)
+      setMaintenanceSavingsAccountId(config.maintenanceSavingsAccountId ?? '')
     }
   }, [config])
 
@@ -51,6 +57,7 @@ export default function DriverSettingsPage() {
       expenseQrAccountId,
       commissionAccountId,
       bonusDepositAccountId,
+      maintenanceSavingsAccountId: maintenanceSavingsAccountId || null,
       subtypeMapping: DEFAULT_SUBTYPE_MAPPING,
     }
     saveConfig.mutate(data)
@@ -174,12 +181,55 @@ export default function DriverSettingsPage() {
                 </select>
               </div>
             ))}
+
+            {/* Fondo de mantenimiento */}
+            <div className="space-y-2 rounded-xl border border-border bg-secondary/40 p-4">
+              <Label htmlFor="maintenance-savings" className="text-xs font-medium text-foreground">
+                Fondo de mantenimiento
+              </Label>
+              <select
+                id="maintenance-savings"
+                value={maintenanceSavingsAccountId}
+                onChange={(e) => setMaintenanceSavingsAccountId(e.target.value)}
+                className="flex h-11 w-full rounded-xl border border-input bg-card dark:bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-colors"
+              >
+                <option value="">Sin fondo (se registra como gasto)</option>
+                {accounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name} — {formatCurrency(acc.balance, acc.currency)}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Cada turno aparta el 6% de su neto a esta cuenta, siempre que retenga al menos
+                20% de lo bruto. Cr&eacute;ala en{' '}
+                <Link href="/accounts" className="underline">Cuentas</Link> como una cuenta normal
+                (ej: &quot;Fondo de mantenimiento&quot;). Si la dejas vac&iacute;a, el 6% se sigue
+                registrando como gasto.
+              </p>
+
+              {savingsIsSameAsIncome && (
+                <p className="text-xs font-semibold text-destructive">
+                  El fondo no puede ser la misma cuenta de efectivo: la reserva se mover&iacute;a
+                  de una billetera a s&iacute; misma.
+                </p>
+              )}
+
+              {savingsAccount && !savingsIsSameAsIncome && (
+                <p className="text-xs text-muted-foreground tabular-nums">
+                  Disponible hoy: {formatCurrency(savingsAccount.balance, savingsAccount.currency)}
+                  {incomeCashAccount && incomeCashAccount.currency !== savingsAccount.currency && (
+                    <> &middot; est&aacute; en {savingsAccount.currency}, el efectivo en {incomeCashAccount.currency}</>
+                  )}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-end pt-2">
             <Button
               onClick={handleSave}
-              disabled={saveConfig.isPending || !projectId}
+              disabled={saveConfig.isPending || !projectId || savingsIsSameAsIncome}
               className="h-11 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
             >
               {saveConfig.isPending ? 'Guardando...' : 'Guardar configuracion'}

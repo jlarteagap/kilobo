@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import type { DriverApp, PaymentMethod, ExpenseType, DriverExpense, DriverShift, ShiftInput, TipsByMethod } from '@/types/driver'
-import { DRIVER_APPS, DRIVER_APP_LABELS, PAYMENT_METHOD_LABELS, EXPENSE_TYPE_LABELS, EXPENSE_TYPES, emptyTips } from '@/types/driver'
+import type { DriverApp, PaymentMethod, ExpenseType, DriverExpense, DriverShift, ShiftInput, TipsByMethod, ShiftMetrics } from '@/types/driver'
+import { DRIVER_APPS, DRIVER_APP_LABELS, PAYMENT_METHOD_LABELS, EXPENSE_TYPE_LABELS, EXPENSE_TYPES, emptyTips, computeShiftMetrics } from '@/types/driver'
 import { isoToLocalDateStr, getAppBadgeColor } from '../utils/driver-metrics.utils'
 
 interface ShiftFormProps {
@@ -128,26 +128,8 @@ export function ShiftForm({
     return e >= s ? e - s : 1000 + e - s
   }, [startKm, endKm])
 
-  const totals = useMemo(() => {
-    let totalCash = 0, totalCard = 0, totalQr = 0, totalBonuses = 0, totalCommissions = 0, totalCashTips = 0, totalQrTips = 0
-    for (const app of DRIVER_APPS) {
-      totalCash += earnings[app].CASH
-      totalCard += earnings[app].CARD
-      totalQr += earnings[app].QR
-      totalBonuses += bonuses[app]
-      totalCommissions += commissions[app]
-      totalCashTips += tips[app]?.CASH ?? 0
-      totalQrTips += tips[app]?.QR ?? 0
-    }
-    const totalTips = totalCashTips + totalQrTips
-    const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0)
-    const gross = totalCash + totalCard + totalQr + totalBonuses + totalTips
-    const pending = totalCard + totalBonuses
-    const preMaintenanceLiquid = totalCash + totalQr + totalTips - totalCommissions - totalExpenses
-    const maintenanceReserve = preMaintenanceLiquid > 0 ? Math.round(preMaintenanceLiquid * 0.06 * 100) / 100 : 0
-    const liquid = Math.round((preMaintenanceLiquid - maintenanceReserve) * 100) / 100
-    return { totalCash, totalCard, totalQr, totalBonuses, totalCommissions, totalCashTips, totalQrTips, totalTips, totalExpenses, maintenanceReserve, gross, pending, liquid }
-  }, [earnings, bonuses, commissions, tips, expenses])
+  // Misma función que usa el servicio al guardar: el preview no puede mentir
+  const totals = useMemo(() => computeShiftMetrics({ earnings, bonuses, commissions, tips, expenses }), [earnings, bonuses, commissions, tips, expenses])
 
   const appTotals = useMemo(() => {
     const map: Record<DriverApp, number> = { UBER: 0, YANGO: 0, INDRIVE: 0 }
@@ -159,7 +141,7 @@ export function ShiftForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (totals.gross === 0 && totals.totalExpenses === 0) return
+    if (totals.grossEarnings === 0 && totals.totalExpenses === 0) return
 
     const data: ShiftInput = {
       date,
@@ -478,7 +460,7 @@ export function ShiftForm({
             className="flex-1 h-11 rounded-xl border-border text-muted-foreground font-semibold">
             Cancelar
           </Button>
-          <Button type="submit" disabled={isPending || (totals.gross === 0 && totals.totalExpenses === 0)}
+          <Button type="submit" disabled={isPending || (totals.grossEarnings === 0 && totals.totalExpenses === 0)}
             className="flex-1 h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm active:scale-[0.98] transition-all">
             {isPending ? (
               <span className="flex items-center gap-2">
@@ -548,16 +530,10 @@ function ExpenseRow({
 
 // ─── SummaryCard ───────────────────────────────────────────────────────────────
 function SummaryCard({ totals, hoursWorked }: {
-  totals: {
-    totalCash: number; totalCard: number; totalQr: number
-    totalBonuses: number; totalCommissions: number
-    totalCashTips: number; totalQrTips: number; totalTips: number
-    totalExpenses: number; maintenanceReserve: number
-    gross: number; pending: number; liquid: number
-  }
+  totals: ShiftMetrics
   hoursWorked: number
 }) {
-  if (totals.gross === 0 && totals.totalExpenses === 0) return null
+  if (totals.grossEarnings === 0 && totals.totalExpenses === 0) return null
 
   return (
     <div className="rounded-xl bg-secondary/60 dark:bg-muted/60 border border-border p-4 space-y-3 text-[13px]">
@@ -574,25 +550,32 @@ function SummaryCard({ totals, hoursWorked }: {
         <Row label="Propinas efectivo" value={totals.totalCashTips} color="text-amber-600 dark:text-amber-400" />
         <Row label="Propinas QR" value={totals.totalQrTips} color="text-amber-600 dark:text-amber-400" />
         <div className="border-t border-border pt-2 mt-2">
-          <Row label="Total bruto" value={totals.gross} color="text-foreground font-bold" />
+          <Row label="Total bruto" value={totals.grossEarnings} color="text-foreground font-bold" />
         </div>
-        <Row label="Pendiente en app (tarjeta + bonos)" value={-totals.pending} color="text-muted-foreground" />
+        <Row label="Pendiente en app (tarjeta + bonos)" value={-totals.pendingAmount} color="text-muted-foreground" />
         <Row label="Comisiones" value={-totals.totalCommissions} color="text-destructive" />
         <Row label="Gastos" value={-totals.totalExpenses} color="text-destructive" />
-        <Row label="Mantenimiento 6%" value={-totals.maintenanceReserve} color="text-destructive" />
+        <Row label="Fondo mantenimiento 6%" value={-totals.maintenanceReserve} color="text-muted-foreground" />
       </div>
+
+      {totals.preMaintenanceLiquid > 0 && !totals.qualifiesForMaintenance && (
+        <p className="text-[11px] leading-relaxed text-muted-foreground">
+          Este turno retiene {Math.round(totals.margin * 100)}% de lo bruto, as&iacute; que no se
+          aparta nada al fondo de mantenimiento.
+        </p>
+      )}
 
       <div className="border-t-2 border-border pt-3 flex justify-between items-center gap-4">
         <span className="text-xs font-bold text-muted-foreground">Neto liquido</span>
-        <span className={`text-base font-bold tabular-nums ${totals.liquid >= 0 ? 'text-primary' : 'text-destructive'}`}>
-          Bs {totals.liquid.toFixed(2)}
+        <span className={`text-base font-bold tabular-nums ${totals.liquidEarnings >= 0 ? 'text-primary' : 'text-destructive'}`}>
+          Bs {totals.liquidEarnings.toFixed(2)}
         </span>
       </div>
 
       {hoursWorked > 0 && (
         <p className="text-xs text-muted-foreground text-right tabular-nums">
-          {totals.liquid / hoursWorked > 0
-            ? `Bs ${(totals.liquid / hoursWorked).toFixed(2)}/hora`
+          {totals.liquidEarnings / hoursWorked > 0
+            ? `Bs ${(totals.liquidEarnings / hoursWorked).toFixed(2)}/hora`
             : `Bs 0.00/hora`}
         </p>
       )}

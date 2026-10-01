@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { CarMaintenanceLog, MaintenanceType } from '@/repositories/car-maintenance.repository'
+import { CarMaintenanceLog, MaintenanceType, MAINTENANCE_TYPE_LABELS } from '@/types/car-maintenance'
 import { addMaintenanceLogAction, deleteMaintenanceLogAction } from '../maintenance.actions'
 import { Trash2, RefreshCcw, Save } from 'lucide-react'
 import { toast } from 'sonner'
@@ -18,11 +18,6 @@ interface MaintenanceModalProps {
   type: MaintenanceType | null
   absoluteOdometer: number
   logs: CarMaintenanceLog[]
-}
-
-const TYPE_NAMES = {
-  oil: 'Cambio de Aceite',
-  injectors: 'Aditivo de Gasolina'
 }
 
 export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs }: MaintenanceModalProps) {
@@ -47,16 +42,20 @@ export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs
 
     startTransition(async () => {
       try {
-        await addMaintenanceLogAction({
+        const result = await addMaintenanceLogAction({
           type,
           cost: parsedCost,
           odometer: absoluteOdometer,
           notes
         })
-        toast.success('Mantenimiento registrado')
         setCost('')
         setNotes('')
         onClose()
+        if (result.warning) {
+          toast.warning(result.warning)
+        } else {
+          toast.success('Mantenimiento registrado')
+        }
       } catch (err) {
         toast.error('Error al registrar')
       }
@@ -69,7 +68,7 @@ export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs
         await deleteMaintenanceLogAction(id)
         toast.success('Registro eliminado')
       } catch (err) {
-        toast.error('Error al eliminar')
+        toast.error(err instanceof Error ? err.message : 'Error al eliminar')
       }
     })
   }
@@ -78,7 +77,7 @@ export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden bg-white dark:bg-neutral-950 border border-neutral-100 dark:border-neutral-900 rounded-[2rem]">
         <DialogHeader className="px-8 pt-8 pb-4 border-b border-neutral-50 dark:border-neutral-900">
-          <DialogTitle className="text-xl font-light tracking-tight">{TYPE_NAMES[type]}</DialogTitle>
+          <DialogTitle className="text-xl font-light tracking-tight">{MAINTENANCE_TYPE_LABELS[type]}</DialogTitle>
           <DialogDescription className="text-xs tracking-wide">
             Gestión de historial y registro de nuevo mantenimiento.
           </DialogDescription>
@@ -160,7 +159,7 @@ export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs
               <TableBody>
                 {filteredLogs.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-12 text-center text-neutral-400 text-sm italic">Sin historial de {TYPE_NAMES[type]}</TableCell>
+                    <TableCell colSpan={4} className="py-12 text-center text-neutral-400 text-sm italic">Sin historial de {MAINTENANCE_TYPE_LABELS[type]}</TableCell>
                   </TableRow>
                 ) : (
                   filteredLogs.map(log => (

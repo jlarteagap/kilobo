@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { CarMaintenanceLog, MaintenanceType } from '@/repositories/car-maintenance.repository'
+import { CarMaintenanceLog, MaintenanceType } from '@/types/car-maintenance'
 import { Droplets, Wrench, ChevronRight, AlertCircle, Settings2, X } from 'lucide-react'
 import { MaintenanceModal } from './MaintenanceModal'
 import { cn } from '@/lib/utils'

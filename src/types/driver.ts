@@ -8,6 +8,16 @@ export const DRIVER_APPS: DriverApp[] = ['UBER', 'YANGO', 'INDRIVE']
 export const PAYMENT_METHODS: PaymentMethod[] = ['CASH', 'CARD', 'QR']
 export const EXPENSE_TYPES: ExpenseType[] = ['TOLL', 'GAS', 'MAINTENANCE', 'OTHER']
 
+// ─── Política del fondo de mantenimiento ────────────────────────────────────────
+/** Porcentaje del líquido del turno que se aparta al fondo de mantenimiento. */
+export const MAINTENANCE_RESERVE_RATE = 0.06
+/**
+ * Margen mínimo (líquido / bruto) que un turno debe alcanzar para que se le
+ * calcule la reserva. Turnos por debajo de este umbral —tipicamente porque los
+ * gastos|Consumo superaron a las ganancias— no generan ahorro.
+ */
+export const MAINTENANCE_MIN_MARGIN = 0.2
+
 export type TipsByMethod = { CASH: number; QR: number }
 
 export const DEFAULT_TIPS_PER_APP: TipsByMethod = { CASH: 0, QR: 0 }
@@ -75,6 +85,9 @@ export interface DriverConfig {
   expenseQrAccountId: string   // para gastos pagados con QR
   commissionAccountId: string  // para comisiones (las descuenta la app)
   bonusDepositAccountId: string // cuenta donde la app deposita los bonos
+  // Cuenta aparte donde se acumula el 6% del neto de cada turno. Si es null o
+  // "" la reserva se sigue registrando como gasto, como antes de esta feature.
+  maintenanceSavingsAccountId?: string | null
   subtypeMapping: {
     uber: string
     yango: string
@@ -148,6 +161,106 @@ export interface ShiftInput {
   tips: Record<DriverApp, TipsByMethod>
   expenses: DriverExpense[]
   notes?: string | null
+}
+
+// ─── Métricas del turno ────────────────────────────────────────────────────────
+export type ShiftMetricsInput = Pick<
+  ShiftInput,
+  'earnings' | 'bonuses' | 'commissions' | 'tips' | 'expenses'
+>
+
+export interface ShiftMetrics {
+  totalEarnings: number
+  totalCash: number
+  totalCard: number
+  totalQr: number
+  totalBonuses: number
+  totalCommissions: number
+  totalCashTips: number
+  totalQrTips: number
+  totalTips: number
+  totalExpenses: number
+  grossEarnings: number
+  pendingAmount: number
+  preMaintenanceLiquid: number
+  margin: number
+  qualifiesForMaintenance: boolean
+  maintenanceReserve: number
+  liquidEarnings: number
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100
+}
+
+function amount(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0
+}
+
+/**
+ * Única fuente de verdad para las cifras financieras de un turno.
+ * La usan el servicio (que persiste y genera transacciones) y el formulario
+ * (que muestra el preview), así el número que anticipa el conductor es
+ * exactamente el que se guarda.
+ *
+ * La reserva de mantenimiento NO se calcula cuando los gastos superaron a las
+ * ganancias: en ese caso `preMaintenanceLiquid` es negativo y el margen queda
+ * por debajo del umbral, así que no hay ahorro que apartar.
+ */
+export function computeShiftMetrics(input: ShiftMetricsInput): ShiftMetrics {
+  const { earnings, bonuses, commissions, tips, expenses } = input
+
+  let totalCash = 0
+  let totalCard = 0
+  let totalQr = 0
+  let totalBonuses = 0
+  let totalCommissions = 0
+  let totalCashTips = 0
+  let totalQrTips = 0
+
+  for (const app of DRIVER_APPS) {
+    totalCash += amount(earnings[app]?.CASH)
+    totalCard += amount(earnings[app]?.CARD)
+    totalQr += amount(earnings[app]?.QR)
+    totalBonuses += amount(bonuses[app])
+    totalCommissions += amount(commissions[app])
+    totalCashTips += amount(tips[app]?.CASH)
+    totalQrTips += amount(tips[app]?.QR)
+  }
+
+  const totalTips = totalCashTips + totalQrTips
+  const totalExpenses = (expenses ?? []).reduce((s, e) => s + amount(e?.amount), 0)
+
+  const gross = totalCash + totalCard + totalQr + totalBonuses + totalTips
+  const preMaintenanceLiquid = totalCash + totalQr + totalTips - totalCommissions - totalExpenses
+  const margin = gross > 0 ? preMaintenanceLiquid / gross : 0
+
+  const qualifiesForMaintenance =
+    preMaintenanceLiquid > 0 && margin >= MAINTENANCE_MIN_MARGIN
+
+  const maintenanceReserve = qualifiesForMaintenance
+    ? round2(preMaintenanceLiquid * MAINTENANCE_RESERVE_RATE)
+    : 0
+
+  return {
+    totalEarnings: totalCash + totalCard + totalQr,
+    totalCash,
+    totalCard,
+    totalQr,
+    totalBonuses,
+    totalCommissions,
+    totalCashTips,
+    totalQrTips,
+    totalTips,
+    totalExpenses,
+    grossEarnings: gross,
+    pendingAmount: totalCard + totalBonuses,
+    preMaintenanceLiquid,
+    margin,
+    qualifiesForMaintenance,
+    maintenanceReserve,
+    liquidEarnings: round2(preMaintenanceLiquid - maintenanceReserve),
+  }
 }
 
 // ─── Depósitos de apps ────────────────────────────────────────────────────────

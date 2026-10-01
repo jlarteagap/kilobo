@@ -61,6 +61,9 @@ export const driverConfigSchema = z.object({
   expenseQrAccountId: z.string().min(1, 'Selecciona una cuenta para gastos con QR'),
   commissionAccountId: z.string().min(1, 'Selecciona una cuenta para comisiones'),
   bonusDepositAccountId: z.string().min(1, 'Selecciona una cuenta para bonos'),
+  // Opcional a propósito: las configs guardadas antes de existir el fondo de
+  // mantenimiento deben seguir siendo válidas.
+  maintenanceSavingsAccountId: z.string().nullable().optional(),
   subtypeMapping: z.object({
     uber: z.string().min(1),
     yango: z.string().min(1),

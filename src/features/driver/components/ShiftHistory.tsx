@@ -126,10 +126,10 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
                 )}
               </div>
 
-              {/* Mantenimiento */}
+              {/* Fondo de mantenimiento */}
               {maintenance > 0 && (
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full tabular-nums border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400" title="Mantenimiento (6% del neto)">
-                  Mant {maintenance.toFixed(0)}
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full tabular-nums border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400" title="Ahorro para mantenimiento (6% del neto)">
+                  Fondo {maintenance.toFixed(0)}
                 </span>
               )}
 

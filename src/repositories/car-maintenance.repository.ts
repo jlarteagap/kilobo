@@ -1,20 +1,6 @@
 import { adminDb } from '@/lib/firebase.admin'
 import { FieldValue } from 'firebase-admin/firestore'
-
-export type MaintenanceType = 'oil' | 'injectors'
-
-export interface CarMaintenanceLog {
-  id: string
-  type: MaintenanceType
-  cost: number
-  odometer: number
-  date: number
-  notes?: string
-}
-
-export interface CarConfig {
-  absoluteOdometer: number
-}
+import type { CarMaintenanceLog, MaintenanceType } from '@/types/car-maintenance'
 
 const CONFIG_COLLECTION = adminDb.collection('car_config')
 const LOGS_COLLECTION = adminDb.collection('car_maintenance_logs')
@@ -42,11 +28,14 @@ export const carMaintenanceRepository = {
   },
 
   // --- Maintenance Logs Management ---
-  async addMaintenanceLog(data: Omit<CarMaintenanceLog, 'id' | 'date'>): Promise<void> {
-    await LOGS_COLLECTION.add({
+  async addMaintenanceLog(
+    data: Omit<CarMaintenanceLog, 'id' | 'date'>
+  ): Promise<string> {
+    const docRef = await LOGS_COLLECTION.add({
       ...data,
-      date: Date.now()
+      date: Date.now(),
     })
+    return docRef.id
   },
 
   async getMaintenanceLogs(type?: MaintenanceType): Promise<CarMaintenanceLog[]> {
@@ -57,6 +46,12 @@ export const carMaintenanceRepository = {
     
     const snapshot = await query.orderBy('date', 'desc').get()
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CarMaintenanceLog))
+  },
+
+  async findById(id: string): Promise<CarMaintenanceLog | null> {
+    const doc = await LOGS_COLLECTION.doc(id).get()
+    if (!doc.exists) return null
+    return { id: doc.id, ...doc.data() } as CarMaintenanceLog
   },
 
   async deleteMaintenanceLog(id: string): Promise<void> {

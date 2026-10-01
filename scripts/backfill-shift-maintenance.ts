@@ -4,41 +4,26 @@
 // la transacción, pero el campo no se persistía), así que el historial y las tarjetas
 // de Mantenimiento mostraban 0.
 //
-// Este script recomputa `maintenanceReserve` y `liquidEarnings` con la misma fórmula del
-// servicio (6% del neto pre-mantenimiento) solo para los turnos que no tienen el campo.
+// Este script recomputa `maintenanceReserve` y `liquidEarnings` con la MISMA función que
+// usa el servicio en runtime (`computeShiftMetrics`), para que un rerun no escriba
+// cifras con una fórmula distinta a la de los turnos nuevos.
 //
 // Uso: npx tsx scripts/backfill-shift-maintenance.ts
 import 'dotenv/config'
 import { adminDb } from '../src/lib/firebase.admin'
-import { DRIVER_APPS, sumTips } from '../src/types/driver'
+import { computeShiftMetrics } from '../src/types/driver'
 
 const SHIFTS = 'driver_shifts'
 const BATCH_LIMIT = 490
 
-function round2(n: number): number {
-  return Math.round(n * 100) / 100
-}
-
-function toNumber(value: unknown): number {
-  return typeof value === 'number' && isFinite(value) ? value : 0
-}
-
 function computeMetrics(data: Record<string, unknown>) {
-  const earnings = (data.earnings ?? {}) as Record<string, Record<string, number>>
-  const cashEarnings = DRIVER_APPS.reduce((s, app) => s + toNumber(earnings[app]?.CASH), 0)
-  const qrEarnings = DRIVER_APPS.reduce((s, app) => s + toNumber(earnings[app]?.QR), 0)
-
-  const commissions = (data.commissions ?? {}) as Record<string, number>
-  const totalCommissions = Object.values(commissions).reduce((s, v) => s + toNumber(v), 0)
-
-  const expenses = Array.isArray(data.expenses) ? (data.expenses as Array<{ amount?: number }>) : []
-  const totalExpenses = expenses.reduce((s, e) => s + toNumber(e.amount), 0)
-
-  const totalTips = sumTips((data.tips ?? {}) as never)
-
-  const preMaintenanceLiquid = cashEarnings + qrEarnings + totalTips - totalCommissions - totalExpenses
-  const maintenanceReserve = preMaintenanceLiquid > 0 ? round2(preMaintenanceLiquid * 0.06) : 0
-  const liquidEarnings = round2(preMaintenanceLiquid - maintenanceReserve)
+  const { liquidEarnings, maintenanceReserve } = computeShiftMetrics({
+    earnings: (data.earnings ?? {}) as never,
+    bonuses: (data.bonuses ?? {}) as never,
+    commissions: (data.commissions ?? {}) as never,
+    tips: (data.tips ?? {}) as never,
+    expenses: (Array.isArray(data.expenses) ? data.expenses : []) as never,
+  })
 
   return { liquidEarnings, maintenanceReserve }
 }

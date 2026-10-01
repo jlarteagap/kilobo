@@ -1,13 +1,14 @@
 'use client'
 
 import React, { useState, useMemo, useTransition, useEffect } from 'react'
+import Link from 'next/link'
 import { CarCycle, CarTrip } from '@/repositories/car-sharing.repository'
 import { addTripAction, deleteTripAction, closeCycleAction, deleteCycleAction, resetAllAction, updateTripAction } from '../actions'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Trash2, RefreshCcw, Save, Plus, Wallet, History, ArrowRight, UserCheck, X, Pencil, Check } from 'lucide-react'
+import { Trash2, RefreshCcw, Save, Plus, Wallet, History, ArrowRight, UserCheck, X, Pencil, Check, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
@@ -243,6 +244,14 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
                 </div>
               </div>
 
+              <div className="rounded-xl bg-neutral-100/60 dark:bg-neutral-900/40 px-4 py-3 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
+                Los km de un turno ya se suman al odómetro del auto al registrarlo en{' '}
+                <Link href="/conductor" className="text-emerald-600 dark:text-emerald-400 underline underline-offset-2">
+                  Conductor
+                </Link>
+                . Usa este formulario solo para viajes que no registraste como turno.
+              </div>
+
               <Button 
                 type="submit" 
                 className="w-full h-14 rounded-2xl bg-neutral-950 dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all font-medium text-base shadow-lg shadow-neutral-950/10 dark:shadow-white/5 active:scale-[0.98]" 
@@ -308,7 +317,18 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
 
                     return (
                       <TableRow key={trip.createdAt} className="group border-b border-neutral-50 dark:border-neutral-900 last:border-0 transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-900/30">
-                        <TableCell className="px-8 py-5 text-neutral-400 text-xs font-medium tabular-nums">{trip.date}</TableCell>
+                        <TableCell className="px-8 py-5 text-neutral-400 text-xs font-medium tabular-nums">
+                          <span>{trip.date}</span>
+                          {trip.source === 'shift' && (
+                            <span
+                              className="ml-2 inline-flex items-center gap-1 rounded-md bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-neutral-500 dark:text-neutral-400"
+                              title="Registrado automáticamente desde un turno de /conductor. No vuelvas a sumar estos km a mano o el odómetro los contará dos veces."
+                            >
+                              <Sparkles className="size-2.5" />
+                              Turno
+                            </span>
+                          )}
+                        </TableCell>
                         <TableCell className="py-5 font-medium text-neutral-900 dark:text-neutral-100">
                           {isEditing ? (
                             <Select value={editUserName} onValueChange={setEditUserName} disabled={isPending}>

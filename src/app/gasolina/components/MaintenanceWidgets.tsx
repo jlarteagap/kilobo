@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { CarMaintenanceLog, MaintenanceType } from '@/types/car-maintenance'
+import { CarMaintenanceLog, MaintenanceType, MAINTENANCE_TYPE_LABELS, MAINTENANCE_INTERVALS } from '@/types/car-maintenance'
 import { Droplets, Wrench, ChevronRight, AlertCircle, Settings2, X } from 'lucide-react'
 import { MaintenanceModal } from './MaintenanceModal'
 import { cn } from '@/lib/utils'
@@ -14,15 +14,7 @@ interface MaintenanceWidgetsProps {
   logs: CarMaintenanceLog[]
 }
 
-const LIMITS = {
-  oil: 10000,
-  injectors: 4000
-}
-
-const TYPE_NAMES = {
-  oil: 'Cambio de Aceite',
-  injectors: 'Aditivos de Gasolina'
-}
+const TYPE_NAMES = MAINTENANCE_TYPE_LABELS
 
 export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidgetsProps) {
   const [activeModalType, setActiveModalType] = useState<MaintenanceType | null>(null)
@@ -81,18 +73,18 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
   const latestInjectors = logs.find(l => l.type === 'injectors')
 
   const getProgress = (latestLog: CarMaintenanceLog | undefined, limit: number) => {
-    // If no log exists, we calculate based on the start of the odometer (0) 
-    // or we could say we just don't know. 
-    // Let's assume progress is 0 until first log is added for clarity.
+    // Sin log previo no hay contra que medir el avance: se asume que el auto
+    // recien entra en servicio y se reporta el intervalo completo. El mismo
+    // criterio usa `maintenanceStatus()` en la card de Conductor.
     if (!latestLog) return { remaining: limit, percentage: 0, status: 'good', nextKm: (absoluteOdometer || 0) + limit }
-    
+
     const kmDriven = absoluteOdometer - latestLog.odometer
     const remaining = limit - kmDriven
-    
+
     // Allow percentage to go above 100 if they pass the limit
     let percentage = (kmDriven / limit) * 100
     if (percentage < 0) percentage = 0
-    // We don't cap at 100 anymore to show "overdue" state visually if needed, 
+    // We don't cap at 100 anymore to show "overdue" state visually if needed,
     // but the bar itself should probably cap at 100 for layout.
     const displayPercentage = Math.min(percentage, 100)
 
@@ -103,8 +95,8 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
     return { remaining, percentage, displayPercentage, status, nextKm: latestLog.odometer + limit }
   }
 
-  const oilStats = getProgress(latestOil, LIMITS.oil)
-  const injectorStats = getProgress(latestInjectors, LIMITS.injectors)
+  const oilStats = getProgress(latestOil, MAINTENANCE_INTERVALS.oil.intervalKm)
+  const injectorStats = getProgress(latestInjectors, MAINTENANCE_INTERVALS.injectors.intervalKm)
 
   const StatusCard = ({ 
     title, icon: Icon, type, 

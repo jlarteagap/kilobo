@@ -1,88 +1,47 @@
 'use client'
 
-import { useMemo } from 'react'
 import { TrendingUp, DollarSign, CalendarRange } from 'lucide-react'
 import type { DriverShift } from '@/types/driver'
-import { formatBs, isoToLocalDateStr } from '../utils/driver-metrics.utils'
+import { formatBs } from '../utils/driver-metrics.utils'
+import { useShiftPeriodStats } from '../hooks/useShiftPeriodStats'
+import { MaintenanceFundCard } from './MaintenanceFundCard'
 
 interface DashboardSummaryProps {
   shifts: DriverShift[]
 }
 
 export function DashboardSummary({ shifts }: DashboardSummaryProps) {
-  const { today, week, month } = useMemo(() => {
-    const now = new Date()
-    const todayStr = localDateStr(now)
-
-    // Inicio de semana (lunes)
-    const startOfWeek = new Date(now)
-    const day = startOfWeek.getDay()
-    const diff = day === 0 ? -6 : 1 - day
-    startOfWeek.setDate(startOfWeek.getDate() + diff)
-    const weekStart = localDateStr(startOfWeek)
-
-    // Inicio de mes
-    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-
-    let todayLiquid = 0
-    let todayMaintenance = 0
-    let weekLiquid = 0
-    let monthLiquid = 0
-    let weekHours = 0
-
-    for (const sh of shifts) {
-      const dayStr = (sh.date ?? isoToLocalDateStr(sh.createdAt) ?? '').slice(0, 10)
-      const liquid = sh.liquidEarnings ?? 0
-
-      if (dayStr === todayStr) {
-        todayLiquid += liquid
-        todayMaintenance += sh.maintenanceReserve ?? 0
-      }
-      if (dayStr >= weekStart) {
-        weekLiquid += liquid
-        weekHours += sh.hoursWorked ?? 0
-      }
-      if (dayStr.startsWith(monthStart)) monthLiquid += liquid
-    }
-
-    return {
-      today: { liquid: todayLiquid, maintenance: todayMaintenance },
-      week: { liquid: weekLiquid, hours: weekHours },
-      month: { liquid: monthLiquid },
-    }
-  }, [shifts])
+  const { today, week, month } = useShiftPeriodStats(shifts)
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <MiniCard
-        icon={<DollarSign className="size-3.5 shrink-0" />}
-        label="Hoy"
-        value={formatBs(today.liquid)}
-        sub={today.maintenance > 0 ? `${formatBs(today.maintenance)} mant.` : undefined}
-        color="emerald"
-      />
-      <MiniCard
-        icon={<CalendarRange className="size-3.5 shrink-0" />}
-        label="Esta semana"
-        value={formatBs(week.liquid)}
-        sub={week.hours > 0 ? `Bs ${(week.liquid / week.hours).toFixed(1)}/h` : undefined}
-        color="accent"
-      />
-      <MiniCard
-        icon={<TrendingUp className="size-3.5 shrink-0" />}
-        label="Este mes"
-        value={formatBs(month.liquid)}
-        color="neutral"
-      />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <MiniCard
+          icon={<DollarSign className="size-3.5 shrink-0" />}
+          label="Hoy"
+          value={formatBs(today.liquid)}
+          sub={today.maintenance > 0 ? `${formatBs(today.maintenance)} mant.` : undefined}
+          color="emerald"
+        />
+        <MiniCard
+          icon={<CalendarRange className="size-3.5 shrink-0" />}
+          label="Esta semana"
+          value={formatBs(week.liquid)}
+          sub={week.hours > 0 ? `Bs ${(week.liquid / week.hours).toFixed(1)}/h` : undefined}
+          color="accent"
+        />
+        <MiniCard
+          icon={<TrendingUp className="size-3.5 shrink-0" />}
+          label="Este mes"
+          value={formatBs(month.liquid)}
+          sub={month.maintenance > 0 ? `${formatBs(month.maintenance)} fondo` : undefined}
+          color="neutral"
+        />
+      </div>
+
+      <MaintenanceFundCard />
     </div>
   )
-}
-
-function localDateStr(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
 }
 
 function MiniCard({

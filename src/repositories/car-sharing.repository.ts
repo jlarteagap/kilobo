@@ -3,6 +3,20 @@ import { adminDb } from '@/lib/firebase.admin'
 import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 import { carMaintenanceRepository } from './car-maintenance.repository'
 
+/**
+ * De dónde salió el trip.
+ *
+ * `shift`: se creó automáticamente al registrar un turno en `/conductor`, así que
+ * sus km ya quedaronSumados al odómetro absoluto. Registrar esos mismos km otra
+ * vez a mano desde `/gasolina` los cuenta dos veces y acorta los intervalos de
+ * mantenimiento a la mitad.
+ *
+ * `manual`: se cargó directamente desde `/gasolina` (viajes que no son turnos).
+ * Los docs anteriores a esta migración no tienen el campo y se tratan como
+ * `manual`, que es el comportamiento previo.
+ */
+export type CarTripSource = 'shift' | 'manual'
+
 export interface CarTrip {
   userName: string
   initialKm: number
@@ -10,6 +24,7 @@ export interface CarTrip {
   totalKm: number
   date: string
   createdAt: number
+  source?: CarTripSource
 }
 
 export interface DebtResult {
@@ -68,7 +83,7 @@ export const carSharingRepository = {
       .sort((a, b) => (b.endDate || 0) - (a.endDate || 0))
   },
 
-  async addTrip(data: { userName: string, initialKm: number, finalKm: number, clientDateStr?: string }): Promise<number> {
+  async addTrip(data: { userName: string, initialKm: number, finalKm: number, clientDateStr?: string; source?: CarTripSource }): Promise<number> {
     const activeCycle = await this.getActiveCycle()
     
     let totalKm = 0
@@ -92,6 +107,7 @@ export const carSharingRepository = {
       totalKm,
       date: dateStr,
       createdAt,
+      source: data.source ?? 'manual',
     }
 
     await CYCLES_COLLECTION.doc(activeCycle.id).update({

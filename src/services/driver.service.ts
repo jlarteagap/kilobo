@@ -15,6 +15,7 @@ import {
   sumAppTips,
   computeShiftMetrics,
   emptyTips,
+  DRIVER_TRIP_USER_NAME,
 } from '@/types/driver'
 import type { CreateTransactionData } from '@/types/transaction'
 
@@ -167,10 +168,11 @@ async function processShiftTransactions(
   if (endKm3 != null && startKm3 != null) {
     try {
       gasolinaTripCreatedAt = await carSharingRepository.addTrip({
-        userName: 'Jorge',
+        userName: DRIVER_TRIP_USER_NAME,
         initialKm: startKm3,
         finalKm: endKm3,
         clientDateStr: shiftDate,
+        source: 'shift',
       })
     } catch {
       console.warn('No se pudo registrar el trip en Gasolina')

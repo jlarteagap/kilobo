@@ -1,6 +1,5 @@
 'use client'
 
-import { useMemo } from 'react'
 import Link from 'next/link'
 import {
   CarTaxiFront,
@@ -15,17 +14,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { useShifts } from '@/features/driver/hooks/useDriverShifts'
-import { formatBs, isoToLocalDateStr, parseLocalDate } from '@/features/driver/utils/driver-metrics.utils'
-import type { DriverShift } from '@/types/driver'
+import { useShiftPeriodStats } from '@/features/driver/hooks/useShiftPeriodStats'
+import { formatBs, parseLocalDate } from '@/features/driver/utils/driver-metrics.utils'
+import { MaintenanceFundCard } from './MaintenanceFundCard'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function localDateStr(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -85,47 +78,7 @@ function Stat({
 
 export function DriverWidget() {
   const { data: shifts = [], isLoading, isError } = useShifts()
-
-  const stats = useMemo(() => {
-    const now = new Date()
-    const todayStr = localDateStr(now)
-
-    // Inicio de semana (lunes)
-    const startOfWeek = new Date(now)
-    const day = startOfWeek.getDay()
-    const diff = day === 0 ? -6 : 1 - day // domingo = 0, lunes = 1
-    startOfWeek.setDate(startOfWeek.getDate() + diff)
-    const weekStart = localDateStr(startOfWeek)
-
-    // Inicio de mes
-    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-
-    let todayLiquid = 0
-    let weekLiquid = 0
-    let monthLiquid = 0
-    let weekHours = 0
-    let weekKm = 0
-    let lastShift: DriverShift | null = null
-
-    for (const sh of shifts) {
-      const dayStr = (sh.date ?? isoToLocalDateStr(sh.createdAt) ?? '').slice(0, 10)
-      const liquid = sh.liquidEarnings ?? 0
-
-      if (dayStr === todayStr) todayLiquid += liquid
-      if (dayStr >= weekStart) {
-        weekLiquid += liquid
-        weekHours += sh.hoursWorked ?? 0
-        weekKm += sh.totalKm ?? 0
-      }
-      if (dayStr.startsWith(monthStart)) monthLiquid += liquid
-      if (dayStr && (!lastShift || dayStr > lastShift.date)) lastShift = sh
-    }
-
-    const totalLiquid = shifts.reduce((s, sh) => s + (sh.liquidEarnings ?? 0), 0)
-    const avgPerShift = shifts.length > 0 ? totalLiquid / shifts.length : 0
-
-    return { todayLiquid, weekLiquid, monthLiquid, weekHours, weekKm, avgPerShift, lastShift }
-  }, [shifts])
+  const { today, week, month, lastShift, avgPerShift } = useShiftPeriodStats(shifts)
 
   if (isLoading) return <WidgetSkeleton />
 
@@ -143,7 +96,6 @@ export function DriverWidget() {
     )
   }
 
-  const { todayLiquid, weekLiquid, monthLiquid, weekHours, weekKm, avgPerShift, lastShift } = stats
   const lastShiftLabel = lastShift?.date
     ? parseLocalDate(lastShift.date).toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'short' })
     : null
@@ -187,20 +139,22 @@ export function DriverWidget() {
               <Stat
                 icon={<DollarSign className="size-3.5" />}
                 label="Hoy"
-                value={formatBs(todayLiquid)}
+                value={formatBs(today.liquid)}
+                sub={today.maintenance > 0 ? `${formatBs(today.maintenance)} mant.` : undefined}
                 tone="emerald"
               />
               <Stat
                 icon={<CalendarRange className="size-3.5" />}
                 label="Esta semana"
-                value={formatBs(weekLiquid)}
-                sub={weekHours > 0 ? `Bs ${(weekLiquid / weekHours).toFixed(1)}/h` : undefined}
+                value={formatBs(week.liquid)}
+                sub={week.hours > 0 ? `Bs ${(week.liquid / week.hours).toFixed(1)}/h` : undefined}
                 tone="accent"
               />
               <Stat
                 icon={<TrendingUp className="size-3.5" />}
                 label="Este mes"
-                value={formatBs(monthLiquid)}
+                value={formatBs(month.liquid)}
+                sub={month.maintenance > 0 ? `${formatBs(month.maintenance)} fondo` : undefined}
                 tone="neutral"
               />
             </div>
@@ -222,10 +176,14 @@ export function DriverWidget() {
                 </span>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Route className="h-3 w-3" />
-                  <span className="font-semibold text-foreground tabular-nums">{weekKm}</span>
+                  <span className="font-semibold text-foreground tabular-nums">{week.km}</span>
                   <span className="hidden sm:inline">km semana</span>
                 </span>
               </div>
+            </div>
+
+            <div className="pt-3 border-t border-border">
+              <MaintenanceFundCard />
             </div>
           </>
         )}

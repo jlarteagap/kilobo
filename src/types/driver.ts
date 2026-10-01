@@ -18,6 +18,15 @@ export const MAINTENANCE_RESERVE_RATE = 0.06
  */
 export const MAINTENANCE_MIN_MARGIN = 0.2
 
+/**
+ * Nombre con el que se etiqueta el trip que genera un turno en Gasolina.
+ *
+ * Antes estaba hardcodeado dentro de `processShiftTransactions`. Vive aquí para
+ * que el nombre y el resto de constantes del dominio del conductor tengan una
+ * sola fuente, y para que el cambio a multiusuario sea explícito.
+ */
+export const DRIVER_TRIP_USER_NAME = 'Jorge'
+
 export type TipsByMethod = { CASH: number; QR: number }
 
 export const DEFAULT_TIPS_PER_APP: TipsByMethod = { CASH: 0, QR: 0 }

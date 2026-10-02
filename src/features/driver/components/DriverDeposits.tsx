@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Landmark, Plus, Trash2 } from 'lucide-react'
 import { DRIVER_APPS, DRIVER_APP_LABELS } from '@/types/driver'
 import type { DriverApp, DepositInput } from '@/types/driver'
+import { APP_BADGE_CLASS } from '@/features/driver/utils/driver-metrics.utils'
 import { useDriverDeposits, useDriverDepositsReconciliation, useCreateDriverDeposit, useDeleteDriverDeposit } from '@/features/driver/hooks/useDriverDeposits'
 import type { MonthCycle } from '@/features/driver/hooks/useDriverShifts'
 
@@ -23,15 +24,6 @@ function formatDate(iso: string): string {
 
 function formatCurrency(amount: number): string {
   return amount.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-function getAppBadgeColor(app: DriverApp): string {
-  const map: Record<DriverApp, string> = {
-    UBER: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700',
-    YANGO: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700',
-    INDRIVE: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700',
-  }
-  return map[app]
 }
 
 export function DriverDeposits({ cycle, label }: { cycle: MonthCycle; label: string }) {
@@ -73,27 +65,27 @@ export function DriverDeposits({ cycle, label }: { cycle: MonthCycle; label: str
     create.mutate(payload, { onSuccess: resetForm })
   }
 
-  const inputClass = 'h-11 rounded-xl border-input bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30'
-  const labelClass = 'text-xs font-medium text-muted-foreground'
+  const inputClass = 'h-11 rounded-xl border-zinc-200 bg-white text-sm font-semibold tabular-nums text-zinc-900 focus-visible:ring-zinc-400/30'
+  const labelClass = 'block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500'
 
   return (
-    <div className="rounded-[22px] border border-border bg-card p-5 sm:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="rounded-[22px] border border-zinc-200 bg-white p-5 sm:p-6 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="size-6 rounded-lg bg-secondary dark:bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+          <div className="size-6 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-500 shrink-0">
             <Landmark className="size-3" />
           </div>
-          <h2 className="text-sm font-bold text-foreground tracking-tight truncate">Depositos de apps</h2>
+          <span className="text-[13px] font-semibold text-zinc-900 tracking-tight truncate">Depositos de apps</span>
           {deposits.length > 0 && (
-            <span className="text-xs text-muted-foreground shrink-0">· {deposits.length}</span>
+            <span className="text-[11px] font-semibold text-zinc-400 tabular-nums shrink-0">{deposits.length}</span>
           )}
         </div>
         {!showForm && (
           <Button
             variant="outline"
             size="sm"
-            className="h-9 px-3 rounded-xl text-xs font-bold border-border"
+            className="h-9 px-3 rounded-lg text-[11px] font-bold border-zinc-200 text-zinc-700 hover:bg-zinc-50 shrink-0"
             onClick={() => setShowForm(true)}
           >
             <Plus className="size-3.5 mr-1.5" />
@@ -104,12 +96,12 @@ export function DriverDeposits({ cycle, label }: { cycle: MonthCycle; label: str
 
       {/* Form */}
       {showForm && (
-        <div className="rounded-2xl border border-border bg-card p-4 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="space-y-1.5">
               <Label className={labelClass}>App</Label>
               <Select value={app} onValueChange={(v) => setApp(v as DriverApp)}>
-                <SelectTrigger className="h-11 rounded-xl border-input bg-card text-sm font-semibold">
+                <SelectTrigger className="h-11 rounded-xl border-zinc-200 bg-white text-sm font-semibold text-zinc-900">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -159,15 +151,19 @@ export function DriverDeposits({ cycle, label }: { cycle: MonthCycle; label: str
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-sm">
-              <span className="text-muted-foreground">Neto recibido: </span>
-              <span className="font-bold text-emerald-600 tabular-nums">Bs {formatCurrency(net)}</span>
+              <span className="text-[11px] font-medium text-zinc-500">Neto recibido: </span>
+              <span className="text-[15px] font-bold text-emerald-600 tabular-nums">Bs {formatCurrency(net)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" className="h-9 px-3 rounded-xl text-xs font-bold" onClick={() => setShowForm(false)}>
+              <Button
+                variant="ghost"
+                className="h-9 px-3 rounded-lg text-[11px] font-bold text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
+                onClick={() => setShowForm(false)}
+              >
                 Cancelar
               </Button>
               <Button
-                className="h-9 px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-sm"
+                className="h-9 px-4 rounded-lg text-[11px] font-bold bg-zinc-900 hover:bg-zinc-800 text-white"
                 disabled={!canSubmit || create.isPending}
                 onClick={handleCreate}
               >
@@ -191,44 +187,44 @@ export function DriverDeposits({ cycle, label }: { cycle: MonthCycle; label: str
 
       {/* Lista */}
       {isLoading ? (
-        <div className="space-y-2 animate-pulse">
-          <div className="h-14 bg-secondary dark:bg-muted rounded-xl" />
-          <div className="h-14 bg-secondary dark:bg-muted rounded-xl" />
+        <div className="space-y-2">
+          <div className="h-14 bg-zinc-100 rounded-xl animate-pulse" />
+          <div className="h-14 bg-zinc-100 rounded-xl animate-pulse" />
         </div>
       ) : deposits.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-4 text-center">
+        <p className="text-[11px] text-zinc-400 py-4 text-center">
           No hay depositos registrados para {label}.
         </p>
       ) : (
         <ul className="space-y-2">
           {deposits.map((d) => (
-            <li key={d.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
+            <li key={d.id} className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
               <div className="flex items-center gap-3 min-w-0">
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full tabular-nums border ${getAppBadgeColor(d.app)}`}>
+                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full tabular-nums border ${APP_BADGE_CLASS}`}>
                   {DRIVER_APP_LABELS[d.app]}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-foreground tabular-nums">{formatDate(d.date)}</p>
+                  <p className="text-[13px] font-semibold text-zinc-900 tabular-nums">{formatDate(d.date)}</p>
                   {d.notes && (
-                    <p className="text-xs text-muted-foreground truncate">{d.notes}</p>
+                    <p className="text-[11px] text-zinc-400 truncate">{d.notes}</p>
                   )}
                 </div>
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <div className="text-right">
-                  <p className="text-xs text-muted-foreground tabular-nums">Bruto <span className="text-foreground">{formatCurrency(d.grossAmount)}</span></p>
-                  <p className="text-xs text-destructive tabular-nums">Comision <span>−{formatCurrency(d.commission)}</span></p>
-                  <p className="text-xs font-bold text-emerald-600 tabular-nums">Neto {formatCurrency(d.netAmount)}</p>
+                  <p className="text-[11px] text-zinc-500 tabular-nums">Bruto <span className="text-zinc-900 font-medium">{formatCurrency(d.grossAmount)}</span></p>
+                  <p className="text-[11px] text-zinc-500 tabular-nums">Comision <span className="text-zinc-900 font-medium">−{formatCurrency(d.commission)}</span></p>
+                  <p className="text-[11px] font-bold text-emerald-600 tabular-nums">Neto {formatCurrency(d.netAmount)}</p>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-8 rounded-lg text-muted-foreground hover:text-destructive"
+                  className="size-8 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100"
                   aria-label="Eliminar deposito"
                   onClick={() => del.mutate(d.id)}
                   disabled={del.isPending}
                 >
-                  <Trash2 className="size-4" />
+                  <Trash2 className="size-3.5" />
                 </Button>
               </div>
             </li>
@@ -238,20 +234,20 @@ export function DriverDeposits({ cycle, label }: { cycle: MonthCycle; label: str
 
       {/* Reconciliacion */}
       {reconciliation.length > 0 && (
-        <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Conciliacion por app</p>
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">Conciliacion por app</p>
           {reconciliation.map((r) => (
             <div key={r.app} className="flex items-center justify-between gap-3 text-sm">
-              <span className="font-semibold text-foreground min-w-0 truncate">{DRIVER_APP_LABELS[r.app]}</span>
+              <span className="text-[13px] font-semibold text-zinc-900 min-w-0 truncate">{DRIVER_APP_LABELS[r.app]}</span>
               <div className="flex items-center gap-4 shrink-0 tabular-nums">
-                <span className="text-muted-foreground">
-                  Depositado <strong className="text-foreground">{formatCurrency(r.deposited)}</strong>
+                <span className="text-[11px] text-zinc-500">
+                  Depositado <strong className="text-zinc-900">{formatCurrency(r.deposited)}</strong>
                 </span>
-                <span className="text-muted-foreground">
-                  Pendiente <strong className="text-foreground">{formatCurrency(r.pending)}</strong>
+                <span className="text-[11px] text-zinc-500">
+                  Pendiente <strong className="text-zinc-900">{formatCurrency(r.pending)}</strong>
                 </span>
-                <span className={r.difference >= 0 ? 'text-emerald-600 font-bold' : 'text-destructive font-bold'}>
-                  {r.difference >= 0 ? '+' : ''}{formatCurrency(r.difference)}
+                <span className={`text-[11px] font-bold ${r.difference >= 0 ? 'text-emerald-600' : 'text-zinc-900'}`}>
+                  {r.difference >= 0 ? '+' : '−'}{formatCurrency(Math.abs(r.difference))}
                 </span>
               </div>
             </div>

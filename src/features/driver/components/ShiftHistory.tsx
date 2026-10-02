@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { History, TrendingUp, TrendingDown, Clock, Trash2, Pencil, MessageSquareText } from 'lucide-react'
 import type { DriverShift } from '@/types/driver'
 import { DRIVER_APPS, DRIVER_APP_LABELS } from '@/types/driver'
-import { getAppBadgeColor, hoursToDuration, parseLocalDate } from '../utils/driver-metrics.utils'
+import { APP_BADGE_CLASS, hoursToDuration, parseLocalDate } from '../utils/driver-metrics.utils'
 import { useDeleteShift } from '../hooks/useDriverShifts'
 import { ShiftDetailSheet } from './ShiftDetailSheet'
 import {
@@ -55,14 +55,14 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
 
   if (shifts.length === 0) {
     return (
-      <div className="rounded-[22px] border border-dashed border-border bg-card dark:bg-card p-8 text-center">
-        <div className="size-12 rounded-xl bg-secondary dark:bg-muted mx-auto flex items-center justify-center text-muted-foreground mb-3">
-          <History className="size-6" />
+      <div className="rounded-[22px] border border-dashed border-zinc-200 bg-zinc-50/50 p-10 text-center">
+        <div className="size-11 rounded-xl bg-zinc-100 mx-auto flex items-center justify-center text-zinc-400 mb-3">
+          <History className="size-5" />
         </div>
-        <p className="text-sm font-semibold text-foreground">
+        <p className="text-[13px] font-semibold text-zinc-900">
           {label ? `No hay turnos en ${label}` : 'Aun no hay turnos'}
         </p>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-[11px] text-zinc-500 mt-1 max-w-[30ch] mx-auto leading-relaxed">
           {label ? 'Prueba otro ciclo o registra un turno en este mes.' : 'Registra tu primer turno para ver tu historial y tendencia.'}
         </p>
       </div>
@@ -90,20 +90,20 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
               role="button"
               tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDetailShift(shift) } }}
-              className="group relative flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card dark:bg-card border border-border hover:border-primary/20 hover:shadow-sm transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+              className="group relative flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-50 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/30"
             >
               {/* Fecha */}
               <div className="min-w-[44px] text-center shrink-0">
-                <p className="text-base font-bold text-foreground leading-none tabular-nums">
+                <p className="text-base font-bold text-zinc-900 leading-none tabular-nums">
                   {isValidDate ? date.getDate() : '-'}
                 </p>
-                <p className="text-xs font-medium text-muted-foreground mt-0.5 capitalize">
+                <p className="text-[11px] font-medium text-zinc-400 mt-0.5 capitalize">
                   {isValidDate ? date.toLocaleDateString('es-BO', { month: 'short' }).replace('.', '') : ''}
                 </p>
               </div>
 
               {/* Horas */}
-              <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground min-w-[72px]">
+              <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-zinc-400 min-w-[72px]">
                 <Clock className="size-3.5 shrink-0" />
                 <span className="tabular-nums font-medium">{hoursToDuration(hours)}</span>
               </div>
@@ -114,13 +114,13 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
                   const total = (shift.earnings?.[app]?.CASH ?? 0) + (shift.earnings?.[app]?.CARD ?? 0) + (shift.earnings?.[app]?.QR ?? 0) + (shift.tips?.[app]?.CASH ?? 0) + (shift.tips?.[app]?.QR ?? 0)
                   if (!total) return null
                   return (
-                    <span key={app} className={`text-xs font-bold px-2 py-0.5 rounded-full tabular-nums border ${getAppBadgeColor(app)}`}>
+                    <span key={app} className={`text-[11px] font-semibold px-2 py-0.5 rounded-full tabular-nums border ${APP_BADGE_CLASS}`}>
                       {DRIVER_APP_LABELS[app][0]} {total.toFixed(0)}
                     </span>
                   )
                 })}
                 {shift.notes && (
-                  <span className="text-muted-foreground" aria-label="Tiene notas">
+                  <span className="text-zinc-300" aria-label="Tiene notas">
                     <MessageSquareText className="size-3.5" />
                   </span>
                 )}
@@ -128,18 +128,18 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
 
               {/* Fondo de mantenimiento */}
               {maintenance > 0 && (
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full tabular-nums border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400" title="Ahorro para mantenimiento (6% del neto)">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full tabular-nums border border-zinc-200 bg-zinc-100 text-zinc-600" title="Ahorro para mantenimiento (6% del neto)">
                   Fondo {maintenance.toFixed(0)}
                 </span>
               )}
 
               {/* Liquido */}
               <div className="text-right ml-auto shrink-0">
-                <p className="text-sm font-bold text-primary tabular-nums leading-none">
+                <p className="text-[15px] font-bold text-emerald-600 tabular-nums leading-none">
                   {liquid.toFixed(0)}
                 </p>
                 {pending > 0 && (
-                  <p className="text-xs text-muted-foreground tabular-nums mt-0.5">
+                  <p className="text-[11px] text-zinc-400 tabular-nums mt-0.5">
                     +{pending.toFixed(0)} pend.
                   </p>
                 )}
@@ -147,23 +147,23 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
 
               {/* Tendencia */}
               {trend != null && trend !== 0 && (
-                <div className={`hidden sm:flex items-center gap-1 text-xs font-bold shrink-0 ${trend > 0 ? 'text-primary' : 'text-destructive'}`}>
+                <div className={`hidden sm:flex items-center gap-1 text-[11px] font-semibold shrink-0 ${trend > 0 ? 'text-emerald-600' : 'text-zinc-400'}`}>
                   {trend > 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
                   <span className="tabular-nums">{Math.abs(trend).toFixed(0)}</span>
                 </div>
               )}
 
               {/* Actions — always visible on mobile, hover-reveal on desktop */}
-              <div className="flex items-center gap-1.5 shrink-0 ml-1 sm:ml-2">
+              <div className="flex items-center gap-1 shrink-0 ml-1 sm:ml-2">
                 {onEdit && (
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={(e) => handleEdit(e, shift)}
-                    className="size-9 rounded-xl bg-card dark:bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/20 shadow-sm sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
+                    className="size-8 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
                     aria-label="Editar turno"
                   >
-                    <Pencil className="size-4" />
+                    <Pencil className="size-3.5" />
                   </Button>
                 )}
                 <Button
@@ -171,13 +171,13 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
                   size="icon"
                   onClick={(e) => handleDeleteRequest(e, shift.id)}
                   disabled={deletingId === shift.id}
-                  className="size-9 rounded-xl bg-card dark:bg-card border border-border text-muted-foreground hover:text-destructive hover:border-destructive/30 hover:bg-destructive/5 shadow-sm sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
+                  className="size-8 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
                   aria-label="Eliminar turno"
                 >
                   {deletingId === shift.id ? (
-                    <span className="size-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+                    <span className="size-3.5 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin" />
                   ) : (
-                    <Trash2 className="size-4" />
+                    <Trash2 className="size-3.5" />
                   )}
                 </Button>
               </div>
@@ -187,16 +187,16 @@ export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps
       </div>
 
       <AlertDialog open={!!confirmId} onOpenChange={(o) => !o && setConfirmId(null)}>
-        <AlertDialogContent className="rounded-[22px]">
+        <AlertDialogContent className="rounded-[22px] border border-zinc-200 p-8">
           <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar turno?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-xl font-bold text-zinc-900 tracking-tight">Eliminar turno?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[13px] text-zinc-500 leading-relaxed">
               Se borraran las transacciones y el registro de km asociados. Esta accion no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} className="rounded-xl bg-destructive hover:bg-destructive/90">
+            <AlertDialogCancel className="rounded-lg border-zinc-200 text-zinc-700 hover:bg-zinc-50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white">
               Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -3,7 +3,7 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { TrendingUp, DollarSign, Clock, Route } from 'lucide-react'
 import { useDriverAnalytics } from '../hooks/useDriverAnalytics'
-import { formatBs, hoursToDuration, getAppLabel, getAppBadgeColor, parseLocalDate } from '../utils/driver-metrics.utils'
+import { formatBs, hoursToDuration, getAppLabel, APP_BADGE_CLASS, parseLocalDate } from '../utils/driver-metrics.utils'
 import type { MonthCycle } from '../hooks/useDriverShifts'
 
 export function ShiftAnalytics({ cycle }: { cycle?: MonthCycle }) {
@@ -11,28 +11,34 @@ export function ShiftAnalytics({ cycle }: { cycle?: MonthCycle }) {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-32 bg-secondary dark:bg-muted rounded-[22px]" />
-        <div className="h-48 bg-secondary dark:bg-muted rounded-[22px]" />
-        <div className="h-64 bg-secondary dark:bg-muted rounded-[22px]" />
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-zinc-100 rounded-xl animate-pulse" />
+          ))}
+        </div>
+        <div className="h-48 bg-zinc-100 rounded-[22px] animate-pulse" />
+        <div className="h-64 bg-zinc-100 rounded-[22px] animate-pulse" />
       </div>
     )
   }
 
   if (isError || !analytics) {
     return (
-      <div className="p-8 text-center rounded-xl border border-border bg-card dark:bg-card">
-        <p className="text-sm text-destructive font-medium">Error al cargar analytics</p>
+      <div className="p-8 text-center rounded-[22px] border border-zinc-200 bg-white">
+        <p className="text-[13px] font-medium text-zinc-900">Error al cargar analytics</p>
       </div>
     )
   }
 
   if (analytics.summary.shiftCount === 0) {
     return (
-      <div className="p-12 text-center border border-dashed border-border rounded-[22px] bg-card dark:bg-card">
-        <DollarSign className="size-8 text-muted-foreground mx-auto mb-3" />
-        <p className="text-sm font-semibold text-foreground">Cierra tu primer turno para ver analytics</p>
-        <p className="text-xs text-muted-foreground mt-1">Tus metricas apareceran aqui automaticamente.</p>
+      <div className="p-12 text-center border border-dashed border-zinc-200 rounded-[22px] bg-zinc-50/50">
+        <div className="size-11 rounded-xl bg-zinc-100 mx-auto mb-3 flex items-center justify-center">
+          <DollarSign className="size-5 text-zinc-400" />
+        </div>
+        <p className="text-[13px] font-semibold text-zinc-900">Cierra tu primer turno para ver analytics</p>
+        <p className="text-[11px] text-zinc-500 mt-1 max-w-[30ch] mx-auto leading-relaxed">Tus metricas apareceran aqui automaticamente.</p>
       </div>
     )
   }
@@ -55,84 +61,59 @@ export function ShiftAnalytics({ cycle }: { cycle?: MonthCycle }) {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Summary — 5 items -> 3+2 bento, sin huerfano */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <SummaryCard
-          icon={<DollarSign className="size-4" />}
+          icon={<DollarSign className="size-3.5" />}
           label="Neto liquido"
           value={formatBs(s.liquidEarnings)}
           sub={`Bs ${s.liquidBsPerHour.toFixed(1)}/h`}
-          color="emerald"
+          tone="positive"
         />
         <SummaryCard
-          icon={<TrendingUp className="size-4" />}
+          icon={<TrendingUp className="size-3.5" />}
           label="Bruto / hora"
           value={`Bs ${s.grossBsPerHour.toFixed(1)}/h`}
           sub={s.totalHours > 0 ? `${formatBs(s.grossEarnings)} total` : '-'}
-          color="neutral"
         />
         <SummaryCard
-          icon={<DollarSign className="size-4" />}
+          icon={<DollarSign className="size-3.5" />}
           label="Promedio / turno"
           value={formatBs(s.avgPerShift)}
           sub={`${s.shiftCount} turnos`}
-          color="emerald"
+          tone="positive"
         />
         <SummaryCard
-          icon={<Clock className="size-4" />}
+          icon={<Clock className="size-3.5" />}
           label="Horas"
           value={hoursToDuration(s.totalHours)}
           sub={`${s.shiftCount} turnos`}
-          color="neutral"
         />
         <SummaryCard
-          icon={<Route className="size-4" />}
+          icon={<Route className="size-3.5" />}
           label="Kilometros"
           value={`${s.totalKm.toFixed(0)} km`}
           sub={s.totalKm > 0 ? `${(s.liquidEarnings / s.totalKm).toFixed(2)} Bs/km` : '-'}
-          color="neutral"
         />
       </div>
 
-      {/* Desglose bruto — 2x2 con variacion tint vs flat */}
-      <div className="rounded-[22px] bg-card dark:bg-card border border-border p-6 shadow-sm"
-      >
-        <h3 className="text-xs font-semibold text-foreground mb-4">Desglose bruto</h3>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 text-center">
-          <div className="p-4 rounded-xl bg-secondary dark:bg-muted border border-border">
-            <p className="text-xs font-medium text-muted-foreground">Bruto total</p>
-            <p className="text-lg font-bold text-foreground tabular-nums mt-1">{formatBs(s.grossEarnings)}</p>
-            <p className="text-xs text-muted-foreground mt-1">Ingresos + bonos</p>
-          </div>
-          <div className="p-4 rounded-xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/20">
-            <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Pendiente</p>
-            <p className="text-lg font-bold text-amber-700 dark:text-amber-400 tabular-nums mt-1">{formatBs(s.pendingAmount)}</p>
-            <p className="text-xs text-amber-700/70 dark:text-amber-400/70 mt-1">En app</p>
-          </div>
-          <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
-            <p className="text-xs font-medium text-destructive">Comisiones</p>
-            <p className="text-lg font-bold text-destructive tabular-nums mt-1">{formatBs(s.totalCommissions)}</p>
-            <p className="text-xs text-destructive/70 mt-1">Descuento app</p>
-          </div>
-          <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
-            <p className="text-xs font-medium text-destructive">Gastos</p>
-            <p className="text-lg font-bold text-destructive tabular-nums mt-1">{formatBs(s.totalExpenses)}</p>
-            <p className="text-xs text-destructive/70 mt-1">Turno</p>
-          </div>
-          <div className="p-4 rounded-xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/20">
-            <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Fondo mant.</p>
-            <p className="text-lg font-bold text-amber-700 dark:text-amber-400 tabular-nums mt-1">{formatBs(s.totalMaintenance)}</p>
-            <p className="text-xs text-amber-700/70 dark:text-amber-400/70 mt-1">6% al fondo</p>
-          </div>
+      {/* Desglose bruto */}
+      <div className="rounded-[22px] bg-white border border-zinc-200 p-5 sm:p-6">
+        <h3 className="text-[13px] font-semibold text-zinc-900 tracking-tight mb-4">Desglose bruto</h3>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <BreakdownTile label="Bruto total" value={formatBs(s.grossEarnings)} hint="Ingresos + bonos" />
+          <BreakdownTile label="Pendiente" value={formatBs(s.pendingAmount)} hint="En app" />
+          <BreakdownTile label="Comisiones" value={formatBs(s.totalCommissions)} hint="Descuento app" negative />
+          <BreakdownTile label="Gastos" value={formatBs(s.totalExpenses)} hint="Turno" negative />
+          <BreakdownTile label="Fondo mant." value={formatBs(s.totalMaintenance)} hint="6% al fondo" negative />
         </div>
       </div>
 
       {/* Ingresos por App */}
-      <div className="rounded-[22px] bg-card dark:bg-card border border-border p-6 shadow-sm"
-      >
-        <h3 className="text-xs font-semibold text-foreground mb-4">Ingresos por app</h3>
-        <div className="space-y-4">
+      <div className="rounded-[22px] bg-white border border-zinc-200 p-5 sm:p-6">
+        <h3 className="text-[13px] font-semibold text-zinc-900 tracking-tight mb-4">Ingresos por app</h3>
+        <div className="space-y-3">
           {analytics.byApp.map((app) => {
             const cash = app.cash ?? 0
             const card = app.card ?? 0
@@ -141,29 +122,29 @@ export function ShiftAnalytics({ cycle }: { cycle?: MonthCycle }) {
             const commissions = app.commissions ?? 0
             const totalEarned = cash + card + qr
             return (
-              <div key={app.app} className="space-y-2 rounded-xl border border-border p-3 bg-card dark:bg-card">
+              <div key={app.app} className="space-y-2 rounded-xl border border-zinc-200 p-3 bg-zinc-50">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full border shrink-0 ${getAppBadgeColor(app.app)}`}>
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${APP_BADGE_CLASS}`}>
                       {getAppLabel(app.app)}
                     </span>
-                    <span className="text-xs text-muted-foreground truncate">
+                    <span className="text-[11px] text-zinc-400 truncate tabular-nums">
                       {[cash > 0 && `Efec ${cash.toFixed(0)}`, card > 0 && `Tarj ${card.toFixed(0)}`, qr > 0 && `QR ${qr.toFixed(0)}`].filter(Boolean).join(' · ')}
                     </span>
                   </div>
-                  <span className="font-bold tabular-nums text-foreground shrink-0 text-sm">
+                  <span className="font-bold tabular-nums text-zinc-900 shrink-0 text-[15px]">
                     {formatBs(totalEarned)}
                   </span>
                 </div>
                 {(bonuses > 0 || commissions > 0) && (
-                  <div className="flex gap-3 text-xs text-muted-foreground">
-                    {bonuses > 0 && <span>Bonos {formatBs(bonuses)}</span>}
-                    {commissions > 0 && <span className="text-destructive">Comis {formatBs(commissions)}</span>}
+                  <div className="flex gap-3 text-[11px] text-zinc-500 tabular-nums">
+                    {bonuses > 0 && <span>Bonos +{formatBs(bonuses)}</span>}
+                    {commissions > 0 && <span>Comis −{formatBs(commissions)}</span>}
                   </div>
                 )}
-                <div className="h-1.5 rounded-full bg-muted dark:bg-muted overflow-hidden">
+                <div className="h-1.5 rounded-full bg-zinc-200 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-primary transition-all duration-500"
+                    className="h-full rounded-full bg-emerald-600 transition-all duration-500"
                     style={{ width: `${Math.min((totalEarned / (Math.max(...analytics.byApp.map(a => (a.cash ?? 0) + (a.card ?? 0) + (a.qr ?? 0)), 1))) * 100, 100)}%` }}
                   />
                 </div>
@@ -174,28 +155,43 @@ export function ShiftAnalytics({ cycle }: { cycle?: MonthCycle }) {
       </div>
 
       {analytics.dailyTrend.length > 0 && (
-        <div className="rounded-[22px] bg-card dark:bg-card border border-border p-6 shadow-sm"
-        >
-          <h3 className="text-xs font-semibold text-foreground mb-4">Evolucion diaria — neto liquido</h3>
+        <div className="rounded-[22px] bg-white border border-zinc-200 p-5 sm:p-6">
+          <h3 className="text-[13px] font-semibold text-zinc-900 tracking-tight mb-1">Evolucion diaria</h3>
+          <p className="text-[11px] text-zinc-500 mb-4">Neto liquido por dia</p>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analytics.dailyTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" stroke="currentColor" />
+                <CartesianGrid stroke="#F4F4F5" vertical={false} />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: '#A1A1AA' }}
                   tickFormatter={(val) => {
                     const d = parseLocalDate(val)
                     return d.toLocaleDateString('es-BO', { weekday: 'short' }).replace('.', '').charAt(0).toUpperCase()
                   }}
                 />
-                <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: '#A1A1AA' }}
+                />
                 <Tooltip
-                  contentStyle={{ borderRadius: '12px', border: '1px solid hsl(var(--border))', fontSize: '12px', background: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
+                  cursor={{ fill: '#FAFAFA' }}
+                  contentStyle={{
+                    borderRadius: '12px',
+                    border: '1px solid #E4E4E7',
+                    fontSize: '12px',
+                    background: '#FFFFFF',
+                    boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+                  }}
+                  labelStyle={{ color: '#71717A' }}
+                  itemStyle={{ color: '#18181B' }}
                   formatter={(value: number) => [formatBs(value ?? 0), 'Neto liquido']}
                   labelFormatter={(label) => parseLocalDate(label).toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'short' })}
                 />
-                <Bar dataKey="liquidEarnings" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="liquidEarnings" fill="#059669" radius={[3, 3, 0, 0]} maxBarSize={28} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -206,27 +202,36 @@ export function ShiftAnalytics({ cycle }: { cycle?: MonthCycle }) {
 }
 
 function SummaryCard({
-  icon, label, value, sub, color,
+  icon, label, value, sub, tone,
 }: {
   icon: React.ReactNode
   label: string
   value: string
   sub: string
-  color: 'emerald' | 'neutral'
+  tone?: 'positive'
 }) {
-  const colorMap = {
-    emerald: 'bg-secondary dark:bg-secondary border-border text-primary',
-    neutral: 'bg-card dark:bg-card border-border text-foreground',
-  }
+  const positive = tone === 'positive'
 
   return (
-    <div className={`rounded-xl border p-4 space-y-2 ${colorMap[color]}`}>
-      <div className="flex items-center gap-2">
-        {icon}
-        <span className="text-xs font-semibold opacity-70">{label}</span>
+    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <span className={positive ? 'text-emerald-600' : 'text-zinc-400'}>{icon}</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">{label}</span>
       </div>
-      <p className="text-lg font-bold tabular-nums tracking-tight leading-none">{value}</p>
-      <p className="text-xs font-medium opacity-60 tabular-nums">{sub}</p>
+      <p className="text-lg font-bold tabular-nums tracking-tight leading-none text-zinc-900">{value}</p>
+      <p className="text-[11px] font-medium text-zinc-400 tabular-nums">{sub}</p>
+    </div>
+  )
+}
+
+function BreakdownTile({ label, value, hint, negative }: { label: string; value: string; hint: string; negative?: boolean }) {
+  return (
+    <div className={`p-4 rounded-xl border ${negative ? 'bg-zinc-900/[0.04] border-zinc-200' : 'bg-zinc-50 border-zinc-200'}`}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">{label}</p>
+      <p className="text-lg font-bold text-zinc-900 tabular-nums mt-1">
+        {negative && value !== 'Bs 0.00' ? '−' : ''}{value}
+      </p>
+      <p className="text-[11px] text-zinc-400 mt-1">{hint}</p>
     </div>
   )
 }

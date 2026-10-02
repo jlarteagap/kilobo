@@ -14,28 +14,26 @@ export function DashboardSummary({ shifts }: DashboardSummaryProps) {
   const { today, week, month } = useShiftPeriodStats(shifts)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <MiniCard
           icon={<DollarSign className="size-3.5 shrink-0" />}
           label="Hoy"
           value={formatBs(today.liquid)}
           sub={today.maintenance > 0 ? `${formatBs(today.maintenance)} mant.` : undefined}
-          color="emerald"
+          tone="positive"
         />
         <MiniCard
           icon={<CalendarRange className="size-3.5 shrink-0" />}
           label="Esta semana"
           value={formatBs(week.liquid)}
           sub={week.hours > 0 ? `Bs ${(week.liquid / week.hours).toFixed(1)}/h` : undefined}
-          color="accent"
         />
         <MiniCard
           icon={<TrendingUp className="size-3.5 shrink-0" />}
           label="Este mes"
           value={formatBs(month.liquid)}
           sub={month.maintenance > 0 ? `${formatBs(month.maintenance)} fondo` : undefined}
-          color="neutral"
         />
       </div>
 
@@ -45,28 +43,26 @@ export function DashboardSummary({ shifts }: DashboardSummaryProps) {
 }
 
 function MiniCard({
-  icon, label, value, sub, color,
+  icon, label, value, sub, tone,
 }: {
   icon: React.ReactNode
   label: string
   value: string
   sub?: string
-  color: 'emerald' | 'accent' | 'neutral'
+  tone?: 'positive'
 }) {
-  const colors = {
-    emerald: 'bg-card dark:bg-card border-border text-primary dark:text-primary border',
-    accent: 'bg-secondary dark:bg-secondary border-border text-secondary-foreground dark:text-secondary-foreground border',
-    neutral: 'bg-card-soft dark:bg-muted border-border text-tint-sage dark:text-muted-foreground border',
-  }
+  const positive = tone === 'positive'
 
   return (
-    <div className={`rounded-xl border p-3 sm:p-4 space-y-1.5 ${colors[color]}`}>
+    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3.5 sm:p-4 space-y-1.5">
       <div className="flex items-center gap-1.5">
-        {icon}
-        <span className="text-xs font-semibold tracking-tight opacity-70">{label}</span>
+        <span className={positive ? 'text-emerald-600' : 'text-zinc-400'}>{icon}</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">{label}</span>
       </div>
-      <p className="text-base sm:text-lg font-bold tabular-nums tracking-tight leading-none">{value}</p>
-      {sub && <p className="text-[11px] font-medium opacity-60 tabular-nums">{sub}</p>}
+      <p className="text-[17px] sm:text-lg font-bold tabular-nums tracking-tight leading-none text-zinc-900">
+        {value}
+      </p>
+      {sub && <p className="text-[11px] font-medium text-zinc-400 tabular-nums">{sub}</p>}
     </div>
   )
 }

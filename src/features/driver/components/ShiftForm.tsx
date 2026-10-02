@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import type { DriverApp, PaymentMethod, ExpenseType, DriverExpense, DriverShift, ShiftInput, TipsByMethod, ShiftMetrics } from '@/types/driver'
 import { DRIVER_APPS, DRIVER_APP_LABELS, PAYMENT_METHOD_LABELS, EXPENSE_TYPE_LABELS, EXPENSE_TYPES, emptyTips, computeShiftMetrics } from '@/types/driver'
-import { isoToLocalDateStr, getAppBadgeColor } from '../utils/driver-metrics.utils'
+import { isoToLocalDateStr, APP_BADGE_CLASS } from '../utils/driver-metrics.utils'
 
 interface ShiftFormProps {
   isPending: boolean
@@ -54,6 +54,47 @@ function shiftToInput(s: DriverShift): ShiftInput {
     expenses: s.expenses,
     notes: s.notes,
   }
+}
+
+// ─── Helpers de campos ─────────────────────────────────────────────────────────
+const fieldClass =
+  'h-11 bg-white border-zinc-200 rounded-xl text-sm text-zinc-900 focus-visible:ring-zinc-400/30'
+
+function FieldLabel({ htmlFor, children }: { htmlFor?: string; children: React.ReactNode }) {
+  return (
+    <Label
+      htmlFor={htmlFor}
+      className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500"
+    >
+      {children}
+    </Label>
+  )
+}
+
+function AmountField({
+  id, label, value, onChange,
+}: {
+  id: string
+  label: string
+  value: string | number
+  onChange: (value: string) => void
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className="text-[11px] font-medium text-zinc-500">{label}</Label>
+      <Input
+        id={id}
+        type="number"
+        inputMode="decimal"
+        step="0.01"
+        min="0"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="0.00"
+        className={`${fieldClass} font-semibold tabular-nums`}
+      />
+    </div>
+  )
 }
 
 export function ShiftForm({
@@ -165,23 +206,29 @@ export function ShiftForm({
 
   const isEditMode = !!initialData?.id
 
-  return (
-    <div className="rounded-[22px] bg-card dark:bg-card border border-border p-4 sm:p-6 space-y-6 shadow-sm"
+return (
+    <div className="rounded-[22px] bg-white border border-zinc-200 p-5 sm:p-6 space-y-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="size-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shrink-0">
-            <Receipt className="size-5" />
+          <div className="size-9 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-600 shrink-0">
+            <Receipt className="size-4" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm font-bold text-foreground tracking-tight leading-none">
+            <h3 className="text-[13px] font-semibold text-zinc-900 tracking-tight leading-none">
               {isEditMode ? 'Editar turno' : 'Registrar turno'}
             </h3>
-            <p className="text-xs text-muted-foreground mt-1">Al final del dia</p>
+            <p className="text-[11px] text-zinc-500 mt-1">Al final del dia</p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={onCancel} className="size-9 rounded-xl text-muted-foreground shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onCancel}
+          className="size-8 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 shrink-0"
+          aria-label="Cancelar"
+        >
           <X className="size-4" />
         </Button>
       </div>
@@ -190,7 +237,7 @@ export function ShiftForm({
         {/* Fecha + Horas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="shift-date" className="text-xs font-semibold text-foreground">Fecha</Label>
+            <FieldLabel htmlFor="shift-date">Fecha</FieldLabel>
             <Input
               id="shift-date"
               type="date"
@@ -198,11 +245,11 @@ export function ShiftForm({
               max={localDateStr(new Date())}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="h-11 bg-card dark:bg-card border-input rounded-xl text-sm font-medium focus-visible:ring-primary/30"
+              className={fieldClass}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="shift-hours" className="text-xs font-semibold text-foreground">Horas trabajadas</Label>
+            <FieldLabel htmlFor="shift-hours">Horas trabajadas</FieldLabel>
             <Input
               id="shift-hours"
               type="number"
@@ -213,14 +260,14 @@ export function ShiftForm({
               onChange={(e) => setHoursWorked(e.target.value)}
               placeholder="Ej: 8"
               required
-              className="h-11 bg-card dark:bg-card border-input rounded-xl text-sm font-medium tabular-nums focus-visible:ring-primary/30"
+              className={`${fieldClass} tabular-nums`}
             />
           </div>
         </div>
 
         {/* Odometro */}
-        <div className="space-y-3 rounded-xl border border-border bg-zinc-50 p-4">
-          <Label className="text-xs font-semibold text-foreground">Odometro (ultimos 3 digitos)</Label>
+        <div className="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+          <FieldLabel>Odometro (ultimos 3 digitos)</FieldLabel>
           <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
             <div className="space-y-1">
               <Input
@@ -235,11 +282,11 @@ export function ShiftForm({
                 }}
                 placeholder="Inicio"
                 aria-label="Odometro inicio"
-                className="h-11 bg-card dark:bg-card border-input rounded-xl text-xl font-light tabular-nums text-center focus-visible:ring-primary/30"
+                className={`${fieldClass} text-xl font-light tabular-nums text-center`}
               />
-              <p className="text-xs text-muted-foreground text-center">Inicio</p>
+              <p className="text-[11px] text-zinc-400 text-center">Inicio</p>
             </div>
-            <span className="text-muted-foreground/60 text-lg pb-6" aria-hidden>-</span>
+            <span className="text-zinc-300 text-lg pb-6" aria-hidden>-</span>
             <div className="space-y-1">
               <Input
                 id="shift-endKm"
@@ -253,13 +300,13 @@ export function ShiftForm({
                 }}
                 placeholder="Fin"
                 aria-label="Odometro fin"
-                className="h-11 bg-card dark:bg-card border-input rounded-xl text-xl font-light tabular-nums text-center focus-visible:ring-primary/30"
+                className={`${fieldClass} text-xl font-light tabular-nums text-center`}
               />
-              <p className="text-xs text-muted-foreground text-center">Fin</p>
+              <p className="text-[11px] text-zinc-400 text-center">Fin</p>
             </div>
           </div>
           {kmPreview != null && (
-            <p className="text-xs text-primary font-semibold text-center">
+            <p className="text-[11px] font-semibold text-emerald-600 text-center tabular-nums">
               +{kmPreview} km recorridos
             </p>
           )}
@@ -267,21 +314,20 @@ export function ShiftForm({
 
         {/* Ingresos por app — Tabs */}
         <div className="space-y-3">
-          <Label className="text-xs font-semibold text-foreground">Ingresos por app</Label>
+          <FieldLabel>Ingresos por app</FieldLabel>
           <Tabs value={activeApp} onValueChange={(v) => setActiveApp(v as DriverApp)} className="w-full">
-            <TabsList className="w-full justify-start h-auto p-1 bg-muted dark:bg-muted rounded-xl gap-1">
+            <TabsList className="w-full justify-start h-auto p-1 bg-zinc-100 rounded-xl gap-1">
               {DRIVER_APPS.map((app) => {
                 const total = appTotals[app]
                 return (
                   <TabsTrigger
                     key={app}
                     value={app}
-                    className="flex-1 min-w-0 gap-2 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card"
+                    className="flex-1 min-w-0 gap-2 rounded-lg text-zinc-500 data-[state=active]:bg-white data-[state=active]:text-zinc-900 data-[state=active]:shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
                   >
-                    <span className={`size-2 rounded-full shrink-0 ${getAppBadgeColor(app).includes('uber') ? 'bg-driver-uber-fg' : getAppBadgeColor(app).includes('yango') ? 'bg-driver-yango-fg' : 'bg-driver-indrive-fg'}`} aria-hidden />
-                    <span className="truncate text-xs font-bold">{DRIVER_APP_LABELS[app]}</span>
+                    <span className="truncate text-[13px] font-semibold">{DRIVER_APP_LABELS[app]}</span>
                     {total > 0 && (
-                      <span className="hidden sm:inline text-[11px] font-medium tabular-nums opacity-70">{total.toFixed(0)}</span>
+                      <span className="hidden sm:inline text-[11px] font-medium tabular-nums opacity-60">{total.toFixed(0)}</span>
                     )}
                   </TabsTrigger>
                 )
@@ -289,118 +335,27 @@ export function ShiftForm({
             </TabsList>
 
             {DRIVER_APPS.map((app) => (
-              <TabsContent key={app} value={app} className="mt-3 space-y-3 rounded-xl border border-border bg-card dark:bg-card p-4">
+              <TabsContent key={app} value={app} className="mt-3 space-y-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${getAppBadgeColor(app)}`}>
+                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${APP_BADGE_CLASS}`}>
                     {DRIVER_APP_LABELS[app]}
                   </span>
-                  <span className="text-xs text-muted-foreground tabular-nums">
+                  <span className="text-[11px] text-zinc-500 tabular-nums">
                     {(earnings[app].CASH + earnings[app].CARD + earnings[app].QR + bonuses[app] + (tips[app]?.CASH ?? 0) + (tips[app]?.QR ?? 0)).toFixed(0)} Bs bruto
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${app}-CASH`} className="text-xs font-medium text-muted-foreground">Efectivo</Label>
-                    <Input
-                      id={`${app}-CASH`}
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      min="0"
-                      value={earnings[app].CASH || ''}
-                      onChange={(e) => updateEarnings(app, 'CASH', e.target.value)}
-                      placeholder="0.00"
-                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${app}-CARD`} className="text-xs font-medium text-muted-foreground">Tarjeta</Label>
-                    <Input
-                      id={`${app}-CARD`}
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      min="0"
-                      value={earnings[app].CARD || ''}
-                      onChange={(e) => updateEarnings(app, 'CARD', e.target.value)}
-                      placeholder="0.00"
-                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${app}-QR`} className="text-xs font-medium text-muted-foreground">QR</Label>
-                    <Input
-                      id={`${app}-QR`}
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      min="0"
-                      value={earnings[app].QR || ''}
-                      onChange={(e) => updateEarnings(app, 'QR', e.target.value)}
-                      placeholder="0.00"
-                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
-                    />
-                  </div>
+                  <AmountField id={`${app}-CASH`} label="Efectivo" value={earnings[app].CASH || ''} onChange={(v) => updateEarnings(app, 'CASH', v)} />
+                  <AmountField id={`${app}-CARD`} label="Tarjeta" value={earnings[app].CARD || ''} onChange={(v) => updateEarnings(app, 'CARD', v)} />
+                  <AmountField id={`${app}-QR`} label="QR" value={earnings[app].QR || ''} onChange={(v) => updateEarnings(app, 'QR', v)} />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1 border-t border-border mt-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${app}-TIP-CASH`} className="text-xs font-medium text-muted-foreground">Propinas efectivo</Label>
-                    <Input
-                      id={`${app}-TIP-CASH`}
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      min="0"
-                      value={tips[app]?.CASH || ''}
-                      onChange={(e) => updateTips(app, 'CASH', e.target.value)}
-                      placeholder="0.00"
-                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${app}-TIP-QR`} className="text-xs font-medium text-muted-foreground">Propinas QR</Label>
-                    <Input
-                      id={`${app}-TIP-QR`}
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      min="0"
-                      value={tips[app]?.QR || ''}
-                      onChange={(e) => updateTips(app, 'QR', e.target.value)}
-                      placeholder="0.00"
-                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${app}-BONUS`} className="text-xs font-medium text-muted-foreground">Bonos</Label>
-                    <Input
-                      id={`${app}-BONUS`}
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      min="0"
-                      value={bonuses[app] || ''}
-                      onChange={(e) => updateBonuses(app, e.target.value)}
-                      placeholder="0.00"
-                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`${app}-COMM`} className="text-xs font-medium text-muted-foreground">Comision app</Label>
-                    <Input
-                      id={`${app}-COMM`}
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      min="0"
-                      value={commissions[app] || ''}
-                      onChange={(e) => updateCommissions(app, e.target.value)}
-                      placeholder="0.00"
-                      className="h-11 rounded-xl border-input bg-card dark:bg-card text-sm font-semibold tabular-nums focus-visible:ring-primary/30"
-                    />
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-3 border-t border-zinc-200">
+                  <AmountField id={`${app}-TIP-CASH`} label="Propinas efectivo" value={tips[app]?.CASH || ''} onChange={(v) => updateTips(app, 'CASH', v)} />
+                  <AmountField id={`${app}-TIP-QR`} label="Propinas QR" value={tips[app]?.QR || ''} onChange={(v) => updateTips(app, 'QR', v)} />
+                  <AmountField id={`${app}-BONUS`} label="Bonos" value={bonuses[app] || ''} onChange={(v) => updateBonuses(app, v)} />
+                  <AmountField id={`${app}-COMM`} label="Comision app" value={commissions[app] || ''} onChange={(v) => updateCommissions(app, v)} />
                 </div>
               </TabsContent>
             ))}
@@ -408,15 +363,15 @@ export function ShiftForm({
         </div>
 
         {/* Gastos */}
-        <div className="space-y-3 rounded-xl border border-border bg-card dark:bg-card p-4">
+        <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4">
           <div className="flex items-center justify-between gap-4">
-            <Label className="text-xs font-semibold text-foreground">Gastos del turno</Label>
+            <FieldLabel>Gastos del turno</FieldLabel>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={addExpense}
-              className="h-8 rounded-xl text-xs font-bold border-border"
+              className="h-8 rounded-lg text-[11px] font-bold border-zinc-200 text-zinc-700 hover:bg-zinc-50"
             >
               <Plus className="size-3 mr-1" />
               Agregar
@@ -424,7 +379,7 @@ export function ShiftForm({
           </div>
 
           {expenses.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-3">Sin gastos registrados</p>
+            <p className="text-[11px] text-zinc-400 text-center py-3">Sin gastos registrados</p>
           )}
 
           <div className="space-y-3">
@@ -441,13 +396,13 @@ export function ShiftForm({
 
         {/* Notas */}
         <div className="space-y-2">
-          <Label htmlFor="shift-notes" className="text-xs font-semibold text-foreground">Notas</Label>
+          <FieldLabel htmlFor="shift-notes">Notas</FieldLabel>
           <Input
             id="shift-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Lluvia, trafico, eventos..."
-            className="h-11 bg-card dark:bg-card border-input rounded-xl text-sm focus-visible:ring-primary/30"
+            className={fieldClass}
           />
         </div>
 
@@ -456,15 +411,23 @@ export function ShiftForm({
 
         {/* Acciones */}
         <div className="flex gap-3 pt-2">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}
-            className="flex-1 h-11 rounded-xl border-border text-muted-foreground font-semibold">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isPending}
+            className="flex-1 h-11 rounded-lg border-zinc-200 text-zinc-600 font-semibold hover:bg-zinc-50"
+          >
             Cancelar
           </Button>
-          <Button type="submit" disabled={isPending || (totals.grossEarnings === 0 && totals.totalExpenses === 0)}
-            className="flex-1 h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm active:scale-[0.98] transition-all">
+          <Button
+            type="submit"
+            disabled={isPending || (totals.grossEarnings === 0 && totals.totalExpenses === 0)}
+            className="flex-1 h-11 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold active:scale-[0.98] transition-all"
+          >
             {isPending ? (
               <span className="flex items-center gap-2">
-                <span className="size-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Guardando...
               </span>
             ) : (
@@ -494,7 +457,7 @@ function ExpenseRow({
       <select
         value={expense.type}
         onChange={(e) => onChange('type', e.target.value)}
-        className="h-11 rounded-xl bg-card dark:bg-card border border-input text-sm font-medium px-3 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary flex-1 min-w-0"
+        className="h-11 rounded-xl bg-white border border-zinc-200 text-sm text-zinc-900 px-3 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-300 flex-1 min-w-0"
       >
         {EXPENSE_TYPES.map((t) => (
           <option key={t} value={t}>{EXPENSE_TYPE_LABELS[t]}</option>
@@ -509,19 +472,25 @@ function ExpenseRow({
         onChange={(e) => onChange('amount', e.target.value)}
         placeholder="Monto"
         aria-label="Monto gasto"
-        className="h-11 bg-card dark:bg-card border-input rounded-xl text-sm font-semibold tabular-nums sm:w-28 focus-visible:ring-primary/30"
+        className={`${fieldClass} font-semibold tabular-nums sm:w-28`}
       />
       <select
         value={expense.paymentMethod}
         onChange={(e) => onChange('paymentMethod', e.target.value)}
-        className="h-11 rounded-xl bg-card dark:bg-card border border-input text-sm font-medium px-3 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary sm:w-28"
+        className="h-11 rounded-xl bg-white border border-zinc-200 text-sm text-zinc-900 px-3 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-300 sm:w-28"
       >
         {(['CASH', 'QR'] as PaymentMethod[]).map((m) => (
           <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m]}</option>
         ))}
       </select>
-      <Button type="button" variant="ghost" size="icon" onClick={onRemove}
-        className="size-11 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 self-end sm:self-center">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={onRemove}
+        className="size-11 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 shrink-0 self-end sm:self-center"
+        aria-label="Quitar gasto"
+      >
         <Trash2 className="size-4" />
       </Button>
     </div>
@@ -533,47 +502,47 @@ function SummaryCard({ totals, hoursWorked }: {
   totals: ShiftMetrics
   hoursWorked: number
 }) {
-  if (totals.grossEarnings === 0 && totals.totalExpenses === 0) return null
+if (totals.grossEarnings === 0 && totals.totalExpenses === 0) return null
 
   return (
-    <div className="rounded-xl bg-secondary/60 dark:bg-muted/60 border border-border p-4 space-y-3 text-[13px]">
-      <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+    <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-4 space-y-3 text-[13px]">
+      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">
         <Receipt className="size-3.5" />
         Resumen
       </div>
 
       <div className="space-y-1.5">
-        <Row label="Efectivo" value={totals.totalCash} color="text-primary" />
-        <Row label="Tarjeta" value={totals.totalCard} color="text-driver-uber-fg" />
-        <Row label="QR" value={totals.totalQr} color="text-driver-indrive-fg" />
-        <Row label="Bonos" value={totals.totalBonuses} color="text-amber-600 dark:text-amber-400" />
-        <Row label="Propinas efectivo" value={totals.totalCashTips} color="text-amber-600 dark:text-amber-400" />
-        <Row label="Propinas QR" value={totals.totalQrTips} color="text-amber-600 dark:text-amber-400" />
-        <div className="border-t border-border pt-2 mt-2">
-          <Row label="Total bruto" value={totals.grossEarnings} color="text-foreground font-bold" />
+        <Row label="Efectivo" value={totals.totalCash} />
+        <Row label="Tarjeta" value={totals.totalCard} />
+        <Row label="QR" value={totals.totalQr} />
+        <Row label="Bonos" value={totals.totalBonuses} />
+        <Row label="Propinas efectivo" value={totals.totalCashTips} />
+        <Row label="Propinas QR" value={totals.totalQrTips} />
+        <div className="border-t border-zinc-200 pt-2 mt-2">
+          <Row label="Total bruto" value={totals.grossEarnings} strong />
         </div>
-        <Row label="Pendiente en app (tarjeta + bonos)" value={-totals.pendingAmount} color="text-muted-foreground" />
-        <Row label="Comisiones" value={-totals.totalCommissions} color="text-destructive" />
-        <Row label="Gastos" value={-totals.totalExpenses} color="text-destructive" />
-        <Row label="Fondo mantenimiento 6%" value={-totals.maintenanceReserve} color="text-muted-foreground" />
+        <Row label="Pendiente en app (tarjeta + bonos)" value={-totals.pendingAmount} />
+        <Row label="Comisiones" value={-totals.totalCommissions} />
+        <Row label="Gastos" value={-totals.totalExpenses} />
+        <Row label="Fondo mantenimiento 6%" value={-totals.maintenanceReserve} />
       </div>
 
       {totals.preMaintenanceLiquid > 0 && !totals.qualifiesForMaintenance && (
-        <p className="text-[11px] leading-relaxed text-muted-foreground">
+        <p className="text-[11px] leading-relaxed text-zinc-400">
           Este turno retiene {Math.round(totals.margin * 100)}% de lo bruto, as&iacute; que no se
           aparta nada al fondo de mantenimiento.
         </p>
       )}
 
-      <div className="border-t-2 border-border pt-3 flex justify-between items-center gap-4">
-        <span className="text-xs font-bold text-muted-foreground">Neto liquido</span>
-        <span className={`text-base font-bold tabular-nums ${totals.liquidEarnings >= 0 ? 'text-primary' : 'text-destructive'}`}>
+      <div className="border-t border-zinc-200 pt-3 flex justify-between items-center gap-4">
+        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">Neto liquido</span>
+        <span className={`text-lg font-bold tabular-nums tracking-tight ${totals.liquidEarnings >= 0 ? 'text-emerald-600' : 'text-zinc-900'}`}>
           Bs {totals.liquidEarnings.toFixed(2)}
         </span>
       </div>
 
       {hoursWorked > 0 && (
-        <p className="text-xs text-muted-foreground text-right tabular-nums">
+        <p className="text-[11px] text-zinc-400 text-right tabular-nums">
           {totals.liquidEarnings / hoursWorked > 0
             ? `Bs ${(totals.liquidEarnings / hoursWorked).toFixed(2)}/hora`
             : `Bs 0.00/hora`}
@@ -583,13 +552,13 @@ function SummaryCard({ totals, hoursWorked }: {
   )
 }
 
-function Row({ label, value, color }: { label: string; value: number; color: string }) {
+function Row({ label, value, strong }: { label: string; value: number; strong?: boolean }) {
   if (value === 0) return null
   return (
     <div className="flex justify-between items-center gap-4">
-      <span className="text-muted-foreground text-xs">{label}</span>
-      <span className={`tabular-nums font-semibold text-sm ${color}`}>
-        {value > 0 ? '+' : ''}{value.toFixed(2)}
+      <span className="text-zinc-500 text-[11px]">{label}</span>
+      <span className={`tabular-nums text-[13px] ${strong ? 'font-bold text-zinc-900' : 'font-semibold text-zinc-900'}`}>
+        {value > 0 ? '+' : '−'}{Math.abs(value).toFixed(2)}
       </span>
     </div>
   )

@@ -8,10 +8,21 @@ import { formatCurrency } from '@/features/accounts/utils/account-display.utils'
 import { useProjects } from '@/features/projects/hooks/useProjects'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Settings, ArrowLeft } from 'lucide-react'
+import { ArrowLeft, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import type { DriverConfig } from '@/types/driver'
 import { DEFAULT_SUBTYPE_MAPPING } from '@/types/driver'
+
+function SectionLabel({ htmlFor, children }: { htmlFor?: string; children: React.ReactNode }) {
+  return (
+    <Label
+      htmlFor={htmlFor}
+      className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500"
+    >
+      {children}
+    </Label>
+  )
+}
 
 export default function DriverSettingsPage() {
   const { data: config, isLoading: loadingConfig } = useDriverConfig()
@@ -66,9 +77,9 @@ export default function DriverSettingsPage() {
   if (loadingConfig) {
     return (
       <AppLayout>
-        <div className="max-w-2xl mx-auto px-4 py-8 space-y-6 animate-pulse">
-          <div className="h-8 w-48 bg-secondary dark:bg-muted rounded-xl" />
-          <div className="h-96 bg-secondary dark:bg-muted rounded-[22px]" />
+        <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+          <div className="h-7 w-40 bg-zinc-100 rounded-lg animate-pulse" />
+          <div className="h-96 bg-zinc-100 rounded-[22px] animate-pulse" />
         </div>
       </AppLayout>
     )
@@ -76,20 +87,22 @@ export default function DriverSettingsPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="size-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-sm shrink-0">
-              <Settings className="size-5" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-2xl font-black text-foreground tracking-tight leading-none">Configuracion</h1>
-              <p className="text-xs text-muted-foreground font-medium mt-1">Se configura una vez y se usa siempre</p>
-            </div>
+          <div className="space-y-0.5 min-w-0">
+            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">
+              Configuracion
+            </h1>
+            <p className="text-xs font-medium text-zinc-500">
+              Se configura una vez y se usa siempre
+            </p>
           </div>
-          <Link href="/conductor">
-            <Button variant="outline" className="h-9 px-4 rounded-xl text-xs font-bold border-border shrink-0">
+          <Link href="/conductor" className="shrink-0">
+            <Button
+              variant="outline"
+              className="h-9 px-4 rounded-lg text-xs font-bold border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+            >
               <ArrowLeft className="size-3.5 mr-1.5" />
               Volver
             </Button>
@@ -97,23 +110,24 @@ export default function DriverSettingsPage() {
         </div>
 
         {!config && (
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
-            <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+          <div className="p-4 rounded-[22px] bg-zinc-50 border border-zinc-200 flex items-start gap-2.5">
+            <AlertTriangle className="size-4 text-zinc-600 shrink-0 mt-px" />
+            <p className="text-[13px] font-semibold text-zinc-900 leading-relaxed">
               Configura esto antes de cerrar tu primer turno
             </p>
           </div>
         )}
 
-        <div className="rounded-[22px] bg-card dark:bg-card border border-border p-6 space-y-6 shadow-sm"
+        <div className="rounded-[22px] bg-white border border-zinc-200 p-6 space-y-6"
         >
           {/* Actividad */}
           <div className="space-y-2">
-            <Label htmlFor="driver-project" className="text-xs font-semibold text-foreground">Actividad</Label>
+            <SectionLabel htmlFor="driver-project">Actividad</SectionLabel>
             <select
               id="driver-project"
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              className="flex h-11 w-full rounded-xl border border-input bg-card dark:bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-colors"
+              className="flex h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-300 transition-colors"
             >
               <option value="">Seleccionar actividad</option>
               {activeProjects.length === 0 ? (
@@ -127,28 +141,28 @@ export default function DriverSettingsPage() {
               )}
             </select>
             {activeProjects.length === 0 && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+              <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">
                 Crea una actividad en{' '}
-                <Link href="/accounts" className="underline">Cuentas - Actividades</Link> primero
+                <Link href="/accounts" className="underline underline-offset-2">Cuentas - Actividades</Link> primero
               </p>
             )}
-            <p className="text-xs text-muted-foreground">Ej: &quot;Conductor de apps&quot;</p>
+            <p className="text-[11px] text-zinc-400">Ej: &quot;Conductor de apps&quot;</p>
           </div>
 
           {selectedProject && (
-            <div className="rounded-xl bg-secondary dark:bg-muted border border-border p-4 space-y-2">
-              <p className="text-xs font-semibold text-foreground">Subtipos</p>
+            <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-4 space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">Subtipos</p>
               <div className="flex flex-wrap gap-1.5">
                 {selectedProject.subtypes.map((st) => (
                   <span
                     key={st}
-                    className="text-xs font-medium px-2.5 py-1 rounded-full bg-card dark:bg-card border border-border text-foreground"
+                    className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white border border-zinc-200 text-zinc-700"
                   >
                     {st}
                   </span>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
                 Se asignan automaticamente al cerrar turno segun la app y el tipo de gasto
               </p>
             </div>
@@ -156,7 +170,7 @@ export default function DriverSettingsPage() {
 
           {/* Cuentas destino */}
           <div className="space-y-4">
-            <p className="text-xs font-semibold text-foreground">Cuentas destino</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">Cuentas destino</p>
 
             {[
               { id: 'incomeCash', label: 'Efectivo (ingresos liquidos)', value: incomeCashAccountId, setter: setIncomeCashAccountId },
@@ -167,12 +181,12 @@ export default function DriverSettingsPage() {
               { id: 'bonusDeposit', label: 'Bonos (deposito de la app)', value: bonusDepositAccountId, setter: setBonusDepositAccountId },
             ].map((f) => (
               <div key={f.id} className="space-y-2">
-                <Label htmlFor={f.id} className="text-xs font-medium text-foreground">{f.label}</Label>
+                <SectionLabel htmlFor={f.id}>{f.label}</SectionLabel>
                 <select
                   id={f.id}
                   value={f.value}
                   onChange={(e) => f.setter(e.target.value)}
-                  className="flex h-11 w-full rounded-xl border border-input bg-card dark:bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-colors"
+                  className="flex h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-300 transition-colors"
                 >
                   <option value="">Seleccionar cuenta</option>
                   {accounts.map((acc) => (
@@ -183,15 +197,15 @@ export default function DriverSettingsPage() {
             ))}
 
             {/* Fondo de mantenimiento */}
-            <div className="space-y-2 rounded-xl border border-border bg-secondary/40 p-4">
-              <Label htmlFor="maintenance-savings" className="text-xs font-medium text-foreground">
+            <div className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+              <SectionLabel htmlFor="maintenance-savings">
                 Fondo de mantenimiento
-              </Label>
+              </SectionLabel>
               <select
                 id="maintenance-savings"
                 value={maintenanceSavingsAccountId}
                 onChange={(e) => setMaintenanceSavingsAccountId(e.target.value)}
-                className="flex h-11 w-full rounded-xl border border-input bg-card dark:bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-colors"
+                className="flex h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-300 transition-colors"
               >
                 <option value="">Sin fondo (se registra como gasto)</option>
                 {accounts.map((acc) => (
@@ -200,23 +214,24 @@ export default function DriverSettingsPage() {
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
                 Cada turno aparta el 6% de su neto a esta cuenta, siempre que retenga al menos
                 20% de lo bruto. Cr&eacute;ala en{' '}
-                <Link href="/accounts" className="underline">Cuentas</Link> como una cuenta normal
+                <Link href="/accounts" className="underline underline-offset-2">Cuentas</Link> como una cuenta normal
                 (ej: &quot;Fondo de mantenimiento&quot;). Si la dejas vac&iacute;a, el 6% se sigue
                 registrando como gasto.
               </p>
 
               {savingsIsSameAsIncome && (
-                <p className="text-xs font-semibold text-destructive">
+                <p className="text-[11px] font-semibold text-zinc-900 flex items-start gap-1.5 leading-relaxed">
+                  <AlertTriangle className="size-3.5 text-zinc-600 shrink-0 mt-px" />
                   El fondo no puede ser la misma cuenta de efectivo: la reserva se mover&iacute;a
                   de una billetera a s&iacute; misma.
                 </p>
               )}
 
               {savingsAccount && !savingsIsSameAsIncome && (
-                <p className="text-xs text-muted-foreground tabular-nums">
+                <p className="text-[11px] text-zinc-500 tabular-nums">
                   Disponible hoy: {formatCurrency(savingsAccount.balance, savingsAccount.currency)}
                   {incomeCashAccount && incomeCashAccount.currency !== savingsAccount.currency && (
                     <> &middot; est&aacute; en {savingsAccount.currency}, el efectivo en {incomeCashAccount.currency}</>
@@ -230,7 +245,7 @@ export default function DriverSettingsPage() {
             <Button
               onClick={handleSave}
               disabled={saveConfig.isPending || !projectId || savingsIsSameAsIncome}
-              className="h-11 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              className="h-11 px-8 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold"
             >
               {saveConfig.isPending ? 'Guardando...' : 'Guardar configuracion'}
             </Button>

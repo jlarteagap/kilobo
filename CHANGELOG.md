@@ -5,6 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.8] - 2026-10-05
+
+### Added
+- **Gasolina — Editar un ciclo cerrado**: Botón de lápiz por ciclo con monto, litros y pagador. Existía un problema real aquí: los ciclos anteriores a `gasLiters` nunca lo tuvieron, y sin una forma de completarlo la card de consumo no arrancaba nunca — había que acumular 3 ciclos nuevos con litros para ver algo. También resuelve el typo del monto, que antes solo se arreglaba borrando el ciclo y perdiendo los viajes. Al cambiar el monto, `debtSummary` se recalcula; si no, los costos por persona dejarían de sumar el total.
+- **Gasolina — Aviso de odómetro implausible**: Un viaje que da más de 500 km (más que un tanque lleno) pide confirmación antes de guardarse. No bloquea, porque el wrap del odómetro de 3 dígitos genera kilometrajes grandes legítimos. `computeTripKm` se extrajo a `src/types/car-sharing.ts` y ahora el repositorio y el cliente usan la misma cuenta: si divergieran, la advertencia mentiría.
+- **Gasolina — Historial del auto**: Gasolina y mantenimiento en una misma línea de tiempo. Cada servicio muestra el promedio de L/100km de los 3 ciclos cerrados que le siguieron, que es la forma de ver si el aditivo de inyectores sirvió de algo.
+- **Gasolina — Recuperado el botón "Borrar historial completo"**, que se había perdido al descomponer el dashboard y dejaba `resetAllAction` como código muerto. Vive en un collapsible "Configuración" y el diálogo aclara que **no** borra el odómetro absoluto, porque ese es un dato real del auto y no una derivación de los viajes.
+
+### Fixed
+- **Gasolina — Un baseline arruinado contaminaba la serie entera**: `isComparable` solo acotaba por arriba (30 L/100km). Teclear el odómetro en el campo de litros (500 en vez de 50) daba 0,32 L/100km, que pasaba el filtro y como el baseline es el mínimo histórico, dejaba todos los ciclos siguientes con +2000% y la alerta dejaba de significar nada. Ahora hay piso de 2 L/100km.
+- **Gasolina — Ciclos pendientes sin transferencias desaparecían**: El estado vacío se guiaba por `transfers.length === 0`, así que un ciclo abierto donde el pagador manejó todo el tramo no se listaba —decía "Nada por cobrar" mientras el encabezado decía que había un ciclo abierto, y no había forma de liquidarlo ni borrarlo.
+- **Gasolina — Borrar un viaje no pedía confirmación**: No era cosmético: borra los km y recalcula el reparto del ciclo, así que un clic de más cambia cuánto debe cada quien en un ciclo ya cerrado.
+- **Gasolina — La fecha del viaje no se podía ordenar**: Era el string `"DD/MM HH:mm"` armado por el cliente: sin año, en la zona horaria de quien escribía, y no ordenable. Ahora es un timestamp. Los 7 viajes existentes se migraron (el string original queda en `legacyDate`), y `normalizeTrips` rellena el timestamp en lectura para documentos que no migraron.
+
+## [1.7.7] - 2026-10-05
+
+### Added
+- **Gasolina — Consumo por kilómetro**: Nueva card que compara el L/100km de cada ciclo cerrado y avisa cuando el último supera en más de 15% tu mejor registro histórico. Muestra las tres métricas del último ciclo juntas — L/100km, Bs/km y Bs/L — porque si el consumo sube y el precio del litro no, el problema es el auto; si suben las dos, es el precio. La serie es CSS, no Recharts, para no cargar el chart en una página pública que se abre con datos de red lentos.
+- **Gasolina — Litros opcionales al cerrar un ciclo**: Campo `gasLiters` en `CarCycle`. El precio del litro cambia con los subsidios, así que convertir Bs a litros con un precio fijo falsea la comparación entre ciclos; el dato se pide directamente. Un ciclo sin litros sigue aportando Bs/km y deudas, pero no entra en la comparación de consumo.
+- **Gasolina — Cuentas pendientes con liquidación**: Botón para marcar cada ciclo como pagado, sección colapsada de liquidados, y detalle desplegable por ciclo con los viajes, el Bs/km y **todos** los deudores.
+- **Gasolina — Total neto compensado entre ciclos**: `computeNetBalances` + liquidación greedy (`settleBalances`) en `src/app/gasolina/utils/debts.utils.ts`. Si en un ciclo te deben Bs 200 y en otro tú debes Bs 150, la transferencia real es de Bs 50, no dos. Funciona para N personas y siempre resuelve en N-1 transferencias.
+
+### Fixed
+- **Gasolina — Deudores múltiples**: El panel lateral usaba `debtSummary.find(d => d.name !== paidBy)`, que con tres conductores encontraba solo al primero y descartaba al resto en silencio. Ahora se listan todos.
+- **Gasolina — Fechas de ciclo en el servidor**: `new Date(cycle.startDate).toLocaleDateString('es-ES')` renderizaba `'...'` en el servidor y se rellenaba en un `useEffect`, porque el servidor corre en UTC y el cliente en UTC-4: un timestamp de las 23:00 local salía con el día siguiente a un lado y con el día correcto al otro. Reemplazado por `formatCycleDate` con `timeZone: 'America/La_Paz'`.
+- **Gasolina — Borrado accidental de cuentas**: El 🗑 estaba a 8px del nuevo botón de liquidar y no pedía confirmación. Ahora ambas acciones pasan por `window.confirm`.
+- **Gasolina — Página caída sin el índice**: `getClosedCycles` ahora filtra y ordena en Firestore (`status ASC + endDate DESC`) con `limit(200)` en vez de traer la colección entera. **Requiere `npx firebase deploy --only firestore:indexes --project kiposbo`**, sin el cual la query lanza `FAILED_PRECONDITION`.
+
+### Changed
+- **Gasolina — Reskin completo a Minimal·Zinc**: `page.tsx`, `CarSharingDashboard`, `MaintenanceWidgets` y `MaintenanceModal`. Se elimina el `dark:` inerte (110 ocurrencias en 4 archivos), el bloque `blur-[120px]` decorativo, el emoji 🚗 y el título gigante centrado. Neutros zinc, un solo acento `#059669` reservado para montos positivos, `tabular-nums` en todas las cifras, cards `rounded-[22px]` y el orden de severidad de barras que ya usa `MaintenanceFundCard`.
+- **Gasolina — `CarSharingDashboard` descompuesto**: De 563 líneas monolíticas a un componente que compone `ConsumptionCard` y `PendingAccounts`, con el cálculo puro separado en `src/app/gasolina/utils/`.
+- **Gasolina — Tipos movidos a `src/types/car-sharing.ts`**: `CarTrip`, `CarTripSource`, `DebtResult` y `CarCycle` salen del repositorio para que los componentes cliente los usen sin arrastrar `firebase-admin` al bundle. El repositorio los re-exporta y normaliza los campos opcionales a `null` en lectura.
+- **Gasolina — Carga de datos en paralelo**: `page.tsx` usaba 4 `await` secuenciales; ahora un `Promise.all` sobre datos de dos colecciones distintas.
+
+## [1.7.6] - 2026-10-02
+
+### Changed
+- **Conductor — Reskin completo a Minimal·Zinc**: `/conductor`, `/conductor/settings` y `/conductor/analytics`, junto con `ShiftForm`, `ShiftHistory`, `ShiftDetailSheet`, `ShiftAnalytics`, `DriverDeposits`, `DashboardSummary`, `MonthCyclePicker`, `DriverWidget` y `MaintenanceFundCard`. Neutros zinc, un solo acento `#059669` reservado para montos positivos, `tabular-nums` en todas las cifras y eliminación de los `dark:` inertes.
+
+## [1.7.5] - 2026-10-01
+
+### Added
+- **Conductor — Fondo de mantenimiento como cuenta real**: Campo `maintenanceSavingsAccountId` en `DriverConfig` (con su schema Zod) para elegir en qué cuenta se acumula la reserva del 6% de cada turno.
+- **Conductor — Endpoint `/api/driver/maintenance`**: Devuelve en una sola llamada el saldo del fondo, el odómetro absoluto y el estado de cada servicio (km restantes, ratio de avance y `shortfall` = cuánto dinero falta para el próximo). Alimenta el nuevo hook `useMaintenance` y la `MaintenanceFundCard`.
+- **Conductor — Métricas del turno por periodo**: `useShiftPeriodStats` para el resumen Hoy / Semana / Mes, más un badge con la reserva de mantenimiento en el historial y el detalle del turno.
+- **Script `backfill-shift-maintenance.ts`**: Recomputa `maintenanceReserve` y `liquidEarnings` de los turnos anteriores al fix usando la **misma** `computeShiftMetrics` que el runtime, para que un rerun no escriba cifras con una fórmula distinta a la de los turnos nuevos.
+
+### Changed
+- **Gasolina/Mantenimiento — El gasto pasa a ser real**: `addMaintenanceLogAction` crea una transacción `EXPENSE` desde la cuenta del fondo cuando hay sesión iniciada y devuelve un aviso si el costo supera el saldo disponible. Como `/gasolina` es pública, sin sesión solo se guarda el log histórico.
+- **Mantenimiento — Reversión al borrar**: `deleteMaintenanceLogAction` revierte la transacción asociada antes de eliminar el log, para no dejar el gasto cobrando después de borrar el registro.
+- **Mantenimiento — Tipos movidos a `src/types/car-maintenance.ts`**: `CarMaintenanceLog`, `MaintenanceType` y `CarConfig` salen del repositorio para que los componentes cliente los usen sin arrastrar `firebase-admin` al bundle.
+- **Gasolina — Origen de los viajes**: `CarTrip.source` distingue `shift` de `manual` para separar los km que ya entraron al odómetro desde un turno de `/conductor`, evitando contarlos dos veces y partir a la mitad los intervalos de mantenimiento.
+
+### Fixed
+- **Reserva de mantenimiento siempre en 0**: Los turnos creados antes del fix persistían `maintenanceReserve` y `liquidEarnings` en `0` aunque la transacción de la reserva sí se registrara, por lo que el historial y las tarjetas mostraban cero.
+- **Transferencias a la misma cuenta**: `transactions.service` ahora rechaza crear una transferencia cuyo `to_account_id` sea igual al `account_id` de origen.
+
+## [1.7.4] - 2026-09-16
+
+### Added
+- **Transacciones — Exportación CSV**: Utilidad `csv-export.utils.ts` que resuelve los nombres de cuenta, categoría y proyecto (con fallback `Personal`), normaliza la moneda de cada monto y traduce los tipos a `Ingreso` / `Gasto` / `Transferencia` / `Ahorro`. Botón "Exportar CSV" en `/transacciones` que descarga `transacciones-{fecha}.csv`.
+
+### Changed
+- **Cuentas — Acciones flotantes en las cards**: Acciones de editar y eliminar ancladas abajo a la derecha en desktop, sobre fondo `zinc-100` con borde, y siempre visibles en mobile (antes solo emergían al hover). El icono de la cuenta deja de usar el color por tipo y pasa a neutro `zinc-100` / `zinc-400`.
+- **Transacciones — Reskin Minimal·Zinc**: `TransactionList`, `TransactionTotal`, `SummaryCards`, `CategoryOverview`, `IncomeExpenseChart` y `trend-badge` alineados al sistema visual vigente.
+
 ## [1.7.3] - 2026-09-12
 
 ### Added

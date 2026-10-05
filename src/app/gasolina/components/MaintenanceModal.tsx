@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { CarMaintenanceLog, MaintenanceType, MAINTENANCE_TYPE_LABELS } from '@/types/car-maintenance'
 import { addMaintenanceLogAction, deleteMaintenanceLogAction } from '../maintenance.actions'
-import { Trash2, RefreshCcw, Save } from 'lucide-react'
+import { Trash2, RefreshCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
@@ -56,7 +56,7 @@ export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs
         } else {
           toast.success('Mantenimiento registrado')
         }
-      } catch (err) {
+      } catch {
         toast.error('Error al registrar')
       }
     })
@@ -75,44 +75,44 @@ export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden bg-white dark:bg-neutral-950 border border-neutral-100 dark:border-neutral-900 rounded-[2rem]">
-        <DialogHeader className="px-8 pt-8 pb-4 border-b border-neutral-50 dark:border-neutral-900">
-          <DialogTitle className="text-xl font-light tracking-tight">{MAINTENANCE_TYPE_LABELS[type]}</DialogTitle>
-          <DialogDescription className="text-xs tracking-wide">
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden bg-white border border-zinc-200 rounded-[22px]">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-zinc-100">
+          <DialogTitle className="text-[13px] font-semibold tracking-tight text-zinc-900">{MAINTENANCE_TYPE_LABELS[type]}</DialogTitle>
+          <DialogDescription className="text-xs text-zinc-500">
             Gestión de historial y registro de nuevo mantenimiento.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="new" className="w-full">
-          <TabsList className="w-full justify-start rounded-none border-b border-neutral-50 dark:border-neutral-900 bg-transparent p-0 px-8 h-auto">
+          <TabsList className="w-full justify-start rounded-none border-b border-zinc-100 bg-transparent p-0 px-6 h-auto">
             <TabsTrigger 
               value="new" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent px-4 py-3 text-xs uppercase tracking-widest font-bold text-neutral-400 data-[state=active]:text-emerald-600 transition-all"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-600 data-[state=active]:bg-transparent px-4 py-3 text-xs font-medium text-zinc-500 data-[state=active]:text-zinc-900 transition-colors"
             >
               Nuevo Registro
             </TabsTrigger>
             <TabsTrigger 
               value="history" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent px-4 py-3 text-xs uppercase tracking-widest font-bold text-neutral-400 data-[state=active]:text-emerald-600 transition-all"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-600 data-[state=active]:bg-transparent px-4 py-3 text-xs font-medium text-zinc-500 data-[state=active]:text-zinc-900 transition-colors"
             >
               Historial
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="new" className="p-8 mt-0 space-y-8">
+          <TabsContent value="new" className="p-6 mt-0 space-y-5">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Odómetro Actual (Auto)</Label>
+                <Label className="text-xs font-medium text-zinc-600">Odómetro actual</Label>
                 <Input 
                   disabled
                   value={`${absoluteOdometer.toLocaleString()} km`}
-                  className="h-12 bg-neutral-50 dark:bg-neutral-900 border-0 rounded-xl px-4 text-neutral-500 font-medium tabular-nums"
+                  className="h-11 bg-zinc-50 border-zinc-200 rounded-xl px-4 text-zinc-500 font-medium tabular-nums"
                 />
-                <p className="text-[10px] text-neutral-400 italic">El kilometraje se toma automáticamente del registro general.</p>
+                <p className="text-[11px] text-zinc-400">Se toma automáticamente del registro general.</p>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Costo (Bs)</Label>
+                <Label className="text-xs font-medium text-zinc-600">Costo (Bs)</Label>
                 <Input 
                   type="number" 
                   step="0.01"
@@ -121,27 +121,27 @@ export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs
                   onChange={e => setCost(e.target.value)}
                   placeholder="0.00"
                   disabled={isPending}
-                  className="h-12 bg-transparent border-t-0 border-x-0 border-b border-neutral-200 dark:border-neutral-800 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none text-xl font-light tabular-nums"
+                  className="h-11 bg-white border-zinc-200 rounded-xl tabular-nums"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Notas Adicionales (Opcional)</Label>
+                <Label className="text-xs font-medium text-zinc-600">Notas (opcional)</Label>
                 <Input 
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="Ej: Marca de aceite, lugar..."
+                  placeholder="Ej: marca de aceite, lugar…"
                   disabled={isPending}
-                  className="h-12 bg-transparent border-t-0 border-x-0 border-b border-neutral-200 dark:border-neutral-800 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors shadow-none text-sm"
+                  className="h-11 bg-white border-zinc-200 rounded-xl"
                 />
               </div>
 
               <Button 
                 type="submit" 
                 disabled={isPending}
-                className="w-full h-14 rounded-2xl bg-neutral-950 dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all font-medium text-base shadow-lg shadow-neutral-950/10 dark:shadow-white/5 active:scale-[0.98] mt-4"
+                className="w-full h-11 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 font-medium mt-4"
               >
-                {isPending ? <RefreshCcw className="size-5 animate-spin" /> : "Guardar Registro"}
+                {isPending ? <RefreshCcw className="size-4 animate-spin" /> : 'Guardar registro'}
               </Button>
             </form>
           </TabsContent>
@@ -149,41 +149,41 @@ export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs
           <TabsContent value="history" className="p-0 mt-0 h-[400px] overflow-y-auto">
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-b border-neutral-50 dark:border-neutral-900 sticky top-0 bg-white dark:bg-neutral-950 z-10">
-                  <TableHead className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-400 px-8 py-4">Fecha</TableHead>
-                  <TableHead className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-400 py-4">KM</TableHead>
-                  <TableHead className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-400 py-4 text-right">Costo</TableHead>
-                  <TableHead className="px-8 py-4"></TableHead>
+                <TableRow className="hover:bg-transparent border-b border-zinc-100 sticky top-0 bg-white z-10">
+                  <TableHead className="text-[11px] font-medium text-zinc-500 px-6 py-3">Fecha</TableHead>
+                  <TableHead className="text-[11px] font-medium text-zinc-500 py-3">km</TableHead>
+                  <TableHead className="text-[11px] font-medium text-zinc-500 py-3 text-right">Costo</TableHead>
+                  <TableHead className="px-6 py-3" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredLogs.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-12 text-center text-neutral-400 text-sm italic">Sin historial de {MAINTENANCE_TYPE_LABELS[type]}</TableCell>
+                    <TableCell colSpan={4} className="py-10 text-center text-xs text-zinc-400">Sin historial de {MAINTENANCE_TYPE_LABELS[type]}</TableCell>
                   </TableRow>
                 ) : (
                   filteredLogs.map(log => (
-                    <TableRow key={log.id} className="group border-b border-neutral-50 dark:border-neutral-900 last:border-0 hover:bg-neutral-50/50 dark:hover:bg-neutral-900/30">
-                      <TableCell className="px-8 py-4">
+                    <TableRow key={log.id} className="group border-b border-zinc-100 last:border-0 hover:bg-zinc-50/50">
+                      <TableCell className="px-6 py-3">
                         <div className="flex flex-col">
-                          <span className="text-neutral-900 dark:text-neutral-100 text-sm font-medium">
+                          <span className="text-xs font-medium text-zinc-900">
                             {new Date(log.date).toLocaleDateString('es-ES')}
                           </span>
-                          {log.notes && <span className="text-neutral-400 text-[10px] max-w-[120px] truncate" title={log.notes}>{log.notes}</span>}
+                          {log.notes && <span className="text-[11px] text-zinc-400 max-w-[120px] truncate" title={log.notes}>{log.notes}</span>}
                         </div>
                       </TableCell>
-                      <TableCell className="py-4 font-light text-neutral-500 tabular-nums">
+                      <TableCell className="py-3 text-[11px] text-zinc-500 tabular-nums">
                         {log.odometer.toLocaleString()}
                       </TableCell>
-                      <TableCell className="py-4 text-right font-medium tabular-nums text-emerald-600">
+                      <TableCell className="py-3 text-right text-xs font-medium tabular-nums text-zinc-900">
                         {log.cost.toFixed(2)} Bs
                       </TableCell>
-                      <TableCell className="px-8 py-4 text-right">
+                      <TableCell className="px-6 py-3 text-right">
                         <Button 
                           variant="ghost" 
                           size="icon" 
                           disabled={isPending}
-                          className="size-8 rounded-lg opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
+                          className="size-8 rounded-lg opacity-0 group-hover:opacity-100 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
                           onClick={() => handleDelete(log.id)}
                         >
                           <Trash2 className="size-3.5" />

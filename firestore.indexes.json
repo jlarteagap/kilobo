@@ -42,6 +42,14 @@
       ]
     },
     {
+      "collectionGroup": "car_sharing_cycles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "endDate", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "account_balance_changes",
       "queryScope": "COLLECTION",
       "fields": [

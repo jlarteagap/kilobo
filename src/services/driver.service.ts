@@ -18,6 +18,7 @@ import {
   DRIVER_TRIP_USER_NAME,
 } from '@/types/driver'
 import type { CreateTransactionData } from '@/types/transaction'
+import { parseLocalDate } from '@/lib/utils'
 
 function todayDateStr(): string {
   return new Date().toISOString().slice(0, 10)
@@ -171,7 +172,7 @@ async function processShiftTransactions(
         userName: DRIVER_TRIP_USER_NAME,
         initialKm: startKm3,
         finalKm: endKm3,
-        clientDateStr: shiftDate,
+        clientTimestamp: parseLocalDate(shiftDate).getTime(),
         source: 'shift',
       })
     } catch {

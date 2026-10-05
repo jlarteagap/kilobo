@@ -1,6 +1,7 @@
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 import { CarSharingDashboard } from "./components/CarSharingDashboard"
 import { MaintenanceWidgets } from "./components/MaintenanceWidgets"
-import { TimelineCard } from "./components/TimelineCard"
 import { getActiveCycleAction, getClosedCyclesAction } from "./actions"
 import { getAbsoluteOdometerAction, getMaintenanceLogsAction } from "./maintenance.actions"
 
@@ -29,6 +30,13 @@ export default async function CarSharingPage() {
           <p className="text-xs font-medium text-zinc-500 mt-1">
             Gastos compartidos y mantenimiento del vehículo
           </p>
+          <Link
+            href="/gasolina/historial"
+            className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+          >
+            Ver historial
+            <ArrowRight className="size-3" />
+          </Link>
         </header>
 
         <div className="space-y-6 mb-6">
@@ -37,8 +45,6 @@ export default async function CarSharingPage() {
             logs={maintenanceLogs}
           />
         </div>
-
-        <TimelineCard cycles={closedCycles} logs={maintenanceLogs} />
 
         <CarSharingDashboard
           activeCycle={activeCycle}

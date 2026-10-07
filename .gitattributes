@@ -1,0 +1,8 @@
+# Las skills se versionan, pero sus datasets y utilidades son payloads
+# generados: no son codigo del proyecto y no deben figurar en el grafico de
+# lenguaje ni en las estadisticas de GitHub.
+.opencode/skills/**/data/** linguist-generated=true
+.opencode/skills/**/scripts/** linguist-generated=true
+
+# Artefactos locales de las herramientas
+.codegraph/** linguist-generated=true

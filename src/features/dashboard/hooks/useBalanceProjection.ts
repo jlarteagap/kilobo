@@ -4,7 +4,7 @@ import { useTransactions } from '@/features/transactions/hooks/useTransactions'
 import { projectBalance } from '@/lib/forecast/projection'
 import type { ProjectionResult } from '@/lib/forecast/projection'
 
-export function useBalanceProjection(): ProjectionResult & { isLoading: boolean } {
+export function useBalanceProjection(): ProjectionResult & { isLoading: boolean; hasData: boolean } {
   const { data: accounts = [], isLoading: loadingAccounts } = useActiveAccounts()
   const { data: transactions = [], isLoading: loadingTransactions } = useTransactions()
 
@@ -16,5 +16,6 @@ export function useBalanceProjection(): ProjectionResult & { isLoading: boolean 
   return {
     ...projection,
     isLoading: loadingAccounts || loadingTransactions,
+    hasData: accounts.length > 0,
   }
 }

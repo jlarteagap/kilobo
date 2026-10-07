@@ -13,12 +13,23 @@ import { cn } from '@/lib/utils'
  * apartaba dinero por turno, pero no cuanto tinha guardado ni si le alcanzado
  * para cambiar el aceite. Ese saldo vive en la cuenta de finanzas y el estado
  * del auto en Gasolina; esta card los junta.
+ *
+ * `embedded` quita la chrome propia de card porque se usa dentro del DriverWidget
+ * del dashboard (card dentro de card). Los internos deciden con container queries:
+ * el componente aparece a ancho completo en /conductor y dentro del rail de ~341px
+ * del dashboard, asi que un `sm:` de viewport dejaba el saldo del fondo y el
+ * odometro superpuestos en este ultimo.
  */
-export function MaintenanceFundCard() {
+export function MaintenanceFundCard({ variant = 'card' }: { variant?: 'card' | 'embedded' }) {
   const { data, isLoading } = useMaintenance()
 
   if (isLoading) {
-    return (
+    return variant === 'embedded' ? (
+      <div className="space-y-3">
+        <div className="h-3 w-40 bg-zinc-100 rounded-lg animate-pulse" />
+        <div className="h-7 w-32 bg-zinc-100 rounded-lg animate-pulse" />
+      </div>
+    ) : (
       <div className="rounded-[22px] border border-zinc-200 bg-white p-5">
         <div className="h-3 w-40 bg-zinc-100 rounded-lg animate-pulse" />
         <div className="mt-3 h-7 w-32 bg-zinc-100 rounded-lg animate-pulse" />
@@ -76,8 +87,16 @@ export function MaintenanceFundCard() {
   const negative = fund.balance < 0
 
   return (
-    <div className="rounded-[22px] border border-zinc-200 bg-white p-5 space-y-4">
-      <div className="flex items-start justify-between gap-4">
+    <div
+      className={cn(
+        '@container',
+        variant === 'card' && 'rounded-[22px] border border-zinc-200 bg-white p-5 space-y-4',
+        variant === 'embedded' && 'space-y-3',
+      )}
+    >
+      {/* flex-wrap + breakpoint de contenedor: en el rail el odometro baja de linea
+          en vez de empujar el saldo fuera de la caja. */}
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
         <div className="min-w-0 space-y-1">
           <div className="flex items-center gap-1.5">
             <Wallet className="size-3.5 text-zinc-400 shrink-0" />
@@ -85,7 +104,7 @@ export function MaintenanceFundCard() {
               {fund.name}
             </span>
           </div>
-          <p className="text-xl sm:text-2xl font-bold tabular-nums tracking-tight leading-none text-zinc-900">
+          <p className="text-xl @2xl:text-2xl font-bold tabular-nums tracking-tight leading-none text-zinc-900">
             {formatBs(fund.balance)}
           </p>
           {negative && (
@@ -104,7 +123,7 @@ export function MaintenanceFundCard() {
                 Odometro
               </span>
             </div>
-            <p className="text-xl sm:text-2xl font-bold tabular-nums tracking-tight leading-none text-zinc-900">
+            <p className="text-xl @2xl:text-2xl font-bold tabular-nums tracking-tight leading-none text-zinc-900">
               {absoluteOdometer.toLocaleString()}
             </p>
             <p className="text-[11px] font-medium text-zinc-400 tabular-nums">km</p>
@@ -112,7 +131,7 @@ export function MaintenanceFundCard() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 @xl:grid-cols-2 gap-3">
         {services.map((service) => (
           <ServiceRow key={service.type} service={service} fundBalance={fund.balance} />
         ))}
@@ -154,7 +173,9 @@ function ServiceRow({
         <p className="text-[13px] font-semibold text-zinc-900 truncate">{label}</p>
       </div>
 
-      <div className="flex items-baseline justify-between gap-2">
+      {/* flex-wrap: "Faltan 12,000 km" + "cada 5,000 km" en una sola linea no entran
+          en el ancho del rail; bajan de linea en vez de solaparse. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
         <p
           className={cn(
             'text-[13px] font-semibold tabular-nums leading-none',
@@ -163,7 +184,7 @@ function ServiceRow({
         >
           {statusText}
         </p>
-        <p className="text-[11px] font-medium text-zinc-400 tabular-nums shrink-0">
+        <p className="text-[11px] font-medium text-zinc-400 tabular-nums">
           cada {service.intervalKm.toLocaleString()} km
         </p>
       </div>
@@ -175,17 +196,19 @@ function ServiceRow({
         />
       </div>
 
-      <div className="flex items-center justify-between gap-2">
+      {/* La barra de progreso ya comunica el estado con color; el texto no repite
+          ese codigo y evita emerald sobre texto (3,8:1, no pasa AA). */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
         <p
           className={cn(
             'text-[11px] font-semibold tabular-nums',
-            covered ? 'text-emerald-600' : 'text-zinc-500'
+            covered ? 'text-zinc-600' : 'text-zinc-500'
           )}
         >
           {moneyText}
         </p>
         {lastServiceOdometer === null && (
-          <p className="text-[11px] font-medium text-zinc-400 shrink-0">
+          <p className="text-[11px] font-medium text-zinc-400">
             Sin registro previo
           </p>
         )}

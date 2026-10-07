@@ -1,205 +1,382 @@
 'use client'
 
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceArea } from 'recharts'
+import { useSyncExternalStore } from 'react'
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+  ReferenceArea,
+} from 'recharts'
 import { useBalanceProjection } from '../hooks/useBalanceProjection'
 import { formatCurrency } from '@/features/accounts/utils/account-display.utils'
 import { ChartTooltipContainer } from '@/components/ui/chart-tooltip'
-import { TrendingUp, AlertTriangle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { AlertTriangle } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ProjectedDay } from '@/lib/forecast/projection'
 
+/** Paleta de datos §11 — neutros zinc + un único acento emerald. */
+const INK = '#18181b' // zinc-900 · línea proyectada
+const MUTED = '#71717a' // zinc-500 · labels
+const FAINT = '#a1a1aa' // zinc-400 · helpers
+const GRID = '#e4e4e7' // zinc-200
+const ACCENT = '#059669' // emerald-600 · único acento, positivo
+
+const CONFIDENCE_LABEL: Record<'high' | 'medium' | 'low', string> = {
+  high: 'Alta confianza',
+  medium: 'Confianza media',
+  low: 'Estimación',
+}
+
+/** "1,5k" / "12,3k" — Intl compact mezcla mayúsculas ("1,5 K"), lo normalizamos. */
+function formatCompactAmount(value: number): string {
+  const sign = value < 0 ? '-' : ''
+  const abs = Math.abs(value)
+  if (abs >= 1000) {
+    return `${sign}${new Intl.NumberFormat('es-BO', { maximumFractionDigits: 1 }).format(abs / 1000)}k`
+  }
+  return `${sign}${new Intl.NumberFormat('es-BO', { maximumFractionDigits: 0 }).format(abs)}`
+}
+
+function reducedMotionQuery(): MediaQueryList | null {
+  return typeof window === 'undefined' ? null : window.matchMedia('(prefers-reduced-motion: reduce)')
+}
+
+function subscribeReducedMotion(onStoreChange: () => void) {
+  const query = reducedMotionQuery()
+  if (!query) return () => {}
+  query.addEventListener('change', onStoreChange)
+  return () => query.removeEventListener('change', onStoreChange)
+}
+
+function getReducedMotion() {
+  return reducedMotionQuery()?.matches ?? false
+}
+
+function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => false)
+}
+
 function ProjectionSkeleton() {
   return (
-    <div className="bg-[#5F7D42] rounded-[22px] p-6 border border-[#5F7D42]">
-      <div className="mb-6">
-        <Skeleton className="h-4 w-36 rounded-full bg-white/20" />
-        <Skeleton className="h-3 w-48 rounded-full bg-white/20 mt-1.5" />
+    <div className="bg-white rounded-[22px] border border-zinc-200 p-5 md:p-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-32 rounded-lg bg-zinc-100" />
+          <Skeleton className="h-3 w-24 rounded-lg bg-zinc-100" />
+        </div>
+        <Skeleton className="h-6 w-24 rounded-full bg-zinc-100" />
       </div>
-      <Skeleton className="h-[200px] w-full rounded-xl bg-white/20" />
+      <Skeleton className="mt-5 h-9 w-40 rounded-lg bg-zinc-100" />
+      <Skeleton className="mt-4 h-14 w-full rounded-xl bg-zinc-100" />
+      <Skeleton className="mt-5 h-[168px] sm:h-[190px] w-full rounded-xl bg-zinc-100" />
+      <div className="flex items-center gap-5 mt-5 pt-5 border-t border-zinc-100">
+        <Skeleton className="h-3 w-14 rounded-full bg-zinc-100" />
+        <Skeleton className="h-3 w-24 rounded-full bg-zinc-100" />
+      </div>
     </div>
   )
 }
 
-function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
+function ProjectionEmpty() {
+  return (
+    <div className="bg-white rounded-[22px] border border-zinc-200 p-6 flex flex-col items-center justify-center gap-3 min-h-[260px]">
+      <div className="size-11 rounded-xl bg-zinc-100 flex items-center justify-center">
+        <div className="size-2.5 rounded-full bg-zinc-300" />
+      </div>
+      <p className="text-sm font-medium text-zinc-900 tracking-tight">Sin cuentas registradas</p>
+      <p className="text-xs text-zinc-500 max-w-[30ch] text-center leading-relaxed">
+        Crea una cuenta para proyectar tu saldo día a día hasta fin de mes.
+      </p>
+    </div>
+  )
+}
+
+interface TooltipEntry {
+  payload?: ProjectedDay
+}
+
+function ProjectionTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean
+  payload?: TooltipEntry[]
+  label?: string
+}) {
   if (!active || !payload?.length || !label) return null
 
-  const value = payload.find(p => p.value !== undefined)
-  if (!value) return null
+  const point = payload[0]?.payload
+  const balance = point?.balance
+  if (typeof balance !== 'number') return null
 
-  const formattedDate = format(parseISO(label), "d 'de' MMM", { locale: es })
+  const isToday = point ? !point.is_estimated : false
+  const hasFlow = point ? point.income > 0 || point.expense > 0 : false
 
   return (
     <ChartTooltipContainer active={active} payload={payload}>
-      <p className="text-[11px] text-[#6E6E73] mb-1">{formattedDate}</p>
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-[12px] text-[#6E6E73]">Saldo proyectado</span>
-        <span className={cn(
-          'text-[12px] font-semibold',
-          value.value >= 0 ? 'text-[#4F6A35]' : 'text-[#B5543D]'
-        )}>
-          {formatCurrency(value.value, 'BOB')}
+      <p className="text-xs font-semibold text-zinc-900 tracking-tight">
+        {format(parseISO(label), "d 'de' MMMM", { locale: es })}
+      </p>
+      <div className="mt-2 flex items-center justify-between gap-6">
+        <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+          {/* El color nunca es el único portador de significado: el punto acompaña a la etiqueta. */}
+          <span
+            className="size-2 rounded-full shrink-0"
+            style={{ backgroundColor: balance >= 0 ? ACCENT : FAINT }}
+          />
+          {isToday ? 'Saldo actual' : 'Saldo proyectado'}
+        </span>
+        <span className="text-sm font-bold tabular-nums text-zinc-900">
+          {formatCurrency(balance, 'BOB')}
         </span>
       </div>
+      {balance < 0 && (
+        <p className="mt-1.5 text-[11px] text-zinc-500">Saldo negativo</p>
+      )}
+      {hasFlow && (
+        <div className="mt-3 pt-3 border-t border-zinc-100 flex flex-col gap-1.5">
+          {point!.income > 0 && (
+            <div className="flex items-center justify-between gap-6">
+              <span className="text-xs text-zinc-500">Ingreso estimado</span>
+              <span className="text-xs font-medium tabular-nums text-zinc-900">
+                {formatCurrency(point!.income, 'BOB')}
+              </span>
+            </div>
+          )}
+          {point!.expense > 0 && (
+            <div className="flex items-center justify-between gap-6">
+              <span className="text-xs text-zinc-500">Gasto estimado</span>
+              <span className="text-xs font-medium tabular-nums text-zinc-900">
+                {formatCurrency(point!.expense, 'BOB')}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
     </ChartTooltipContainer>
   )
 }
 
 function computeChartLayout(days: ProjectedDay[], firstNegativeDate: string | null) {
-  const minBalance = Math.min(...days.map(d => d.balance))
-  const maxBalance = Math.max(...days.map(d => d.balance))
+  const balances = days.map((d) => d.balance)
+  const minBalance = Math.min(...balances)
+  const maxBalance = Math.max(...balances)
   const padding = Math.max((maxBalance - minBalance) * 0.2, 100)
+
   return {
     yMin: Math.min(minBalance - padding, -padding),
     yMax: maxBalance + padding,
-    splitIndex: (() => {
-      const firstEstimated = days.find(d => d.is_estimated)
-      return firstEstimated ? days.indexOf(firstEstimated) : days.length
-    })(),
     hasNegativeZone: firstNegativeDate !== null,
-    startNegativeIndex: firstNegativeDate !== null ? days.findIndex(d => d.date === firstNegativeDate) : -1,
+    startNegativeIndex: firstNegativeDate !== null ? days.findIndex((d) => d.date === firstNegativeDate) : -1,
   }
 }
 
 export function BalanceProjection() {
-  const { days, first_negative_date, final_balance, confidence, isLoading } = useBalanceProjection()
+  const { days, first_negative_date, final_balance, confidence, isLoading, hasData } = useBalanceProjection()
+  const reduceMotion = usePrefersReducedMotion()
 
   if (isLoading) return <ProjectionSkeleton />
-  if (days.length === 0) return null
+  if (!hasData || days.length === 0) return <ProjectionEmpty />
 
   const today = days[0]
-  const { yMin, yMax, splitIndex, hasNegativeZone, startNegativeIndex } = computeChartLayout(days, first_negative_date)
+  const endOfMonth = days[days.length - 1]
+  const { yMin, yMax, hasNegativeZone, startNegativeIndex } = computeChartLayout(days, first_negative_date)
+
+  // Solo el día de hoy es real (is_estimated = false para i === 0); el resto es proyección.
+  // Por eso el ancla real se dibuja como punto y la trayectoria como línea trazada.
+  const chartData = days.map((day, index) => ({
+    ...day,
+    balanceReal: index === 0 ? day.balance : null,
+    balanceProyectado: index === 0 ? null : day.balance,
+  }))
+
+  const periodLabel = `${format(parseISO(today.date), 'd', { locale: es })} – ${format(
+    parseISO(endOfMonth.date),
+    "d 'de' MMM",
+    { locale: es },
+  )}`
+
+  const negativeLabel = first_negative_date
+    ? format(parseISO(first_negative_date), "d 'de' MMM", { locale: es })
+    : null
+
+  const chartDescription = [
+    `Proyección de saldo del ${periodLabel}.`,
+    `Saldo hoy ${formatCurrency(today.balance, 'BOB')}.`,
+    `Proyección a fin de mes ${formatCurrency(final_balance, 'BOB')}.`,
+    negativeLabel ? `Se proyecta saldo negativo el ${negativeLabel}.` : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
-    <div className="bg-[#5F7D42] rounded-[22px] p-6 text-white"
-      style={{ boxShadow: '0 4px 20px -6px rgba(47,62,32,0.35), 0 1px 3px rgba(0,0,0,0.1)' }}>
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-4 h-4 text-[#F2F9E3]" />
-            <h3 className="text-xs font-bold text-[#F2F9E3] uppercase tracking-[0.14em]">Proyección de Saldo</h3>
-          </div>
-          <p className="text-[11px] text-[#F2F9E3]/70">
-            Basado en tu saldo actual, ingresos y gastos recurrentes
-          </p>
+    <div className="bg-white rounded-[22px] border border-zinc-200 p-5 md:p-6">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-[13px] font-semibold text-zinc-900 tracking-tight">Proyección de saldo</h3>
+          <p className="text-xs text-zinc-500 mt-1 capitalize">{periodLabel}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <span className={cn(
-            'whitespace-nowrap text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-white/15 text-white',
-          )}>
-            {confidence === 'high' ? 'Alta confianza' : confidence === 'medium' ? 'Confianza media' : 'Estimación'}
-          </span>
-          <span className="text-xl sm:text-2xl font-bold tracking-tight text-white tabular-nums">
-            {formatCurrency(today.balance, 'BOB')}
-          </span>
-        </div>
+        <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-medium text-zinc-600 whitespace-nowrap">
+          {CONFIDENCE_LABEL[confidence]}
+        </span>
       </div>
 
-      {first_negative_date && (
-        <div className="mb-4 p-4 rounded-2xl bg-[#B5543D]/30 border border-[#B5543D]/50 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-[#F2F9E3] shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-semibold text-white">Saldo negativo proyectado</p>
-            <p className="text-[12px] text-[#F2F9E3]/80 mt-0.5">
-              Se proyecta que tu saldo llegue a negativo el {format(parseISO(first_negative_date), "d 'de' MMM", { locale: es })}.
-              {confidence !== 'low' && ' Revisa tus gastos recurrentes para ajustar la proyección.'}
+      <div className="mt-5">
+        <p className="text-xs font-medium text-zinc-600">Saldo hoy</p>
+        <p className="mt-1 text-[28px] leading-none sm:text-3xl font-bold tracking-tight tabular-nums text-zinc-900">
+          {formatCurrency(today.balance, 'BOB')}
+        </p>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-zinc-100/70 px-3.5 py-2.5">
+        <p className="min-w-0 text-[11px] text-zinc-500 truncate">
+          Proyección a fin de mes
+        </p>
+        <p className="shrink-0 text-sm font-semibold tabular-nums text-zinc-900">
+          {formatCurrency(final_balance, 'BOB')}
+        </p>
+      </div>
+
+      {first_negative_date && negativeLabel && (
+        <div className="mt-4 rounded-xl bg-zinc-50 border border-zinc-200 p-3.5 flex items-start gap-3">
+          <AlertTriangle aria-hidden="true" className="w-4 h-4 shrink-0 mt-0.5 text-zinc-900" />
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-zinc-900 tracking-tight">Saldo negativo proyectado</p>
+            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+              Se proyecta que tu saldo llegue a negativo el {negativeLabel}.
+              {confidence !== 'low' && ' Revisa tus gastos recurrentes para ajustarla.'}
             </p>
           </div>
         </div>
       )}
 
-      <div className="h-[170px] sm:h-[200px] md:h-[250px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={days} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#F2F9E3" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="#F2F9E3" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F2F9E3" strokeOpacity={0.15} />
-            <XAxis
-              dataKey="date"
-              tickFormatter={(val) => format(parseISO(val), 'd', { locale: es })}
-              tick={{ fontSize: 10, fill: '#F2F9E3' }}
-              interval="preserveStartEnd"
-              tickMargin={8}
-              axisLine={false}
-              tickLine={false}
-              dy={6}
-            />
-            <YAxis
-              hide
-              domain={[yMin, yMax]}
-            />
-            <Tooltip content={<CustomTooltip />} />
+      <div className="mt-5 rounded-xl border border-zinc-100 bg-zinc-50/50 p-2 overflow-hidden">
+        <div
+          className="h-[168px] sm:h-[190px] w-full"
+          role="img"
+          aria-label={chartDescription}
+        >
+          <div className="h-full w-full" aria-hidden="true">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 14, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="balanceProy" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={INK} stopOpacity={0.18} />
+                    <stop offset="100%" stopColor={INK} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(value: string) => format(parseISO(value), 'd', { locale: es })}
+                  tick={{ fontSize: 10, fill: MUTED }}
+                  interval="preserveStartEnd"
+                  minTickGap={16}
+                  tickMargin={8}
+                  axisLine={false}
+                  tickLine={false}
+                  dy={4}
+                />
+                <YAxis
+                  width={38}
+                  domain={[yMin, yMax]}
+                  tickFormatter={formatCompactAmount}
+                  tick={{ fontSize: 10, fill: FAINT }}
+                  tickCount={4}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  content={<ProjectionTooltip />}
+                  cursor={{ stroke: FAINT, strokeWidth: 1, strokeDasharray: '3 3' }}
+                />
 
-            {/* Negative zone shading */}
-            {hasNegativeZone && startNegativeIndex > 0 && (
-              <ReferenceArea
-                x1={days[startNegativeIndex].date}
-                x2={days[days.length - 1].date}
-                fill="#B5543D"
-                fillOpacity={0.25}
-              />
-            )}
+                {hasNegativeZone && startNegativeIndex > 0 && (
+                  <ReferenceArea
+                    x1={days[startNegativeIndex].date}
+                    x2={endOfMonth.date}
+                    fill={INK}
+                    fillOpacity={0.05}
+                  />
+                )}
 
-            {/* Zero line */}
-            <ReferenceLine y={0} stroke="#B5543D" strokeOpacity={0.5} strokeDasharray="4 4" />
+                <ReferenceLine
+                  y={0}
+                  stroke={FAINT}
+                  strokeDasharray="3 3"
+                  label={{ value: '0', position: 'insideTopLeft', fill: FAINT, fontSize: 9 }}
+                />
 
-            {/* Split line between actual and estimated */}
-            {splitIndex > 0 && splitIndex < days.length && (
-              <ReferenceLine
-                x={days[splitIndex].date}
-                stroke="#F2F9E3"
-                strokeOpacity={0.3}
-                strokeDasharray="2 2"
-                label={{
-                  value: 'Estimado',
-                  position: 'top',
-                  fill: '#F2F9E3',
-                  fontSize: 9,
-                  opacity: 0.7,
-                }}
-              />
-            )}
+                {hasNegativeZone && startNegativeIndex > 0 && (
+                  <ReferenceLine
+                    x={days[startNegativeIndex].date}
+                    stroke={FAINT}
+                    strokeDasharray="3 3"
+                    label={{
+                      value: 'sala a negativo',
+                      position: 'insideTopRight',
+                      fill: MUTED,
+                      fontSize: 9,
+                    }}
+                  />
+                )}
 
-            <Area
-              type="monotone"
-              dataKey="balance"
-              stroke="#F2F9E3"
-              strokeWidth={2}
-              fill="url(#balanceGradient)"
-              dot={false}
-              activeDot={{ r: 4, strokeWidth: 0, fill: '#F2F9E3' }}
-              animationDuration={1000}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+                {/* Ancla real: un único día medido, por eso punto y no segmento. */}
+                <Area
+                  type="monotone"
+                  dataKey="balanceReal"
+                  stroke="none"
+                  fill="none"
+                  dot={{ r: 4, fill: ACCENT, stroke: '#ffffff', strokeWidth: 2 }}
+                  activeDot={{ r: 4, fill: ACCENT, stroke: '#ffffff', strokeWidth: 2 }}
+                  isAnimationActive={false}
+                />
+
+                {/* Trayectoria estimada: estilo de línea, no solo color. */}
+                <Area
+                  type="monotone"
+                  dataKey="balanceProyectado"
+                  stroke={INK}
+                  strokeWidth={2}
+                  strokeDasharray="5 4"
+                  fill="url(#balanceProy)"
+                  dot={false}
+                  activeDot={{ r: 4, fill: INK, stroke: '#ffffff', strokeWidth: 2 }}
+                  connectNulls
+                  animationDuration={reduceMotion ? 0 : 900}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-y-2 mt-4 pt-4 border-t border-[#F2F9E3]/20">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#F2F9E3]" />
-            <span className="text-[10px] text-[#F2F9E3]/80">Real</span>
+      <div className="mt-5 pt-5 border-t border-zinc-100">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <div className="flex items-center gap-2">
+            <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: ACCENT }} />
+            <span className="text-xs font-medium text-zinc-600">Hoy</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#F2F9E3] opacity-40" />
-            <span className="text-[10px] text-[#F2F9E3]/80">Proyectado</span>
+          <div className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="w-4 h-0 border-t-2 border-dashed shrink-0"
+              style={{ borderColor: INK }}
+            />
+            <span className="text-xs font-medium text-zinc-600">Proyectado</span>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-[10px] text-[#F2F9E3]/70">Proyección a fin de mes</p>
-          <p className={cn(
-            'text-sm font-bold tabular-nums',
-            final_balance >= 0 ? 'text-white' : 'text-[#FFD9CC]'
-          )}>
-            {formatCurrency(final_balance, 'BOB')}
-          </p>
-        </div>
+        <p className="text-[11px] text-zinc-400 mt-3 leading-relaxed">
+          Proyecta tu saldo actual con ingresos y gastos recurrentes. El tramo punteado es estimado.
+        </p>
       </div>
     </div>
   )

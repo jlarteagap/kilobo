@@ -20,6 +20,8 @@ export interface ProjectionResult {
   first_negative_date: string | null
   final_balance: number
   confidence: 'high' | 'medium' | 'low'
+  /** Transacciones COMPLETED usadas como base de la estimación (fundamento del chip de confianza). */
+  completed_count: number
 }
 
 function currentTotalBalance(accounts: Account[]): number {
@@ -94,12 +96,14 @@ export function projectBalance(accounts: Account[], transactions: Transaction[])
   const { by_dow, global: globalAvg } = calculateDailyAverages(transactions)
 
   const totalDays = differenceInDays(monthEnd, now) + 1
+  const completedCount = transactions.filter(t => t.status === 'COMPLETED').length
   if (totalDays <= 0) {
     return {
       days: [{ date: format(now, 'yyyy-MM-dd'), balance: startBalance, income: 0, expense: 0, is_estimated: false }],
       first_negative_date: null,
       final_balance: startBalance,
       confidence: startBalance > 0 ? 'low' : 'high',
+      completed_count: completedCount,
     }
   }
 
@@ -144,7 +148,6 @@ export function projectBalance(accounts: Account[], transactions: Transaction[])
     }
   }
 
-  const completedCount = transactions.filter(t => t.status === 'COMPLETED').length
   const confidence: ProjectionResult['confidence'] = completedCount >= CONFIDENCE_HIGH_THRESHOLD ? 'high' : completedCount >= CONFIDENCE_MEDIUM_THRESHOLD ? 'medium' : 'low'
 
   return {
@@ -152,5 +155,6 @@ export function projectBalance(accounts: Account[], transactions: Transaction[])
     first_negative_date: firstNegative,
     final_balance: Math.round(balance * 100) / 100,
     confidence,
+    completed_count: completedCount,
   }
 }

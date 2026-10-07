@@ -59,5 +59,5 @@ Run with `npx tsx scripts/<name>.ts`. Requires `.env` loaded (uses `dotenv`). Us
 - No Supabase in use despite `supabase-schema.sql` — everything runs on Firebase Firestore
 - ESLint flat config ignores `.next`, `out`, `build`, `next-env.d.ts`
 - `.env` tracked in git (contains dev Firebase + OpenRouter keys)
-- `.agent/`, `.agents/`, `skills-lock.json` are gitignored
+- `.agents/skills/` y `.opencode/skills/` **están versionadas** (config compartida; `skills-lock.json` sigue ignorado). `.agent/` es un shim de symlinks hacia `.agents/skills/`
 - **Design**: `docs/DESIGN-MANUAL.md` §11 "Minimal · Zinc" is the reference to equalize graph/data components (zinc neutrals + single emerald `#059669`, symmetric radii 22px/xl/rx-3, no dark). Existing components migrate progressively; the dashboard Sankey (`src/features/dashboard/CashflowSection.tsx`) is the migrated canonical example.

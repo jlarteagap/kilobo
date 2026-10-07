@@ -41,8 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 # agents
-.agent/
-.agents/
+# Las skills (.agents/skills/, .opencode/skills/) SI se versionan: son
+# configuracion compartida del proyecto y todos las necesitan en un clone.
+# .agent/ es un shim de symlinks hacia .agents/ y se versiona igual.
 skills-lock.json
 .superpowers/
 .worktrees/

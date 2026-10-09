@@ -2,8 +2,7 @@
 
 'use client'
 
-import { cn } from '@/lib/utils'
-import { Info } from 'lucide-react'
+import { INSIGHT_TOKENS } from '@/features/insights/chart-tokens'
 
 interface Props {
   score: number
@@ -13,22 +12,20 @@ interface Props {
     expense_stability : number
     budget_adherence  : number
   }
-  aiExplanation?: {
-    reason     : string
-    main_factor: string
-    detail     : string
-  } | null
 }
 
+// Sin arcoíris de cinco colores: un solo acento (emerald) sobre neutros zinc.
+// A y B usan el acento; C–F son neutros oscuros. El grado siempre va escrito,
+// así que el color nunca es el único portador de significado.
 const GRADE_CONFIG = {
-  A: { color: '#22c55e', label: 'Excelente',  bg: 'bg-green-500/10'  },
-  B: { color: '#84cc16', label: 'Bueno',       bg: 'bg-lime-500/10'   },
-  C: { color: '#eab308', label: 'Regular',     bg: 'bg-yellow-500/10' },
-  D: { color: '#f97316', label: 'Deficiente',  bg: 'bg-orange-500/10' },
-  F: { color: '#ef4444', label: 'Crítico',     bg: 'bg-red-500/10'    },
-}
+  A: { label: 'Excelente',  accent: true  },
+  B: { label: 'Bueno',       accent: true  },
+  C: { label: 'Regular',     accent: false },
+  D: { label: 'Deficiente',  accent: false },
+  F: { label: 'Crítico',     accent: false },
+} as const
 
-export function HealthScoreGauge({ score, grade, breakdown, aiExplanation }: Props) {
+export function HealthScoreGauge({ score, grade, breakdown }: Props) {
   const config      = GRADE_CONFIG[grade]
   const radius      = 54
   const stroke      = 4
@@ -36,10 +33,13 @@ export function HealthScoreGauge({ score, grade, breakdown, aiExplanation }: Pro
   const circumference = 2 * Math.PI * normalised
   const offset      = circumference - (score / 100) * circumference
 
+  const arcColor = config.accent ? INSIGHT_TOKENS.accent : INSIGHT_TOKENS.spend
+  const textColor = config.accent ? INSIGHT_TOKENS.accent : INSIGHT_TOKENS.text
+
   const bars = [
-    { label: 'Tasa de ahorro',    value: breakdown.savings_rate,      hint: 'Capacidad de reserva'    },
-    { label: 'Estabilidad',       value: breakdown.expense_stability,  hint: 'Consistencia de gasto'  },
-    { label: 'Control',           value: breakdown.budget_adherence,   hint: 'Apego a presupuesto'    },
+    { label: 'Tasa de ahorro', value: breakdown.savings_rate,     hint: 'Capacidad de reserva'   },
+    { label: 'Estabilidad',    value: breakdown.expense_stability, hint: 'Consistencia de gasto' },
+    { label: 'Control',        value: breakdown.budget_adherence,  hint: 'Apego a presupuesto'   },
   ]
 
   return (
@@ -53,12 +53,11 @@ export function HealthScoreGauge({ score, grade, breakdown, aiExplanation }: Pro
             cx={80} cy={80} r={normalised}
             fill="none" stroke="currentColor"
             strokeWidth={stroke}
-            className="text-muted/10"
+            className="text-zinc-100"
           />
           <circle
             cx={80} cy={80} r={normalised}
-            fill="none"
-            stroke={config.color}
+            fill="none" stroke={arcColor}
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -67,58 +66,43 @@ export function HealthScoreGauge({ score, grade, breakdown, aiExplanation }: Pro
           />
         </svg>
         <div className="absolute flex flex-col items-center leading-none gap-2">
-          <span className="text-5xl font-extrabold tracking-tight tabular-nums" style={{ color: config.color }}>
+          <span className="text-5xl font-semibold tracking-tight tabular-nums" style={{ color: textColor }}>
             {score}
           </span>
           <span
-            className={cn('text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md', config.bg)}
-            style={{ color: config.color }}
+            className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md"
+            style={{
+              backgroundColor: config.accent ? `${INSIGHT_TOKENS.accent}14` : INSIGHT_TOKENS.surface,
+              color          : textColor,
+            }}
           >
             {config.label}
           </span>
         </div>
       </div>
 
-      {/* Breakdown + AI explanation */}
+      {/* Breakdown */}
       <div className="flex-1 w-full space-y-6">
         {bars.map(({ label, value, hint }) => (
           <div key={label} className="space-y-2">
             <div className="flex items-end justify-between px-0.5">
               <div className="space-y-0.5">
-                <span className="text-xs font-bold uppercase tracking-wider text-foreground/70">{label}</span>
-                <p className="text-[10px] text-muted-foreground/60">{hint}</p>
+                <span className="text-xs font-medium text-zinc-600">{label}</span>
+                <p className="text-[11px] text-zinc-400">{hint}</p>
               </div>
-              <span className="text-sm font-medium tabular-nums">{value}%</span>
+              <span className="text-sm font-semibold text-zinc-900 tabular-nums">{value}%</span>
             </div>
-            <div className="h-1 bg-muted/30 rounded-full overflow-hidden">
+            <div className="h-1 bg-zinc-100 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-1000 ease-out"
                 style={{
-                  width     : `${Math.min(value, 100)}%`,
-                  backgroundColor: config.color,
-                  opacity   : 0.6,
+                  width          : `${Math.min(value, 100)}%`,
+                  backgroundColor: arcColor,
                 }}
               />
             </div>
           </div>
         ))}
-
-        {aiExplanation && (
-          <div className="w-full pt-5 border-t border-muted/30 space-y-3">
-            <div className="flex items-start gap-2 bg-violet-500/[0.03] rounded-xl p-4">
-              <Info className="h-4 w-4 text-violet-500 mt-0.5 shrink-0" />
-              <div className="space-y-1.5">
-                <p className="text-xs font-bold text-foreground/70">{aiExplanation.reason}</p>
-                <p className="text-xs text-muted-foreground/70 leading-relaxed">{aiExplanation.detail}</p>
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-violet-500/60">
-                    Factor principal: {aiExplanation.main_factor}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
     </div>

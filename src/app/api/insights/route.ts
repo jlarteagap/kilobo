@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     console.log('[POST /api/insights] Refreshing insights for user', userId.slice(0, 8) + '...')
     const result = await insightsService.refreshInsights(userId, months)
-    console.log('[POST /api/insights] Done — ai_insights:', result.ai_insights ? 'present' : 'null')
+    console.log('[POST /api/insights] Done')
 
     return NextResponse.json({ data: result }, { status: 200 })
 

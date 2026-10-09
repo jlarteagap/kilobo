@@ -12,13 +12,13 @@ import {
   ArrowDownRight,
   Lightbulb,
   RefreshCw,
-  TrendingUp,
   AlertTriangle,
   ChevronRight,
   Sparkles,
 } from 'lucide-react'
 import Link   from 'next/link'
 import { cn } from '@/lib/utils'
+import { INSIGHT_TOKENS } from '@/features/insights/chart-tokens'
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -29,12 +29,10 @@ function ScoreRing({ score, grade }: { score: number; grade: string }) {
   const circumference = 2 * Math.PI * normalised
   const offset      = circumference - (score / 100) * circumference
 
-  const gradeColor =
-    grade === 'A' ? '#22c55e'
-    : grade === 'B' ? '#84cc16'
-    : grade === 'C' ? '#eab308'
-    : grade === 'D' ? '#f97316'
-    : '#ef4444'
+  // A/B = acento emerald, resto = zinc-800. El grado va escrito al lado.
+  const ringColor = grade === 'A' || grade === 'B'
+    ? INSIGHT_TOKENS.accent
+    : INSIGHT_TOKENS.spend
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: 72, height: 72 }}>
@@ -45,13 +43,13 @@ function ScoreRing({ score, grade }: { score: number; grade: string }) {
           fill="none"
           stroke="currentColor"
           strokeWidth={stroke}
-          className="text-muted/20"
+          className="text-zinc-100"
         />
         {/* Progress */}
         <circle
           cx={36} cy={36} r={normalised}
           fill="none"
-          stroke={gradeColor}
+          stroke={ringColor}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -60,10 +58,10 @@ function ScoreRing({ score, grade }: { score: number; grade: string }) {
         />
       </svg>
       <div className="absolute flex flex-col items-center leading-none">
-        <span className="text-lg font-bold" style={{ color: gradeColor }}>
+        <span className="text-lg font-semibold" style={{ color: ringColor }}>
           {grade}
         </span>
-        <span className="text-[10px] text-muted-foreground">{score}</span>
+        <span className="text-[10px] text-zinc-500 tabular-nums">{score}</span>
       </div>
     </div>
   )
@@ -106,8 +104,8 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
         style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
       >
         <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
-          <AlertTriangle className="h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
+          <AlertTriangle className="h-8 w-8 text-zinc-400" />
+          <p className="text-sm text-zinc-500">
             No se pudo cargar el análisis
           </p>
           <Button variant="ghost" size="sm" onClick={() => refresh()}>
@@ -118,15 +116,12 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
     )
   }
 
-  const { payload, ai_insights, generated_at, from_cache } = data
+  const { payload, generated_at, from_cache } = data
   const { health_score, anomalies, saving_opportunities }  = payload
 
-  // Tomar la anomalía más severa y el mejor tip
+  // Todo el widget se alimenta de los algoritmos determinísticos.
   const topAnomaly = anomalies[0]
-  const topTip     = ai_insights?.saving_tips?.[0]
-    ?? (saving_opportunities[0]
-      ? { tip: saving_opportunities[0].insight, category_id: saving_opportunities[0].category_id }
-      : null)
+  const topTip     = saving_opportunities[0]
 
   const generatedLabel = from_cache
     ? `Actualizado ${new Date(generated_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}`
@@ -140,15 +135,15 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
         <div className="flex items-center justify-between">
           {/* Title */}
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#5F7D42]" />
-            <span className="text-sm font-bold text-foreground tracking-[-0.01em]">
+            <Sparkles className="h-4 w-4" style={{ color: INSIGHT_TOKENS.accent }} />
+            <span className="text-sm font-semibold text-zinc-900 tracking-[-0.01em]">
               Análisis financiero
             </span>
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-muted-foreground hidden sm:block">
+            <span className="text-[10px] text-zinc-400 hidden sm:block">
               {generatedLabel}
             </span>
             <Button
@@ -173,7 +168,7 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
             grade={health_score.grade}
           />
           <div className="flex-1 space-y-1.5">
-            <p className="text-xs font-medium text-foreground">
+            <p className="text-xs font-medium text-zinc-900">
               Salud financiera
             </p>
             {/* Breakdown mini-bars */}
@@ -183,16 +178,19 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
               { label: 'Adherencia',   value: health_score.breakdown.budget_adherence },
             ].map(({ label, value }) => (
               <div key={label} className="flex items-center gap-2">
-                <span className="text-[10px] text-muted-foreground w-16 shrink-0">
+                <span className="text-[10px] text-zinc-500 w-16 shrink-0">
                   {label}
                 </span>
-                <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                <div className="flex-1 h-1 bg-zinc-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-violet-500 rounded-full transition-all duration-700"
-                    style={{ width: `${Math.min(value, 100)}%` }}
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width          : `${Math.min(value, 100)}%`,
+                      backgroundColor: INSIGHT_TOKENS.spend,
+                    }}
                   />
                 </div>
-                <span className="text-[10px] text-muted-foreground w-6 text-right">
+                <span className="text-[10px] text-zinc-500 w-6 text-right tabular-nums">
                   {value}
                 </span>
               </div>
@@ -201,32 +199,22 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-border/50" />
+        <div className="h-px bg-zinc-100" />
 
         {/* Top Anomaly */}
         {topAnomaly && (
-          <div className={cn(
-            'rounded-xl px-3 py-2.5 flex items-start gap-3',
-            topAnomaly.severity === 'high'   && 'bg-red-500/8 border border-red-500/20',
-            topAnomaly.severity === 'medium' && 'bg-amber-500/8 border border-amber-500/20',
-            topAnomaly.severity === 'low'    && 'bg-blue-500/8 border border-blue-500/20',
-          )}>
-            <AlertTriangle className={cn(
-              'h-4 w-4 mt-0.5 shrink-0',
-              topAnomaly.severity === 'high'   && 'text-red-500',
-              topAnomaly.severity === 'medium' && 'text-amber-500',
-              topAnomaly.severity === 'low'    && 'text-blue-500',
-            )} />
+          <div className="rounded-xl px-3 py-2.5 flex items-start gap-3 bg-zinc-50 border border-zinc-200">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-zinc-500" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium truncate">
+                <span className="text-xs font-medium truncate text-zinc-900">
                   {topAnomaly.category_name}
                 </span>
                 <Badge
                   variant="secondary"
                   className={cn(
                     'text-[10px] px-1.5 py-0 h-4 shrink-0',
-                    topAnomaly.delta_pct > 0 ? 'text-red-600' : 'text-green-600',
+                    topAnomaly.delta_pct > 0 ? 'text-zinc-800' : 'text-[#059669]',
                   )}
                 >
                   {topAnomaly.delta_pct > 0 ? (
@@ -237,10 +225,9 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
                   {Math.abs(topAnomaly.delta_pct)}%
                 </Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
-                {ai_insights?.anomaly_explanations?.find(
-                  a => a.category_id === topAnomaly.category_id
-                )?.explanation ?? `$${topAnomaly.current_amount} vs $${topAnomaly.average_amount} promedio`}
+              <p className="text-[11px] text-zinc-500 mt-0.5 line-clamp-2">
+                ${Math.round(topAnomaly.current_amount)} este mes contra un promedio de $
+                {Math.round(topAnomaly.baseline_amount)}
               </p>
             </div>
           </div>
@@ -248,27 +235,22 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
 
         {/* Top Tip */}
         {topTip && (
-          <div className="rounded-xl px-3 py-2.5 flex items-start gap-3 bg-[#F2F9E3] border border-[#C8D9A9]/40">
-            <Lightbulb className="h-4 w-4 mt-0.5 text-[#4F6A35] shrink-0" />
+          <div
+            className="rounded-xl px-3 py-2.5 flex items-start gap-3 border"
+            style={{
+              backgroundColor : `${INSIGHT_TOKENS.accent}0D`,
+              borderColor     : `${INSIGHT_TOKENS.accent}26`,
+            }}
+          >
+            <Lightbulb className="h-4 w-4 mt-0.5 shrink-0" style={{ color: INSIGHT_TOKENS.accent }} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium">Tip de ahorro</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
-                {topTip.tip}
+              <p className="text-xs font-medium text-zinc-900">
+                {topTip.category_name}
+              </p>
+              <p className="text-[11px] text-zinc-500 mt-0.5 line-clamp-2">
+                Ahorrar ~${Math.round(topTip.potential_saving)}/mes
               </p>
             </div>
-          </div>
-        )}
-
-        {/* Projection preview */}
-        {ai_insights?.projection && (
-          <div className="rounded-xl px-3 py-2.5 flex items-center gap-3 bg-muted/40">
-            <TrendingUp className="h-4 w-4 text-muted-foreground shrink-0" />
-            <p className="text-[11px] text-muted-foreground flex-1 line-clamp-1">
-              {ai_insights.projection.narrative}
-            </p>
-            <span className="text-xs font-semibold text-foreground shrink-0">
-              ${ai_insights.projection.next_month_estimate.toLocaleString()}
-            </span>
           </div>
         )}
 
@@ -277,7 +259,7 @@ export function InsightsWidget({ months = 3 }: { months?: number }) {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full h-8 text-xs text-muted-foreground hover:text-foreground group"
+            className="w-full h-8 text-xs text-zinc-500 hover:text-zinc-900 group"
           >
             Ver análisis completo
             <ChevronRight className="h-3.5 w-3.5 ml-1 group-hover:translate-x-0.5 transition-transform" />

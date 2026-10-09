@@ -2,7 +2,6 @@
 
 import { getFirestore } from 'firebase-admin/firestore'
 import { InsightsPayload } from '@/lib/insights/algorithms'
-import { AIInsights } from '@/lib/insights/ai-narrator'
 import { CachedInsights } from '@/types/insights'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -14,9 +13,10 @@ function isExpired(cached: CachedInsights): boolean {
   return new Date() > new Date(cached.expires_at)
 }
 
-function buildDocId(userId: string): string {
-  // Un solo documento "latest" por usuario — siempre sobreescribe
-  return `${userId}_latest`
+function buildDocId(userId: string, periodMonths: number): string {
+  // El id incluye el período: un caché de 3 meses no puede servirse
+  // como si fuera de 6, y viceversa.
+  return `${userId}_${periodMonths}m`
 }
 
 function buildExpiresAt(from: Date = new Date()): string {
@@ -30,12 +30,12 @@ function buildExpiresAt(from: Date = new Date()): string {
 export const insightsRepository = {
 
   /**
-   * Busca el caché vigente para un usuario.
+   * Busca el caché vigente para un usuario y período.
    * Retorna null si no existe o si expiró.
    */
-  async findLatest(userId: string): Promise<CachedInsights | null> {
+  async findLatest(userId: string, periodMonths: number): Promise<CachedInsights | null> {
     const db     = getFirestore()
-    const docRef = db.collection(COLLECTION).doc(buildDocId(userId))
+    const docRef = db.collection(COLLECTION).doc(buildDocId(userId, periodMonths))
     const snap   = await docRef.get()
 
     if (!snap.exists) return null
@@ -57,18 +57,16 @@ export const insightsRepository = {
   async save(
     userId      : string,
     payload     : InsightsPayload,
-    aiInsights  : AIInsights | null,
     periodMonths: number,
   ): Promise<CachedInsights> {
     const db     = getFirestore()
-    const docId  = buildDocId(userId)
+    const docId  = buildDocId(userId, periodMonths)
     const now    = new Date()
 
     const doc: CachedInsights = {
       id           : docId,
       user_id      : userId,
       payload,
-      ai_insights  : aiInsights,
       generated_at : now.toISOString(),
       expires_at   : buildExpiresAt(now),
       period_months: periodMonths,
@@ -83,9 +81,9 @@ export const insightsRepository = {
    * Fuerza la invalidación del caché (llamado desde el botón "Regenerar").
    * Solo marca como expirado actualizando expires_at al pasado.
    */
-  async invalidate(userId: string): Promise<void> {
+  async invalidate(userId: string, periodMonths: number): Promise<void> {
     const db     = getFirestore()
-    const docRef = db.collection(COLLECTION).doc(buildDocId(userId))
+    const docRef = db.collection(COLLECTION).doc(buildDocId(userId, periodMonths))
     const snap   = await docRef.get()
 
     if (!snap.exists) return

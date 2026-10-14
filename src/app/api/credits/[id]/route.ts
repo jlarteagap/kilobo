@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { payInstallmentsSchema } from '@/lib/validations/credit.schema'
 import { getUserId } from '@/lib/auth.server'
 import { creditsService } from '@/services/credits.service'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -31,6 +32,9 @@ export async function GET(req: NextRequest, { params }: Params) {
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -44,6 +48,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

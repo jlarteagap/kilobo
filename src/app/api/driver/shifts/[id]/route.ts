@@ -3,8 +3,12 @@ import { driverService } from '@/services/driver.service'
 import { getUserId } from '@/lib/auth.server'
 import { shiftSchema } from '@/lib/validations/driver.schema'
 import type { ShiftInput } from '@/types/driver'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })
@@ -20,6 +24,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })

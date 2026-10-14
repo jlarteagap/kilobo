@@ -3,6 +3,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { insightsService }           from '@/services/insights.service'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
+import { guardedRateLimit } from '@/lib/rate-limit'
+
+/** Umbral por usuario: un refresh manual cada 30 s de media es holgado. */
+const INSIGHTS_REFRESH_LIMIT = { max: 5, windowSec: 60 } as const
+
+/**
+ * Acota el periodo a un rango válido de meses. `parseInt` neutraliza entradas
+ * no numéricas como "abc" (que antes producían NaN) y el clamp impide tanto 0
+ * como valores desproporcionados que acabarían en el id del documento de caché.
+ */
+function clampMonths(value: unknown): number {
+  const n = parseInt(String(value ?? 3), 10)
+  return Math.min(Math.max(Number.isFinite(n) && n > 0 ? n : 3, 1), 6)
+}
 
 // ─── GET /api/insights ────────────────────────────────────────────────────────
 // Retorna insights desde caché o genera uno nuevo
@@ -15,10 +30,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url)
-    const months = Math.min(
-      parseInt(searchParams.get('months') ?? '3', 10),
-      6,    // máximo 6 meses para limitar tokens enviados a la IA
-    )
+    const months = clampMonths(searchParams.get('months') ?? 3)
 
     const result = await insightsService.getInsights(userId, months)
 
@@ -37,14 +49,27 @@ export async function GET(req: NextRequest) {
 // Fuerza regeneración ignorando el caché
 
 export async function POST(req: NextRequest) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // El refresh descarta la caché de 24 h y relee el historial para recalcular.
+    // Sin límite, es el bucle más barato de amplificar lecturas.
+    const rate = await guardedRateLimit('insights-refresh', userId, INSIGHTS_REFRESH_LIMIT)
+    if (!rate.ok) {
+      return NextResponse.json(
+        { error: 'Demasiados refrescos seguidos' },
+        { status: 429, headers: { 'Retry-After': String(rate.retryAfterSec) } },
+      )
+    }
+
     const body   = await req.json().catch(() => ({}))
-    const months = Math.min(body.months ?? 3, 6)
+    const months = clampMonths(body?.months)
 
     console.log('[POST /api/insights] Refreshing insights for user', userId.slice(0, 8) + '...')
     const result = await insightsService.refreshInsights(userId, months)

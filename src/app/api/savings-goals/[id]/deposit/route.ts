@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { savingsGoalService } from '@/services/savings-goal.service'
 import { depositSavingsGoalSchema } from '@/lib/validations/savings-goal.schema'
 import { getUserId } from '@/lib/auth.server'
-import { handleError } from '@/lib/api-utils'
+import { handleError, assertSameOrigin } from '@/lib/api-utils'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

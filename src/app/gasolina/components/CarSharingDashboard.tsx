@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useCarAccess } from './CarAccessGate'
 
 interface CarSharingDashboardProps {
   activeCycle: CarCycle
@@ -55,6 +56,7 @@ function SectionHeader({
 }
 
 export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDashboardProps) {
+  const { canWrite } = useCarAccess()
   const [isPending, startTransition] = useTransition()
 
   const [userName, setUserName] = useState<string>(DEFAULT_USERS[0])
@@ -109,6 +111,7 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
 
     startTransition(async () => {
       try {
+        if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
         await addTripAction({
           userName: finalUserName,
           initialKm: initKm,
@@ -137,6 +140,7 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
 
     startTransition(async () => {
       try {
+        if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
         await deleteTripAction(createdAt)
         toast.success('Viaje eliminado')
       } catch {
@@ -172,6 +176,7 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
 
     startTransition(async () => {
       try {
+        if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
         await updateTripAction(createdAt, { userName: finalUserName, finalKm: curKm })
         setEditingTripId(null)
         toast.success('Viaje actualizado')
@@ -200,6 +205,7 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
 
     startTransition(async () => {
       try {
+        if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
         await closeCycleAction(amount, paidBy, liters)
         setGasAmount('')
         setGasLiters('')
@@ -213,6 +219,7 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
   const handleDeleteCycle = (id: string) => {
     startTransition(async () => {
       try {
+        if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
         await deleteCycleAction(id)
         toast.success('Cuenta eliminada')
       } catch {

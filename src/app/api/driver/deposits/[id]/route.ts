@@ -3,9 +3,13 @@ import { driverDepositService } from '@/services/driver-deposit.service'
 import { getUserId } from '@/lib/auth.server'
 import { depositSchema } from '@/lib/validations/driver.schema'
 import type { DepositInput } from '@/types/driver'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 // PATCH /api/driver/deposits/[id] → actualiza un depósito
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })
@@ -28,6 +32,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 // DELETE /api/driver/deposits/[id] → elimina un depósito
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })

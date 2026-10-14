@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { investmentsService } from '@/services/investments.service'
 import { executeRecurringBuySchema } from '@/lib/validations/investment.schema'
 import { getUserId } from '@/lib/auth.server'
-import { handleError } from '@/lib/api-utils'
+import { handleError, assertSameOrigin } from '@/lib/api-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -13,6 +13,9 @@ const statusMap: Record<string, number> = {
 }
 
 export async function POST(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

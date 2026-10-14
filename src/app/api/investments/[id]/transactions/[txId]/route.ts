@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { investmentsService } from '@/services/investments.service'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 type Params = { params: Promise<{ id: string; txId: string }> }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(_req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

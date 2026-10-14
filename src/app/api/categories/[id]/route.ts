@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { categoryService } from '@/services/category.service'
 import { updateCategorySchema } from '@/lib/validations/category.schema'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -11,6 +12,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: Params
 ) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -38,6 +42,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: Params
 ) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

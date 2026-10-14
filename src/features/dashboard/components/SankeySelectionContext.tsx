@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useMemo } from "react"
-import type { SankeyData } from "../hooks/useCashflowData"
+import type { SankeyData } from "@/lib/metrics/dashboard-metrics"
 
 interface SankeySelectionValue {
   selectedIdx: number | null

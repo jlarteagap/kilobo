@@ -1,16 +1,16 @@
 // features/transactions/TransactionsPage.tsx
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Plus, Download } from "lucide-react"
 
 import AppLayout          from "@/components/layout/AppLayout"
-import { useTransactions } from "@/features/transactions/hooks/useTransactions"
+import { useTransactions, useTransactionTotals } from "@/features/transactions/hooks/useTransactions"
 import { useAccounts }     from "@/features/accounts/hooks/useAccounts"
 import { useCategories }   from "@/features/categories/hooks/useCategories"
 import { useProjects }     from "@/features/projects/hooks/useProjects"
 
-import { useTransactionFilters } from "@/features/transactions/hooks/useTransactionFilters"
+import { useTransactionFilters, useTransactionFilterState, toServerFilters } from "@/features/transactions/hooks/useTransactionFilters"
 import { useTransactionMetrics } from "@/features/transactions/hooks/useTransactionMetrics"
 
 import { PeriodSelector }      from "./components/PeriodSelector"
@@ -46,22 +46,46 @@ import { buildTransactionRows, exportToCSV } from "@/features/transactions/utils
 export default function TransactionsPage() {
   const [open, setOpen] = useState(false)
 
-  const { data: transactions = [], isLoading: loadingTx,  error: txError  } = useTransactions()
+  // El estado de filtros va ANTES de la petición: el periodo es lo que acota
+  // la consulta en el servidor.
+  const filterState = useTransactionFilterState()
+  const { filters } = filterState
+
+  const serverFilters = useMemo(() => toServerFilters(filters), [filters])
+
+  const {
+    data,
+    isLoading: loadingTx,
+    error: txError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useTransactions(serverFilters)
+
   const { data: accounts     = [], isLoading: loadingAcc                  } = useAccounts()
   const { data: categories   = [], isLoading: loadingCat                  } = useCategories()
   const { data: projects     = [], isLoading: loadingProj                 } = useProjects()
 
+  // Solo lo que el usuario ha recorrido: la tabla crece con "cargar más".
+  const transactions = useMemo(
+    () => (data?.pages ?? []).flatMap((p) => p.items),
+    [data],
+  )
 
   const isLoading = loadingTx || loadingAcc || loadingCat || loadingProj
   const isError   = !!txError
 
-  // ── Filtros — hook centralizado ─────────────────────────────────────────────
   const {
-    filters,
     filtered,
     activeFilterCount,
     availableTags,
-    stats,
+  } = useTransactionFilters(transactions, filters)
+
+  // Los totales cubren el conjunto filtrado completo, no solo las páginas
+  // cargadas: mostrarlos sobre una página sería informar mal sin avisar.
+  const { data: serverTotals } = useTransactionTotals(serverFilters)
+
+  const {
     setPeriod,
     setAccountId,
     setCategoryId,
@@ -70,7 +94,7 @@ export default function TransactionsPage() {
     setType,
     resetFilters,
     resetSecondaryFilters,
-  } = useTransactionFilters(transactions)
+  } = filterState
 
   // ── Métricas — sobre transacciones filtradas por período ───────────────────
   // Para analytics usamos todas las transacciones del período sin filtros secundarios
@@ -184,7 +208,7 @@ export default function TransactionsPage() {
                   Movimientos
                 </h2>
                 <p className="text-[11px] text-zinc-500 mt-0.5">
-                  {filtered.length} transaccion{filtered.length !== 1 ? 'es' : ''}
+                  {serverTotals?.total ?? 0} transaccion{(serverTotals?.total ?? 0) !== 1 ? 'es' : ''}
                 </p>
               </div>
 
@@ -194,22 +218,22 @@ export default function TransactionsPage() {
                   <div className="text-right sm:text-left md:text-right">
                     <p className="text-[11px] text-zinc-500">Ingresos</p>
                     <p className="text-[13px] font-semibold text-[#059669]">
-                      {formatCurrency(stats.income, 'BOB')}
+                      {formatCurrency(serverTotals?.income ?? 0, 'BOB')}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-[11px] text-zinc-500">Gastos</p>
                     <p className="text-[13px] font-semibold text-zinc-800">
-                      {formatCurrency(stats.expense, 'BOB')}
+                      {formatCurrency(serverTotals?.expense ?? 0, 'BOB')}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-[11px] text-zinc-500">Neto</p>
                     <p className={cn(
                       'text-[13px] font-semibold',
-                      stats.net >= 0 ? 'text-[#059669]' : 'text-zinc-800'
+                      (serverTotals?.net ?? 0) >= 0 ? 'text-[#059669]' : 'text-zinc-800'
                     )}>
-                      {formatCurrency(stats.net, 'BOB')}
+                      {formatCurrency(serverTotals?.net ?? 0, 'BOB')}
                     </p>
                   </div>
                 </>
@@ -255,6 +279,23 @@ export default function TransactionsPage() {
             projects={projects}
             loading={isLoading}
           />
+
+          {/* La lista llega paginada: se revela a medida que se recorre.
+              Antes venía el historial entero en cada visita. */}
+          {hasNextPage && (
+            <div className="flex flex-col items-center gap-1 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? 'Cargando…' : 'Cargar más'}
+              </Button>
+              <p className="text-[11px] text-muted-foreground">
+                Mostrando {filtered.length} de {serverTotals?.total ?? filtered.length}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </AppLayout>

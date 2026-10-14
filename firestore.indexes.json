@@ -4,60 +4,367 @@
       "collectionGroup": "budgets",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "user_id", "order": "ASCENDING" },
-        { "fieldPath": "created_at", "order": "DESCENDING" }
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "created_at",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "budgets",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "is_active", "order": "ASCENDING" },
-        { "fieldPath": "user_id", "order": "ASCENDING" },
-        { "fieldPath": "created_at", "order": "DESCENDING" }
+        {
+          "fieldPath": "is_active",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "created_at",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "car_maintenance_logs",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "type", "order": "ASCENDING" },
-        { "fieldPath": "date", "order": "DESCENDING" }
+        {
+          "fieldPath": "type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "driver_shifts",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "user_id", "order": "ASCENDING" },
-        { "fieldPath": "date", "order": "DESCENDING" }
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "driver_deposits",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "user_id", "order": "ASCENDING" },
-        { "fieldPath": "date", "order": "DESCENDING" }
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "car_sharing_cycles",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "endDate", "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "endDate",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "account_balance_changes",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "user_id", "order": "ASCENDING" },
-        { "fieldPath": "account_id", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "account_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "transactions",
+      "queryScope": "COLLECTION",
+      "comment": "categoriesRepository.isTagUsedInTransactions",
+      "fields": [
+        {
+          "fieldPath": "category_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "transactions",
+      "queryScope": "COLLECTION",
+      "comment": "categoriesRepository.isCategoryInUse",
+      "fields": [
+        {
+          "fieldPath": "category_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "tag",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "transactions",
+      "queryScope": "COLLECTION",
+      "comment": "accountsRepository.isAccountInUse — origen",
+      "fields": [
+        {
+          "fieldPath": "account_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "transactions",
+      "queryScope": "COLLECTION",
+      "comment": "accountsRepository.isAccountInUse — destino de transferencias",
+      "fields": [
+        {
+          "fieldPath": "to_account_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "transactions",
+      "queryScope": "COLLECTION",
+      "comment": "investmentsRepository.findTransactions — orden por fecha y alta",
+      "fields": [
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "created_at",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "transactions",
+      "queryScope": "COLLECTION",
+      "comment": "transactionsRepository.findByPeriod — métricas agregadas del dashboard",
+      "fields": [
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "investments",
+      "queryScope": "COLLECTION",
+      "comment": "investmentsRepository.findAll",
+      "fields": [
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "investments",
+      "queryScope": "COLLECTION",
+      "comment": "investmentsRepository.findByAccount",
+      "fields": [
+        {
+          "fieldPath": "account_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "investments",
+      "queryScope": "COLLECTION",
+      "comment": "accountsRepository.isAccountInUse",
+      "fields": [
+        {
+          "fieldPath": "account_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "credits",
+      "queryScope": "COLLECTION",
+      "comment": "creditsRepository.findUpcomingInstallments",
+      "fields": [
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "credits",
+      "queryScope": "COLLECTION",
+      "comment": "accountsRepository.isAccountInUse",
+      "fields": [
+        {
+          "fieldPath": "account_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "debts",
+      "queryScope": "COLLECTION",
+      "comment": "accountsRepository.isAccountInUse",
+      "fields": [
+        {
+          "fieldPath": "account_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "savings_goals",
+      "queryScope": "COLLECTION",
+      "comment": "accountsRepository.isAccountInUse",
+      "fields": [
+        {
+          "fieldPath": "account_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "projects",
+      "queryScope": "COLLECTION",
+      "comment": "projectRepository.findAll",
+      "fields": [
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "transactions",
+      "queryScope": "COLLECTION",
+      "comment": "findPage / findByFilters con filtros. Un solo índice cubre todas las combinaciones: los campos de igualdad van en cualquier orden y la consulta usa los que necesite.",
+      "fields": [
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "account_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "category_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "project_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "tag",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
       ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    {
+      "collectionGroup": "rate_limits",
+      "fieldPath": "expires_at",
+      "indexes": []
+    }
+  ]
 }

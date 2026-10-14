@@ -4,6 +4,7 @@ import AppLayout from '@/components/layout/AppLayout'
 import { useUserPreferences, useUpdatePreferences } from '@/features/settings/hooks/usePreferences'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Coins, Info } from 'lucide-react'
+import { AccountDataCard } from './components/AccountDataCard'
 
 const CURRENCY_OPTIONS = [
   { value: 'BOB', label: 'Boliviano (Bs)', code: 'BOB' },
@@ -89,6 +90,9 @@ export default function AjustesPage() {
             </div>
           )}
         </div>
+
+        {/* Datos de la cuenta */}
+        <AccountDataCard />
 
         {/* Nota cripto */}
         <div className="flex items-start gap-3 rounded-[22px] bg-zinc-50 px-5 py-4">

@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils'
 import { setAbsoluteOdometerAction } from '../maintenance.actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useCarAccess } from './CarAccessGate'
+import { toast } from 'sonner'
 
 interface MaintenanceWidgetsProps {
   absoluteOdometer: number | null
@@ -84,6 +86,7 @@ function StatusCard({
 }
 
 export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidgetsProps) {
+  const { canWrite } = useCarAccess()
   const [activeModalType, setActiveModalType] = useState<MaintenanceType | null>(null)
   const [isSettingOdo, setIsSettingOdo] = useState(false)
   const [initialOdo, setInitialOdo] = useState('')
@@ -115,7 +118,7 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
             <Button
               onClick={() => {
                 const val = parseInt(initialOdo, 10)
-                if (!isNaN(val) && val >= 0) setAbsoluteOdometerAction(val)
+                if (!isNaN(val) && val >= 0) { if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return } setAbsoluteOdometerAction(val) }
               }}
               className="h-11 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 px-5"
             >
@@ -194,6 +197,7 @@ export function MaintenanceWidgets({ absoluteOdometer, logs }: MaintenanceWidget
               onClick={() => {
                 const val = parseInt(initialOdo, 10)
                 if (!isNaN(val) && val >= 0) {
+                  if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
                   setAbsoluteOdometerAction(val)
                   setIsSettingOdo(false)
                   setInitialOdo('')

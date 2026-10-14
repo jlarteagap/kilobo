@@ -50,10 +50,13 @@ function useRollingBoundary(): Date {
   return boundary
 }
 
-// Lee la ancla de la variación diaria para cada cuenta en paralelo: el cambio
-// más reciente anterior al inicio del periodo (4:00 AM local). Con máximo 10
-// cuentas por usuario la carga es despreciable. Se recalcula solo al cruzar el
-// límite del día.
+// Lee la ancla de la variación diaria de todas las cuentas visibles: el cambio
+// más reciente anterior al inicio del periodo (4:00 AM local).
+//
+// Antes era una petición HTTP por cuenta, con hasta 10 viajes de red en cada
+// pantalla con tarjetas. Ahora es una sola petición con la lista de ids. La
+// diferencia es el número de peticiones, no el trabajo: el cálculo por cuenta
+// sigue siendo el mismo.
 export function useAccountBalanceChanges(accountIds: string[]) {
   const ids = accountIds.filter(Boolean)
   const uniqueIds = [...new Set(ids)]
@@ -62,23 +65,18 @@ export function useAccountBalanceChanges(accountIds: string[]) {
   return useQuery({
     queryKey: accountChangeKeys.all(before.toISOString(), uniqueIds),
     queryFn: async (): Promise<Record<string, AccountBalanceChange>> => {
-      const entries = await Promise.all(
-        uniqueIds.map(async (accountId) => {
-          const res = await apiFetch(
-            `/api/account-balance-changes?account_id=${encodeURIComponent(
-              accountId
-            )}&before=${encodeURIComponent(before.toISOString())}`
-          )
-          if (!res.ok) throw new Error('Error al obtener la variación diaria')
-          const data = await res.json()
-          return [accountId, mapChange(data.change)] as const
-        })
+      const res = await apiFetch(
+        `/api/account-balance-changes?account_ids=${encodeURIComponent(
+          uniqueIds.join(',')
+        )}&before=${encodeURIComponent(before.toISOString())}`
       )
+      if (!res.ok) throw new Error('Error al obtener la variación diaria')
 
+      const data = await res.json()
       return Object.fromEntries(
-        entries
+        Object.entries(data.changes ?? {})
+          .map(([id, raw]) => [id, mapChange(raw as RawAccountBalanceChange)] as const)
           .filter(([, change]) => change !== null)
-          .map(([accountId, change]) => [accountId, change])
       ) as Record<string, AccountBalanceChange>
     },
     enabled: uniqueIds.length > 0,

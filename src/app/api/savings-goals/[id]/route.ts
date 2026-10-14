@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { savingsGoalService } from '@/services/savings-goal.service'
 import { updateSavingsGoalSchema } from '@/lib/validations/savings-goal.schema'
 import { getUserId } from '@/lib/auth.server'
-import { handleError } from '@/lib/api-utils'
+import { handleError, assertSameOrigin } from '@/lib/api-utils'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -20,6 +20,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -40,6 +43,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const originError = assertSameOrigin(_req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

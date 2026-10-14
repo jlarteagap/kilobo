@@ -78,6 +78,22 @@ export const insightsRepository = {
   },
 
   /**
+   * Invalida TODOS los periodos cacheados del usuario.
+   *
+   * Se llama al escribir una transacción. Antes solo se invalidaba desde el
+   * botón "Regenerar", así que registrar un movimiento dejaba los insights
+   * desactualizados hasta 24 h (design.md D5).
+   */
+  async invalidateAll(userId: string): Promise<void> {
+    const db = getFirestore()
+    const snap = await db.collection(COLLECTION).where('user_id', '==', userId).get()
+    if (snap.empty) return
+    const batch = db.batch()
+    snap.docs.forEach((d) => batch.update(d.ref, { expires_at: new Date(0).toISOString() }))
+    await batch.commit()
+  },
+
+  /**
    * Fuerza la invalidación del caché (llamado desde el botón "Regenerar").
    * Solo marca como expirado actualizando expires_at al pasado.
    */

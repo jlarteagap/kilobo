@@ -1,6 +1,7 @@
 // services/budget.service.ts
 import { budgetRepository } from '@/repositories/budget.repository'
 import type { Budget, CreateBudgetData, UpdateBudgetData } from '@/types/budget'
+import { invalidateDashboardCache } from '@/services/dashboard.service'
 
 export const budgetService = {
   // ── Obtener todos ─────────────────────────────────────────────────────────
@@ -24,7 +25,9 @@ export const budgetService = {
       throw new Error('Los gastos fijos requieren un día de vencimiento.')
     }
 
-    return budgetRepository.create(data, userId)
+    const budget = await budgetRepository.create(data, userId)
+    await invalidateDashboardCache(userId)
+    return budget
   },
 
   // ── Actualizar ────────────────────────────────────────────────────────────
@@ -40,7 +43,9 @@ export const budgetService = {
       throw new Error('Los gastos fijos requieren un día de vencimiento.')
     }
 
-    return budgetRepository.update(id, data)
+    const updated = await budgetRepository.update(id, data)
+    await invalidateDashboardCache(userId)
+    return updated
   },
 
   // ── Archivar ──────────────────────────────────────────────────────────────
@@ -48,7 +53,9 @@ export const budgetService = {
     const budget = await budgetRepository.findById(id, userId)
     if (!budget) throw new Error('Presupuesto no encontrado.')
     if (!budget.is_active) throw new Error('El presupuesto ya está archivado.')
-    return budgetRepository.archive(id)
+    const archived = await budgetRepository.archive(id)
+    await invalidateDashboardCache(userId)
+    return archived
   },
 
   // ── Eliminar ──────────────────────────────────────────────────────────────
@@ -61,6 +68,7 @@ export const budgetService = {
       throw new Error('Archiva el presupuesto antes de eliminarlo.')
     }
 
-    return budgetRepository.delete(id)
+    await budgetRepository.delete(id)
+    await invalidateDashboardCache(userId)
   },
 }

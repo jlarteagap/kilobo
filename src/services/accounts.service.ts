@@ -4,6 +4,7 @@ import { CreateAccountInput, UpdateAccountInput } from '@/lib/validations/accoun
 import { Account } from '@/types/account'
 import { adminDb } from '@/lib/firebase.admin'
 import { FieldValue } from 'firebase-admin/firestore'
+import { invalidateDashboardCache } from '@/services/dashboard.service'
 
 export const accountsService = {
     async getAccounts(userId: string): Promise<Account[]> {
@@ -52,13 +53,16 @@ export const accountsService = {
       await batch.commit()
 
       const updated = await adminDb.collection('accounts').doc(accountId).get()
+      await invalidateDashboardCache(userId)
       return { id: accountId, ...(updated.data() as Omit<Account, 'id'>) }
     }
 
-    return accountsRepository.update(accountId, data)
+    const updated = await accountsRepository.update(accountId, data)
+    await invalidateDashboardCache(userId)
+    return updated
   },
 
-async deleteAccount(accountId: string, userId: string): Promise<void> {
+  async deleteAccount(accountId: string, userId: string): Promise<void> {
   const account = await accountsRepository.findById(accountId, userId)
   if (!account) throw new Error('Cuenta no encontrada.')
 
@@ -67,7 +71,8 @@ async deleteAccount(accountId: string, userId: string): Promise<void> {
     throw new Error('No se puede eliminar una cuenta que está en uso. Archívala para ocultarla.')
   }
 
-  return accountsRepository.delete(accountId)
+  await accountsRepository.delete(accountId)
+  await invalidateDashboardCache(userId)
 },
 }
 

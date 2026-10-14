@@ -97,3 +97,17 @@ export interface ChartDataPoint {
   incomeByCurrency?: Record<string, number>
   expenseByCurrency?: Record<string, number>
 }
+/**
+ * Transacción recortada para el widget de recientes del dashboard.
+ *
+ * La ruta de métricas agregadas devuelve solo los campos que el widget lee, en
+ * lugar de la transacción entera: el dashboard ya no carga el historial, y
+ * devolver de más tampoco suma.
+ */
+export type RecentTransaction = Pick<
+  Transaction,
+  'id' | 'date' | 'type' | 'amount' | 'currency' | 'description'
+> & {
+  /** Solo el badge del widget: nombre e icono, no la categoría entera. */
+  category?: { name: string; icon?: string } | null
+}

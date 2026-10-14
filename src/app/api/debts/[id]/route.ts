@@ -3,11 +3,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { debtService } from '@/services/debt.service'
 import { createDebtPaymentSchema } from '@/lib/validations/debt.schema'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
 // Registrar pago
 export async function POST(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -27,6 +31,9 @@ export async function POST(req: NextRequest, { params }: Params) {
 
 // Cancelar deuda
 export async function PATCH(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -41,6 +48,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 // Eliminar deuda
 export async function DELETE(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

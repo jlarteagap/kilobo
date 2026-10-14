@@ -5,6 +5,7 @@ import { ChevronDown, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { resetAllAction } from '../actions'
 import { cn } from '@/lib/utils'
+import { useCarAccess } from './CarAccessGate'
 
 /**
  * Acciones destructivas, separadas del flujo normal y cerradas por defecto: un
@@ -17,6 +18,7 @@ import { cn } from '@/lib/utils'
  * informada; el odometro se reencuadra a mano desde "Actualizar odometro".
  */
 export function DangerZone() {
+  const { canWrite } = useCarAccess()
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
@@ -31,6 +33,7 @@ export function DangerZone() {
 
     startTransition(async () => {
       try {
+        if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
         await resetAllAction()
         setOpen(false)
         toast.success('Historial borrado')

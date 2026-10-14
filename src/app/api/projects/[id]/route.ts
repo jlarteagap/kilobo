@@ -3,11 +3,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { projectService } from '@/services/project.service'
 import { updateProjectSchema } from '@/lib/validations/project.schema'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -29,6 +33,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

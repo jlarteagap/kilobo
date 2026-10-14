@@ -19,6 +19,7 @@ import {
 } from '@/app/gasolina/utils/format'
 import { setCycleSettledAction, updateClosedCycleAction } from '../actions'
 import { cn } from '@/lib/utils'
+import { useCarAccess } from './CarAccessGate'
 
 interface PendingAccountsProps {
   cycles: CarCycle[]
@@ -77,6 +78,7 @@ function CycleEditForm({
   people: string[]
   onDone: () => void
 }) {
+  const { canWrite } = useCarAccess()
   const [amount, setAmount] = useState(String(cycle.gasAmount))
   const [liters, setLiters] = useState(cycle.gasLiters ? String(cycle.gasLiters) : '')
   const [payer, setPayer] = useState(cycle.paidBy ?? people[0] ?? '')
@@ -101,6 +103,7 @@ function CycleEditForm({
 
     startTransition(async () => {
       try {
+        if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
         await updateClosedCycleAction(cycle.id, {
           gasAmount: amountNum,
           gasLiters: litersNum,
@@ -195,6 +198,7 @@ function CycleRow({
   onSettled: (id: string, settled: boolean) => void
   onDelete: (id: string) => void
 }) {
+  const { canWrite } = useCarAccess()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(false)
   const [isBusy, startTransition] = useTransition()
@@ -218,6 +222,7 @@ function CycleRow({
 
   const handleToggleSettled = () => {
     const next = !cycle.settledAt
+    if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
     startTransition(async () => {
       try {
         await onSettled(cycle.id, next)

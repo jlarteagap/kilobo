@@ -2,6 +2,7 @@ import { driverService } from '@/services/driver.service'
 import { getUserId } from '@/lib/auth.server'
 import { shiftSchema, monthQuerySchema } from '@/lib/validations/driver.schema'
 import type { ShiftInput } from '@/types/driver'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 export async function GET(req: Request) {
   try {
@@ -42,6 +43,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })

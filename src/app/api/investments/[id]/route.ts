@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { investmentsService } from '@/services/investments.service'
 import { updateInvestmentSchema } from '@/lib/validations/investment.schema'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function PUT(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -26,6 +30,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(_req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

@@ -5,6 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.11] - 2026-10-14
+
+Cierra el vector de escritura abierta en `/gasolina`, cumple los derechos de supresión
+y portabilidad, y mueve la agregación del dashboard al servidor. Verificado contra el
+proyecto real: **1.444 transacciones de historial → 86 del periodo**, con las cifras
+idénticas.
+
+### Added
+- **Control de acceso en `/gasolina`**: Las 8 Server Actions mutantes y las 3 de mantenimiento exigen un token compartido (`src/lib/car-access.ts`). La lectura sigue pública a propósito: el caso de uso es consultar el estado desde el vehículo sin escribir credenciales. El estado es compartido entre varias personas y **no pertenece a un usuario**, así que un token era el control adecuado —no un `user_id`— y eso evitó tener que migrar las colecciones globales.
+- **Páginas legales** (`/privacidad`, `/términos`): El footer enlazaba a "Privacidad" y "Términos" con `href="#"`, documentos que no existían. Ambos están redactados y son alcanzables **sin sesión**: con `middleware` habría redirigido a `/login`, dejando sin política justo a quien no puede entrar.
+- **Borrado de cuenta y exportación de datos** (`Ajustes`): `adminAuth.deleteUser()` nunca se llamaba y no había forma de eliminar los datos. El borrado recorre un manifiesto explícito de 16 colecciones por lotes y con paginación, reporta el resultado por colección en vez de aparentar un borrado total, y revoca la sesión. La exportación devuelve un JSON con los datos propios. La eliminación pide escribir `DELETE_MY_ACCOUNT`.
+- **Rate limiting** sobre contadores en Firestore: No existía ninguno. Se aplica a creación de sesión, refresco de insights y las mutaciones públicas. **Rechazar no escribe**: un cliente bloqueado cuesta 1 lectura, no una escritura — eso corta la amplificación, que es lo que cuesta.
+- **Métricas agregadas del dashboard** (`GET /api/dashboard/metrics`): Totales, comparativa mensual, gráfico diario, grafo de Sankey y progreso de presupuestos se calculan en el servidor. Antes el navegador descargaba el historial completo y lo reducía en cada render (`useFinancialMetrics` eran 204 líneas de `useMemo`).
+- **Listado de transacciones paginado por cursor** con cursor firmado, `Retry-After`, `limit` acotado y ventana de fechas empujada a Firestore.
+- **Scripts de verificación**: `audit-query-indexes` (patrones de consulta contra índices), `audit-user-collections` (manifiesto de borrado contra Firestore), `verify-no-client-firestore`, `verify-access-controls`, `verify-metrics-equivalence`, `verify-pagination`, `verify-request-count`, `purge-rate-limits`, `set-car-access-token`.
+
+### Security
+- **Escritura abierta en `/gasolina`**: `middleware.ts` deja `/gasolina` y `/car-sharing` públicas por diseño, y usan Server Actions, que no pasan por el middleware. `src/app/gasolina/actions.ts` exponía **10 acciones sin `getUserId()`, sin validación de ownership y sin rate limit**, incluida `resetAllAction()` que borra todo el estado del vehículo. Cualquiera podía leer y alterar datos compartidos y usar la app como medidor de escrituras. El control vive en el servidor: la interfaz solo comunica si el modo edición está activo, porque ocultar un botón no protege nada.
+- **Verificación de origen** en los 45 handlers mutantes. `sameSite=strict` ya cubría el CSRF clásico, pero no un subdominio hermano —que cuenta como mismo sitio—, un XSS propio ni clientes que ignoran cookies.
+- **`firestore.rules` en modo denegar-todo**: El Admin SDK las bypasea, así que son segunda capa: hoy no hay cliente de Firestore, y `verify-no-client-firestore` falla en CI si alguien lo importa en vez de dejar que el error aparezca en runtime como un fallo de permisos.
+- **Identidad hasheada** en los contadores de rate limit: una IP en claro en la base de datos sería un dato personal más que la política de privacidad no declara.
+- **Degradación preservada** en `maintenance.actions.ts`: sin sesión el gasto se sigue guardando solo como log histórico, sin tocar la cuenta de nadie.
+
+### Changed
+- **Índices compuestos**: 7 → 22. La auditoría encontró **13 patrones sin índice** que fallarían en producción con `FAILED_PRECONDITION`.
+- **Caché con invalidación por escritura**: El dashboard y los insights se invalidan desde la capa de servicio al crear, editar o borrar. Antes los insights solo vencían a las 24 h, así que registrar un movimiento dejaba las métricas desactualizadas hasta un día. **Es un cambio de comportamiento visible y a mejor.**
+- **`transactions.findPage` paginado** con `startAfter(DocumentSnapshot)` y un único `orderBy('date','desc')`: Firestore aplica `__name__` como desempate implícito, que es lo que evita saltarse las transacciones que comparten fecha. Declarar `__name__` explícitamente hace que `startAfter` exija un valor que no acepta, y pasar un `DocumentReference` en vez del snapshot hace que el cursor se **ignore en silencio** y devuelva siempre la primera página.
+- **Totales del listado** calculados en el servidor sobre el conjunto filtrado, no sobre la página cargada: derivarlos de una página informaría mal sin avisar.
+- **Filtros secundarios siguen en el cliente** a propósito: el filtro por cuenta también incluye las transferencias donde la cuenta es el *destino* (`to_account_id`), algo que una igualdad en Firestore no expresa.
+- **`useAccountBalanceChanges`** pide una vez con la lista de ids en vez de una petición HTTP por cuenta (hasta 10 viajes de red por pantalla).
+- **`CURSOR_SECRET`**: El cursor va firmado para que un cliente no pueda alterarlo. Solo impide manipulación, **no** que un usuario autenticado amplíe su propia ventana.
+
+### Removed
+- **`src/lib/env.ts`**: Código muerto, nunca importado, no validaba ninguna variable.
+- **`useFinancialMetrics` y `useCashflowData`**: Sus cálculos viven ahora en `src/lib/metrics/`, puros y compartidos. Que exista **una sola implementación** es lo que garantiza que mover el cálculo de un lado al otro no cambie una cifra.
+- **`calcProgress` del recorrido del historial**: Era `O(presupuestos × transacciones)` por render.
+
+### ⚠️ Requiere antes de desplegar
+```bash
+firebase login && firebase use kiposbo && npm run deploy:firestore
+```
+Sin desplegar índices y reglas, las consultas con filtros y la paginación lanzan
+`FAILED_PRECONDITION`. Se verificó contra el proyecto real, no supuesto.
+
+- Emitir el token de acceso: `npx tsx scripts/set-car-access-token.ts --generate` (se muestra **una vez**, solo se guarda su SHA-256).
+- Fijar `ALLOWED_ORIGIN` en el entorno: sin él la verificación de origen cae al `Host` de la petición, que un atacante con control de esa cabecera podría hacer coincidir.
+- Arrancar con `RATE_LIMIT_MODE=observe` para calibrar los umbrales con tráfico real antes de activar el rechazo.
+
+### Pendiente
+La fase 5 de `firestore-cost-controls` sigue abierta: el N+1 de escritura (hasta 17
+lecturas secuenciales de cuentas por turno del conductor) y las lecturas auxiliares sin
+cota.
+
 ## [1.7.8] - 2026-10-05
 
 ### Added

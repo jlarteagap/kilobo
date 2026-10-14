@@ -2,6 +2,7 @@ import { driverDepositService } from '@/services/driver-deposit.service'
 import { getUserId } from '@/lib/auth.server'
 import { depositSchema, monthQuerySchema } from '@/lib/validations/driver.schema'
 import type { DepositInput } from '@/types/driver'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 // GET /api/driver/deposits?year=YYYY&month=M → lista de depósitos del mes
 // Sin params → mes actual (evita sobrecarga)
@@ -43,6 +44,9 @@ export async function GET(req: Request) {
 
 // POST /api/driver/deposits → crea un depósito (neto = bruto − comisión)
 export async function POST(req: Request) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })

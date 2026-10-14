@@ -2,8 +2,10 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { CarSharingDashboard } from "./components/CarSharingDashboard"
 import { MaintenanceWidgets } from "./components/MaintenanceWidgets"
+import { CarAccessGate, CarAccessProvider } from "./components/CarAccessGate"
 import { getActiveCycleAction, getClosedCyclesAction } from "./actions"
 import { getAbsoluteOdometerAction, getMaintenanceLogsAction } from "./maintenance.actions"
+import { hasCarAccess } from "@/lib/car-access"
 
 export const metadata = {
   title: "Gasolina | Kilo",
@@ -13,6 +15,9 @@ export const metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function CarSharingPage() {
+  // La lectura es pública; esto solo decide si la interfaz muestra escritura.
+  const canWrite = await hasCarAccess()
+
   const [activeCycle, closedCycles, absoluteOdometer, maintenanceLogs] = await Promise.all([
     getActiveCycleAction(),
     getClosedCyclesAction(),
@@ -21,6 +26,7 @@ export default async function CarSharingPage() {
   ])
 
   return (
+    <CarAccessProvider canWrite={canWrite}>
     <div className="min-h-screen bg-white font-sans">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <header className="mb-8">
@@ -39,6 +45,10 @@ export default async function CarSharingPage() {
           </Link>
         </header>
 
+        <div className="mb-6">
+          <CarAccessGate initialCanWrite={canWrite} />
+        </div>
+
         <div className="space-y-6 mb-6">
           <MaintenanceWidgets
             absoluteOdometer={absoluteOdometer}
@@ -52,5 +62,6 @@ export default async function CarSharingPage() {
         />
       </div>
     </div>
+    </CarAccessProvider>
   )
 }

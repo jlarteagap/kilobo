@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { driverConfigRepository } from '@/repositories/driver-config.repository'
 import { driverConfigSchema } from '@/lib/validations/driver.schema'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 export async function GET() {
   try {
@@ -17,6 +18,9 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })

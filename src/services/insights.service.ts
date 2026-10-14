@@ -43,12 +43,16 @@ export const insightsService = {
     // 2a. Traer transacciones del período.
     // La ventana empieza el 1er día del mes más antiguo inclusive: con 6 meses
     // es el día 1, no "hoy - 6 meses" (que dejaba fuera los primeros días).
+    // El filtro va empujado a la base de datos: leer todo el historial para
+    // descartar en memoria es justo lo que esta ruta evita (tarea 4.6).
     const dateFrom = startOfMonth(
       subMonths(new Date(), periodMonths - 1),
     ).toISOString().split('T')[0]
 
-    const [allTransactions, categories, projects] = await Promise.all([
-      transactionsRepository.findAll(userId),
+    const dateTo = new Date().toISOString().split('T')[0]
+
+    const [periodTransactions, categories, projects] = await Promise.all([
+      transactionsRepository.findByPeriod(userId, dateFrom, dateTo),
       categoriesRepository.findAll(userId),
       projectRepository.findAll(userId)
     ])
@@ -56,12 +60,14 @@ export const insightsService = {
     const categoryMap = new Map(categories.map(c => [c.id, c]))
     const projectMap = new Map(projects.map(p => [p.id, p]))
 
-    const hydratedTransactions = allTransactions.map(tx => ({
+    const hydratedTransactions = periodTransactions.map(tx => ({
       ...tx,
       category: tx.category_id ? categoryMap.get(tx.category_id) : null,
       project: tx.project_id ? projectMap.get(tx.project_id) : null,
     }))
 
+    // Red de seguridad por si el rango de la consulta y el filtro de periodo
+    // divergieran; la consulta ya acota, así que esto no debería descartar nada.
     const transactions = hydratedTransactions.filter(t => t.date >= dateFrom)
 
 

@@ -1,12 +1,20 @@
 {
   "name": "kilobo",
-  "version": "1.7.10",
+  "version": "1.7.11",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify:client-firestore": "tsx scripts/verify-no-client-firestore.ts",
+    "deploy:firestore": "firebase deploy --only firestore:rules,firestore:indexes",
+    "verify:access": "tsx scripts/verify-access-controls.ts",
+    "audit:collections": "tsx scripts/audit-user-collections.ts",
+    "verify:indexes": "tsx scripts/audit-query-indexes.ts",
+    "verify:metrics": "tsx scripts/verify-metrics-equivalence.ts",
+    "verify:requests": "tsx scripts/verify-request-count.ts",
+    "verify:pagination": "tsx scripts/verify-pagination.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

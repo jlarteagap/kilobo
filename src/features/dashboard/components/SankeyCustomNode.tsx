@@ -1,5 +1,5 @@
 import { Layer } from "recharts"
-import type { SankeyData } from "../hooks/useCashflowData"
+import type { SankeyData } from "@/lib/metrics/dashboard-metrics"
 import { useSankeySelection } from "./SankeySelectionContext"
 
 type SankeyNode = SankeyData['nodes'][number]

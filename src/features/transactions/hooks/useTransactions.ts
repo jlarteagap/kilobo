@@ -1,5 +1,6 @@
 // features/transactions/hooks/useTransactions.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { accountKeys } from '@/features/accounts/hooks/useAccounts'
 import type { Transaction } from '@/types/transaction'
 import { CreateTransactionInput } from '@/lib/validations/transaction.schema'
@@ -13,21 +14,79 @@ export const transactionKeys = {
   detail: (id: string) => [...transactionKeys.all, 'detail', id] as const,
 }
 
-// ─── GET ──────────────────────────────────────────────────────────────────────
-export function useTransactions() {
-  return useQuery({
-    queryKey: transactionKeys.lists(),
-    queryFn: async (): Promise<Transaction[]> => {
-      const res  = await apiFetch('/api/transactions')
+// ─── GET — paginado por cursor ────────────────────────────────────────────────
+export interface TransactionFilters {
+  from?: string
+  to?: string
+  accountId?: string
+  categoryId?: string
+  projectId?: string
+  tag?: string
+  type?: string
+}
+
+export interface TransactionPage {
+  items: Transaction[]
+  nextCursor: string | null
+}
+
+/**
+ * Listado paginado. Antes devolvía el historial completo en cada visita, que
+ * costaba una lectura por transacción y crecía con la antigüedad de la cuenta.
+ *
+ * Los filtros van al servidor a propósito: filtrar en el navegador obligaría a
+ * traer el historial entero para descartar lo que no coincide, y las páginas
+ * Mostrarían totales calculados sobre un subconjunto sin avisar.
+ */
+export function useTransactions(filters: TransactionFilters = {}) {
+  return useInfiniteQuery({
+    queryKey: [...transactionKeys.lists(), filters],
+    queryFn: async ({ pageParam }): Promise<TransactionPage> => {
+      const params = new URLSearchParams()
+      if (pageParam) params.set('cursor', pageParam)
+      for (const [k, v] of Object.entries(filters)) if (v) params.set(k, v)
+
+      const res  = await apiFetch(`/api/transactions?${params}`)
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al obtener las transacciones')
 
-      // ← La API devuelve { data: [] }, no el array directo
-      // Antes: return res.json()  ← devolvía el objeto wrapper completo
-      return Array.isArray(json.data) ? json.data : []
+      return {
+        items: Array.isArray(json.data) ? json.data : [],
+        nextCursor: json.nextCursor ?? null,
+      }
     },
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
     staleTime: 1000 * 60 * 5,
   })
+}
+
+/**
+ * Totales del conjunto filtrado, calculados en el servidor.
+ *
+ * Van aparte de la lista porque su alcance es el conjunto completo, no lo que
+ * el usuario ha recorrrido. Mezclarlos daría totales de una página presentados
+ * como si fueran del filtro.
+ */
+export function useTransactionTotals(filters: TransactionFilters) {
+  return useQuery({
+    queryKey: [...transactionKeys.all, 'totals', filters],
+    queryFn: async () => {
+      const params = new URLSearchParams()
+      for (const [k, v] of Object.entries(filters)) if (v) params.set(k, v)
+      const res = await apiFetch(`/api/transactions/totals?${params}`)
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Error al obtener los totales')
+      return json.data as { total: number; income: number; expense: number; net: number }
+    },
+    staleTime: 1000 * 60 * 2,
+  })
+}
+
+/** Aplana las páginas cargadas. Solo contiene lo que el usuario ha recorrido. */
+export function useTransactionsList(filters?: TransactionFilters): Transaction[] {
+  const { data } = useTransactions(filters)
+  return useMemo(() => (data?.pages ?? []).flatMap((p) => p.items), [data])
 }
 
 // ─── POST ─────────────────────────────────────────────────────────────────────

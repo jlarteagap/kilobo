@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { userPreferencesRepository } from '@/repositories/user-preferences.repository'
 import { z } from 'zod'
 import { getUserId } from '@/lib/auth.server'
-import { handleError } from '@/lib/api-utils'
+import { handleError, assertSameOrigin } from '@/lib/api-utils'
 
 const updatePreferencesSchema = z.object({
   displayCurrency: z.enum(['BOB', 'USD']),
@@ -22,6 +22,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

@@ -11,6 +11,7 @@ import { addMaintenanceLogAction, deleteMaintenanceLogAction } from '../maintena
 import { Trash2, RefreshCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useCarAccess } from './CarAccessGate'
 
 interface MaintenanceModalProps {
   isOpen: boolean
@@ -21,6 +22,7 @@ interface MaintenanceModalProps {
 }
 
 export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs }: MaintenanceModalProps) {
+  const { canWrite } = useCarAccess()
   const [isPending, startTransition] = useTransition()
   
   // Form state
@@ -65,6 +67,7 @@ export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs
   const handleDelete = (id: string) => {
     startTransition(async () => {
       try {
+        if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
         await deleteMaintenanceLogAction(id)
         toast.success('Registro eliminado')
       } catch (err) {

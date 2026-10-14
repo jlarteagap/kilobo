@@ -9,6 +9,38 @@ export async function GET(req: NextRequest) {
     if (!userId) return Response.json({ error: 'No autorizado' }, { status: 401 })
 
     const accountId = req.nextUrl.searchParams.get('account_id')
+    const accountIdsParam = req.nextUrl.searchParams.get('account_ids')
+
+    // Modo multi-cuenta: una sola respuesta para todas las cuentas visibles.
+    // Antes el cliente hacía una petición HTTP por cuenta (hasta 10 en cada
+    // pantalla con tarjetas), y cada una ejecutaba sus propias consultas.
+    if (accountIdsParam) {
+      const ids = [...new Set(accountIdsParam.split(',').map((s) => s.trim()).filter(Boolean))]
+      if (ids.length === 0) {
+        return Response.json({ error: 'Falta el parámetro account_ids' }, { status: 400 })
+      }
+
+      const beforeParam = req.nextUrl.searchParams.get('before')
+      const before = beforeParam ? new Date(beforeParam) : new Date()
+      if (Number.isNaN(before.getTime())) {
+        return Response.json({ error: 'El parámetro before es inválido' }, { status: 400 })
+      }
+
+      const changes: Record<string, unknown> = {}
+      // En paralelo, pero con un solo viaje de red desde el navegador.
+      await Promise.all(
+        ids.map(async (id) => {
+          let change = await accountBalanceHistoryRepository.findLastBefore(id, userId, before)
+          if (!change) {
+            change = await accountBalanceHistoryRepository.findDayOpening(id, userId, before)
+          }
+          if (change) changes[id] = change
+        }),
+      )
+
+      return Response.json({ changes })
+    }
+
     if (!accountId) {
       return Response.json({ error: 'Falta el parámetro account_id' }, { status: 400 })
     }

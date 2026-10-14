@@ -4,6 +4,8 @@ import { balanceService } from '@/services/balance.service'
 import { adminDb } from '@/lib/firebase.admin'
 import { CreateTransactionData, Transaction } from "@/types/transaction"
 import { refreshRates } from '@/lib/config/exchange-rates'
+import { invalidateDashboardCache } from '@/services/dashboard.service'
+import { insightsRepository } from '@/repositories/insightsRepository'
 
 // Asegura tipos de cambio actualizados (USD y cripto) antes de operar.
 // La caché interna de refreshRates evita llamadas repetidas.
@@ -17,7 +19,10 @@ export const transactionService = {
   },
 
   async createTransaction(data: CreateTransactionData, userId: string): Promise<Transaction> {
-    return transactionsRepository.create(data, userId)
+    const tx = await transactionsRepository.create(data, userId)
+    await invalidateDashboardCache(userId)
+    await insightsRepository.invalidateAll(userId)
+    return tx
   },
 
   async createWithBalance(data: CreateTransactionData, userId: string): Promise<Transaction> {
@@ -44,6 +49,8 @@ export const transactionService = {
     const { ref, payload } = transactionsRepository.createInBatch(batch, enriched, userId)
 
     await batch.commit()
+    await invalidateDashboardCache(userId)
+    await insightsRepository.invalidateAll(userId)
 
     return mapTransaction(ref.id, payload)
   },
@@ -58,7 +65,10 @@ export const transactionService = {
       throw new Error('Transacción no encontrada o no autorizada.')
     }
 
-    return transactionsRepository.update(transactionId, data)
+    const updated = await transactionsRepository.update(transactionId, data)
+    await invalidateDashboardCache(userId)
+    await insightsRepository.invalidateAll(userId)
+    return updated
   },
 
   async getTransaction(transactionId: string, userId: string): Promise<Transaction | null> {
@@ -71,7 +81,9 @@ export const transactionService = {
       throw new Error('Transacción no encontrada o no autorizada.')
     }
 
-    return transactionsRepository.delete(transactionId)
+    await transactionsRepository.delete(transactionId)
+    await invalidateDashboardCache(userId)
+    await insightsRepository.invalidateAll(userId)
   },
 
   async deleteWithBalance(transactionId: string, userId: string): Promise<void> {
@@ -88,5 +100,7 @@ export const transactionService = {
     batch.delete(adminDb.collection('transactions').doc(transactionId))
 
     await batch.commit()
+    await invalidateDashboardCache(userId)
+    await insightsRepository.invalidateAll(userId)
   },
 }

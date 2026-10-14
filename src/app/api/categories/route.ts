@@ -2,6 +2,7 @@ import { NextRequest,NextResponse } from 'next/server'
 import { categoryService } from '@/services/category.service'
 import { createCategorySchema } from '@/lib/validations/category.schema'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 export async function GET() {
   try {
@@ -20,6 +21,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

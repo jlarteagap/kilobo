@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createCreditSchema } from '@/lib/validations/credit.schema'
 import { getUserId } from '@/lib/auth.server'
 import { creditsService } from '@/services/credits.service'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 function handleError(error: unknown): NextResponse {
   const message = error instanceof Error ? error.message : 'Error interno del servidor'
@@ -28,6 +29,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

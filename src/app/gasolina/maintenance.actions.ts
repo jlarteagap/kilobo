@@ -7,12 +7,28 @@ import { driverConfigRepository } from '@/repositories/driver-config.repository'
 import { accountsRepository } from '@/repositories/accounts.repository'
 import { transactionService } from '@/services/transactions.service'
 import { getUserId } from '@/lib/auth.server'
+import { hasCarAccess } from '@/lib/car-access'
+
+/**
+ * Misma puerta que las acciones de ciclos (design.md D1): el estado de
+ * mantenimiento también es compartido, no pertenece a un usuario, así que la
+ * escritura la gobierna el token compartido y no la sesión.
+ *
+ * Conviven dos controles distintos a propósito: el token responde "¿puede
+ * modificar el auto?" y la sesión responde "¿a qué cuenta se carga el gasto?".
+ */
+async function requireCarAccess(): Promise<void> {
+  if (!(await hasCarAccess())) {
+    throw new Error('Necesitás el token de acceso para modificar el mantenimiento')
+  }
+}
 
 export async function getAbsoluteOdometerAction(): Promise<number | null> {
   return await carMaintenanceRepository.getAbsoluteOdometer()
 }
 
 export async function setAbsoluteOdometerAction(value: number) {
+  await requireCarAccess()
   await carMaintenanceRepository.setAbsoluteOdometer(value)
   revalidatePath('/gasolina')
 }
@@ -29,11 +45,15 @@ interface AddMaintenanceLogResult {
  * que el fondo refleje exactamente cuánto le queda al auto.
  *
  * `/gasolina` es una página pública: sin sesión no hay a quién atribuir el
- * gasto, así que en ese caso solo se guarda el log histórico.
+ * gasto, así que en ese caso solo se guarda el log histórico. Esa degradación
+ * se mantiene; lo que se añade por delante es el token de acceso al estado
+ * compartido, porque sin él cualquiera podría escribir en el log global.
  */
 export async function addMaintenanceLogAction(
   data: Omit<CarMaintenanceLog, 'id' | 'date' | 'transaction_id'>
 ): Promise<AddMaintenanceLogResult> {
+  await requireCarAccess()
+
   const userId = await getUserId()
   const result: AddMaintenanceLogResult = { transactionId: null }
 
@@ -93,6 +113,10 @@ export async function addMaintenanceLogAction(
  * después de borrar el log.
  */
 export async function deleteMaintenanceLogAction(id: string) {
+  // Antes de leer: la lectura del log ya es trabajo que un tercero no debe
+  // poder provocar, y el borrado va detrás.
+  await requireCarAccess()
+
   const log = await carMaintenanceRepository.findById(id)
   const transactionId = log?.transaction_id
 

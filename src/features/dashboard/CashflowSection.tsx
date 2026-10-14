@@ -4,15 +4,11 @@ import { useState, useRef, useEffect, useMemo } from "react"
 import { ResponsiveContainer, Sankey, Tooltip } from "recharts"
 import { Skeleton } from "@/components/ui/skeleton"
 
-import { useTransactions } from "@/features/transactions/hooks/useTransactions"
-import { useCategories }   from "@/features/categories/hooks/useCategories"
-import { useActiveAccounts }     from "@/features/accounts/hooks/useAccounts"
-import { useProjects }     from "@/features/projects/hooks/useProjects"
 import { SankeyCustomNode } from "./components/SankeyCustomNode"
 import { SankeyCustomLink } from "./components/SankeyCustomLink"
 import { SankeySelectionProvider } from "./components/SankeySelectionContext"
-import { useCashflowData } from "./hooks/useCashflowData"
-import type { SankeyData } from "./hooks/useCashflowData"
+import type { SankeyData } from "@/lib/metrics/dashboard-metrics"
+import { useDashboardMetrics } from "./hooks/useDashboardMetrics"
 import { PeriodSelector }  from "@/app/transactions/components/PeriodSelector"
 import { formatCurrency }  from "@/features/accounts/utils/account-display.utils"
 import { ChartTooltipContainer } from "@/components/ui/chart-tooltip"
@@ -173,21 +169,17 @@ function CashflowSankey({ width = 0, height = 0, sankeyData }: CashflowSankeyPro
 export function CashflowSection() {
   const [period, setPeriod] = useState<Period>(DEFAULT_PERIOD)
 
-  const { data: transactions = [], isLoading: loadingTx  } = useTransactions()
-  const { data: categories   = [], isLoading: loadingCat } = useCategories()
-  const { data: accounts     = [], isLoading: loadingAcc } = useActiveAccounts()
-  const { data: projects = [] } = useProjects()
+  // El grafo llega construido desde el servidor. Antes este componente cargaba
+  // el historial completo de transacciones y armaba el Sankey en el navegador.
+  const { data: metricsData, isLoading } = useDashboardMetrics()
 
-  const isLoading = loadingTx || loadingCat || loadingAcc
-
-  const { sankeyData, isEmpty } = useCashflowData({
-    transactions,
-    categories,
-    accounts,
-    isLoading,
-    period,
-    projects,
-  })
+  // Envolto en useMemo: un literal nuevo en cada render invalidaría el
+  // useMemo de las métricas de abajo y lo recalcularía en cada ciclo.
+  const sankeyData = useMemo(
+    () => metricsData?.sankey ?? { nodes: [], links: [] },
+    [metricsData?.sankey],
+  )
+  const isEmpty = sankeyData.nodes.length === 0 || sankeyData.links.length === 0
 
   const metrics = useMemo(() => {
     let income = 0

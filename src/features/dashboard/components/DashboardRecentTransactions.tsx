@@ -6,10 +6,12 @@ import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { parseLocalDate } from "@/utils/date.utils"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import type { Transaction } from "@/types/transaction"
+import type { RecentTransaction } from "@/types/transaction"
 
 interface DashboardRecentTransactionsProps {
-  transactions: Transaction[]
+  // Subconjunto que el componente realmente usa. Antes pedía `Transaction[]`
+  // completo, lo que obligaba a la API a devolver campos que aquí no se leen.
+  transactions: RecentTransaction[]
 }
 
 export function DashboardRecentTransactions({

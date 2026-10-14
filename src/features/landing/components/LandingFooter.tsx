@@ -8,10 +8,10 @@ export function LandingFooter() {
           © {new Date().getFullYear()} Kilo. Todos los derechos reservados.
         </p>
         <div className="flex items-center gap-6">
-          <Link href="#" className="text-sm text-[#6E6E73] hover:text-foreground transition-colors">
+          <Link href="/privacidad" className="text-sm text-[#6E6E73] hover:text-foreground transition-colors">
             Privacidad
           </Link>
-          <Link href="#" className="text-sm text-[#6E6E73] hover:text-foreground transition-colors">
+          <Link href="/terminos" className="text-sm text-[#6E6E73] hover:text-foreground transition-colors">
             Términos
           </Link>
         </div>

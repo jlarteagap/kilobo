@@ -1,6 +1,9 @@
 // features/transactions/hooks/useTransactionFilters.ts
 import { useState, useMemo } from 'react'
-import { filterByPeriod } from '@/utils/date.utils'
+import { filterByPeriod, resolvePeriod } from '@/utils/date.utils'
+import { format } from 'date-fns'
+
+const ymd = (d: Date) => format(d, 'yyyy-MM-dd')
 import { convertToBOB } from '@/lib/config/exchange-rates'
 import { DEFAULT_PERIOD } from '@/types/period'
 import type { Period } from '@/types/period'
@@ -44,8 +47,16 @@ export function countActiveFilters(filters: TransactionFilters): number {
   return count
 }
 
-// ─── Hook principal ───────────────────────────────────────────────────────────
-export function useTransactionFilters(transactions: Transaction[]) {
+// ─── Estado de filtros ────────────────────────────────────────────────────────
+/**
+ * Estado y setters, sin depender de los datos.
+ *
+ * Va separado de la derivación porque el periodo se necesita ANTES de pedir
+ * los datos — es lo que acota la consulta en el servidor. Si el estado viviera
+ * dentro del hook que recibe las transacciones, no habría forma de usarlo para
+ * construir la petición.
+ */
+export function useTransactionFilterState() {
   const [filters, setFilters] = useState<TransactionFilters>(DEFAULT_FILTERS)
 
   // ── Setters individuales ────────────────────────────────────────────────────
@@ -68,6 +79,39 @@ export function useTransactionFilters(transactions: Transaction[]) {
     projectId:  null,
   }))
 
+  return {
+    filters,
+    setPeriod,
+    setAccountId,
+    setCategoryId,
+    setProjectId,
+    setTag,
+    setType,
+    resetFilters,
+    resetSecondaryFilters,
+  }
+}
+
+/** Convierte el estado de filtros en los parámetros que acepta la API. */
+export function toServerFilters(filters: TransactionFilters) {
+  const { from, to } = resolvePeriod(filters.period)
+  return { from: ymd(from), to: ymd(to) }
+}
+
+// ─── Derivación sobre los datos ya cargados ───────────────────────────────────
+/**
+ * Aplica los filtros secundarios sobre los datos que el servidor ya devolvió
+ * acotados por periodo.
+ *
+ * Los secundarios siguen en el cliente a propósito: el filtro por cuenta
+ * también incluye las transferencias donde la cuenta es el DESTINO
+ * (`to_account_id`), algo que una igualdad en Firestore no expresa. Bajar eso
+ * al servidor cambiaría el comportamiento visible.
+ */
+export function useTransactionFilters(
+  transactions: Transaction[],
+  filters: TransactionFilters,
+) {
   // ── Transacciones filtradas ─────────────────────────────────────────────────
   const filtered = useMemo(() => {
     // 1. Filtrar por período
@@ -154,21 +198,10 @@ export function useTransactionFilters(transactions: Transaction[]) {
   const activeFilterCount = countActiveFilters(filters)
 
   return {
-    // Estado
     filters,
     filtered,
     activeFilterCount,
     availableTags,
     stats,
-
-    // Setters
-    setPeriod,
-    setAccountId,
-    setCategoryId,
-    setProjectId,
-    setTag,
-    setType,
-    resetFilters,
-    resetSecondaryFilters,
   }
 }

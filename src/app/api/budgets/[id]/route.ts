@@ -3,11 +3,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { budgetService } from '@/services/budget.service'
 import { updateBudgetSchema } from '@/lib/validations/budget.schema'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
 // ── Actualizar ────────────────────────────────────────────────────────────────
 export async function PATCH(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -33,6 +37,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 // ── Archivar ──────────────────────────────────────────────────────────────────
 export async function PUT(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -47,6 +54,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
 // ── Eliminar ──────────────────────────────────────────────────────────────────
 export async function DELETE(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

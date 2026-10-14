@@ -4,6 +4,7 @@ import { transactionService } from '@/services/transactions.service'
 import { creditsService } from '@/services/credits.service'
 import { updateTransactionSchema } from '@/lib/validations/transaction.schema'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -11,6 +12,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: Params
 ) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) {
@@ -36,6 +40,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: Params
 ) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) {

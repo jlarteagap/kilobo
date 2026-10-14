@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { investmentsService } from '@/services/investments.service'
 import { buyInvestmentSchema, sellInvestmentSchema } from '@/lib/validations/investment.schema'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -19,6 +20,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 export async function POST(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

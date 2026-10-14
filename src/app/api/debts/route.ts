@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { debtService } from '@/services/debt.service'
 import { createDebtSchema } from '@/lib/validations/debt.schema'
 import { getUserId } from '@/lib/auth.server'
+import { assertSameOrigin } from '@/lib/api-utils'
 
 export async function GET() {
   try {
@@ -17,6 +18,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const originError = assertSameOrigin(req)
+  if (originError) return originError
+
   try {
     const userId = await getUserId()
     if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })

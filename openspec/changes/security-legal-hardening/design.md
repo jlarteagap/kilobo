@@ -4,7 +4,8 @@ Restricciones reales del proyecto que condicionan el diseño:
 
 - **El Admin SDK bypasea las reglas de Firestore por completo.** Todo acceso pasa por `firebase-admin`, así que las reglas de base de datos no son hoy un control activo, sino una capa de respaldo para el futuro. `firestore.json` solo declara índices; no hay archivo de reglas.
 - **No existe ninguna dependencia de rate limiting.** `package.json` no incluye Redis, Upstash ni nada equivalente.
-- **`/gasolina` es un conjunto de datos compartido, no por usuario** (decisión del propietario). Varias personas aportan al mismo vehículo y no necesariamente tienen cuenta en la aplicación. Esto descarta el scoping por `user_id` y descarta tratar los viajes como recursos con propietario.
+- **`/gasolina` es un conjunto de datos compartido, no por usuario** (decisión del propietario). Varias personas aportan al mismo vehículo. Esto descarta el scoping por `user_id` y descarta tratar los viajes como recursos con propietario.
+- **Las dos participantes tienen cuenta, pero solo una la usa.** Firebase Auth tiene exactamente 2 usuarios —`melyan.217@gmail.com` y `jorgelarteagap@gmail.com`— que corresponden a los dos nombres de `DEFAULT_USERS` (`CarSharingDashboard.tsx:32`). **No hay ruta de registro en el código**, así que el conjunto lo controla el propietario. Pero `melyan.217@gmail.com` tiene `lastSignIn` idéntico a su `creationTime` (2026-06-01): entró una vez y no volvió. "Tiene cuenta" y "puede entrar" no son lo mismo, y el diseño tiene que aguantar a alguien que no entra.
 - **`maintenance.actions.ts:37-43` ya resuelve una parte del problema**: llama a `getUserId()` y, sin sesión, degrada a solo registro histórico sin transacción. Ese archivo es el patrón a extender, no a rediseñar.
 - **Los Server Actions no pasan por `middleware.ts`.** El matcher excluye `api` y las Server Actions se despachan fuera de ese flujo, así que el control tiene que ir dentro de cada acción.
 - **No se sabe con certeza dónde está desplegada la app.** La decisión de limitador toma una posición que funciona en ambos casos.
@@ -27,23 +28,37 @@ Ver `proposal.md` para la motivación y `specs/` para los requisitos normativos.
 
 ## Decisions
 
-### D1 — El estado compartido se protege con un token, no con cuentas de usuario
+### D1 — La escritura al estado compartido se acota por tasa; lo irreversible exige sesión
 
-El control de escritura de `/gasolina` y `/car-sharing` será un **token de acceso compartido**, no la sesión de usuario.
+> **Esta decisión reemplazó a un modelo de token compartido que se implementó y se descartó.** No se conserva aquí la versión anterior del documento: el token llegó a escribirse, pero nunca llegó a estar en efecto, porque el documento de configuración que lo guardaba nunca se emitió. Revisar los datos reales lo dejó sin premisa.
 
-- El token se guarda en un documento de configuración de Firestore (`car_sharing_config/access`), nunca en el bundle del cliente.
-- Se compara en el servidor con comparación en **tiempo constante** para no filtrar el valor por temporización.
-- El participante lo introduce una vez en la interfaz; se guarda en una **cookie `httpOnly`, `sameSite=strict`, con `path` restringido a las rutas de la feature**.
-- La **lectura permanece pública**. Es deliberado: el caso de uso es consultar el estado sin escribir credenciales.
+El control de escritura de `/gasolina` y `/car-sharing` se reparte por **operación, según su consecuencia**, no por feature:
+
+| Estrato | Control | Operaciones |
+|---|---|---|
+| ① | límite de tasa por IP, 30 escrituras / 300 s | las 11 mutantes |
+| ①' | límite de tasa adicional, 1 reset / 24 h | `resetAllAction` |
+| ② | nada más — abiertas | registrar viaje, actualizar viaje, cerrar carga, marcar liquidado, editar ciclo cerrado, odómetro, registrar mantenimiento |
+| ③ | `getUserId()` | borrar viaje, borrar ciclo, borrar historial, borrar mantenimiento |
+
+**Por qué no un token compartido.** La decisión anterior lo descartó a favor del token con este argumento: *"lista de miembros con IDs de usuario: exige que **todos** los participantes tengan cuenta; hoy no está garantizado"*. Los datos de producción dicen lo contrario:
+
+- Firebase Auth tiene **2 cuentas**: `melyan.217@gmail.com` y `jorgelarteagap@gmail.com`. Corresponden exactamente a los dos participantes de `DEFAULT_USERS` (`CarSharingDashboard.tsx:32`).
+- **No existe ruta de registro en el código.** El conjunto de cuentas lo controla el propietario, no un signup abierto.
+- `melyan.217@gmail.com` tiene `lastSignIn` idéntico a su `creationTime` (2026-06-01): entró una vez y no volvió.
+
+La premisa era falsa. Y el token no fue una fricción tolerada para esa participante: fue **bloqueo total**, porque nunca llegó a emitirse y las 8 acciones rechazaban a todo el mundo, incluida ella. Una puerta que no se puede abrir no es un control, es una caída.
+
+**Por qué el límite de tasa y la sesión resuelven problemas distintos.** El primero acota el *volumen*; no puede impedir una sola escritura que destruya, porque `resetAll` es una petición. El segundo impide la operación concreta. Por eso `resetAll` lleva los dos.
 
 **Alternativas descartadas:**
-- *Scoping por `user_id`*: incompatible con la realidad del dato. Habría que migrar documentos globales a un propietario arbitrario y los demás participantes perderían acceso a lo que comparten. Además obligaría a una migración de datos que ahora no es necesaria.
-- *Lista de miembros con IDs de usuario*: más limpia conceptualmente, pero exige que **todos** los participantes tengan cuenta. Hoy no está garantizado.
-- *Gate en `middleware.ts`*: no funciona. Las Server Actions no atraviesan el matcher, que además ya excluye `api`.
+- *Scoping por `user_id` sobre `car_sharing_cycles`*: el estado es compartido y no tiene dueño. Atribuirlo a un usuario obligaría a una migración de datos y quitaría acceso a la otra participante.
+- *Sesión para toda escritura*: resolvería el problema de atribución, pero bloquearía a quien no usa la app a diario. Semitido.
+- *Gate en `middleware.ts`*: no funciona. Las Server Actions no atraviesan el matcher, que además excluye `api`.
 
-**Consecuencia buena:** al ser el estado compartido sin propietario, **no hace falta migración de datos**. Esto elimina el riesgo operativo más grande del cambio.
+**Consecuencia buena:** sin token, **no hay nada que emitir, rotar, distribuir ni revocar**, y no hay migración de datos. `car_sharing_config/access` nunca existió, así que la reversión no deja residuo.
 
-**Extensión futura:** si algún día se quiere identidad por participante, el token se sustituye por una colección de miembros y el resto del diseño no cambia.
+**Riesgo aceptado y declarado:** el nombre de participante de un viaje viene del cliente (un `<select>` sobre `DEFAULT_USERS`), no de la sesión, así que un visitante puede atribuir un viaje a cualquiera de los dos. El límite de tasa acota el volumen; no resuelve la atribución. Cerrarlo exige credenciales, que es justo lo que este diseño evita. Si algún día molesta, la extensión es pedir el nombre al servidor y no aceptar el del cliente.
 
 ### D2 — Limitador sobre contadores en Firestore
 
@@ -95,9 +110,11 @@ Se añade la clave `rules` a `firebase.json` y se incluye en el despliegue.
 
 **[El limitador en Firestore añade coste justo al sistema que se intenta abaratar]** → Se limita solo a las tres superficies necesarias, no a las 13 rutas del dashboard. El rechazo no escribe. Y el coste por petición admitida (1 lectura + 1 escritura) es marginal comparado con una consulta sin `limit()` que ya devuelve cientos de documentos. Se medirá tras el despliegue.
 
-**[El token compartido es una credencial que se puede filtrar]** → Se compara en tiempo constante, viaja solo en cookie `httpOnly`, y se puede rotar cambiando un solo documento. Mitigación adicional: si se filtra, el daño se limita a escritura sobre el estado del vehículo, no a datos financieros del usuario. **A diferencia de una sesión, no hay datos personales detrás.**
+**[Las operaciones de registro quedan abiertas a cualquiera que conozca la URL]** → Es el riesgo grande y es deliberado: el caso de uso es anotar un viaje desde el vehículo sin credenciales, y la alternativa (token) resultó ser un bloqueo, no una protección. Lo acota el límite de 30/300 s por IP; lo que **no** acota es la atribución, porque el nombre de participante lo elige el cliente. Lo que sí queda cerrado es lo caro: nada irreversible se ejecuta sin sesión.
 
-**[El token es único para todos los participantes, sin trazabilidad]** → Un cambio incorrecto no se puede atribuir a una persona concreta. Es el precio de no exigir cuentas. Aceptable para el volumen esperado; si aparece la necesidad, D1 ya tiene la extensión prevista.
+**[Un tercero puede escribir viajes a nombre de cualquiera de los dos participantes]** → Es el límite explícito de este diseño, no un descuido. El daño se reduce al estado del auto, que se puede corregir a mano desde una sesión; no alcanza balances ni datos de la cuenta de nadie. Si aparece la necesidad de atribuir, la extensión es tomar el nombre del servidor en lugar del cliente.
+
+**[La degradación sin sesión en mantenimiento sigue vigente, y es un sesgo]** → `addMaintenanceLogAction` sin sesión guarda solo el log y no descuenta del fondo; con sesión, sí descuenta. Quien anota decide en qué mundo vive la anotación. Se documenta en vez de ocultarse porque cambiarlo obligaría a exigir sesión, que es justo lo que este diseño evita.
 
 **[El borrado en cascada puede fallar a medio camino]** → Se ejecuta en orden y se reporta el resultado por colección. Un fallo parcial se registra explícitamente para poder reanudar. Es preferible a un "borrado" silencioso e incompleto.
 
@@ -111,13 +128,15 @@ Se añade la clave `rules` a `firebase.json` y se incluye en el despliegue.
 2. Desplegar reglas deny-all y verificar con el script de auditoría que el acceso de cliente es nulo.
 3. Publicar `/privacidad` y `/términos` **antes** de enlazarlos desde el footer, para no volver a tener enlaces rotos.
 4. Activar el limitador primero en modo observativo (registra lo que rechazaría sin rechazar) sobre la creación de sesión, la de mayor tráfico no autenticado. Comparar contra tráfico real antes de aplicar.
-5. Requerir el token en las Server Actions de `/gasolina` y comunicar el token a los participantes antes de activar, o la feature queda inusable para ellos.
-6. Activar los endpoints de borrado y export ya activos, sin riesgo de regresión porque son nuevos.
+5. Desplegar los guards de `/gasolina` **sin** exigir ninguna acción a los participantes: registrar y consultar no piden credenciales. Verificar que sin sesión las 4 operaciones irreversibles rechazan antes de leer o escribir.
+6. Arrancar `RATE_LIMIT_MODE=observe` sobre `car-write` y `car-reset` para calibrar `30/300 s` contra tráfico real antes de activar el rechazo.
+7. Activar los endpoints de borrado y export ya activos, sin riesgo de regresión porque son nuevos.
 
-**Rollback:** cada control es independiente. Revertir la cookie de token y el middleware de la acción devuelve `/gasolina` a su comportamiento actual sin tocar datos. Despublicar el limitador devuelve las rutas a su comportamiento actual. Las páginas legales y los endpoints nuevos son aditivos y su retiro no afecta al resto.
+**Rollback:** cada control es independiente. Quitar los guards de `src/app/gasolina/guards.ts` devuelve la página a escritura abierta sin tocar datos ni desplegar nada más — es un solo archivo y tres funciones. Despublicar el limitador devuelve las rutas a su comportamiento actual. Las páginas legales y los endpoints nuevos son aditivos y su retiro no afecta al resto.
 
 ## Open Questions
 
 - **Frecuencia de purga de contadores.** Depende de la cadencia de despliegue disponible (una tarea programada diaria o por lotería al desplegar). No cambia los requisitos, el enfoque ni las tareas; se resuelve al implementar.
 - **Volumen exacto de tráfico de creación de sesión** para calibrar el umbral inicial del limitador. Se puede arrancar con un valor conservador por identidad y ajustar con los datos observados en el paso 4 del despliegue.
-- **Si el estado compartido debe dejar de ser legible sin credenciales.** Hoy se mantiene público por decisión de diseño. Si más adelante se considera demasiada exposición, es un cambio acotado sobre D1 — el token ya existe y solo hay que aplicarlo también a la lectura.
+- **Umbral de `car-write`.** 30/300 s es una estimación, no una medición: una sesión real de registro son unas 5 escrituras. Si en modo observativo aparece tráfico legítimo cerca del tope, se sube el umbral antes de activar el rechazo.
+- **Si el estado compartido debe dejar de ser legible sin credenciales.** Hoy se mantiene público por decisión de diseño. Si más adelante se considera demasiada exposición, es un cambio acotado: el límite de lectura se aplica igual que el de escritura, y a las rutas de lectura de las dos acciones de `getClosedCycles`/`getActiveCycle`.

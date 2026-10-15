@@ -7,35 +7,69 @@ const check = (name: string, ok: boolean, detail: string) => results.push([name,
 
 // ─── 7.1 / 7.2 — estado compartido ───────────────────────────────────────────
 const actions = readFileSync('src/app/gasolina/actions.ts', 'utf8')
+const maint = readFileSync('src/app/gasolina/maintenance.actions.ts', 'utf8')
+const guards = readFileSync('src/app/gasolina/guards.ts', 'utf8')
+
+/** El cuerpo de una Server Action va del `export async function` a su llave de cierre en columna 0. */
+function body(src: string, fn: string): string {
+  const i = src.indexOf(`export async function ${fn}`)
+  return i < 0 ? '' : src.slice(i, src.indexOf('\n}', i))
+}
+
 const MUTATORS = ['addTripAction','deleteTripAction','updateTripAction','closeCycleAction',
                   'setCycleSettledAction','updateClosedCycleAction','deleteCycleAction','resetAllAction']
-const unguarded = MUTATORS.filter(fn => {
-  const i = actions.indexOf(`export async function ${fn}`)
-  if (i < 0) return true
-  const body = actions.slice(i, actions.indexOf('\n}', i))
-  return !body.includes('requireCarAccess')
-})
-check('7.1 acciones mutantes con token', unguarded.length === 0,
-      unguarded.length ? `sin guard: ${unguarded.join(', ')}` : `${MUTATORS.length}/${MUTATORS.length} con guard`)
+const ALL_MUTATORS = [...MUTATORS, 'setAbsoluteOdometerAction', 'addMaintenanceLogAction', 'deleteMaintenanceLogAction']
+const srcOf = (fn: string) => (MUTATORS.includes(fn) ? actions : maint)
 
+// Si una acción se renombra, `body()` devuelve '' y varios chequeos pasan en
+// falso. Este es el que lo delata.
+const missing = ALL_MUTATORS.filter(fn => !srcOf(fn).includes(`export async function ${fn}`))
+check('7.1 las 11 acciones mutantes existen', missing.length === 0,
+      missing.length ? `no encontradas: ${missing.join(', ')}` : 'ninguna renombrada')
+
+const GUARD_FNS = ['requireCarWriteLimit','requireResetLimit','requireCarSession']
+const noGuards = GUARD_FNS.filter(fn => !guards.includes(`export async function ${fn}`))
+check('7.1 las 3 guardas existen', noGuards.length === 0,
+      noGuards.length ? `faltan: ${noGuards.join(', ')}` : GUARD_FNS.join(', '))
+
+// ① Toda mutación pasa por el límite de tasa, sin excepción.
+const noLimit = ALL_MUTATORS.filter(fn => !body(srcOf(fn), fn).includes('requireCarWriteLimit'))
+check('7.1 las 11 mutantes con límite de tasa', noLimit.length === 0,
+      noLimit.length ? `sin límite: ${noLimit.join(', ')}` : `${ALL_MUTATORS.length}/${ALL_MUTATORS.length}`)
+
+// ③ Solo lo irreversible. El nombre de cada una es el que dice qué borra.
+const DESTRUCTIVE = ['deleteTripAction','deleteCycleAction','resetAllAction','deleteMaintenanceLogAction']
+const noSession = DESTRUCTIVE.filter(fn => !body(srcOf(fn), fn).includes('requireCarSession'))
+check('7.2 lo irreversible exige sesión', noSession.length === 0,
+      noSession.length ? `sin sesión: ${noSession.join(', ')}` : `${DESTRUCTIVE.length}/${DESTRUCTIVE.length}`)
+
+// La contraparte: el registro diario NO pide credenciales.
+const OPEN = ['addTripAction','updateTripAction','closeCycleAction','setCycleSettledAction',
+              'updateClosedCycleAction','setAbsoluteOdometerAction','addMaintenanceLogAction']
+const overGuarded = OPEN.filter(fn => body(srcOf(fn), fn).includes('requireCarSession'))
+check('7.1 el registro diario no pide sesión', overGuarded.length === 0,
+      overGuarded.length ? `piden sesión sin motivo: ${overGuarded.join(', ')}` : `${OPEN.length}/${OPEN.length}`)
+
+// El límite por IP no puede frenar un reset, que es una sola petición.
+check('7.2 resetAll con techo propio',
+      body(actions, 'resetAllAction').includes('requireResetLimit'),
+      '1 reset / 24 h')
+
+// La lectura sigue siendo pública.
 const READERS = ['getActiveCycleAction','getClosedCyclesAction']
-const blocked = READERS.filter(fn => {
-  const i = actions.indexOf(`export async function ${fn}`)
-  return actions.slice(i, actions.indexOf('\n}', i)).includes('requireCarAccess')
-})
+const blocked = READERS.filter(fn => body(actions, fn).includes('requireCar'))
 check('7.1 lecturas siguen públicas', blocked.length === 0,
-      blocked.length ? `bloqueadas: ${blocked.join(', ')}` : `${READERS.length}/${READERS.length} públicas`)
+      blocked.length ? `bloqueadas: ${blocked.join(', ')}` : `${READERS.length}/${READERS.length}`)
 
-const maint = readFileSync('src/app/gasolina/maintenance.actions.ts', 'utf8')
-check('7.1 mantenimiento con token', (maint.match(/requireCarAccess\(\)/g)?.length ?? 0) >= 4,
-      `${maint.match(/await requireCarAccess\(\)/g)?.length ?? 0} guards (escritura + mantenimiento)`)
-
-// deleteMaintenanceLogAction debe comprobar ANTES de leer el log
-const dm = maint.indexOf('export async function deleteMaintenanceLogAction')
-const dmBody = maint.slice(dm, maint.indexOf('\n}', dm))
+// deleteMaintenanceLogAction comprueba ANTES de leer el log: la lectura ya es
+// trabajo que un tercero no debe poder provocar, y el borrado va detrás.
+const dmBody = body(maint, 'deleteMaintenanceLogAction')
 check('7.1 borrado de log valida antes de leer',
-      dmBody.indexOf('requireCarAccess') < dmBody.indexOf('findById'),
+      dmBody.indexOf('requireCarSession') > -1 && dmBody.indexOf('requireCarSession') < dmBody.indexOf('findById'),
       'guard antes de findById')
+
+check('7.1 el limitador acepta Headers', /clientIp\(headers: Headers\)/.test(readFileSync('src/lib/rate-limit.ts', 'utf8')),
+      'necesario para usar headers() dentro de un Server Action')
 
 // ─── 7.3 — rate limit ─────────────────────────────────────────────────────────
 const rl = readFileSync('src/lib/rate-limit.ts', 'utf8')

@@ -8,7 +8,7 @@ Establece quién puede leer y mutar datos en las superficies públicas de la apl
 
 Toda acción que modifique datos persistidos en el interior de la aplicación SHALL requerir una sesión autenticada válida. Si no hay sesión válida, el sistema SHALL rechazar la operación con estado 401 y SHALL NOT efectuar ninguna escritura. El rechazo SHALL ocurrir antes de cualquier lectura o escritura costosa, no después.
 
-Esta regla aplica a las superficies bajo sesión —cuentas, transacciones, presupuestos, deudas, créditos, inversiones, turnos de conductor y demás. Las superficies públicas de compartir auto se rigen por su propio requisito de token compartido.
+Esta regla aplica a las superficies bajo sesión —cuentas, transacciones, presupuestos, deudas, créditos, inversiones, turnos de conductor y demás. Las superficies públicas de compartir auto se rigen por su propio requisito, que reparte el control por consecuencia de la operación.
 
 #### Scenario: Petición sin sesión intenta crear un recurso autenticado
 - **WHEN** una petición sin sesión cookie válida intenta crear, por ejemplo, una transacción o un presupuesto
@@ -22,29 +22,35 @@ Esta regla aplica a las superficies bajo sesión —cuentas, transacciones, pres
 - **WHEN** la cookie de sesión del usuario está expirada o revocada
 - **THEN** el sistema responde 401 y no persiste ningún cambio
 
-### Requirement: La escritura al estado compartido exige un token de acceso válido
+### Requirement: La escritura al estado compartido se acota por tasa y reserva lo irreversible a la sesión
 
-El estado de ciclos de compartir auto y de mantenimiento es compartido por varias personas que aportan al mismo vehículo, no pertenece a un usuario individual. Por eso el control de escritura SHALL basarse en un token de acceso compartido, validado en el servidor, y SHALL NOT en la identidad de un usuario de la aplicación.
+El estado de ciclos de compartir auto y de mantenimiento es compartido por varias personas que aportan al mismo vehículo y no pertenece a un usuario individual. Por eso el control de escritura SHALL basarse en la consecuencia de cada operación y SHALL NOT en una credencial que haya que emitir, distribuir ni rotar.
 
-Un tercero sin el token SHALL NOT poder crear, editar, cerrar ni borrar ciclos, viajes o registros de mantenimiento. La validación SHALL ocurrir en el servidor antes de cualquier escritura.
+Las Server Actions mutantes de esta superficie pública SHALL quedar sujetas a un límite de frecuencia por identidad de cliente. Toda operación cuyo efecto sea irreversible sobre el estado compartido, o que alcance una transacción financiera de un usuario, SHALL exigir además una sesión autenticada válida.
 
-Las operaciones de solo lectura SHALL permanecer públicas, conforme al diseño actual: los participantes necesitan consultar el estado desde el vehículo sin iniciar sesión.
+Las operaciones de registro y consulta de uso diario SHALL permanecer disponibles sin credenciales: el caso de uso es anotar desde el vehículo sin iniciar sesión. La lectura SHALL permanecer pública en su totalidad.
 
-#### Scenario: Tercero sin token intenta añadir un viaje
-- **WHEN** una petición sin token de acceso válido invoca la acción de añadir viaje
-- **THEN** el sistema rechaza la operación y no se crea ningún viaje
+#### Scenario: Visitante sin sesión registra un viaje
+- **WHEN** un visitante sin sesión invoca la acción de añadir viaje y opera dentro del límite de tasa
+- **THEN** la operación se ejecuta y el viaje queda persistido en el estado compartido
 
-#### Scenario: Participante con token válido opera con normalidad
-- **WHEN** un participante presenta el token de acceso correcto
-- **THEN** la operación se ejecuta y el cambio queda persistido en el estado compartido
+#### Scenario: Visitante sin sesión intenta una operación irreversible
+- **WHEN** un visitante sin sesión válida invoca borrar viaje, borrar ciclo, borrar historial o borrar mantenimiento
+- **THEN** el sistema rechaza la operación, y lo hace antes de cualquier lectura o escritura
 
-#### Scenario: Token incorrecto o ausente
-- **WHEN** una petición presenta un token ausente o incorrecto
-- **THEN** el sistema rechaza la operación sin modificar el estado compartido
+#### Scenario: Visitante sin sesión borra historial completo
+- **WHEN** un visitante sin sesión válida invoca la acción de resetear todo el historial
+- **THEN** el sistema rechaza la operación y ningún ciclo se elimina
+
+#### Scenario: Exceso de escrituras desde una misma identidad
+- **WHEN** una misma identidad de cliente supera el límite de escrituras en su ventana de tiempo
+- **THEN** el sistema rechaza antes de escribir y el estado compartido no se modifica
 
 #### Scenario: La lectura sigue siendo accesible sin credenciales
-- **WHEN** cualquier visitante abre la página pública sin token
-- **THEN** puede consultar el estado actual de ciclos y viajes, pero ninguna operación de escritura está disponible
+- **WHEN** cualquier visitante abre la página pública sin sesión
+- **THEN** puede consultar el ciclo activo, los ciclos cerrados y el historial de mantenimiento sin autenticarse
+
+**Riesgo aceptado y declarado:** el nombre de participante de un viaje y de una carga se recibe del cliente y no se contrasta contra una identidad, de modo que un visitante puede atribuir un movimiento a cualquiera de los participantes. El límite de tasa acota el volumen de esa posibilidad; no resuelve la atribución. El diseño acepta esto de forma explícita porque cerrarlo exigiría credenciales en el registro, que es el uso que la superficie pública debe sostener.
 
 ### Requirement: Límite de tasa en endpoints públicos y costosos
 

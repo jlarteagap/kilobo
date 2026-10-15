@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.12] - 2026-10-15
+
+Revierte el control de acceso por token de `/gasolina` y lo reemplaza por un modelo
+que reparte la protección según la consecuencia de cada operación. La página vuelve
+a funcionar sin pedir nada a las participantes.
+
+### Changed
+- **Control de escritura de `/gasolina`, por estratos** (`src/app/gasolina/guards.ts`): el límite de tasa por IP aplica a las **11 acciones mutantes**, y **solo lo irreversible** exige sesión —`deleteTripAction`, `deleteCycleAction`, `resetAllAction` y `deleteMaintenanceLogAction`. Registrar un viaje, cerrar una carga o liquidar una cuenta vuelven a no pedir credenciales.
+- **`clientIp()` acepta `Headers` en lugar de `Request`**: es lo que permite usar el limitador dentro de Server Actions, donde no existe un `Request`. Un solo call site afectado.
+
+### Why
+La versión anterior cerró la escritura abierta de `/gasolina` con un token compartido, sobre el argumento de que *"exige que todos los participantes tengan cuenta; hoy no está garantizado"*. Los datos de producción refutan la premisa:
+
+- Firebase Auth tiene **2 cuentas** —`melyan.217@gmail.com` y `jorgelarteagap@gmail.com`— que son exactamente los dos participantes de `DEFAULT_USERS`.
+- **No existe ruta de registro en el código**: el conjunto de cuentas lo controla el propietario.
+- `melyan.217@gmail.com` tiene `lastSignIn` idéntico a su `creationTime` (2026-06-01): entró una vez y no volvió.
+
+Y el token **nunca llegó a emitirse**: el documento `car_sharing_config/access` no existe. Es decir, la página llevaba publicada en **solo lectura para todo el mundo, incluidas las dos participantes**. No era una fricción tolerable — era un bloqueo, y una puerta que no se puede abrir no es un control.
+
+### Removed
+- **Token de acceso compartido**: `src/lib/car-access.ts`, `src/app/api/car-access/route.ts`, `src/app/gasolina/components/CarAccessGate.tsx`, `scripts/set-car-access-token.ts`, `docs/car-access-token.md`, y el banner "Solo lectura. Ingresá el token compartido…" que aparecía en cada carga de la página. Sin residuo en Firestore: `car_sharing_config/access` nunca existió, así que no hay datos ni tokens que limpiar.
+
+### Added
+- **Techo de 1 reset / 24 h sobre `resetAllAction`**: el límite de tasa por IP no puede frenarlo, porque borrar el historial completo es **una sola petición**. Es el único caso donde el volumen no acota nada.
+- **Confirmación explícita al borrar un mantenimiento**: era el único destructivo de la página sin `window.confirm`, y el más caro de deshacer mal —borra el log *y* la transacción asociada.
+- **`deleteMaintenanceLogAction` exige sesión siempre**, no solo cuando resulta haber una transacción. Antes el borrado sin sesión solo se impedía en ese caso.
+- **Los `catch` de la página ya no se tragan el motivo del rechazo**: los mensajes de los guards se muestran al usuario en lugar de un "Error al eliminar" genérico. Sigue el patrón que ya usaba el modal de mantenimiento.
+
+### Riesgo aceptado y declarado
+El nombre de participante de un viaje y de una carga viene del cliente (un `<select>` sobre `DEFAULT_USERS`), no de una identidad. **Un visitante que conozca la URL puede atribuir un movimiento a cualquiera de los dos participantes.** El límite de 30 escrituras / 300 s acota el volumen; no resuelve la atribución.
+
+Es el precio explícito de no pedirle nada a Melissa, y queda escrito en `design.md` D1 y en el requirement normativo para que sea una decisión y no un olvido. Lo que sí queda cerrado es lo caro: nada irreversible se ejecuta sin sesión, y el daño posible no alcanza balances ni la cuenta de nadie.
+
+### ⚠️ Antes de desplegar
+```bash
+RATE_LIMIT_MODE=observe
+```
+El umbral de 30/300 s es una estimación, no una medición: una sesión real de registro son unas 5 escrituras. Arrancar en observativo para ver tráfico real antes de activar el rechazo. El mismo modo ya cubre creación de sesión y refresh de insights.
+
 ## [1.7.11] - 2026-10-14
 
 Cierra el vector de escritura abierta en `/gasolina`, cumple los derechos de supresión

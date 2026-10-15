@@ -2,37 +2,32 @@
 
 import { revalidatePath } from 'next/cache'
 import { carSharingRepository } from '@/repositories/car-sharing.repository'
-import { hasCarAccess } from '@/lib/car-access'
+import { requireCarSession, requireCarWriteLimit, requireResetLimit } from './guards'
 import type { CarCycle } from '@/types/car-sharing'
 
 /**
- * `/gasolina` es pública por diseño, pero su estado es compartido entre varias
- * personas y no se puede atribuir a una sesión de usuario. La escritura exige un
- * token compartido (design.md D1); la lectura sigue siendo pública.
+ * `/gasolina` es pública y sus Server Actions no pasan por `middleware.ts`, así
+ * que el control va dentro de cada acción (guards.ts, design.md D1).
  *
- * El guard va antes de cualquier lectura o escritura: rechazar tarde ya pagó
+ * Los guards van ANTES de cualquier lectura o escritura: rechazar tarde ya pagó
  * el coste de la operación que se pretendía impedir.
  */
-async function requireCarAccess(): Promise<void> {
-  if (!(await hasCarAccess())) {
-    throw new Error('Necesitás el token de acceso para modificar el ciclo')
-  }
-}
 
 export async function addTripAction(data: { userName: string; initialKm: number; finalKm: number; clientTimestamp?: number }) {
-  await requireCarAccess()
+  await requireCarWriteLimit()
   await carSharingRepository.addTrip(data)
   revalidatePath('/gasolina')
 }
 
 export async function deleteTripAction(createdAt: number) {
-  await requireCarAccess()
+  await requireCarWriteLimit()
+  await requireCarSession()
   await carSharingRepository.deleteTrip(createdAt)
   revalidatePath('/gasolina')
 }
 
 export async function updateTripAction(createdAt: number, data: { userName: string, finalKm: number }) {
-  await requireCarAccess()
+  await requireCarWriteLimit()
   await carSharingRepository.updateTrip(createdAt, data)
   revalidatePath('/gasolina')
 }
@@ -42,7 +37,7 @@ export async function closeCycleAction(
   paidBy: string,
   gasLiters?: number | null,
 ) {
-  await requireCarAccess()
+  await requireCarWriteLimit()
   if (!Number.isFinite(gasAmount) || gasAmount <= 0) {
     throw new Error('El monto de la carga debe ser mayor a cero')
   }
@@ -60,7 +55,7 @@ export async function closeCycleAction(
 }
 
 export async function setCycleSettledAction(id: string, settled: boolean) {
-  await requireCarAccess()
+  await requireCarWriteLimit()
   await carSharingRepository.setCycleSettled(id, settled)
   revalidatePath('/gasolina')
 }
@@ -74,7 +69,7 @@ export async function updateClosedCycleAction(
   id: string,
   data: { gasAmount: number; gasLiters?: number | null; paidBy: string },
 ) {
-  await requireCarAccess()
+  await requireCarWriteLimit()
   if (!id) {
     throw new Error('Falta el identificador del ciclo')
   }
@@ -95,23 +90,26 @@ export async function updateClosedCycleAction(
 }
 
 export async function deleteCycleAction(id: string) {
-  await requireCarAccess()
+  await requireCarWriteLimit()
+  await requireCarSession()
   await carSharingRepository.deleteCycle(id)
   revalidatePath('/gasolina')
 }
 
 export async function resetAllAction() {
-  await requireCarAccess()
+  await requireCarWriteLimit()
+  await requireResetLimit()
+  await requireCarSession()
   await carSharingRepository.resetAll()
   revalidatePath('/gasolina')
 }
 
-/** Lectura: pública a propósito (design.md D1). Solo la escritura exige token. */
+/** Lectura: pública. Consultar el estado desde el vehículo no pide credenciales. */
 export async function getActiveCycleAction(): Promise<CarCycle> {
   return await carSharingRepository.getActiveCycle()
 }
 
-/** Lectura: pública a propósito (design.md D1). Solo la escritura exige token. */
+/** Lectura: pública. Consultar el estado desde el vehículo no pide credenciales. */
 export async function getClosedCyclesAction(): Promise<CarCycle[]> {
   return await carSharingRepository.getClosedCycles()
 }

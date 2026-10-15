@@ -11,7 +11,6 @@ import { addMaintenanceLogAction, deleteMaintenanceLogAction } from '../maintena
 import { Trash2, RefreshCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useCarAccess } from './CarAccessGate'
 
 interface MaintenanceModalProps {
   isOpen: boolean
@@ -22,7 +21,6 @@ interface MaintenanceModalProps {
 }
 
 export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs }: MaintenanceModalProps) {
-  const { canWrite } = useCarAccess()
   const [isPending, startTransition] = useTransition()
   
   // Form state
@@ -58,16 +56,25 @@ export function MaintenanceModal({ isOpen, onClose, type, absoluteOdometer, logs
         } else {
           toast.success('Mantenimiento registrado')
         }
-      } catch {
-        toast.error('Error al registrar')
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Error al registrar')
       }
     })
   }
 
   const handleDelete = (id: string) => {
+    // Confirmar siempre: si el registro tenía una transacción asociada, esto
+    // también revierte el gasto del fondo de mantenimiento. Es el único
+    // destructivo de la página que no lo pedía, y el más caro de deshacer mal.
+    if (!window.confirm(
+      '¿Eliminar este registro de mantenimiento?\n\n' +
+        'Si estaba descontado del fondo, el gasto también se revierte.',
+    )) {
+      return
+    }
+
     startTransition(async () => {
       try {
-        if (!canWrite) { toast.error('Necesitás el token de acceso para modificar'); return }
         await deleteMaintenanceLogAction(id)
         toast.success('Registro eliminado')
       } catch (err) {

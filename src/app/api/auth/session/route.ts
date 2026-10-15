@@ -12,7 +12,7 @@ const LIMIT = { max: 10, windowSec: 60 } as const
 
 export async function POST(req: NextRequest) {
   try {
-    const rate = await guardedRateLimit('auth-session', clientIp(req), LIMIT)
+    const rate = await guardedRateLimit('auth-session', clientIp(req.headers), LIMIT)
     if (!rate.ok) {
       return NextResponse.json(
         { error: 'Demasiadas solicitudes de inicio de sesión' },

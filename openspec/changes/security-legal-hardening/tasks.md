@@ -24,15 +24,18 @@
 - [x] 3.7 Limitar `POST /api/insights` para proteger la invalidación de caché
 - [x] 3.8 Desplegar en modo observativo sobre creación de sesión y comparar contra tráfico real antes de activar el rechazo
 
-## 4. Protección por token del estado compartido de /gasolina
+## 4. Control de escritura del estado compartido de /gasolina
 
-- [x] 4.1 Crear el documento de configuración que almacena el token de acceso compartido, fuera del bundle de cliente
-- [x] 4.2 Implementar la validación del token en el servidor con comparación en tiempo constante
-- [x] 4.3 Emitir la cookie `httpOnly`, `sameSite=strict` y con `path` restringido a las rutas de la feature, tras validar el token
-- [x] 4.4 Exigir el token válido en las 8 Server Actions mutantes de `src/app/gasolina/actions.ts` (de 10 exportadas: las 2 de lectura siguen públicas), rechazando antes de cualquier escritura
-- [x] 4.5 Añadir el gate correspondiente a las acciones de mantenimiento de la misma feature, preservando la degradación sin sesión que ya define `maintenance.actions.ts`
-- [x] 4.6 Exponer en la interfaz la entrada de token y el estado de escritura habilitado o deshabilitado, manteniendo la lectura pública
-- [x] 4.7 Documentar el procedimiento de rotación del token
+> Esta sección reemplaza a una anterior que cerró el mismo vector con un token compartido. Ese modelo se implementó y se descartó: su premisa —que no todos los participantes tienen cuenta— era falsa, y el token nunca llegó a emitirse, así que las 8 acciones rechazaban a todo el mundo. Ver `design.md` D1.
+
+- [x] 4.1 Verificar contra producción cuántos participantes tienen cuenta y cuántos la usan, en lugar de suponerlo
+- [x] 4.2 Implementar `clientIp()` sobre `Headers` para que el limitador también sea usable dentro de Server Actions, donde no hay `Request`
+- [x] 4.3 Crear `src/app/gasolina/guards.ts` con `requireCarWriteLimit`, `requireResetLimit` y `requireCarSession`
+- [x] 4.4 Aplicar el límite por IP a las 8 Server Actions mutantes de `src/app/gasolina/actions.ts` y a las 3 de `maintenance.actions.ts`, rechazando antes de cualquier lectura o escritura
+- [x] 4.5 Reservar `deleteTripAction`, `deleteCycleAction`, `resetAllAction` y `deleteMaintenanceLogAction` a sesión autenticada válida
+- [x] 4.6 Añadir el techo de 1 reset / 24 h sobre `resetAllAction`, que el límite general no puede frenar por ser una sola petición
+- [x] 4.7 Preservar la degradación sin sesión de `addMaintenanceLogAction`: log histórico sin transacción, sin tocar la cuenta de nadie
+- [x] 4.8 Añadir confirmación explícita al borrado de mantenimiento, que era el único destructivo de la página sin `window.confirm`
 
 ## 5. Páginas legales
 
@@ -54,9 +57,9 @@
 
 ## 7. Verificación
 
-- [x] 7.1 Comprobar que una petición sin sesión ni token no puede escribir en el estado compartido
-- [x] 7.2 Comprobar que una petición con token válido sí opera con normalidad
-- [x] 7.3 Comprobar que el rechazo por límite responde 429 con `Retry-After` y no escribe
+- [x] 7.1 Comprobar que una petición sin sesión puede registrar y cerrar ciclos dentro del límite, y que el estado compartido se persiste
+- [x] 7.2 Comprobar que una petición sin sesión NO puede borrar viaje, ciclo, historial ni mantenimiento, y que el rechazo ocurre antes de cualquier lectura
+- [x] 7.3 Comprobar que el rechazo por límite de tasa no escribe en el estado compartido
 - [x] 7.4 Comprobar que el borrado de cuenta elimina los datos de todas las colecciones del manifiesto y revoca la sesión
 - [x] 7.5 Comprobar que la exportación no incluye datos de ningún otro usuario
 - [x] 7.6 Ejecutar `npm run lint` y `npx tsc --noEmit`

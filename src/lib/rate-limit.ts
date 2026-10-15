@@ -62,9 +62,13 @@ function docId(scope: string, identity: string, windowSec: number, startSec: num
  * IPv4 e IPv6 fragmentadas no deben contar como identidades distintas: el
  * prefijo se agrupa a /64, que es el tamaño de subred habitual en IPv6.
  */
-export function clientIp(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for')
-  const candidate = fwd?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown'
+/**
+ * Acepta `Headers` y no `Request` porque el limitador también se aplica dentro de
+ * Server Actions, donde no existe un `Request`: se lee de `headers()`.
+ */
+export function clientIp(headers: Headers): string {
+  const fwd = headers.get('x-forwarded-for')
+  const candidate = fwd?.split(',')[0]?.trim() || headers.get('x-real-ip') || 'unknown'
   return candidate.includes(':') ? candidate.split(':').slice(0, 4).join(':') : candidate
 }
 

@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
 import { CREDIT_TYPES } from "@/types/credit"
 import type { Credit } from "@/types/credit"

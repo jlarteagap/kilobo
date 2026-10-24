@@ -77,7 +77,7 @@ export function InstallmentsTable({
           </tr>
         </thead>
         <tbody>
-          {sorted.map((inst, idx) => {
+          {sorted.map((inst) => {
             const statusConfig = INSTALLMENT_STATUS_CONFIG[inst.status]
             const isPaid       = inst.status === 'PAID'
             const isOverdue    = inst.status === 'OVERDUE'

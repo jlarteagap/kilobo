@@ -2,10 +2,10 @@
 
 import React, { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Check, History, Info, Pencil, Plus, RefreshCcw, Sparkles, Trash2, Wallet, X } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Check, History, Info, Pencil, Plus, RefreshCcw, Sparkles, Trash2, Wallet, X } from 'lucide-react'
 import { toast } from 'sonner'
 import type { CarCycle, CarTrip } from '@/types/car-sharing'
-import { cycleKm, implausibleTripReason } from '@/types/car-sharing'
+import { cycleKm, implausibleTripReason, latestTrip } from '@/types/car-sharing'
 import { formatTripDate } from '@/app/gasolina/utils/format'
 import {
   addTripAction,
@@ -70,9 +70,8 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
   const [paidBy, setPaidBy] = useState<string>(DEFAULT_USERS[0])
   const [showSettledHint, setShowSettledHint] = useState(false)
 
-  const lastTripInActive = activeCycle.trips[activeCycle.trips.length - 1]
-  const lastTripInClosed = closedCycles[0]?.trips[closedCycles[0].trips.length - 1]
-  const lastTrip = lastTripInActive || lastTripInClosed
+  const lastTrip =
+    latestTrip(activeCycle.trips) ?? latestTrip(closedCycles[0]?.trips ?? [])
 
   const activeTotalKm = cycleKm(activeCycle)
 
@@ -342,6 +341,15 @@ export function CarSharingDashboard({ activeCycle, closedCycles }: CarSharingDas
                               >
                                 <Sparkles className="size-2.5" />
                                 Turno
+                              </span>
+                            )}
+                            {trip.source === 'gap' && (
+                              <span
+                                className="ml-2 inline-flex items-center gap-1 rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500"
+                                title="Kilómetros entre el último viaje registrado y el inicio de un turno. Se atribuyen a quien registró el último viaje."
+                              >
+                                <AlertTriangle className="size-2.5" />
+                                Brecha
                               </span>
                             )}
                           </TableCell>

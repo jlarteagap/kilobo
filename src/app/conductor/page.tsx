@@ -8,6 +8,7 @@ import { DriverDeposits } from '@/features/driver/components/DriverDeposits'
 import { DashboardSummary } from '@/features/driver/components/DashboardSummary'
 import { MonthCyclePicker } from '@/features/driver/components/MonthCyclePicker'
 import { useShifts, useCreateShift, useUpdateShift } from '@/features/driver/hooks/useDriverShifts'
+import { useLastGasolinaTrip } from '@/features/driver/hooks/useLastGasolinaTrip'
 import { useMonthCycle } from '@/features/driver/hooks/useMonthCycle'
 import { BarChart3, Settings, Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -17,6 +18,7 @@ import type { ShiftInput, DriverShift } from '@/types/driver'
 export default function ConductorPage() {
   const { cycle, prev, next, label, isCurrentMonth, setCycle } = useMonthCycle()
   const { data: shifts = [], isLoading: loadingShifts } = useShifts(cycle)
+  const { data: lastTrip } = useLastGasolinaTrip()
   const createShift = useCreateShift()
   const updateShift = useUpdateShift()
 
@@ -126,6 +128,7 @@ export default function ConductorPage() {
         {showForm && (
           <ShiftForm
             isPending={createShift.isPending}
+            lastTrip={lastTrip}
             onSubmit={handleCreate}
             onCancel={() => setShowForm(false)}
           />

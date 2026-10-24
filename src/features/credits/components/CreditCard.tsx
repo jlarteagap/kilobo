@@ -1,10 +1,10 @@
 "use client"
 
-import { Banknote, Pencil, Trash2, XCircle } from "lucide-react"
+import { Trash2, XCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProgressBar } from "@/components/ui/progress-bar"
 import { formatCurrency } from "@/features/accounts/utils/account-display.utils"
-import { CREDIT_TYPES, CREDIT_STATUS_CONFIG, INSTALLMENT_STATUS_CONFIG } from "@/types/credit"
+import { CREDIT_TYPES, CREDIT_STATUS_CONFIG } from "@/types/credit"
 import type { Credit, Installment } from "@/types/credit"
 
 interface CreditCardProps {
@@ -28,9 +28,6 @@ export function CreditCard({
   const statusConfig = CREDIT_STATUS_CONFIG[credit.status]
   const isActive     = credit.status === 'ACTIVE'
   const isPaid       = credit.status === 'PAID'
-  const progress     = credit.total_installments > 0
-    ? (credit.paid_installments / credit.total_installments) * 100
-    : 0
 
   const isOverdue = nextInstallment?.status === 'OVERDUE'
 

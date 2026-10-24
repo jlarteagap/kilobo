@@ -1,7 +1,7 @@
 // features/accounts/AccountForm.tsx
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import { cn } from "@/lib/utils"
 import { SubmitButton } from "@/components/ui/submit-button"
@@ -50,6 +50,8 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
       institution: initialData?.institution ?? '',
     },
   })
+
+  const accountType = useWatch({ control: form.control, name: 'type' })
 
   return (
     <Form {...form}>
@@ -119,7 +121,7 @@ export function AccountForm({ initialData, onSubmit, onCancel, isPending }: Acco
         />
 
         {/* ── Institución — solo para cuentas bancarias ── */}
-        {form.watch('type') === 'BANK' && (
+        {accountType === 'BANK' && (
           <FormField<CreateAccountInput>
             control={form.control}
             name="institution"

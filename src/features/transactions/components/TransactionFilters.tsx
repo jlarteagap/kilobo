@@ -102,7 +102,7 @@ function CustomDropdownItem({
 }) {
   return (
     <DropdownMenuItem
-      onClick={(e) => {
+      onClick={() => {
         // Usamos preventDefault si queremos mantener el menu abierto o manejar el cierre manualmente
         // pero por defecto DropdownMenuItem cierra el menu al hacer click.
         onClick()
@@ -173,9 +173,6 @@ export function TransactionFilters({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
-  const toggle = (name: typeof openDropdown) =>
-    setOpenDropdown((prev) => prev === name ? null : name)
 
   // ── Categorías disponibles en el período actual ────────────────────────────
   const visibleCategories = categories

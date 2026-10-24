@@ -6,15 +6,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import type { DriverApp, PaymentMethod, ExpenseType, DriverExpense, DriverShift, ShiftInput, TipsByMethod, ShiftMetrics } from '@/types/driver'
+import type { DriverApp, PaymentMethod, ExpenseType, DriverExpense, ShiftInput, TipsByMethod, ShiftMetrics, GasolinaLastTrip } from '@/types/driver'
 import { DRIVER_APPS, DRIVER_APP_LABELS, PAYMENT_METHOD_LABELS, EXPENSE_TYPE_LABELS, EXPENSE_TYPES, emptyTips, computeShiftMetrics } from '@/types/driver'
-import { isoToLocalDateStr, APP_BADGE_CLASS } from '../utils/driver-metrics.utils'
+import { computeTripKm, implausibleTripReason } from '@/types/car-sharing'
+import { APP_BADGE_CLASS } from '../utils/driver-metrics.utils'
 
 interface ShiftFormProps {
   isPending: boolean
   onSubmit?: (data: ShiftInput) => void
   onUpdate?: (id: string, data: ShiftInput) => void
   initialData?: ShiftInput & { id?: string }
+  lastTrip?: GasolinaLastTrip | null
   onCancel: () => void
 }
 
@@ -39,21 +41,6 @@ function localDateStr(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
-}
-
-function shiftToInput(s: DriverShift): ShiftInput {
-  return {
-    date: s.date ?? isoToLocalDateStr(s.createdAt) ?? localDateStr(new Date()),
-    hoursWorked: s.hoursWorked ?? 0,
-    startKm: s.startKm,
-    endKm: s.endKm,
-    earnings: s.earnings,
-    bonuses: s.bonuses,
-    commissions: s.commissions,
-    tips: s.tips,
-    expenses: s.expenses,
-    notes: s.notes,
-  }
 }
 
 // ─── Helpers de campos ─────────────────────────────────────────────────────────
@@ -102,6 +89,7 @@ export function ShiftForm({
   onSubmit,
   onUpdate,
   initialData,
+  lastTrip,
   onCancel,
 }: ShiftFormProps) {
   const defaults = initialData ?? {
@@ -153,8 +141,21 @@ export function ShiftForm({
     setExpenses((prev) => [...prev, { type: 'OTHER' as ExpenseType, amount: 0, paymentMethod: 'CASH' as PaymentMethod }])
   }
 
-  const updateExpense = (index: number, field: keyof DriverExpense, value: any) => {
-    setExpenses((prev) => prev.map((e, i) => i === index ? { ...e, [field]: field === 'amount' ? (parseFloat(value) || 0) : value } : e))
+  const updateExpense = (index: number, field: keyof DriverExpense, value: string) => {
+    setExpenses((prev) => prev.map((e, i) => {
+      if (i !== index) return e
+
+      switch (field) {
+        case 'amount':
+          return { ...e, amount: parseFloat(value) || 0 }
+        case 'type':
+          return { ...e, type: value as ExpenseType }
+        case 'paymentMethod':
+          return { ...e, paymentMethod: value as PaymentMethod }
+        default:
+          return e
+      }
+    }))
   }
 
   const removeExpense = (index: number) => {
@@ -180,9 +181,28 @@ export function ShiftForm({
     return map
   }, [earnings, bonuses, tips])
 
+  const isEditMode = !!initialData?.id
+
+  // Brecha que se le asignara al conductor del ultimo viaje si el inicio no
+  // coincide con lo ultimo registrado en Gasolina.
+  const gapInfo = useMemo(() => {
+    if (isEditMode || !lastTrip || !startKm) return null
+    const start = parseInt(startKm, 10)
+    if (isNaN(start) || start === lastTrip.finalKm) return null
+    return {
+      km: computeTripKm(lastTrip.finalKm, start),
+      userName: lastTrip.userName,
+    }
+  }, [isEditMode, lastTrip, startKm])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (totals.grossEarnings === 0 && totals.totalExpenses === 0) return
+
+    if (gapInfo && lastTrip) {
+      const warning = implausibleTripReason(lastTrip.finalKm, parseInt(startKm, 10))
+      if (warning && !window.confirm(`${warning}\n\n¿Registrar el turno igual?`)) return
+    }
 
     const data: ShiftInput = {
       date,
@@ -203,8 +223,6 @@ export function ShiftForm({
       onSubmit?.(data)
     }
   }
-
-  const isEditMode = !!initialData?.id
 
 return (
     <div className="rounded-[22px] bg-white border border-zinc-200 p-5 sm:p-6 space-y-6"
@@ -308,6 +326,17 @@ return (
           {kmPreview != null && (
             <p className="text-[11px] font-semibold text-emerald-600 text-center tabular-nums">
               +{kmPreview} km recorridos
+            </p>
+          )}
+          {!isEditMode && lastTrip && (
+            <p className="text-[11px] text-zinc-400 text-center tabular-nums">
+              Último registro en Gasolina: {lastTrip.finalKm.toString().padStart(3, '0')} · {lastTrip.userName}
+            </p>
+          )}
+          {!isEditMode && gapInfo && (
+            <p className="text-[11px] font-semibold text-zinc-600 text-center tabular-nums">
+              +{gapInfo.km} km sin registrar desde el último viaje de {gapInfo.userName}.
+              Se asignarán a {gapInfo.userName}.
             </p>
           )}
         </div>
@@ -448,7 +477,7 @@ function ExpenseRow({
   expense, onChange, onRemove,
 }: {
   expense: DriverExpense
-  onChange: (field: keyof DriverExpense, val: any) => void
+  onChange: (field: keyof DriverExpense, val: string) => void
   onRemove: () => void
 }) {
   return (

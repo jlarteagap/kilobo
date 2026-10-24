@@ -3,7 +3,6 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { cn } from '@/lib/utils'
 import { SubmitButton } from '@/components/ui/submit-button'
 
 import {
@@ -15,7 +14,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 
 import { createCategorySchema, updateCategorySchema } from '@/lib/validations/category.schema'
 import { useCreateCategory, useUpdateCategory } from '../../hooks/useCategories'

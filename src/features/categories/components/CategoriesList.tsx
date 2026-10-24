@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react"
 import { Plus, Trash2, Pencil, Search, LayoutGrid } from "lucide-react"
-import { EmptyState } from "@/components/ui/empty-state"
 
 import {
   Dialog,

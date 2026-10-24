@@ -1,6 +1,6 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import {
   buyInvestmentSchema,
@@ -59,7 +59,7 @@ export function InvestmentTxForm({
     } as BuyInvestmentInput | SellInvestmentInput,
   })
 
-  const amount = form.watch('amount') || 0
+  const amount = useWatch({ control: form.control, name: 'amount' }) || 0
 
   return (
     <Form {...form}>

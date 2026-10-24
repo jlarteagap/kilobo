@@ -1,5 +1,7 @@
 // src/types/driver.ts
 
+import { computeTripKm } from '@/types/car-sharing'
+
 export type DriverApp = 'UBER' | 'YANGO' | 'INDRIVE'
 export type PaymentMethod = 'CASH' | 'CARD' | 'QR'
 export type ExpenseType = 'TOLL' | 'GAS' | 'MAINTENANCE' | 'OTHER'
@@ -153,9 +155,41 @@ export interface DriverShift {
   maintenanceReserve: number
   generatedTransactionIds: string[]
   gasolinaTripCreatedAt?: number | null  // referencia al trip creado en Gasolina al cerrar turno
+  // Trip de brecha creado cuando el inicio del turno no coincide con el ultimo
+  // registro de Gasolina. Se guarda para poder borrarlo al editar/eliminar.
+  gasolinaGapTripCreatedAt?: number | null
+  // Ultimo km y conductor antes de este turno. Es la base estable para
+  // recalcular la brecha al editar, sin depender de los viajes posteriores.
+  gasolinaPrevFinalKm?: number | null
+  gasolinaPrevUserName?: string | null
   notes: string | null
   createdAt: string
   updatedAt: string
+}
+
+/** Referencia minima del ultimo viaje de Gasolina para el formulario. */
+export interface GasolinaLastTrip {
+  finalKm: number
+  userName: string
+}
+
+/**
+ * Resume la brecha de un turno ya guardado. Devuelve `null` cuando no se creo
+ * trip de brecha (lecturas iguales, sin viaje previo o sin km).
+ */
+export function shiftGapSummary(
+  shift: Pick<
+    DriverShift,
+    'gasolinaGapTripCreatedAt' | 'gasolinaPrevFinalKm' | 'gasolinaPrevUserName' | 'startKm'
+  >,
+): { km: number; userName: string } | null {
+  if (shift.gasolinaGapTripCreatedAt == null) return null
+  if (shift.gasolinaPrevFinalKm == null || shift.startKm == null) return null
+
+  return {
+    km: computeTripKm(shift.gasolinaPrevFinalKm, shift.startKm),
+    userName: shift.gasolinaPrevUserName ?? '',
+  }
 }
 
 // Datos de entrada: crear o editar un turno (registro manual)

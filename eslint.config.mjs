@@ -5,6 +5,13 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    // Los scripts de skills son CommonJS y usan `require` por diseño.
+    files: ["**/*.cjs"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

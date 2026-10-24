@@ -113,3 +113,14 @@ export async function getActiveCycleAction(): Promise<CarCycle> {
 export async function getClosedCyclesAction(): Promise<CarCycle[]> {
   return await carSharingRepository.getClosedCycles()
 }
+
+/**
+ * Ultimo viaje registrado, para que `/conductor` arranque con la misma lectura
+ * que muestra `/gasolina`. Si el ciclo activo esta vacio, devuelve el ultimo
+ * viaje del cierre mas reciente.
+ */
+export async function getLastTripAction(): Promise<{ finalKm: number; userName: string } | null> {
+  const trip = await carSharingRepository.getLastTrip()
+  if (!trip) return null
+  return { finalKm: trip.finalKm, userName: trip.userName }
+}

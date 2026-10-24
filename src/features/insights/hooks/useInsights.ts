@@ -1,7 +1,6 @@
 // features/insights/hooks/useInsights.ts
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { insightsService } from '@/services/insights.service'
 import { InsightsResult } from '@/types/insights'
 
 // ─── Keys ─────────────────────────────────────────────────────────────────────

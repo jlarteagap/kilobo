@@ -1,5 +1,5 @@
-import type { DriverApp, PaymentMethod, ExpenseType } from '@/types/driver'
-import { DRIVER_APPS, DRIVER_APP_LABELS, PAYMENT_METHOD_LABELS, EXPENSE_TYPE_LABELS } from '@/types/driver'
+import type { DriverApp } from '@/types/driver'
+import { DRIVER_APP_LABELS } from '@/types/driver'
 
 // ─── Duración ──────────────────────────────────────────────────────────────────
 export function formatDuration(startTime: string, endTime: string | null): string {

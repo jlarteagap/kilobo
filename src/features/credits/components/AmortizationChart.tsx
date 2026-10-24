@@ -21,8 +21,6 @@ export function AmortizationChart({ installments, currency }: AmortizationChartP
 
   if (data.length === 0) return null
 
-  const maxBalance = Math.max(...data.map((d) => d.balance))
-
   return (
     <div className="bg-white rounded-[22px] p-5" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
       <h4 className="text-sm font-bold text-foreground tracking-[-0.01em] mb-4">

@@ -14,8 +14,12 @@
  * `manual`: se cargo directamente desde `/gasolina` (viajes que no son turnos).
  * Los docs anteriores a esta migracion no tienen el campo y se tratan como
  * `manual`, que es el comportamiento previo.
+ *
+ * `gap`: lo crea `/conductor` cuando el odometro de inicio de un turno no
+ * coincide con el ultimo viaje registrado. Son los km que nadie anoto,
+ * atribuidos a quien hizo el ultimo registro.
  */
-export type CarTripSource = 'shift' | 'manual'
+export type CarTripSource = 'shift' | 'manual' | 'gap'
 
 export interface CarTrip {
   userName: string
@@ -40,6 +44,33 @@ export interface DebtResult {
   totalKm: number
   percentage: number
   cost: number
+}
+
+/**
+ * Ultimo viaje registrado, sin depender del orden del array.
+ *
+ * `/gasolina` y `/conductor` tienen que coincidir en que significa "el ultimo
+ * dato": si uno usa el orden de insercion y el otro el timestamp, la brecha se
+ * calcula contra un viaje distinto al que ve el usuario.
+ */
+export function latestTrip(trips: readonly CarTrip[]): CarTrip | null {
+  let latest: CarTrip | null = null
+
+  for (const trip of trips) {
+    if (!latest) {
+      latest = trip
+      continue
+    }
+
+    const tripAt = trip.timestamp ?? trip.createdAt
+    const latestAt = latest.timestamp ?? latest.createdAt
+
+    if (tripAt > latestAt || (tripAt === latestAt && trip.createdAt > latest.createdAt)) {
+      latest = trip
+    }
+  }
+
+  return latest
 }
 
 export interface CarCycle {

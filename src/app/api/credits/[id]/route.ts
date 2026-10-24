@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { payInstallmentsSchema } from '@/lib/validations/credit.schema'
 import { getUserId } from '@/lib/auth.server'
 import { creditsService } from '@/services/credits.service'
 import { assertSameOrigin } from '@/lib/api-utils'

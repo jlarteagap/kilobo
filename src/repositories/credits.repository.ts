@@ -1,6 +1,6 @@
 import { adminDb } from '@/lib/firebase.admin'
-import { Timestamp, FieldValue } from 'firebase-admin/firestore'
-import type { Credit, CreateCreditData, Installment, PayInstallmentsData } from '@/types/credit'
+import { Timestamp } from 'firebase-admin/firestore'
+import type { Credit, CreateCreditData, Installment } from '@/types/credit'
 
 const creditsCollection = adminDb.collection('credits')
 

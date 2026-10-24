@@ -4,6 +4,7 @@ import { FieldValue } from 'firebase-admin/firestore'
 import { carMaintenanceRepository } from './car-maintenance.repository'
 import {
   computeTripKm,
+  latestTrip,
   type CarCycle,
   type CarTrip,
   type CarTripSource,
@@ -113,6 +114,35 @@ function parseLegacyTripDate(value: string | undefined): number | null {
   return utc
 }
 
+type TripInput = {
+  userName: string
+  initialKm: number
+  finalKm: number
+  clientTimestamp?: number
+  source?: CarTripSource
+}
+
+/**
+ * Quita un viaje de un ciclo concreto. Si el ciclo ya cerro, recalcula su
+ * `debtSummary`: borrar km de un ciclo cerrado sin recomputar dejaria los
+ * costos por persona sumando un total que ya no existe.
+ */
+async function removeTripFromCycle(cycle: CarCycle, createdAt: number): Promise<boolean> {
+  const tripToDelete = cycle.trips.find(t => t.createdAt === createdAt)
+  if (!tripToDelete) return false
+
+  const updatedTrips = cycle.trips.filter(t => t.createdAt !== createdAt)
+  const update: Record<string, unknown> = { trips: updatedTrips }
+
+  if (cycle.status === 'closed') {
+    update.debtSummary = computeDebtSummary(updatedTrips, cycle.gasAmount)
+  }
+
+  await CYCLES_COLLECTION.doc(cycle.id).update(update)
+  await carMaintenanceRepository.incrementAbsoluteOdometer(-tripToDelete.totalKm)
+  return true
+}
+
 export const carSharingRepository = {
   async getActiveCycle(): Promise<CarCycle> {
     const snapshot = await CYCLES_COLLECTION
@@ -158,47 +188,82 @@ export const carSharingRepository = {
     return snapshot.docs.map(doc => toCarCycle(doc.id, doc.data()))
   },
 
-  async addTrip(data: { userName: string, initialKm: number, finalKm: number, clientTimestamp?: number; source?: CarTripSource }): Promise<number> {
+  /**
+   * Ultimo viaje registrado. Mira el ciclo activo y, si todavia no tiene
+   * viajes, el cierre mas reciente. Es la misma referencia que ve el usuario en
+   * `/gasolina` y la base para detectar la brecha de un turno.
+   */
+  async getLastTrip(): Promise<CarTrip | null> {
     const activeCycle = await this.getActiveCycle()
+    const activeLast = latestTrip(activeCycle.trips)
+    if (activeLast) return activeLast
 
-    const totalKm = computeTripKm(data.initialKm, data.finalKm)
+    const snapshot = await CYCLES_COLLECTION
+      .where('status', '==', 'closed')
+      .orderBy('endDate', 'desc')
+      .limit(1)
+      .get()
 
-    // El timestamp lo manda el cliente para que la hora del viaje sea la del
-    // momento en que se registro, no la del servidor.
-    const tripTimestamp = data.clientTimestamp ?? Date.now()
+    if (snapshot.empty) return null
 
-    const createdAt = Date.now()
-    const trip: CarTrip = {
-      userName: data.userName,
-      initialKm: data.initialKm,
-      finalKm: data.finalKm,
-      totalKm,
-      timestamp: tripTimestamp,
-      createdAt,
-      source: data.source ?? 'manual',
-    }
+    const data = snapshot.docs[0].data()
+    return latestTrip(normalizeTrips(data.trips as CarTrip[] | undefined))
+  },
+
+  /**
+   * Inserta varios viajes en una sola operacion. Lo usa `/conductor` para que
+   * la brecha y el turno entren juntos y en orden; si se hicieran dos llamadas,
+   * un fallo intermedio dejaria una brecha huerfana.
+   */
+  async addTrips(data: TripInput[]): Promise<number[]> {
+    if (data.length === 0) return []
+
+    const activeCycle = await this.getActiveCycle()
+    const base = Date.now()
+
+    const trips: CarTrip[] = data.map((item, index) => {
+      const createdAt = base + index
+      return {
+        userName: item.userName,
+        initialKm: item.initialKm,
+        finalKm: item.finalKm,
+        totalKm: computeTripKm(item.initialKm, item.finalKm),
+        // El timestamp lo manda el cliente para que la hora del viaje sea la del
+        // momento en que se registro, no la del servidor.
+        timestamp: item.clientTimestamp ?? createdAt,
+        createdAt,
+        source: item.source ?? 'manual',
+      }
+    })
 
     await CYCLES_COLLECTION.doc(activeCycle.id).update({
-      trips: FieldValue.arrayUnion(trip)
+      trips: FieldValue.arrayUnion(...trips)
     })
-    
+
+    const totalKm = trips.reduce((sum, trip) => sum + trip.totalKm, 0)
     await carMaintenanceRepository.incrementAbsoluteOdometer(totalKm)
 
+    return trips.map(trip => trip.createdAt)
+  },
+
+  async addTrip(data: TripInput): Promise<number> {
+    const [createdAt] = await this.addTrips([data])
     return createdAt
   },
 
+  /**
+   * Borra un viaje este donde este. Antes solo miraba el ciclo activo, asi que
+   * editar o eliminar un turno de un ciclo ya cerrado dejaba el viaje vivo y
+   * duplicaba los km. Busca primero el activo (caso comun) y luego los cierres.
+   */
   async deleteTrip(createdAt: number): Promise<void> {
     const activeCycle = await this.getActiveCycle()
-    const tripToDelete = activeCycle.trips.find(t => t.createdAt === createdAt)
-    if (!tripToDelete) return
+    if (await removeTripFromCycle(activeCycle, createdAt)) return
 
-    const updatedTrips = activeCycle.trips.filter(t => t.createdAt !== createdAt)
-    
-    await CYCLES_COLLECTION.doc(activeCycle.id).update({
-      trips: updatedTrips
-    })
-
-    await carMaintenanceRepository.incrementAbsoluteOdometer(-tripToDelete.totalKm)
+    const closedCycles = await this.getClosedCycles()
+    for (const cycle of closedCycles) {
+      if (await removeTripFromCycle(cycle, createdAt)) return
+    }
   },
 
   async updateTrip(createdAt: number, data: { userName: string, finalKm: number }): Promise<void> {

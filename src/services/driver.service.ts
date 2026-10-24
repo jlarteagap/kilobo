@@ -31,6 +31,7 @@ async function processShiftTransactions(
   config: DriverConfig,
   data: ShiftInput,
   userId: string,
+  baseline?: { finalKm: number | null; userName: string | null },
 ) {
   const metrics = computeShiftMetrics(data)
 
@@ -43,6 +44,23 @@ async function processShiftTransactions(
   let totalKm: number | null = null
   if (endKm3 != null && startKm3 != null) {
     totalKm = endKm3 >= startKm3 ? endKm3 - startKm3 : 1000 + endKm3 - startKm3
+  }
+
+  // Base de la brecha: el ultimo km registrado antes de este turno. En creacion
+  // se lee de Gasolina; en edicion se pasa la base guardada en el turno para no
+  // depender de viajes posteriores.
+  let prevFinalKm = baseline?.finalKm ?? null
+  let prevUserName = baseline?.userName ?? null
+  if (baseline === undefined && endKm3 != null && startKm3 != null) {
+    try {
+      const lastTrip = await carSharingRepository.getLastTrip()
+      prevFinalKm = lastTrip?.finalKm ?? null
+      prevUserName = lastTrip?.userName ?? null
+    } catch {
+      // Gasolina es un extra: si falla su lectura, el turno se registra igual
+      // sin reconciliar la brecha. No vale perder el turno por esto.
+      console.warn('No se pudo leer el ultimo viaje de Gasolina')
+    }
   }
 
   const createdTxIds: string[] = []
@@ -166,15 +184,46 @@ async function processShiftTransactions(
   }
 
   let gasolinaTripCreatedAt: number | null = null
+  let gasolinaGapTripCreatedAt: number | null = null
   if (endKm3 != null && startKm3 != null) {
     try {
-      gasolinaTripCreatedAt = await carSharingRepository.addTrip({
+      const shiftTimestamp = parseLocalDate(shiftDate).getTime()
+      const trips: Array<{
+        userName: string
+        initialKm: number
+        finalKm: number
+        clientTimestamp: number
+        source: 'gap' | 'shift'
+      }> = []
+
+      // Si el ultimo registro no coincide con el inicio del turno, esos km los
+      // manejo quien hizo el ultimo viaje. Se registran con su nombre para que
+      // el reparto de gasolina no los pierda.
+      if (prevFinalKm != null && prevUserName != null && prevFinalKm !== startKm3) {
+        trips.push({
+          userName: prevUserName,
+          initialKm: prevFinalKm,
+          finalKm: startKm3,
+          clientTimestamp: shiftTimestamp - 1,
+          source: 'gap',
+        })
+      }
+
+      trips.push({
         userName: DRIVER_TRIP_USER_NAME,
         initialKm: startKm3,
         finalKm: endKm3,
-        clientTimestamp: parseLocalDate(shiftDate).getTime(),
+        clientTimestamp: shiftTimestamp,
         source: 'shift',
       })
+
+      const created = await carSharingRepository.addTrips(trips)
+      if (trips.length === 2) {
+        gasolinaGapTripCreatedAt = created[0]
+        gasolinaTripCreatedAt = created[1]
+      } else {
+        gasolinaTripCreatedAt = created[0]
+      }
     } catch {
       console.warn('No se pudo registrar el trip en Gasolina')
     }
@@ -202,6 +251,9 @@ async function processShiftTransactions(
     maintenanceReserve,
     generatedTransactionIds: createdTxIds,
     gasolinaTripCreatedAt,
+    gasolinaGapTripCreatedAt,
+    gasolinaPrevFinalKm: prevFinalKm,
+    gasolinaPrevUserName: prevUserName,
     notes: data.notes ?? null,
   } satisfies Partial<DriverShift>
 }
@@ -234,13 +286,20 @@ export const driverService = {
       try { await transactionService.deleteWithBalance(txId, userId) } catch {}
     }
 
-    // 2. Eliminar trip anterior en Gasolina
+    // 2. Eliminar trip anterior y su brecha en Gasolina
     if (shift.gasolinaTripCreatedAt) {
       try { await carSharingRepository.deleteTrip(shift.gasolinaTripCreatedAt) } catch {}
     }
+    if (shift.gasolinaGapTripCreatedAt) {
+      try { await carSharingRepository.deleteTrip(shift.gasolinaGapTripCreatedAt) } catch {}
+    }
 
-    // 3. Reprocesar con los nuevos datos
-    const result = await processShiftTransactions(config, data, userId)
+    // 3. Reprocesar con los nuevos datos. La base guardada evita recalcular la
+    // brecha contra viajes que se registraron despues de este turno.
+    const baseline = shift.gasolinaPrevFinalKm != null
+      ? { finalKm: shift.gasolinaPrevFinalKm, userName: shift.gasolinaPrevUserName ?? null }
+      : undefined
+    const result = await processShiftTransactions(config, data, userId, baseline)
 
     return driverRepository.update(id, {
       ...result,
@@ -277,12 +336,19 @@ export const driverService = {
       }
     }
 
-    // 2. Eliminar trip en Gasolina si se registró
+    // 2. Eliminar trip y brecha en Gasolina si se registraron
     if (shift.gasolinaTripCreatedAt) {
       try {
         await carSharingRepository.deleteTrip(shift.gasolinaTripCreatedAt)
       } catch {
         console.warn('No se pudo eliminar el trip de Gasolina')
+      }
+    }
+    if (shift.gasolinaGapTripCreatedAt) {
+      try {
+        await carSharingRepository.deleteTrip(shift.gasolinaGapTripCreatedAt)
+      } catch {
+        console.warn('No se pudo eliminar la brecha de Gasolina')
       }
     }
 

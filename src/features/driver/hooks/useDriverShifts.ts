@@ -3,6 +3,12 @@ import { toast } from 'sonner'
 import type { DriverShift, ShiftInput } from '@/types/driver'
 import { createShiftAction } from '@/app/conductor/actions'
 import { apiFetch } from '@/lib/http'
+import { gasolinaLastTripKey } from './useLastGasolinaTrip'
+
+interface GapSummary {
+  km: number
+  userName: string
+}
 
 export interface MonthCycle {
   year: number
@@ -47,12 +53,21 @@ export function useCreateShift() {
       if (result.error) throw new Error(result.error)
       return result
     },
-    onSuccess: () => toast.success('Turno registrado. Transacciones generadas.'),
+    onSuccess: (result) => {
+      if (result.gap) {
+        toast.success(
+          `Turno registrado. Se asignaron ${result.gap.km} km a ${result.gap.userName}.`,
+        )
+      } else {
+        toast.success('Turno registrado. Transacciones generadas.')
+      }
+    },
     onError: (error: Error) => toast.error(error.message),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['driver'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
+      queryClient.invalidateQueries({ queryKey: gasolinaLastTripKey })
     },
   })
 }
@@ -75,6 +90,7 @@ export function useDeleteShift() {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
       queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: gasolinaLastTripKey })
     },
   })
 }
@@ -93,14 +109,23 @@ export function useUpdateShift() {
         const err = await res.json()
         throw new Error(err.error ?? 'Error al actualizar turno')
       }
-      return res.json()
+      return res.json() as Promise<{ data: DriverShift; gap: GapSummary | null }>
     },
-    onSuccess: () => toast.success('Turno actualizado'),
+    onSuccess: (result) => {
+      if (result.gap) {
+        toast.success(
+          `Turno actualizado. Se asignaron ${result.gap.km} km a ${result.gap.userName}.`,
+        )
+      } else {
+        toast.success('Turno actualizado')
+      }
+    },
     onError: (error: Error) => toast.error(error.message),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['driver'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
+      queryClient.invalidateQueries({ queryKey: gasolinaLastTripKey })
     },
   })
 }

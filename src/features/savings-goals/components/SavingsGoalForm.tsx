@@ -1,6 +1,6 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { createZodResolver } from '@/lib/validations/rhf-resolver'
 import { createSavingsGoalSchema, type CreateSavingsGoalInput } from '@/lib/validations/savings-goal.schema'
 import { SAVINGS_GOAL_ICONS, SAVINGS_GOAL_COLORS } from '@/types/savings-goal'
@@ -27,7 +27,7 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm<CreateSavingsGoalInput>({
     resolver: createZodResolver<CreateSavingsGoalInput>(createSavingsGoalSchema),
@@ -43,8 +43,8 @@ export function SavingsGoalForm({ goal, accounts, onSubmit, isPending }: Savings
     },
   })
 
-  const selectedIcon = watch('icon')
-  const selectedColor = watch('color')
+  const selectedIcon = useWatch({ control, name: 'icon' })
+  const selectedColor = useWatch({ control, name: 'color' })
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

@@ -15,14 +15,10 @@ interface MonthlyInstallmentsCardProps {
 
 export function MonthlyInstallmentsCard({
   credit,
-  installments,
   pendingThisMonth,
   onPay,
 }: MonthlyInstallmentsCardProps) {
   const typeConfig    = CREDIT_TYPES.find((t) => t.value === credit.type)!
-  const progress      = credit.total_installments > 0
-    ? (credit.paid_installments / credit.total_installments) * 100
-    : 0
 
   const allPaidThisMonth = pendingThisMonth.every((i) => i.status === 'PAID')
 

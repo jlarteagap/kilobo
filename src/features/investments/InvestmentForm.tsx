@@ -1,6 +1,6 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { createZodResolver } from "@/lib/validations/rhf-resolver"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { ArrowDownUp } from "lucide-react"
@@ -72,7 +72,8 @@ export function InvestmentForm({
     },
   })
 
-  const [accountId, name] = form.watch(['account_id', 'name'])
+  const accountId = useWatch({ control: form.control, name: 'account_id' })
+  const name = useWatch({ control: form.control, name: 'name' })
 
   const existingMatch = useMemo(() => {
     if (isEdit || !accountId || !name || name.trim().length < 2) return null
@@ -141,7 +142,7 @@ export function InvestmentForm({
                 <div className="flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
                   <ArrowDownUp className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
                   <p className="text-[11px] leading-relaxed text-emerald-700">
-                    Ya tienes <span className="font-bold">"{existingMatch.name}"</span>{' '}
+                    Ya tienes <span className="font-bold">&quot;{existingMatch.name}&quot;</span>{' '}
                     en esta cuenta ({formatCurrency(existingMatch.amount, existingMatch.currency)}).
                     Se agregará una compra a la posición existente.
                   </p>

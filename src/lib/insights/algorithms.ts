@@ -199,9 +199,11 @@ export function detectTrends(
     EXPENSE_TYPES.includes(tx.type) && (tx.category_id || tx.project_id) && tx.status === 'COMPLETED',
   )
 
-  // Agrupar categorías/proyectos únicos
+  // Agrupar categorías/proyectos únicos. La llave de cada transacción se guarda
+  // en un mapa por referencia para no mutar los objetos de entrada.
   const categoryMap = new Map<string, { name: string; color: string | null }>()
-  
+  const groupKeys = new Map<Transaction, string>()
+
   expenses.forEach(tx => {
     let key = '';
     let name = '';
@@ -229,8 +231,7 @@ export function detectTrends(
       categoryMap.set(key, { name, color })
     }
     
-    // Asignar llave temporal
-    ;(tx as any)._group_key = key;
+    groupKeys.set(tx, key)
   })
 
   const trends: CategoryTrend[] = []
@@ -238,7 +239,7 @@ export function detectTrends(
   categoryMap.forEach((meta, category_id) => {
     const slices = periods.map(({ start, end }) =>
       filterByPeriod(expenses, start, end).filter(
-        tx => (tx as any)._group_key === category_id,
+        tx => groupKeys.get(tx) === category_id,
       ),
     )
 

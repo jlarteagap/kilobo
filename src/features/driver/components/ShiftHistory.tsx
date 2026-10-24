@@ -27,7 +27,7 @@ interface ShiftHistoryProps {
   label?: string
 }
 
-export function ShiftHistory({ shifts, onEdit, cycle, label }: ShiftHistoryProps) {
+export function ShiftHistory({ shifts, onEdit, label }: ShiftHistoryProps) {
   const deleteShift = useDeleteShift()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [detailShift, setDetailShift] = useState<DriverShift | null>(null)

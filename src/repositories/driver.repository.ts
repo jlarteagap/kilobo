@@ -100,6 +100,15 @@ function normalizeShift(data: Record<string, unknown>): DriverShift {
     gasolinaTripCreatedAt: typeof data.gasolinaTripCreatedAt === 'number'
       ? (data.gasolinaTripCreatedAt as number)
       : null,
+    gasolinaGapTripCreatedAt: typeof data.gasolinaGapTripCreatedAt === 'number'
+      ? (data.gasolinaGapTripCreatedAt as number)
+      : null,
+    gasolinaPrevFinalKm: typeof data.gasolinaPrevFinalKm === 'number'
+      ? (data.gasolinaPrevFinalKm as number)
+      : null,
+    gasolinaPrevUserName: typeof data.gasolinaPrevUserName === 'string'
+      ? (data.gasolinaPrevUserName as string)
+      : null,
     notes: (data.notes as string | null) ?? null,
     createdAt: (data.createdAt as string) ?? '',
     updatedAt: (data.updatedAt as string) ?? '',
@@ -181,6 +190,9 @@ export const driverRepository = {
       maintenanceReserve: data.maintenanceReserve ?? 0,
       generatedTransactionIds: data.generatedTransactionIds ?? [],
       gasolinaTripCreatedAt: data.gasolinaTripCreatedAt ?? null,
+      gasolinaGapTripCreatedAt: data.gasolinaGapTripCreatedAt ?? null,
+      gasolinaPrevFinalKm: data.gasolinaPrevFinalKm ?? null,
+      gasolinaPrevUserName: data.gasolinaPrevUserName ?? null,
       notes: data.notes ?? null,
       createdAt: now,
       updatedAt: now,

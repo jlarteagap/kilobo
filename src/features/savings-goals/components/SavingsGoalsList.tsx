@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Plus, PiggyBank } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 export function SavingsGoalsList() {
   const { data: goals = [], isLoading } = useSavingsGoals()

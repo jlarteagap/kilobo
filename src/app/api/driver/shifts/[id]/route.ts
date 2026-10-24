@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { driverService } from '@/services/driver.service'
 import { getUserId } from '@/lib/auth.server'
 import { shiftSchema } from '@/lib/validations/driver.schema'
-import type { ShiftInput } from '@/types/driver'
+import { shiftGapSummary, type ShiftInput } from '@/types/driver'
 import { assertSameOrigin } from '@/lib/api-utils'
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -15,6 +16,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     const { id } = await params
     await driverService.deleteShift(userId, id)
+    revalidatePath('/gasolina')
     return Response.json({ success: true })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error interno del servidor'
@@ -39,7 +41,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { id } = await params
     const shift = await driverService.updateShift(userId, id, parsed.data as ShiftInput)
-    return Response.json({ data: shift })
+    revalidatePath('/gasolina')
+    return Response.json({ data: shift, gap: shiftGapSummary(shift) })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error interno del servidor'
     console.error('PATCH /api/driver/shifts/[id] error:', message)

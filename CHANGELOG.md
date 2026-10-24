@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.13] - 2026-10-24
+
+Cierra el hueco de kilómetros que quedaba entre `/conductor` y `/gasolina`: si el
+odómetro de inicio de un turno no coincide con el último viaje registrado, esos
+kilómetros se registran como un viaje de brecha y se le asignan a quien hizo el
+último registro.
+
+### Added
+- **Reconciliación de brecha al registrar un turno** (`driverService.processShiftTransactions`): antes de crear el viaje del turno se lee el último viaje de Gasolina. Si su `finalKm` difiere del `startKm`, se inserta un viaje `source: 'gap'` con el nombre de quien registró ese último viaje. La brecha y el turno entran juntos con `addTrips()`, que usa `arrayUnion` y suma ambos al odómetro absoluto en una sola operación.
+- **Referencia y vista previa en `/conductor`**: el formulario muestra el último registro de Gasolina (`072 · Melissa`) sin precargar el campo Inicio, y avisa cuántos km se asignarán al otro conductor. Si la brecha supera los 500 km pide confirmación antes de guardar.
+- **Badge "Brecha" en `/gasolina`**: los viajes generados por reconciliación se distinguen en el historial y entran en el reparto de la carga como cualquier otro viaje.
+- **`getLastTrip()` y `latestTrip()`**: ambas páginas usan la misma definición de "último viaje" —timestamp con desempate por `createdAt`— incluido el cierre más reciente cuando el ciclo activo está vacío.
+
+### Changed
+- **Editar o eliminar un turno borra también su brecha**: `updateShift()` y `deleteShift()` eliminan el viaje del turno y el de brecha antes de reprocesar. La base guardada (`gasolinaPrevFinalKm`/`gasolinaPrevUserName`) evita recalcular contra viajes posteriores. `deleteTrip()` ahora busca en el ciclo activo y en los cerrados, y recalcula el `debtSummary` del ciclo cerrado.
+- **Lint limpio**: se eliminaron imports y variables sin usar, se reemplazó `form.watch()` por `useWatch()` en los formularios, se sacó el `setState` dentro de un efecto de `/conductor/settings` (formulario hijo con `key`), se tiparon los gastos de `ShiftForm` sin `any`, y se cambió la mutación `(tx as any)._group_key` de insights por un `Map`.
+
+### Fixed
+- **Viajes de turnos en ciclos cerrados**: borrar o editar un turno ya no deja el viaje huérfano en un ciclo cerrado ni duplica kilómetros.
+
 ## [1.7.12] - 2026-10-15
 
 Revierte el control de acceso por token de `/gasolina` y lo reemplaza por un modelo

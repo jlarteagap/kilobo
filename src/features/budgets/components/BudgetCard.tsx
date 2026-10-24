@@ -56,7 +56,7 @@ export function BudgetCard({
   onArchive,
   onDelete,
 }: BudgetCardProps) {
-  const { budget, current_amount, target_amount, percent, remaining, days_until_due, status } = progress
+  const { budget, current_amount, target_amount, remaining, days_until_due, status } = progress
 
   const typeConfig   = BUDGET_TYPES.find((t) => t.value === budget.type)!
   const statusConfig = BUDGET_STATUS_CONFIG[status]

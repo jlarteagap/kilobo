@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { accountKeys } from '@/features/accounts/hooks/useAccounts'
 import { transactionKeys } from '@/features/transactions/hooks/useTransactions'
-import type { Credit, Installment, CreditType } from '@/types/credit'
+import type { Credit, Installment } from '@/types/credit'
 import type { CreateCreditInput } from '@/lib/validations/credit.schema'
 import { apiFetch } from '@/lib/http'
 

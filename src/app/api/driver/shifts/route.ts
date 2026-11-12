@@ -56,8 +56,8 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Datos inválidos', details: parsed.error.flatten() }, { status: 400 })
     }
 
-    const shift = await driverService.createShift(userId, parsed.data as ShiftInput)
-    return Response.json({ data: shift })
+    const { shift, gasolinaSynced } = await driverService.createShift(userId, parsed.data as ShiftInput)
+    return Response.json({ data: shift, gasolinaSynced })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error interno del servidor'
     console.error('POST /api/driver/shifts error:', message)

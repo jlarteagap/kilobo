@@ -10,11 +10,11 @@ export async function createShiftAction(data: ShiftInput) {
   if (!userId) return { error: 'No autorizado' }
 
   try {
-    const shift = await driverService.createShift(userId, data)
+    const { shift, gasolinaSynced } = await driverService.createShift(userId, data)
     revalidatePath('/conductor')
     revalidatePath('/conductor/analytics')
     revalidatePath('/gasolina')
-    return { success: true, gap: shiftGapSummary(shift) }
+    return { success: true, gap: shiftGapSummary(shift), gasolinaSynced }
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Error al registrar turno' }
   }

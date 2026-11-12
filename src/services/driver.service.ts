@@ -9,6 +9,7 @@ import {
   DriverAnalytics,
   DriverAppBreakdown,
   ShiftInput,
+  ShiftWriteResult,
   DRIVER_APPS,
   DRIVER_APP_LABELS,
   PAYMENT_METHOD_LABELS,
@@ -51,6 +52,7 @@ async function processShiftTransactions(
   // depender de viajes posteriores.
   let prevFinalKm = baseline?.finalKm ?? null
   let prevUserName = baseline?.userName ?? null
+  let gasolinaSynced = true
   if (baseline === undefined && endKm3 != null && startKm3 != null) {
     try {
       const lastTrip = await carSharingRepository.getLastTrip()
@@ -59,6 +61,7 @@ async function processShiftTransactions(
     } catch {
       // Gasolina es un extra: si falla su lectura, el turno se registra igual
       // sin reconciliar la brecha. No vale perder el turno por esto.
+      gasolinaSynced = false
       console.warn('No se pudo leer el ultimo viaje de Gasolina')
     }
   }
@@ -225,54 +228,59 @@ async function processShiftTransactions(
         gasolinaTripCreatedAt = created[0]
       }
     } catch {
+      gasolinaSynced = false
       console.warn('No se pudo registrar el trip en Gasolina')
     }
   }
 
   return {
-    date: shiftDate,
-    hoursWorked: data.hoursWorked ?? 0,
-    startKm: startKm3,
-    endKm: endKm3,
-    totalKm,
-    earnings: data.earnings,
-    bonuses: data.bonuses,
-    commissions: data.commissions,
-    tips,
-    expenses: data.expenses,
-    totalEarnings,
-    totalBonuses,
-    totalCommissions,
-    totalExpenses,
-    totalTips,
-    grossEarnings,
-    pendingAmount,
-    liquidEarnings,
-    maintenanceReserve,
-    generatedTransactionIds: createdTxIds,
-    gasolinaTripCreatedAt,
-    gasolinaGapTripCreatedAt,
-    gasolinaPrevFinalKm: prevFinalKm,
-    gasolinaPrevUserName: prevUserName,
-    notes: data.notes ?? null,
-  } satisfies Partial<DriverShift>
+    data: {
+      date: shiftDate,
+      hoursWorked: data.hoursWorked ?? 0,
+      startKm: startKm3,
+      endKm: endKm3,
+      totalKm,
+      earnings: data.earnings,
+      bonuses: data.bonuses,
+      commissions: data.commissions,
+      tips,
+      expenses: data.expenses,
+      totalEarnings,
+      totalBonuses,
+      totalCommissions,
+      totalExpenses,
+      totalTips,
+      grossEarnings,
+      pendingAmount,
+      liquidEarnings,
+      maintenanceReserve,
+      generatedTransactionIds: createdTxIds,
+      gasolinaTripCreatedAt,
+      gasolinaGapTripCreatedAt,
+      gasolinaPrevFinalKm: prevFinalKm,
+      gasolinaPrevUserName: prevUserName,
+      notes: data.notes ?? null,
+    } satisfies Partial<Omit<DriverShift, 'id' | 'user_id'>>,
+    gasolinaSynced,
+  }
 }
 
 export const driverService = {
   // ── Crear turno (registro manual) ─────────────────────────────────────────────
-  async createShift(userId: string, data: ShiftInput): Promise<DriverShift> {
+  async createShift(userId: string, data: ShiftInput): Promise<ShiftWriteResult> {
     const config = await driverConfigRepository.findByUserId(userId)
     if (!config) throw new Error(
       'Configuración no encontrada. Ve a /conductor/settings y configura tus cuentas primero.'
     )
 
-    const result = await processShiftTransactions(config, data, userId)
+    const { data: shiftData, gasolinaSynced } = await processShiftTransactions(config, data, userId)
+    const shift = await driverRepository.create(shiftData, userId)
 
-    return driverRepository.create(result, userId)
+    return { shift, gasolinaSynced }
   },
 
   // ── Update (re-procesar un turno ya registrado) ─────────────────────────────
-  async updateShift(userId: string, id: string, data: ShiftInput): Promise<DriverShift> {
+  async updateShift(userId: string, id: string, data: ShiftInput): Promise<ShiftWriteResult> {
     const shift = await driverRepository.findById(id, userId)
     if (!shift) throw new Error('Turno no encontrado.')
 
@@ -299,11 +307,10 @@ export const driverService = {
     const baseline = shift.gasolinaPrevFinalKm != null
       ? { finalKm: shift.gasolinaPrevFinalKm, userName: shift.gasolinaPrevUserName ?? null }
       : undefined
-    const result = await processShiftTransactions(config, data, userId, baseline)
+    const { data: shiftData, gasolinaSynced } = await processShiftTransactions(config, data, userId, baseline)
+    const updated = await driverRepository.update(id, shiftData)
 
-    return driverRepository.update(id, {
-      ...result,
-    })
+    return { shift: updated, gasolinaSynced }
   },
 
   // ── Lecturas ─────────────────────────────────────────────────────────────────

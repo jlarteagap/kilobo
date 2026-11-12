@@ -49,9 +49,16 @@ export interface DebtResult {
 /**
  * Ultimo viaje registrado, sin depender del orden del array.
  *
+ * Se ordena por `createdAt` (cuando el viaje entro a la secuencia) y no por
+ * `timestamp`: los turnos de `/conductor` guardan como timestamp la medianoche
+ * del dia elegido, asi que un turno de hoy perderia contra un viaje manual
+ * registrado mas temprano ese mismo dia y el "odometro actual" se quedaria
+ * viejo. `createdAt` lo pone el servidor, no depende del reloj del cliente y no
+ * cambia al editar un viaje.
+ *
  * `/gasolina` y `/conductor` tienen que coincidir en que significa "el ultimo
- * dato": si uno usa el orden de insercion y el otro el timestamp, la brecha se
- * calcula contra un viaje distinto al que ve el usuario.
+ * dato": la tabla muestra los viajes en orden de insercion, asi que la
+ * referencia tambien se resuelve por insercion.
  */
 export function latestTrip(trips: readonly CarTrip[]): CarTrip | null {
   let latest: CarTrip | null = null
@@ -62,10 +69,10 @@ export function latestTrip(trips: readonly CarTrip[]): CarTrip | null {
       continue
     }
 
-    const tripAt = trip.timestamp ?? trip.createdAt
-    const latestAt = latest.timestamp ?? latest.createdAt
+    const tripAt = trip.createdAt ?? trip.timestamp ?? 0
+    const latestAt = latest.createdAt ?? latest.timestamp ?? 0
 
-    if (tripAt > latestAt || (tripAt === latestAt && trip.createdAt > latest.createdAt)) {
+    if (tripAt > latestAt) {
       latest = trip
     }
   }

@@ -54,7 +54,11 @@ export function useCreateShift() {
       return result
     },
     onSuccess: (result) => {
-      if (result.gap) {
+      if (!result.gasolinaSynced) {
+        toast.warning(
+          'Turno registrado, pero no se pudo sincronizar con Gasolina. Revisá el odómetro.',
+        )
+      } else if (result.gap) {
         toast.success(
           `Turno registrado. Se asignaron ${result.gap.km} km a ${result.gap.userName}.`,
         )
@@ -109,10 +113,14 @@ export function useUpdateShift() {
         const err = await res.json()
         throw new Error(err.error ?? 'Error al actualizar turno')
       }
-      return res.json() as Promise<{ data: DriverShift; gap: GapSummary | null }>
+      return res.json() as Promise<{ data: DriverShift; gap: GapSummary | null; gasolinaSynced: boolean }>
     },
     onSuccess: (result) => {
-      if (result.gap) {
+      if (!result.gasolinaSynced) {
+        toast.warning(
+          'Turno actualizado, pero no se pudo sincronizar con Gasolina. Revisá el odómetro.',
+        )
+      } else if (result.gap) {
         toast.success(
           `Turno actualizado. Se asignaron ${result.gap.km} km a ${result.gap.userName}.`,
         )

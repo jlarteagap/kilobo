@@ -40,9 +40,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     const { id } = await params
-    const shift = await driverService.updateShift(userId, id, parsed.data as ShiftInput)
+    const { shift, gasolinaSynced } = await driverService.updateShift(userId, id, parsed.data as ShiftInput)
     revalidatePath('/gasolina')
-    return Response.json({ data: shift, gap: shiftGapSummary(shift) })
+    return Response.json({ data: shift, gap: shiftGapSummary(shift), gasolinaSynced })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error interno del servidor'
     console.error('PATCH /api/driver/shifts/[id] error:', message)

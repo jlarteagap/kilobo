@@ -167,6 +167,16 @@ export interface DriverShift {
   updatedAt: string
 }
 
+/**
+ * Resultado de guardar un turno. `gasolinaSynced` es transitorio: solo viaja en
+ * la respuesta para avisar si el viaje/brecha se pudo escribir en `/gasolina`.
+ * No se persiste en el turno.
+ */
+export interface ShiftWriteResult {
+  shift: DriverShift
+  gasolinaSynced: boolean
+}
+
 /** Referencia minima del ultimo viaje de Gasolina para el formulario. */
 export interface GasolinaLastTrip {
   finalKm: number
